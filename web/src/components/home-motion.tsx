@@ -124,7 +124,7 @@ export function HomeSectionMotion({
           className={dividerClassName}
           initial={false}
           variants={{ hidden: { scaleX: 0 }, shown: { scaleX: 1 } }}
-          transition={{ duration: 0.5, delay, ease: easeOutExpo }}
+          transition={{ duration: motionDurations.entrance, delay, ease: easeOutExpo }}
         />
       ) : null}
       <motion.div

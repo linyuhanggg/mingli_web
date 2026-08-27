@@ -12,10 +12,10 @@ import type { ReactNode } from "react";
 export const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 
 export const motionDurations = {
-  feedback: 0.18,
-  state: 0.26,
-  entrance: 0.45,
-  focal: 0.72,
+  feedback: 0.12,
+  state: 0.22,
+  entrance: 0.42,
+  focal: 0.42,
 } as const;
 
 function isTestRuntime() {

@@ -119,7 +119,7 @@ describe("RouteEnter hydration motion", () => {
     expect(motionRuntime.controls.set).toHaveBeenCalledWith({ opacity: 0, y: 8 });
     expect(motionRuntime.controls.start).toHaveBeenCalledWith({
       opacity: 1,
-      transition: { duration: 0.26, ease: [0.16, 1, 0.3, 1] },
+      transition: { duration: 0.22, ease: [0.16, 1, 0.3, 1] },
       y: 0,
     });
 

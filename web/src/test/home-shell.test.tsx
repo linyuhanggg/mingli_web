@@ -31,7 +31,7 @@ const PRODUCT_ENTRIES = [
 ] as const;
 
 describe("public home shell", () => {
-  it("keeps the Direction C heading, black primary action, and product map", () => {
+  it("keeps the Xuan Order heading, primary action, and product map", () => {
     render(<HomePage />);
 
     const main = screen.getByRole("main");
@@ -69,37 +69,36 @@ describe("public home shell", () => {
 
     expect(within(main).queryByText("待接入")).not.toBeInTheDocument();
     expect(within(main).queryByText(/Runtime|Provider|适配器/)).not.toBeInTheDocument();
-    expect(main).toHaveClass("liquid-home-prototype");
+    expect(main).toHaveClass("xuan-order-home");
   });
 
-  it("locks the homepage h1 to the 40-64px hero scale and the primary button to --color-action", () => {
+  it("locks the homepage to the Xuan Order type and spacing scale", () => {
     const css = readFileSync(resolve(process.cwd(), "src/app/home.module.css"), "utf8");
     expect(css).toMatch(
-      /\.hero h1\s*\{[^}]*font-size:\s*clamp\(3rem,[^;]*var\(--font-size-hero\)\)/s,
+      /\.hero h1\s*\{[^}]*font-family:\s*var\(--ds-font-domain\)[^}]*font-size:\s*clamp\(var\(--ds-text-48\),[^;]*var\(--ds-text-72\)\)/s,
     );
     expect(css).toMatch(
-      /@media \(max-width: 47\.999rem\)[\s\S]*\.hero h1\s*\{[^}]*font-size:\s*2\.5rem/s,
+      /@media \(max-width: 839px\)[\s\S]*\.hero h1\s*\{[^}]*font-size:\s*clamp\(var\(--ds-text-36\),[^;]*var\(--ds-text-48\)\)/s,
     );
-    expect(css).toMatch(/\.heroPrimary\s*\{[^}]*background:\s*var\(--color-action\)/s);
+    expect(css).toMatch(/\.sectionDivider\s*\{[^}]*background:\s*var\(--ds-line\)/s);
+    expect(css).not.toMatch(/(?:linear|radial|conic)-gradient/);
     expect(css).not.toMatch(/§10|§6\.2/);
   });
 
-  it("strictly gates paper chrome to the homepage", () => {
+  it("uses one Xuan Order visual authority instead of a second homepage brand", () => {
     const home = readFileSync(resolve(process.cwd(), "src/app/page.tsx"), "utf8");
     const homeCss = readFileSync(resolve(process.cwd(), "src/app/home.module.css"), "utf8");
     const chrome = readFileSync(resolve(process.cwd(), "src/components/site-chrome.module.css"), "utf8");
     const shell = readFileSync(resolve(process.cwd(), "src/components/public-page-shell.tsx"), "utf8");
-    const header = readFileSync(resolve(process.cwd(), "src/components/site-header.tsx"), "utf8");
 
-    expect(home).toContain("liquid-home-prototype");
-    expect(home).toContain("HomeAtmosphere");
+    expect(home).toContain("xuan-order-home");
+    expect(home).not.toContain("HomeAtmosphere");
     expect(home).toContain("HomeHeroMotion");
-    expect(homeCss).toMatch(/--home-glass:\s*var\(--paper-glass\)/);
+    expect(homeCss).not.toContain("--paper-");
+    expect(homeCss).not.toContain("--home-paper");
     expect(shell).toContain('const isHome = pathname === "/"');
-    expect(header).toContain('data-home-chrome={pathname === "/" ? "true" : undefined}');
-    expect(chrome).toMatch(/\.header\[data-home-chrome="true"\][^{]*\{[^}]*paper-glass-strong/s);
-    expect(chrome).toMatch(/\.mobileBottomBar\[data-home-chrome="true"\][^{]*\{[^}]*paper-surface/s);
-    expect(chrome).toMatch(/\.footer\[data-home-chrome="true"\][^{]*\{[^}]*paper-text/s);
+    expect(shell).toContain("<Breadcrumb pathname={pathname} />");
+    expect(chrome).not.toContain("--paper-");
     expect(home).not.toMatch(/Provider|Runtime|适配器|待接入|reference pack|evidence index/);
     expect(home).not.toMatch(/§10|§6\.2/);
   });

@@ -19,7 +19,6 @@ import {
   type ProductDefinition,
 } from "@/products/catalog";
 
-import { HomeAtmosphere } from "./home-atmosphere";
 import { HomeStage } from "./home-stage";
 import styles from "./home.module.css";
 
@@ -112,10 +111,9 @@ function TaskCard({ product }: { product: ProductDefinition }) {
 export default function HomePage() {
   return (
     <PublicPageShell>
-      <main className={`${styles.main} liquid-home-prototype`} id="main-content" tabIndex={-1}>
+      <main className={`${styles.main} xuan-order-home`} id="main-content" tabIndex={-1}>
         <HomeStage>
           <section aria-labelledby="home-hero" className={styles.heroStage}>
-            <HomeAtmosphere />
             <Container className={styles.heroFrame}>
               <HomeHeroMotion className={styles.hero}>
                 <HomeHeroItemMotion>
@@ -191,7 +189,7 @@ export default function HomePage() {
           </section>
 
           <Container className={styles.container}>
-            <HomeSectionMotion dividerClassName={styles.paperDivider}>
+            <HomeSectionMotion dividerClassName={styles.sectionDivider}>
               <section aria-label="机制" className={styles.mechanism}>
                 <ul>
                   <li>
@@ -210,7 +208,7 @@ export default function HomePage() {
               </section>
             </HomeSectionMotion>
 
-            <HomeSectionMotion delay={0.04} dividerClassName={styles.paperDivider}>
+            <HomeSectionMotion delay={0.04} dividerClassName={styles.sectionDivider}>
               <section aria-labelledby="home-natal" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <div>
@@ -237,7 +235,7 @@ export default function HomePage() {
               </section>
             </HomeSectionMotion>
 
-            <HomeSectionMotion delay={0.05} dividerClassName={styles.paperDivider}>
+            <HomeSectionMotion delay={0.05} dividerClassName={styles.sectionDivider}>
               <section aria-labelledby="home-event" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <div>
@@ -253,7 +251,7 @@ export default function HomePage() {
               </section>
             </HomeSectionMotion>
 
-            <HomeSectionMotion dividerClassName={styles.paperDivider}>
+            <HomeSectionMotion dividerClassName={styles.sectionDivider}>
               <section aria-labelledby="home-jianxiang" className={styles.observation}>
                 <div className={styles.observationCopy}>
                   <p className={styles.eyebrowInverse}>观照</p>
@@ -267,7 +265,7 @@ export default function HomePage() {
               </section>
             </HomeSectionMotion>
 
-            <HomeSectionMotion dividerClassName={styles.paperDivider}>
+            <HomeSectionMotion dividerClassName={styles.sectionDivider}>
               <section aria-labelledby="home-cross" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <div>
@@ -297,7 +295,7 @@ export default function HomePage() {
               </section>
             </HomeSectionMotion>
 
-            <HomeSectionMotion dividerClassName={styles.paperDivider}>
+            <HomeSectionMotion dividerClassName={styles.sectionDivider}>
               <section aria-labelledby="home-aux" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <h2 id="home-aux">辅助</h2>

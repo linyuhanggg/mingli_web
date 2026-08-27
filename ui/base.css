@@ -5,11 +5,13 @@
 html {
   min-width: 20rem;
   background: var(--color-canvas);
+  scrollbar-color: var(--color-border-strong) var(--color-surface-subtle);
+  scrollbar-width: thin;
 }
 
 body {
-  margin: 0;
   min-height: 100vh;
+  margin: 0;
   background: var(--color-canvas);
   color: var(--color-text);
   font-family: var(--font-sans);
@@ -25,7 +27,7 @@ a {
 
 button,
 a {
-  -webkit-tap-highlight-color: rgb(37 99 235 / 16%);
+  -webkit-tap-highlight-color: rgb(166 60 49 / 16%);
   touch-action: manipulation;
 }
 
@@ -34,7 +36,7 @@ input,
 select,
 textarea {
   font: inherit;
-  accent-color: var(--color-action);
+  accent-color: var(--color-accent);
   caret-color: var(--color-focus);
 }
 
@@ -44,12 +46,6 @@ select:disabled,
 textarea:disabled {
   cursor: not-allowed;
 }
-
-/* ---------- 原生控件收口 ----------
-   select 与 date/time 之前完全走浏览器默认外观（系统三角、系统日历按钮），
-   在一套自绘的边框/圆角/字重里显得像没做完。这里统一到设计系统。
-   注意：模块里给 select 设背景必须用 background-color，
-   background 简写会连带清掉这里的箭头图形。 */
 
 select,
 input[type="date"],
@@ -61,7 +57,7 @@ input[type="datetime-local"] {
 
 select {
   padding-right: 2.5rem;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.75 6 6.25 11 1.75' stroke='%23525252' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1.75 6 6.25 11 1.75' stroke='%236c7068' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.9rem center;
   background-size: 12px 8px;
@@ -78,9 +74,9 @@ select:disabled {
   height: 1.05rem;
   padding: 0;
   margin-left: 0.35rem;
-  opacity: 0.55;
   cursor: pointer;
-  transition: opacity var(--duration-feedback) ease;
+  opacity: 0.55;
+  transition: opacity var(--duration-feedback) var(--ease-out);
 }
 
 input:hover::-webkit-calendar-picker-indicator,
@@ -103,26 +99,25 @@ input[type="datetime-local"]::-webkit-inner-spin-button {
 }
 
 ::selection {
-  background: var(--color-surface-muted);
+  background: var(--ds-accent-soft);
   color: var(--color-text);
 }
 
 :focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+  border-radius: var(--ds-radius-1);
+  outline: 1px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: var(--ds-shadow-focus);
 }
 
 h1,
 h2,
 h3 {
+  overflow-wrap: anywhere;
   font-family: var(--font-sans);
   line-height: var(--line-height-title);
-  /* 中文没有词间空格，balance 会把标题在词中间劈开（如「都绑/定」「逐/项」）。
-     keep-all 让断行只发生在标点与空格处；单个分句仍超出行宽时由
-     overflow-wrap 兜底，避免溢出容器。 */
-  word-break: keep-all;
-  overflow-wrap: anywhere;
   text-wrap: pretty;
+  word-break: keep-all;
 }
 
 h1,
@@ -140,12 +135,7 @@ small {
 }
 
 :where(h1, h2, h3)[id] {
-  scroll-margin-top: 1.5rem;
-}
-
-html {
-  scrollbar-color: var(--color-border-strong) var(--color-surface-subtle);
-  scrollbar-width: thin;
+  scroll-margin-top: calc(var(--header-desktop) + var(--ds-space-6));
 }
 
 ::-webkit-scrollbar {
@@ -180,8 +170,8 @@ html {
   *::before,
   *::after {
     scroll-behavior: auto !important;
-    animation-duration: 0.01ms !important;
+    animation-duration: 1ms !important;
     animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+    transition-duration: 1ms !important;
   }
 }

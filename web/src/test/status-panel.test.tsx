@@ -9,10 +9,13 @@ const statusCases: Array<{
   role: "alert" | "status";
   busy: boolean;
 }> = [
-  { state: "loading", title: "正在载入…", role: "status", busy: true },
-  { state: "empty", title: "这里还没有内容", role: "status", busy: false },
+  { state: "loading", title: "正在同步出盘", role: "status", busy: true },
+  { state: "empty", title: "还没有内容", role: "status", busy: false },
+  { state: "ready", title: "盘面已就绪", role: "status", busy: false },
+  { state: "locked", title: "深读暂未解锁", role: "status", busy: false },
+  { state: "need-input", title: "需要补充信息", role: "status", busy: false },
   { state: "error", title: "暂时无法完成", role: "alert", busy: false },
-  { state: "processing", title: "正在处理中…", role: "status", busy: true },
+  { state: "processing", title: "正在处理中", role: "status", busy: true },
   { state: "success", title: "已经完成", role: "status", busy: false },
   { state: "disabled", title: "暂不可用", role: "status", busy: false },
 ];
@@ -68,5 +71,12 @@ describe("StatusPanel", () => {
     render(<StatusPanel state="disabled" />);
 
     expect(screen.getByText(/当前所需条件尚未满足/)).toBeVisible();
+  });
+
+  it("keeps locked content scoped to deep reading while chart facts remain available", () => {
+    render(<StatusPanel state="locked" />);
+
+    expect(screen.getByText(/免费盘面事实仍可查看/)).toBeVisible();
+    expect(screen.getByText(/深读或付费时间层/)).toBeVisible();
   });
 });
