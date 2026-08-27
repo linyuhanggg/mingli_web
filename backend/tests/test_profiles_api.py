@@ -343,6 +343,62 @@ async def test_profile_version_history_returns_all_versions_without_payloads(
     assert "上海市" not in history.text
 
 
+async def test_profile_correction_rejects_name_and_birth_date_collision(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    first = await create_confirmed_profile(
+        client,
+        headers,
+        label="同名档案",
+        birth_datetime="1994-04-30T05:55:00+08:00",
+    )
+    second = await create_confirmed_profile(
+        client,
+        headers,
+        label="同名档案",
+        birth_datetime="2001-07-12T09:30:00+08:00",
+        location="上海市",
+    )
+
+    corrected = await client.post(
+        f"/api/v1/profiles/{second['profile_id']}/versions",
+        headers=headers,
+        json={
+            "birth_datetime": "1994-04-30T06:10:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "上海市黄浦区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "difference_acknowledged": True,
+        },
+    )
+
+    assert corrected.status_code == 409, corrected.text
+    body = corrected.json()
+    assert body["code"] == "profile_name_conflict"
+    assert body["existing_profile_id"] == first["profile_id"]
+    assert body["existing_profile_version_id"] == first["profile_version_id"]
+
+    history = await client.get(
+        f"/api/v1/profiles/{second['profile_id']}/versions"
+    )
+    listed = await client.get("/api/v1/profiles")
+    assert history.status_code == 200, history.text
+    assert listed.status_code == 200, listed.text
+    assert history.json()["versions"] == [second]
+    by_id = {item["profile_id"]: item for item in listed.json()["profiles"]}
+    assert by_id[second["profile_id"]] == second
+
+    from app.profiles.models import ProfileVersion
+
+    async with database.sessions() as session:
+        versions = list(await session.scalars(select(ProfileVersion)))
+    assert len(versions) == 2
+
+
 async def test_duplicate_display_names_are_listed_and_rename_preserves_versions(
     client: AsyncClient,
     database: Any,
