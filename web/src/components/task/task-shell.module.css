@@ -74,6 +74,19 @@
   font-size: var(--font-size-label);
 }
 
+.renameBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem 1rem;
+  min-width: 0;
+}
+
+.renameBar p {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
 .experience {
   display: grid;
   min-width: 0;
@@ -251,7 +264,7 @@
 .plateSkeleton dd {
   margin: 0;
   color: var(--color-text-muted);
-  font-family: var(--font-domain), serif;
+  font-family: var(--font-sans);
   font-size: var(--font-size-emphasis);
 }
 
@@ -935,6 +948,25 @@
   display: grid;
   align-items: start;
   gap: var(--space-md);
+}
+
+.unknownHour {
+  display: grid;
+  gap: var(--space-xs);
+}
+
+.unknownHour label {
+  display: flex;
+  min-height: var(--target-min);
+  align-items: center;
+  gap: var(--space-sm);
+  color: var(--color-text-secondary);
+}
+
+.unknownHour p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
 }
 
 /* 省 / 市 / 区县三级联动。 */

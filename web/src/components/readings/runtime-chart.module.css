@@ -3,6 +3,17 @@
   gap: 16px;
 }
 
+.publicLabels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

@@ -13,7 +13,6 @@ from app.entitlements.models import OwnerCapabilityGrant
 from app.entitlements.service import formal_capability_entitlement_id
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy import func, select
-
 from test_profiles_api import create_confirmed_profile, create_guest, login_current_guest
 from test_readings_api import seed_runtime_release
 

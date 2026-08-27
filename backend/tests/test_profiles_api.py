@@ -1,5 +1,6 @@
 from datetime import UTC, datetime, timedelta
 from typing import Any
+from uuid import UUID
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -16,19 +17,21 @@ async def create_confirmed_profile(
     client: AsyncClient,
     headers: dict[str, str],
     *,
+    label: str = "本人",
+    birth_datetime: str = "1994-04-30T05:55:00+08:00",
     location: str = "北京市朝阳区",
 ) -> dict[str, Any]:
     draft = await client.post(
         "/api/v1/profiles/drafts",
         headers=headers,
-        json={"label": "本人"},
+        json={"label": label},
     )
     assert draft.status_code == 201, draft.text
     confirmed = await client.post(
         f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
         headers=headers,
         json={
-            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "birth_datetime": birth_datetime,
             "timezone": "Asia/Shanghai",
             "location": location,
             "gender": "female",
@@ -40,6 +43,7 @@ async def create_confirmed_profile(
         },
     )
     assert confirmed.status_code == 201, confirmed.text
+    assert_private_headers(confirmed)
     return confirmed.json()
 
 
@@ -90,18 +94,50 @@ async def test_guest_can_create_confirm_and_list_an_encrypted_profile(
                 "profile_version_id": confirmed["profile_version_id"],
                 "subject_ref": f"profile-version:{confirmed['profile_version_id']}",
                 "version": 1,
+                "display_name": "本人",
+                "birth_date": "1994-04-30",
                 "created_at": confirmed["created_at"],
             }
         ]
     }
     assert "北京市朝阳区" not in listed.text
-    assert "1994-04-30" not in listed.text
+    assert "05:55:00" not in listed.text
+    assert "Asia/Shanghai" not in listed.text
 
     models = __import__("app.profiles.models", fromlist=["ProfileVersion"])
     async with database.sessions() as session:
         stored = (await session.scalars(select(models.ProfileVersion))).one()
     assert "北京市朝阳区" not in stored.payload_ciphertext
     assert "1994-04-30" not in stored.payload_ciphertext
+
+
+@pytest.mark.parametrize("legacy_label", ["", " \t "])
+async def test_legacy_blank_profile_labels_are_projected_as_null(
+    client: AsyncClient,
+    database: Any,
+    legacy_label: str,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+
+    from app.profiles.models import SubjectProfile
+
+    async with database.sessions() as session:
+        profile = (await session.scalars(select(SubjectProfile))).one()
+        profile.label = legacy_label
+        await session.commit()
+
+    listed = await client.get("/api/v1/profiles")
+    history = await client.get(
+        f"/api/v1/profiles/{confirmed['profile_id']}/versions"
+    )
+
+    assert listed.status_code == 200, listed.text
+    assert history.status_code == 200, history.text
+    assert_private_headers(listed)
+    assert_private_headers(history)
+    assert listed.json()["profiles"][0]["display_name"] is None
+    assert {item["display_name"] for item in history.json()["versions"]} == {None}
 
 
 async def test_owned_profile_can_append_an_authorized_other_person_version(
@@ -128,6 +164,7 @@ async def test_owned_profile_can_append_an_authorized_other_person_version(
     )
 
     assert appended.status_code == 201, appended.text
+    assert_private_headers(appended)
     assert appended.json()["profile_id"] == confirmed["profile_id"]
     assert appended.json()["version"] == 2
     assert appended.json()["profile_version_id"] != confirmed["profile_version_id"]
@@ -293,9 +330,148 @@ async def test_profile_version_history_returns_all_versions_without_payloads(
     )
 
     assert history.status_code == 200
+    assert_private_headers(history)
     assert [item["version"] for item in history.json()["versions"]] == [1, 2]
+    assert [item["birth_date"] for item in history.json()["versions"]] == [
+        "1994-04-30",
+        "2001-07-12",
+    ]
+    assert {item["display_name"] for item in history.json()["versions"]} == {"本人"}
     assert "birth_datetime" not in history.text
+    assert "09:30:00" not in history.text
     assert "上海市" not in history.text
+
+
+async def test_duplicate_display_names_are_listed_and_rename_preserves_versions(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    first = await create_confirmed_profile(
+        client,
+        headers,
+        label="家人",
+        birth_datetime="1994-04-30T05:55:00+08:00",
+    )
+    second = await create_confirmed_profile(
+        client,
+        headers,
+        label="家人",
+        birth_datetime="2001-07-12T09:30:00+08:00",
+        location="上海市",
+    )
+
+    listed = await client.get("/api/v1/profiles")
+    assert listed.status_code == 200
+    by_id = {item["profile_id"]: item for item in listed.json()["profiles"]}
+    assert len(by_id) == 2
+    assert by_id[first["profile_id"]]["display_name"] == "家人"
+    assert by_id[second["profile_id"]]["display_name"] == "家人"
+    assert by_id[first["profile_id"]]["birth_date"] == "1994-04-30"
+    assert by_id[second["profile_id"]]["birth_date"] == "2001-07-12"
+
+    from app.profiles.models import ProfileVersion
+
+    async with database.sessions() as session:
+        stored_before = await session.scalar(
+            select(ProfileVersion).where(
+                ProfileVersion.id == UUID(first["profile_version_id"])
+            )
+        )
+        assert stored_before is not None
+        immutable_before = (
+            stored_before.version,
+            stored_before.payload_key_id,
+            stored_before.payload_nonce,
+            stored_before.payload_ciphertext,
+            stored_before.payload_fingerprint,
+            stored_before.created_at,
+        )
+
+    renamed = await client.patch(
+        f"/api/v1/profiles/{first['profile_id']}",
+        headers=headers,
+        json={"display_name": "  家人甲  "},
+    )
+    assert renamed.status_code == 200, renamed.text
+    assert_private_headers(renamed)
+    assert renamed.json()["display_name"] == "家人甲"
+    assert renamed.json()["birth_date"] == "1994-04-30"
+    assert renamed.json()["profile_version_id"] == first["profile_version_id"]
+
+    relisted = await client.get("/api/v1/profiles")
+    names = {
+        item["profile_id"]: item["display_name"]
+        for item in relisted.json()["profiles"]
+    }
+    assert names == {
+        first["profile_id"]: "家人甲",
+        second["profile_id"]: "家人",
+    }
+
+    async with database.sessions() as session:
+        versions = list(await session.scalars(select(ProfileVersion)))
+        stored_after = next(
+            item for item in versions if str(item.id) == first["profile_version_id"]
+        )
+    assert len(versions) == 2
+    assert (
+        stored_after.version,
+        stored_after.payload_key_id,
+        stored_after.payload_nonce,
+        stored_after.payload_ciphertext,
+        stored_after.payload_fingerprint,
+        stored_after.created_at,
+    ) == immutable_before
+
+
+async def test_profile_rename_is_csrf_protected_and_owner_scoped(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    transport = ASGITransport(app=application)
+    async with (
+        AsyncClient(transport=transport, base_url="https://testserver") as first,
+        AsyncClient(transport=transport, base_url="https://testserver") as second,
+    ):
+        first_headers = await create_guest(first)
+        confirmed = await create_confirmed_profile(first, first_headers)
+        second_headers = await create_guest(second)
+
+        missing_csrf = await first.patch(
+            f"/api/v1/profiles/{confirmed['profile_id']}",
+            json={"display_name": "新名字"},
+        )
+        cross_owner = await second.patch(
+            f"/api/v1/profiles/{confirmed['profile_id']}",
+            headers=second_headers,
+            json={"display_name": "新名字"},
+        )
+        cross_owner_detail = await second.get(
+            f"/api/v1/profiles/{confirmed['profile_id']}/versions"
+        )
+        second_list = await second.get("/api/v1/profiles")
+        extra_profile_field = await first.patch(
+            f"/api/v1/profiles/{confirmed['profile_id']}",
+            headers=first_headers,
+            json={"display_name": "新名字", "birth_date": "2000-01-01"},
+        )
+        blank_display_name = await first.patch(
+            f"/api/v1/profiles/{confirmed['profile_id']}",
+            headers=first_headers,
+            json={"display_name": "   "},
+        )
+
+    assert missing_csrf.status_code == 403
+    assert missing_csrf.json()["title"] == "CSRF validation failed"
+    assert cross_owner.status_code == 404
+    assert cross_owner_detail.status_code == 404
+    assert second_list.status_code == 200
+    assert second_list.json() == {"profiles": []}
+    assert extra_profile_field.status_code == 400
+    assert blank_display_name.status_code == 400
 
 
 async def test_draft_label_is_persisted_not_discarded(
@@ -306,9 +482,16 @@ async def test_draft_label_is_persisted_not_discarded(
     draft = await client.post(
         "/api/v1/profiles/drafts",
         headers=headers,
-        json={"label": "本人"},
+        json={"label": "  本人  "},
     )
     assert draft.status_code == 201, draft.text
+
+    blank = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "   "},
+    )
+    assert blank.status_code == 400
 
     from app.profiles.models import SubjectProfile
 

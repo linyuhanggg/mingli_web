@@ -28,6 +28,15 @@
   --color-success: #137a45;
   --color-warning: #946200;
   --color-danger: #c62828;
+  --color-evidence: var(--color-accent);
+  --color-evidence-line: var(--color-accent);
+  --color-evidence-wash: var(--surface-info);
+  --element-wood: var(--color-success);
+  --element-fire: var(--color-danger);
+  --element-earth: var(--color-warning);
+  --element-metal: var(--color-text-secondary);
+  --element-water: var(--color-info);
+  --spoke: 0;
   --surface-info: #eef5ff;
   --surface-success: #ecf8f1;
   --surface-warning: #fff7df;

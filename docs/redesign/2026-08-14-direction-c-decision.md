@@ -1,5 +1,7 @@
 # 方向 C 决策记录 — 2026-08-14
 
+> **SUPERSEDED（2026-08-27，MING-29 权威收敛）**：方向 C（含本记录第 1 条的 `#fafafa` / `#2563eb` token 值）及其前身 A（现代书院）/B（深墨东方）样板，已被用户最终选型的**玄序 Xuan Order** 整体替代。本文件只保留历史引用，不得与玄序并列为现行权威，不得作为施工、验收或测试钉值依据；后续不存在 A/B/C 方向比较。现行视觉基线与三态表见 `../product-authority.md` §3.1 / §4.1。
+
 状态：用户已批准（grilling 会话逐题确认）。
 前置审计：`./2026-08-14-visual-audit.md`（56 张四视口截图 + 客观指标，`web/e2e/screenshots/audit-2026-08-14/`）。
 样板证据：`/_ui-lab/redesign-a|b|c`（dev-only），截图 `web/e2e/screenshots/audit-2026-08-14/redesign-{a,b,c}/`。
