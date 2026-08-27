@@ -1,3 +1,4 @@
+from collections import Counter
 from datetime import UTC, date, datetime
 from typing import Literal, Protocol
 from uuid import UUID
@@ -326,6 +327,10 @@ class ProfileService:
         )
         if locked_guest is None or locked_guest.claimed_at is not None:
             raise GuestAlreadyClaimedError("Guest Session is already claimed")
+        await self._rename_claimed_profile_conflicts(
+            guest_id=guest.id,
+            user_id=user_id,
+        )
         now = datetime.now(UTC)
         guest.claimed_at = now
         guest.claimed_by_user_id = user_id
@@ -362,6 +367,71 @@ class ProfileService:
                 owner_guest_session_id=None,
             )
         )
+
+    async def _rename_claimed_profile_conflicts(
+        self,
+        *,
+        guest_id: UUID,
+        user_id: UUID,
+    ) -> None:
+        user_rows = await self.repository.list_latest_versions(
+            owner_user_id=user_id,
+            owner_guest_session_id=None,
+        )
+        guest_rows = await self.repository.list_latest_versions(
+            owner_user_id=None,
+            owner_guest_session_id=guest_id,
+        )
+        user_summaries = [
+            self._summary(profile, version) for profile, version in user_rows
+        ]
+        guest_summaries = [
+            (profile, self._summary(profile, version))
+            for profile, version in guest_rows
+        ]
+        user_pairs = {
+            (summary.display_name, summary.birth_date)
+            for summary in user_summaries
+            if summary.display_name is not None and summary.birth_date is not None
+        }
+        guest_pair_counts = Counter(
+            (summary.display_name, summary.birth_date)
+            for _, summary in guest_summaries
+            if summary.display_name is not None and summary.birth_date is not None
+        )
+        taken_names = {
+            summary.display_name
+            for summary in user_summaries
+            if summary.display_name is not None
+        }
+        taken_names.update(
+            summary.display_name
+            for _, summary in guest_summaries
+            if summary.display_name is not None
+        )
+        conflicts: list[tuple[SubjectProfile, str]] = []
+        for profile, summary in guest_summaries:
+            display_name = summary.display_name
+            birth_date = summary.birth_date
+            if display_name is None or birth_date is None:
+                continue
+            pair = (display_name, birth_date)
+            if pair in user_pairs or guest_pair_counts[pair] > 1:
+                conflicts.append((profile, display_name))
+
+        for profile, display_name in sorted(
+            conflicts,
+            key=lambda item: item[0].id.int,
+        ):
+            index = 2
+            candidate = _save_as_candidate(display_name, index)
+            while candidate in taken_names:
+                index += 1
+                candidate = _save_as_candidate(display_name, index)
+            profile.label = candidate
+            taken_names.add(candidate)
+        if conflicts:
+            await self.session.flush()
 
     @staticmethod
     def _validate_authorization(payload: ProfileConfirmRequest) -> None:

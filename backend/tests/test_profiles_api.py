@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from types import SimpleNamespace
 from typing import Any
 from uuid import UUID
 
@@ -964,4 +965,120 @@ async def test_guest_claim_rejects_an_already_claimed_session(
         await service.claim_guest_ownership(guest, user.id)
         with pytest.raises(GuestAlreadyClaimedError):
             await service.claim_guest_ownership(guest, user.id)
+        await session.commit()
+
+
+async def test_guest_claim_renames_same_name_and_birth_date_before_overwrite(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    import importlib
+
+    from app.profiles.schemas import ProfileConfirmRequest
+    from app.profiles.service import ProfileService
+
+    identity_models = importlib.import_module("app.identity.models")
+    async with database.sessions() as session:
+        guest = identity_models.GuestSession(
+            token_hash="t" * 64,
+            csrf_token_hash="c" * 64,
+            expires_at=datetime.now(UTC) + timedelta(days=1),
+        )
+        user = identity_models.User()
+        session.add_all([guest, user])
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        user_owner = SimpleNamespace(kind="user", id=user.id)
+        guest_owner = SimpleNamespace(kind="guest", id=guest.id)
+        payload = ProfileConfirmRequest(
+            birth_datetime="1994-04-30T05:55:00+08:00",
+            timezone="Asia/Shanghai",
+            location="北京市朝阳区",
+            gender="female",
+            time_basis_policy="civil",
+            zi_hour_policy="midnight",
+        )
+        user_draft = await service.create_draft(user_owner, label="本人")
+        user_profile = await service.confirm_draft(user_owner, user_draft, payload)
+        guest_draft = await service.create_draft(guest_owner, label="本人")
+        guest_profile = await service.confirm_draft(
+            guest_owner,
+            guest_draft,
+            payload,
+        )
+
+        await service.claim_guest_ownership(guest, user.id)
+
+        claimed = {
+            summary.profile_id: summary
+            for summary in await service.list_profiles(user_owner)
+        }
+        assert claimed[user_profile.profile_id].display_name == "本人"
+        assert claimed[guest_profile.profile_id].display_name == "本人 (2)"
+        overwrite_draft = await service.create_draft(user_owner, label="本人")
+        overwritten = await service.confirm_draft(
+            user_owner,
+            overwrite_draft,
+            payload.model_copy(update={"on_name_conflict": "overwrite"}),
+        )
+        assert overwritten.profile_id == user_profile.profile_id
+        await session.commit()
+
+
+async def test_guest_claim_keeps_same_name_when_birth_dates_differ(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    import importlib
+
+    from app.profiles.schemas import ProfileConfirmRequest
+    from app.profiles.service import ProfileService
+
+    identity_models = importlib.import_module("app.identity.models")
+    async with database.sessions() as session:
+        guest = identity_models.GuestSession(
+            token_hash="t" * 64,
+            csrf_token_hash="c" * 64,
+            expires_at=datetime.now(UTC) + timedelta(days=1),
+        )
+        user = identity_models.User()
+        session.add_all([guest, user])
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        user_owner = SimpleNamespace(kind="user", id=user.id)
+        guest_owner = SimpleNamespace(kind="guest", id=guest.id)
+        user_payload = ProfileConfirmRequest(
+            birth_datetime="1994-04-30T05:55:00+08:00",
+            timezone="Asia/Shanghai",
+            location="北京市朝阳区",
+            gender="female",
+            time_basis_policy="civil",
+            zi_hour_policy="midnight",
+        )
+        guest_payload = user_payload.model_copy(
+            update={"birth_datetime": "1995-04-30T05:55:00+08:00"}
+        )
+        user_draft = await service.create_draft(user_owner, label="本人")
+        await service.confirm_draft(user_owner, user_draft, user_payload)
+        guest_draft = await service.create_draft(guest_owner, label="本人")
+        guest_profile = await service.confirm_draft(
+            guest_owner,
+            guest_draft,
+            guest_payload,
+        )
+
+        await service.claim_guest_ownership(guest, user.id)
+
+        claimed = {
+            summary.profile_id: summary
+            for summary in await service.list_profiles(user_owner)
+        }
+        assert claimed[guest_profile.profile_id].display_name == "本人"
+        overwrite_draft = await service.create_draft(user_owner, label="本人")
+        overwritten = await service.confirm_draft(
+            user_owner,
+            overwrite_draft,
+            guest_payload.model_copy(update={"on_name_conflict": "overwrite"}),
+        )
+        assert overwritten.profile_id == guest_profile.profile_id
         await session.commit()
