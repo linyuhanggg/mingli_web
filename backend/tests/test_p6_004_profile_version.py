@@ -2,12 +2,13 @@ import asyncio
 import importlib
 import os
 from collections.abc import AsyncIterator
+from datetime import UTC, datetime, timedelta
 from types import SimpleNamespace
 from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
-from app.identity.models import User
+from app.identity.models import GuestSession, User
 from app.persistence import ImmutableRecordError
 from app.profiles.models import ProfileVersion, ProfileVersionAuthorization, SubjectProfile
 from app.profiles.schemas import ProfileConfirmRequest, ProfileVersionRequest
@@ -20,6 +21,7 @@ from app.profiles.service import (
 )
 from sqlalchemy import func, select, text
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+from sqlalchemy.sql.dml import Update
 
 
 class PostgresProfileDatabaseHarness:
@@ -597,6 +599,62 @@ async def test_profile_rename_locks_owner_before_reading_profile(
         assert calls[:2] == ["lock", "read"]
 
 
+async def test_guest_claim_locks_guest_then_user_before_scan_and_transfer(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with database.sessions() as session:
+        guest = GuestSession(
+            token_hash="t" * 64,
+            csrf_token_hash="c" * 64,
+            expires_at=datetime.now(UTC) + timedelta(days=1),
+        )
+        user = User()
+        session.add_all([guest, user])
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        calls: list[str] = []
+        original_scalar = session.scalar
+        original_scan = service._rename_claimed_profile_conflicts
+        original_execute = session.execute
+
+        async def tracked_scalar(statement: Any, *args: Any, **kwargs: Any) -> Any:
+            entity = statement.column_descriptions[0].get("entity")
+            if entity is GuestSession:
+                calls.append("guest_lock")
+            elif entity is User:
+                calls.append("user_lock")
+            return await original_scalar(statement, *args, **kwargs)
+
+        async def tracked_scan(**kwargs: Any) -> None:
+            calls.append("conflict_scan")
+            await original_scan(**kwargs)
+
+        async def tracked_execute(statement: Any, *args: Any, **kwargs: Any) -> Any:
+            if (
+                isinstance(statement, Update)
+                and getattr(statement.table, "name", None) == SubjectProfile.__tablename__
+            ):
+                calls.append("profile_transfer")
+            return await original_execute(statement, *args, **kwargs)
+
+        monkeypatch.setattr(session, "scalar", tracked_scalar)
+        monkeypatch.setattr(service, "_rename_claimed_profile_conflicts", tracked_scan)
+        monkeypatch.setattr(session, "execute", tracked_execute)
+
+        await service.claim_guest_ownership(guest, user.id)
+
+        assert calls == [
+            "guest_lock",
+            "user_lock",
+            "conflict_scan",
+            "profile_transfer",
+        ]
+        assert guest.claimed_by_user_id == user.id
+        assert guest.claimed_at is not None
+
+
 def _delay_first_profile_conflict_check(
     monkeypatch: pytest.MonkeyPatch,
 ) -> tuple[asyncio.Event, asyncio.Event, asyncio.Event]:
@@ -770,3 +828,113 @@ async def test_postgresql_owner_lock_serializes_rename_with_draft_confirmation(
             )
         )
     assert confirmed_target_count == 1
+
+
+async def test_postgresql_guest_claim_serializes_with_destination_confirmation(
+    postgres_profile_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with postgres_profile_database.sessions() as session, session.begin():
+        guest = GuestSession(
+            token_hash=uuid4().hex * 2,
+            csrf_token_hash=uuid4().hex * 2,
+            expires_at=datetime.now(UTC) + timedelta(days=1),
+        )
+        user = User()
+        session.add_all([guest, user])
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        guest_owner = SimpleNamespace(kind="guest", id=guest.id)
+        guest_draft = await service.create_draft(guest_owner, label="同名目标")
+        guest_profile = await service.confirm_draft(
+            guest_owner,
+            guest_draft,
+            _confirm_payload(),
+        )
+        user_draft = await service.create_draft(_owner(user.id), label="同名目标")
+        guest_id = guest.id
+        user_id = user.id
+
+    claim_scan_finished = asyncio.Event()
+    confirm_check_started = asyncio.Event()
+    release_claim = asyncio.Event()
+    original_claim_scan = ProfileService._rename_claimed_profile_conflicts
+    original_conflict_check = ProfileService._name_birth_conflict
+
+    async def delayed_claim_scan(
+        self: ProfileService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        await original_claim_scan(self, *args, **kwargs)
+        claim_scan_finished.set()
+        await release_claim.wait()
+
+    async def tracked_conflict_check(
+        self: ProfileService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        confirm_check_started.set()
+        return await original_conflict_check(self, *args, **kwargs)
+
+    monkeypatch.setattr(
+        ProfileService,
+        "_rename_claimed_profile_conflicts",
+        delayed_claim_scan,
+    )
+    monkeypatch.setattr(
+        ProfileService,
+        "_name_birth_conflict",
+        tracked_conflict_check,
+    )
+
+    async def claim() -> None:
+        async with postgres_profile_database.sessions() as session, session.begin():
+            locked_guest = await session.get(GuestSession, guest_id)
+            assert locked_guest is not None
+            await ProfileService(session, test_settings).claim_guest_ownership(
+                locked_guest,
+                user_id,
+            )
+
+    async def confirm() -> UUID:
+        async with postgres_profile_database.sessions() as session, session.begin():
+            overwritten = await ProfileService(session, test_settings).confirm_draft(
+                _owner(user_id),
+                user_draft,
+                _confirm_payload(on_name_conflict="overwrite"),
+            )
+            return overwritten.profile_id
+
+    claim_task = asyncio.create_task(claim())
+    await asyncio.wait_for(claim_scan_finished.wait(), timeout=2)
+    confirm_task = asyncio.create_task(confirm())
+    confirm_was_blocked = await _profile_conflict_call_was_blocked(
+        confirm_check_started
+    )
+    release_claim.set()
+    _, overwritten_profile_id = await asyncio.wait_for(
+        asyncio.gather(claim_task, confirm_task),
+        timeout=5,
+    )
+
+    assert confirm_was_blocked is True
+    assert overwritten_profile_id == guest_profile.profile_id
+    async with postgres_profile_database.sessions() as session:
+        confirmed_targets = list(
+            await session.scalars(
+                select(SubjectProfile.id)
+                .join(ProfileVersion, ProfileVersion.profile_id == SubjectProfile.id)
+                .where(
+                    SubjectProfile.owner_user_id == user_id,
+                    SubjectProfile.label == "同名目标",
+                )
+            )
+        )
+        claimed_guest = await session.get(GuestSession, guest_id)
+
+    assert confirmed_targets == [guest_profile.profile_id]
+    assert claimed_guest is not None
+    assert claimed_guest.claimed_by_user_id == user_id

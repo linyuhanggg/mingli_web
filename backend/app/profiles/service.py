@@ -355,6 +355,12 @@ class ProfileService:
         )
         if locked_guest is None or locked_guest.claimed_at is not None:
             raise GuestAlreadyClaimedError("Guest Session is already claimed")
+        # Claims use one stable cross-owner order: source GuestSession first,
+        # then destination User. All User profile tuple checks share this lock.
+        await self.repository.lock_profile_owner(
+            owner_user_id=user_id,
+            owner_guest_session_id=None,
+        )
         await self._rename_claimed_profile_conflicts(
             guest_id=guest.id,
             user_id=user_id,
