@@ -182,6 +182,20 @@ async def append_profile_version(
             status=400,
             title="Profile version difference must be acknowledged",
         ) from error
+    except ProfileNameConflictError as error:
+        raise ApiProblem(
+            status=409,
+            title="Profile name already exists",
+            problem_type="urn:mingli:problem:profile_name_conflict",
+            detail="A confirmed profile already uses this name and birth date.",
+            code="profile_name_conflict",
+            extensions={
+                "existing_profile_id": str(error.existing_profile_id),
+                "existing_profile_version_id": str(error.existing_profile_version_id),
+                "suggested_save_as_name": error.suggested_save_as_name,
+                "options": ["overwrite", "save_as", "cancel"],
+            },
+        ) from error
     await session.commit()
     mark_private(response)
     return summary
