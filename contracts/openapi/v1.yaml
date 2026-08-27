@@ -5099,6 +5099,98 @@ components:
         versions:
           type: object
           additionalProperties: false
+    TimeLayerCapabilityItemResponse:
+      type: object
+      additionalProperties: false
+      required: [layer_id, label, available]
+      properties:
+        layer_id:
+          type: string
+          minLength: 1
+        label:
+          type: string
+          minLength: 1
+        available:
+          type: boolean
+        unavailable_reason:
+          oneOf:
+            - type: string
+              minLength: 1
+            - type: "null"
+    TimeLayerEntitlementCapabilityResponse:
+      type: object
+      additionalProperties: false
+      required: [time_layers]
+      properties:
+        time_layers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeLayerCapabilityItemResponse"
+    TimeLayerEntitlementLayerResponse:
+      type: object
+      additionalProperties: false
+      required: [layer_id, tier, access, upgrade_cta]
+      properties:
+        layer_id:
+          type: string
+          enum: [life, luck_cycles, major_limits, year, month, day, hour]
+        tier:
+          type: string
+          enum: [free, paid]
+        access:
+          type: string
+          enum: [readable, locked_paywall, fail_closed_unknown, unavailable]
+        upgrade_cta:
+          oneOf:
+            - type: string
+              const: professional_info
+            - type: "null"
+    TimeLayerEntitlementResponse:
+      type: object
+      additionalProperties: false
+      required:
+        - capability_id
+        - resolution
+        - free_boundary_layer_id
+        - paid_layer_ids
+        - free_year_set
+        - capability
+        - layers
+      properties:
+        schema_version:
+          type: string
+          const: time-layer-entitlement/v1
+          default: time-layer-entitlement/v1
+        capability_id:
+          type: string
+          enum: [bazi, ziwei]
+        resolution:
+          type: string
+          enum: [granted, denied, unknown, unauthenticated, request_failed]
+        free_boundary_layer_id:
+          type: string
+          const: year
+        paid_layer_ids:
+          type: array
+          minItems: 3
+          maxItems: 3
+          prefixItems:
+            - type: string
+              const: month
+            - type: string
+              const: day
+            - type: string
+              const: hour
+        free_year_set:
+          type: array
+          items:
+            type: integer
+        capability:
+          $ref: "#/components/schemas/TimeLayerEntitlementCapabilityResponse"
+        layers:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimeLayerEntitlementLayerResponse"
     ReadingResultResponse:
       type: object
       additionalProperties: false
@@ -5129,6 +5221,10 @@ components:
               description: Versioned Runtime ViewModel selected by the reading product.
               additionalProperties: true
             - type: "null"
+        capability:
+          oneOf:
+            - $ref: "#/components/schemas/CapabilityProjection"
+            - type: "null"
         verification:
           oneOf:
             - $ref: "#/components/schemas/ReadingVerificationSummary"
@@ -5147,6 +5243,10 @@ components:
         poll_after_seconds:
           type: [integer, "null"]
           minimum: 0
+        time_layer_entitlement:
+          oneOf:
+            - $ref: "#/components/schemas/TimeLayerEntitlementResponse"
+            - type: "null"
     Problem:
       type: object
       additionalProperties: false
