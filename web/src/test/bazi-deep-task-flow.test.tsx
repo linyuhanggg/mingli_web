@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -37,6 +37,7 @@ vi.mock("@/components/readings/reading-result", () => ({
 
 import {
   BaziDeepTaskFlow,
+  isPreviewChartReady,
   stateForDeliveryState,
   stateForReadingStatus,
 } from "@/components/task/bazi-deep-task-flow";
@@ -107,13 +108,26 @@ beforeEach(() => {
   mockReplace.mockReset();
 });
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.useRealTimers();
+});
 
 describe("Bazi deep task state contract", () => {
   it("maps only public ReadingVersion statuses and keeps job states explicit", () => {
     expect(stateForReadingStatus("accepted", "preview")).toBe("free");
     expect(stateForReadingStatus("input_ready", "preview")).toBe("preview_loading");
-    expect(stateForReadingStatus("prepared", "preview")).toBe("preview_loading");
+    expect(stateForReadingStatus("prepared", "preview")).toBe("free");
+    expect(stateForReadingStatus("prepared", "preview", {
+      result_available: true,
+      poll_required: false,
+    })).toBe("free");
+    expect(isPreviewChartReady("prepared", {
+      result_available: true,
+      poll_required: false,
+    })).toBe(true);
+    expect(stateForReadingStatus("prepared", "preview", { poll_required: true })).toBe("preview_loading");
+    expect(stateForReadingStatus("completing", "preview")).toBe("preview_loading");
     expect(stateForReadingStatus("input_ready", "deep")).toBe("awaiting_fulfillment");
     expect(stateForReadingStatus("prepared", "deep")).toBe("running");
     expect(stateForReadingStatus("completing", "deep")).toBe("running");
@@ -126,6 +140,68 @@ describe("Bazi deep task state contract", () => {
     expect(stateForDeliveryState("processing", "queued")).toBe("running");
     expect(stateForDeliveryState("delivered", "running")).toBe("succeeded");
     expect(stateForDeliveryState("failed", "running")).toBe("failed");
+  });
+
+  it("exits preview loading and mounts ReadingResult for prepared + result_available + poll_required=false", async () => {
+    vi.useFakeTimers();
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "prepared",
+      result_available: true,
+      poll_required: false,
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    expect(screen.queryByText("正在准备免费盘面")).not.toBeInTheDocument();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(4000);
+    });
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+  });
+
+  it("keeps preview loading and continues polling while input_ready", async () => {
+    vi.useFakeTimers();
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "input_ready",
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await act(async () => {
+      await Promise.resolve();
+    });
+
+    expect(screen.getByText("正在准备免费盘面")).toBeVisible();
+    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(mockPollReading).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2000);
+    });
+    expect(mockPollReading).toHaveBeenCalledTimes(2);
   });
 
   it("keeps a free preview usable for a signed-out visitor and never starts deep reading", async () => {
