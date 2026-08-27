@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import Settings
 from app.identity.models import GuestSession
-from app.profiles.models import ProfileVersion, SubjectProfile
+from app.profiles.models import ProfileVersion, ProfileVersionAuthorization, SubjectProfile
 from app.profiles.repository import ProfileRepository
 from app.profiles.schemas import (
     ProfileConfirmRequest,
@@ -29,6 +29,13 @@ _VERSION_FACT_KEYS = (
     "longitude",
     "latitude",
     "coordinate_source",
+)
+_AUTHORIZATION_FACT_KEYS = (
+    "subject_type",
+    "is_minor",
+    "authorization_confirmed",
+    "photo_authorization_confirmed",
+    "minor_guardian_confirmed",
 )
 
 
@@ -390,7 +397,15 @@ class ProfileService:
     ) -> ProfileSummary:
         incoming = _version_facts(payload)
         stored = self.repository.decrypt_version_payload(existing_version)
-        if _facts_match(stored, incoming):
+        existing_authorization = await self.session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id == existing_version.id
+            )
+        )
+        if _facts_match(stored, incoming) and _authorization_facts_match(
+            existing_authorization,
+            payload,
+        ):
             await self.session.delete(draft)
             await self.session.flush()
             return self._summary(existing_profile, existing_version)
@@ -484,6 +499,28 @@ def _version_facts(payload: ProfileConfirmRequest) -> dict[str, object]:
 
 def _facts_match(stored: dict[str, object], incoming: dict[str, object]) -> bool:
     return all(stored.get(key) == incoming.get(key) for key in _VERSION_FACT_KEYS)
+
+
+def _authorization_facts(payload: ProfileConfirmRequest) -> dict[str, object]:
+    return {
+        "subject_type": payload.subject_type,
+        "is_minor": payload.is_minor,
+        "authorization_confirmed": payload.authorization_confirmed,
+        "photo_authorization_confirmed": payload.photo_authorization_confirmed,
+        "minor_guardian_confirmed": payload.minor_guardian_confirmed,
+    }
+
+
+def _authorization_facts_match(
+    stored: ProfileVersionAuthorization | None,
+    payload: ProfileConfirmRequest,
+) -> bool:
+    if stored is None:
+        return False
+    incoming = _authorization_facts(payload)
+    return all(
+        getattr(stored, key) == incoming[key] for key in _AUTHORIZATION_FACT_KEYS
+    )
 
 
 def _save_as_candidate(

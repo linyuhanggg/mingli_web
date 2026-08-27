@@ -168,6 +168,9 @@ def test_profile_display_contract_is_owner_only_minimized_and_rename_only() -> N
     assert schemas["ProfileDraftRequest"]["properties"]["label"]["pattern"] == (
         rename_request["properties"]["display_name"]["pattern"]
     )
+    assert rename["responses"]["409"] == {
+        "$ref": "#/components/responses/Conflict"
+    }
 
     list_description = paths["/api/v1/profiles"]["get"]["responses"]["200"][
         "description"
@@ -315,6 +318,14 @@ def test_base_chart_starts_publish_the_deterministic_fast_path_contract() -> Non
         "db_persistence_ms",
         "total_ms",
     }
+    summary_properties = schemas["ReadingVersionSummary"]["properties"]
+    assert {
+        "result_available",
+        "poll_required",
+        "poll_after_seconds",
+    }.issubset(summary_properties)
+    assert summary_properties["poll_after_seconds"]["minimum"] == 0
+
     for path in (
         "/api/v1/readings/preview",
         "/api/v1/readings/ziwei",

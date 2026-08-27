@@ -815,6 +815,83 @@ async def test_overwrite_keeps_corrected_birth_facts_on_existing_profile(
     assert {str(item.id) for item in remaining} == {first["profile_id"]}
 
 
+async def test_overwrite_appends_when_authorization_facts_change(
+    client: AsyncClient,
+    database: Any,
+) -> None:
+    headers = await create_guest(client)
+    first = await create_confirmed_profile(client, headers)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+    overwritten = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+        headers=headers,
+        json={
+            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "北京市朝阳区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "longitude": 116.4074,
+            "latitude": 39.9042,
+            "coordinate_source": "user_confirmed",
+            "subject_type": "other",
+            "authorization_confirmed": True,
+            "is_minor": True,
+            "photo_authorization_confirmed": True,
+            "minor_guardian_confirmed": True,
+            "on_name_conflict": "overwrite",
+        },
+    )
+
+    assert overwritten.status_code == 201, overwritten.text
+    body = overwritten.json()
+    assert body["profile_id"] == first["profile_id"]
+    assert body["version"] == 2
+    assert body["profile_version_id"] != first["profile_version_id"]
+
+    history = await client.get(f"/api/v1/profiles/{first['profile_id']}/versions")
+    assert history.status_code == 200, history.text
+    assert [item["version"] for item in history.json()["versions"]] == [1, 2]
+
+    from app.profiles.models import ProfileVersionAuthorization
+
+    async with database.sessions() as session:
+        original = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id
+                == UUID(first["profile_version_id"])
+            )
+        )
+        appended = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id
+                == UUID(body["profile_version_id"])
+            )
+        )
+    assert original is not None
+    assert original.subject_type == "self"
+    assert original.authorization_confirmed is False
+    assert appended is not None
+    assert appended.subject_type == "other"
+    assert appended.authorization_confirmed is True
+    assert appended.is_minor is True
+    assert appended.photo_authorization_confirmed is True
+    assert appended.minor_guardian_confirmed is True
+    assert appended.difference_acknowledged is True
+
+    from app.profiles.models import SubjectProfile
+
+    async with database.sessions() as session:
+        remaining = list(await session.scalars(select(SubjectProfile)))
+    assert {str(item.id) for item in remaining} == {first["profile_id"]}
+
+
 async def test_save_as_conflict_name_is_truncated_to_label_limit(
     client: AsyncClient,
 ) -> None:

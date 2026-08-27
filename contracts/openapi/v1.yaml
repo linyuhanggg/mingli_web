@@ -995,6 +995,8 @@ paths:
           $ref: "#/components/responses/Forbidden"
         "404":
           $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/TooManyRequests"
     delete:
@@ -4371,6 +4373,13 @@ components:
         created_at:
           type: string
           format: date-time
+        result_available:
+          type: boolean
+        poll_required:
+          type: boolean
+        poll_after_seconds:
+          type: [integer, "null"]
+          minimum: 0
     ChartFastPathTiming:
       type: object
       additionalProperties: false

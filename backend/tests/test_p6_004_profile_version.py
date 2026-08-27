@@ -385,6 +385,91 @@ async def test_overwrite_reuses_existing_version_when_facts_are_identical(
         assert {item.id for item in remaining_profiles} == {first.profile_id}
 
 
+@pytest.mark.parametrize(
+    "authorization_overrides",
+    [
+        {"subject_type": "other", "authorization_confirmed": True},
+        {"is_minor": True},
+        {
+            "subject_type": "other",
+            "authorization_confirmed": True,
+            "photo_authorization_confirmed": True,
+        },
+        {"is_minor": True, "minor_guardian_confirmed": True},
+    ],
+)
+async def test_overwrite_appends_when_authorization_facts_change(
+    database: Any,
+    test_settings: Any,
+    authorization_overrides: dict[str, Any],
+) -> None:
+    async with database.sessions() as session:
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        first_id = await service.create_draft(owner, label="本人")
+        first = await service.confirm_draft(owner, first_id, _confirm_payload())
+        original = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id == first.profile_version_id
+            )
+        )
+        assert original is not None
+        original_subject_type = original.subject_type
+        original_is_minor = original.is_minor
+        original_photo = original.photo_authorization_confirmed
+        original_guardian = original.minor_guardian_confirmed
+
+        correction_id = await service.create_draft(owner, label="本人")
+        overwritten = await service.confirm_draft(
+            owner,
+            correction_id,
+            _confirm_payload(
+                on_name_conflict="overwrite",
+                **authorization_overrides,
+            ),
+        )
+
+        assert overwritten.profile_id == first.profile_id
+        assert overwritten.version == 2
+        assert overwritten.profile_version_id != first.profile_version_id
+        appended = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id
+                == overwritten.profile_version_id
+            )
+        )
+        assert appended is not None
+        assert appended.subject_type == authorization_overrides.get(
+            "subject_type", "self"
+        )
+        assert appended.is_minor is authorization_overrides.get("is_minor", False)
+        assert appended.authorization_confirmed is authorization_overrides.get(
+            "authorization_confirmed", False
+        )
+        assert appended.photo_authorization_confirmed is authorization_overrides.get(
+            "photo_authorization_confirmed", False
+        )
+        assert appended.minor_guardian_confirmed is authorization_overrides.get(
+            "minor_guardian_confirmed", False
+        )
+        assert appended.difference_acknowledged is True
+        unchanged = await session.scalar(
+            select(ProfileVersionAuthorization).where(
+                ProfileVersionAuthorization.profile_version_id == first.profile_version_id
+            )
+        )
+        assert unchanged is not None
+        assert unchanged.subject_type == original_subject_type
+        assert unchanged.is_minor is original_is_minor
+        assert unchanged.photo_authorization_confirmed is original_photo
+        assert unchanged.minor_guardian_confirmed is original_guardian
+        remaining_profiles = list(await session.scalars(select(SubjectProfile)))
+        assert {item.id for item in remaining_profiles} == {first.profile_id}
+
+
 async def test_save_as_name_stays_within_label_limit(
     database: Any,
     test_settings: Any,
