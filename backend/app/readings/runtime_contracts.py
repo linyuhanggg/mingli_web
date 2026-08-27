@@ -514,3 +514,584 @@ def result_from_dict(payload: Mapping[str, object]) -> MingliResult:
         input_request=cast(Mapping[str, object] | None, payload["input_request"]),
         failure=failure,
     )
+
+
+TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION: Literal["time-layer-entitlement/v1"] = (
+    "time-layer-entitlement/v1"
+)
+type TimeLayerEntitlementCapabilityId = Literal["bazi", "ziwei"]
+type TimeLayerEntitlementResolution = Literal[
+    "granted",
+    "denied",
+    "unknown",
+    "unauthenticated",
+    "request_failed",
+]
+type TimeLayerEntitlementAccess = Literal[
+    "readable",
+    "locked_paywall",
+    "fail_closed_unknown",
+    "unavailable",
+]
+type TimeLayerEntitlementTier = Literal["free", "paid"]
+type TimeLayerUpgradeCta = Literal["professional_info"]
+type TimeLayerEntitlementLayerId = Literal[
+    "life",
+    "luck_cycles",
+    "major_limits",
+    "year",
+    "month",
+    "day",
+    "hour",
+]
+
+PAID_TIME_LAYER_IDS: tuple[TimeLayerEntitlementLayerId, ...] = ("month", "day", "hour")
+FREE_BOUNDARY_LAYER_ID: Literal["year"] = "year"
+_TIME_LAYER_CAPABILITY_KEYS = frozenset(
+    {"layer_id", "label", "available", "unavailable_reason"}
+)
+_ENTITLEMENT_LAYER_KEYS = frozenset(
+    {"layer_id", "tier", "access", "upgrade_cta"}
+)
+_ENTITLEMENT_OBJECT_KEYS = frozenset(
+    {
+        "schema_version",
+        "capability_id",
+        "resolution",
+        "free_boundary_layer_id",
+        "paid_layer_ids",
+        "free_year_set",
+        "capability",
+        "layers",
+    }
+)
+_CAPABILITY_OBJECT_KEYS = frozenset({"time_layers"})
+_RESOLUTION_VALUES = frozenset(
+    {"granted", "denied", "unknown", "unauthenticated", "request_failed"}
+)
+_ACCESS_VALUES = frozenset(
+    {"readable", "locked_paywall", "fail_closed_unknown", "unavailable"}
+)
+_LOCKED_PAID_ACCESS = frozenset({"locked_paywall", "fail_closed_unknown"})
+_PAID_ACCESS_BY_RESOLUTION: Mapping[
+    TimeLayerEntitlementResolution, frozenset[TimeLayerEntitlementAccess]
+] = MappingProxyType(
+    {
+        "granted": frozenset({"readable", "unavailable"}),
+        "denied": frozenset({"locked_paywall", "unavailable"}),
+        "unknown": frozenset({"fail_closed_unknown", "unavailable"}),
+        "unauthenticated": frozenset({"fail_closed_unknown", "unavailable"}),
+        "request_failed": frozenset({"fail_closed_unknown", "unavailable"}),
+    }
+)
+_LAYER_IDS_BY_CAPABILITY: Mapping[
+    TimeLayerEntitlementCapabilityId, tuple[TimeLayerEntitlementLayerId, ...]
+] = MappingProxyType(
+    {
+        "bazi": ("life", "luck_cycles", "year", "month", "day", "hour"),
+        "ziwei": ("life", "major_limits", "year", "month", "day", "hour"),
+    }
+)
+_CAPABILITY_LAYER_IDS_BY_CAPABILITY: Mapping[
+    TimeLayerEntitlementCapabilityId, frozenset[str]
+] = MappingProxyType(
+    {
+        "bazi": frozenset({"life", "year", "month", "day", "hour"}),
+        "ziwei": frozenset({"life", "year", "month", "day", "hour"}),
+    }
+)
+_FREE_LAYER_IDS_BY_CAPABILITY: Mapping[
+    TimeLayerEntitlementCapabilityId, frozenset[TimeLayerEntitlementLayerId]
+] = MappingProxyType(
+    {
+        "bazi": frozenset({"life", "luck_cycles", "year"}),
+        "ziwei": frozenset({"life", "major_limits", "year"}),
+    }
+)
+_YEAR_FACT_KEY_BY_CAPABILITY: Mapping[TimeLayerEntitlementCapabilityId, str] = (
+    MappingProxyType({"bazi": "year_layers", "ziwei": "annual_layers"})
+)
+_MONTH_FACT_KEY_BY_CAPABILITY: Mapping[TimeLayerEntitlementCapabilityId, str] = (
+    MappingProxyType({"bazi": "month_layers", "ziwei": "monthly_layers"})
+)
+_DAY_FACT_KEY_BY_CAPABILITY: Mapping[TimeLayerEntitlementCapabilityId, str] = (
+    MappingProxyType({"bazi": "day_layers", "ziwei": "daily_layers"})
+)
+_SCHEMA_TO_CAPABILITY: Mapping[str, TimeLayerEntitlementCapabilityId] = MappingProxyType(
+    {"bazi-chart/v1": "bazi", "ziwei-chart/v1": "ziwei"}
+)
+
+
+def _require_exact_keys(
+    payload: Mapping[str, object],
+    allowed: frozenset[str],
+    *,
+    label: str,
+) -> None:
+    keys = frozenset(payload)
+    extra = keys - allowed
+    missing = allowed - keys
+    if extra or missing:
+        raise ContractValidationError(
+            f"{label} must use closed keys; extra={sorted(extra)} missing={sorted(missing)}"
+        )
+
+
+def _text_layer_id(value: object) -> str:
+    if not isinstance(value, str) or not value:
+        raise ContractValidationError("time layer id must be a non-empty string")
+    return value
+
+
+def resolve_time_layer_entitlement_resolution(
+    *,
+    owner_kind: Literal["user", "guest"] | None,
+    request_failed: bool = False,
+    paid_grant: bool | None = None,
+) -> TimeLayerEntitlementResolution:
+    """Map host session/grant state to entitlement without touching capability."""
+
+    if request_failed:
+        return "request_failed"
+    if owner_kind != "user":
+        return "unauthenticated"
+    if paid_grant is None:
+        return "unknown"
+    return "granted" if paid_grant else "denied"
+
+
+def _access_for_layer(
+    *,
+    tier: TimeLayerEntitlementTier,
+    available: bool,
+    facts_present: bool,
+    resolution: TimeLayerEntitlementResolution,
+) -> TimeLayerEntitlementAccess:
+    if tier == "free":
+        if facts_present or available:
+            return "readable"
+        return "unavailable"
+    if not available and not facts_present:
+        return "unavailable"
+    if resolution == "granted":
+        return "readable"
+    if resolution == "denied":
+        return "locked_paywall"
+    return "fail_closed_unknown"
+
+
+def _upgrade_cta_for_access(
+    access: TimeLayerEntitlementAccess,
+    *,
+    tier: TimeLayerEntitlementTier,
+) -> TimeLayerUpgradeCta | None:
+    if tier == "free" or access not in _LOCKED_PAID_ACCESS:
+        return None
+    return "professional_info"
+
+
+@dataclass(frozen=True, slots=True)
+class TimeLayerCapabilitySnapshot:
+    layer_id: str
+    label: str
+    available: bool
+    unavailable_reason: str | None
+
+    def __post_init__(self) -> None:
+        if not self.layer_id or not self.label:
+            raise ContractValidationError("capability time layer requires layer_id and label")
+        if self.available == (self.unavailable_reason is not None):
+            raise ContractValidationError(
+                "capability unavailable_reason is required iff available is false"
+            )
+        if self.unavailable_reason is not None and not self.unavailable_reason:
+            raise ContractValidationError("capability unavailable_reason must be non-empty")
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, object]) -> TimeLayerCapabilitySnapshot:
+        _require_exact_keys(payload, _TIME_LAYER_CAPABILITY_KEYS, label="capability time_layers[]")
+        available = payload["available"]
+        if not isinstance(available, bool):
+            raise ContractValidationError("capability available must be a boolean")
+        reason = payload["unavailable_reason"]
+        if reason is not None and not isinstance(reason, str):
+            raise ContractValidationError("capability unavailable_reason must be string or null")
+        return cls(
+            layer_id=_text_layer_id(payload["layer_id"]),
+            label=_text_layer_id(payload["label"]),
+            available=available,
+            unavailable_reason=reason,
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "layer_id": self.layer_id,
+            "label": self.label,
+            "available": self.available,
+            "unavailable_reason": self.unavailable_reason,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class TimeLayerEntitlementEntry:
+    layer_id: TimeLayerEntitlementLayerId
+    tier: TimeLayerEntitlementTier
+    access: TimeLayerEntitlementAccess
+    upgrade_cta: TimeLayerUpgradeCta | None
+
+    def __post_init__(self) -> None:
+        expected_cta = _upgrade_cta_for_access(self.access, tier=self.tier)
+        if self.upgrade_cta != expected_cta:
+            raise ContractValidationError(
+                "upgrade_cta is only professional_info for locked paid layers"
+            )
+        if self.tier == "free" and self.access in _LOCKED_PAID_ACCESS:
+            raise ContractValidationError("free layers cannot use paid lock access")
+        if self.tier == "paid" and self.layer_id not in PAID_TIME_LAYER_IDS:
+            raise ContractValidationError("paid tier is fixed to month/day/hour")
+        if self.tier == "free" and self.layer_id in PAID_TIME_LAYER_IDS:
+            raise ContractValidationError("month/day/hour cannot be free")
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, object]) -> TimeLayerEntitlementEntry:
+        _require_exact_keys(payload, _ENTITLEMENT_LAYER_KEYS, label="entitlement layers[]")
+        layer_id = payload["layer_id"]
+        tier = payload["tier"]
+        access = payload["access"]
+        upgrade_cta = payload["upgrade_cta"]
+        if layer_id not in {
+            "life",
+            "luck_cycles",
+            "major_limits",
+            "year",
+            "month",
+            "day",
+            "hour",
+        }:
+            raise ContractValidationError(f"unsupported entitlement layer_id: {layer_id!r}")
+        if tier not in {"free", "paid"}:
+            raise ContractValidationError(f"unsupported entitlement tier: {tier!r}")
+        if access not in _ACCESS_VALUES:
+            raise ContractValidationError(f"unsupported entitlement access: {access!r}")
+        if upgrade_cta not in {None, "professional_info"}:
+            raise ContractValidationError(f"unsupported upgrade_cta: {upgrade_cta!r}")
+        return cls(
+            layer_id=cast(TimeLayerEntitlementLayerId, layer_id),
+            tier=cast(TimeLayerEntitlementTier, tier),
+            access=cast(TimeLayerEntitlementAccess, access),
+            upgrade_cta=cast(TimeLayerUpgradeCta | None, upgrade_cta),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "layer_id": self.layer_id,
+            "tier": self.tier,
+            "access": self.access,
+            "upgrade_cta": self.upgrade_cta,
+        }
+
+
+@dataclass(frozen=True, slots=True)
+class TimeLayerEntitlementV1:
+    """Versioned G1/G3 time-layer entitlement, separate from capability availability."""
+
+    capability_id: TimeLayerEntitlementCapabilityId
+    resolution: TimeLayerEntitlementResolution
+    free_year_set: tuple[int, ...]
+    capability: tuple[TimeLayerCapabilitySnapshot, ...]
+    layers: tuple[TimeLayerEntitlementEntry, ...]
+    schema_version: Literal["time-layer-entitlement/v1"] = (
+        TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
+    )
+    free_boundary_layer_id: Literal["year"] = FREE_BOUNDARY_LAYER_ID
+    paid_layer_ids: tuple[TimeLayerEntitlementLayerId, ...] = PAID_TIME_LAYER_IDS
+
+    def __post_init__(self) -> None:
+        if self.schema_version != TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION:
+            raise ContractValidationError("time-layer-entitlement schema_version is frozen at v1")
+        if self.free_boundary_layer_id != FREE_BOUNDARY_LAYER_ID:
+            raise ContractValidationError("free boundary is frozen at year")
+        if self.paid_layer_ids != PAID_TIME_LAYER_IDS:
+            raise ContractValidationError("paid layers are frozen as month/day/hour")
+        if self.resolution not in _PAID_ACCESS_BY_RESOLUTION:
+            raise ContractValidationError(
+                f"unsupported entitlement resolution: {self.resolution!r}"
+            )
+        expected_ids = _LAYER_IDS_BY_CAPABILITY[self.capability_id]
+        actual_ids = tuple(item.layer_id for item in self.layers)
+        if actual_ids != expected_ids:
+            raise ContractValidationError("entitlement layers must match the closed per-art table")
+        free_ids = _FREE_LAYER_IDS_BY_CAPABILITY[self.capability_id]
+        for item in self.layers:
+            expected_tier: TimeLayerEntitlementTier = (
+                "free" if item.layer_id in free_ids else "paid"
+            )
+            if item.tier != expected_tier:
+                raise ContractValidationError(
+                    f"{item.layer_id} tier must be {expected_tier} for {self.capability_id}"
+                )
+        allowed_paid_access = _PAID_ACCESS_BY_RESOLUTION[self.resolution]
+        for item in self.layers:
+            if item.tier != "paid":
+                continue
+            if item.access not in allowed_paid_access:
+                raise ContractValidationError(
+                    f"paid layer {item.layer_id} access {item.access!r} is incompatible "
+                    f"with resolution {self.resolution}"
+                )
+        allowed_capability_ids = _CAPABILITY_LAYER_IDS_BY_CAPABILITY[self.capability_id]
+        seen_capability: set[str] = set()
+        for snapshot in self.capability:
+            if snapshot.layer_id in seen_capability:
+                raise ContractValidationError("capability time_layers layer_id must be unique")
+            seen_capability.add(snapshot.layer_id)
+            if snapshot.layer_id in {"luck_cycles", "major_limits"}:
+                raise ContractValidationError(
+                    "capability time_layers cannot carry structural fact keys"
+                )
+            if snapshot.layer_id not in allowed_capability_ids:
+                raise ContractValidationError(
+                    f"capability time_layers layer_id {snapshot.layer_id!r} is outside "
+                    f"the closed {self.capability_id} table"
+                )
+        years = self.free_year_set
+        if any(
+            not isinstance(year, int) or isinstance(year, bool) or year < 1800 or year > 2199
+            for year in years
+        ):
+            raise ContractValidationError("free_year_set must be server civil years")
+        if len(set(years)) != len(years):
+            raise ContractValidationError("free_year_set cannot contain duplicate years")
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, object]) -> TimeLayerEntitlementV1:
+        _require_exact_keys(payload, _ENTITLEMENT_OBJECT_KEYS, label="time-layer-entitlement/v1")
+        if payload["schema_version"] != TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION:
+            raise ContractValidationError("unsupported time-layer-entitlement schema_version")
+        capability_id = payload["capability_id"]
+        resolution = payload["resolution"]
+        if capability_id not in {"bazi", "ziwei"}:
+            raise ContractValidationError(f"unsupported capability_id: {capability_id!r}")
+        if resolution not in _RESOLUTION_VALUES:
+            raise ContractValidationError(f"unsupported entitlement resolution: {resolution!r}")
+        if payload["free_boundary_layer_id"] != FREE_BOUNDARY_LAYER_ID:
+            raise ContractValidationError("free_boundary_layer_id must be year")
+        paid_layer_ids = payload["paid_layer_ids"]
+        if not isinstance(paid_layer_ids, (list, tuple)) or tuple(paid_layer_ids) != (
+            "month",
+            "day",
+            "hour",
+        ):
+            raise ContractValidationError("paid_layer_ids must be exactly [month, day, hour]")
+        free_year_set = payload["free_year_set"]
+        if not isinstance(free_year_set, (list, tuple)) or any(
+            isinstance(year, bool) or not isinstance(year, int) for year in free_year_set
+        ):
+            raise ContractValidationError("free_year_set must be an array of integers")
+        capability_payload = payload["capability"]
+        if not isinstance(capability_payload, Mapping):
+            raise ContractValidationError("capability must be an object")
+        _require_exact_keys(
+            capability_payload,
+            _CAPABILITY_OBJECT_KEYS,
+            label="time-layer-entitlement capability",
+        )
+        time_layers = capability_payload["time_layers"]
+        if not isinstance(time_layers, (list, tuple)):
+            raise ContractValidationError("capability.time_layers must be an array")
+        layers = payload["layers"]
+        if not isinstance(layers, (list, tuple)):
+            raise ContractValidationError("layers must be an array")
+        return cls(
+            schema_version=TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
+            capability_id=cast(TimeLayerEntitlementCapabilityId, capability_id),
+            resolution=cast(TimeLayerEntitlementResolution, resolution),
+            free_boundary_layer_id=FREE_BOUNDARY_LAYER_ID,
+            paid_layer_ids=PAID_TIME_LAYER_IDS,
+            free_year_set=tuple(cast(int, year) for year in free_year_set),
+            capability=tuple(
+                TimeLayerCapabilitySnapshot.from_dict(cast(Mapping[str, object], item))
+                for item in time_layers
+            ),
+            layers=tuple(
+                TimeLayerEntitlementEntry.from_dict(cast(Mapping[str, object], item))
+                for item in layers
+            ),
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "schema_version": self.schema_version,
+            "capability_id": self.capability_id,
+            "resolution": self.resolution,
+            "free_boundary_layer_id": self.free_boundary_layer_id,
+            "paid_layer_ids": list(self.paid_layer_ids),
+            "free_year_set": list(self.free_year_set),
+            "capability": {"time_layers": [item.to_dict() for item in self.capability]},
+            "layers": [item.to_dict() for item in self.layers],
+        }
+
+
+def _view_model_mapping(view_model: object) -> Mapping[str, object] | None:
+    if isinstance(view_model, Mapping):
+        return view_model
+    dump = getattr(view_model, "model_dump", None)
+    if callable(dump):
+        payload = dump(mode="python")
+        if isinstance(payload, Mapping):
+            return cast(Mapping[str, object], payload)
+    return None
+
+
+def _core_facts_mapping(view_model: Mapping[str, object]) -> Mapping[str, object]:
+    raw = view_model.get("core_facts")
+    if raw is None:
+        return {}
+    if isinstance(raw, Mapping):
+        return raw
+    dump = getattr(raw, "model_dump", None)
+    if callable(dump):
+        payload = dump(mode="python")
+        if isinstance(payload, Mapping):
+            return cast(Mapping[str, object], payload)
+    raise ContractValidationError("core_facts must be an object or null")
+
+
+def _capability_snapshots(
+    view_model: Mapping[str, object],
+) -> tuple[TimeLayerCapabilitySnapshot, ...]:
+    raw_layers = view_model.get("time_layers")
+    if raw_layers is None:
+        return ()
+    if not isinstance(raw_layers, (list, tuple)):
+        raise ContractValidationError("time_layers must be an array")
+    snapshots: list[TimeLayerCapabilitySnapshot] = []
+    for item in raw_layers:
+        if isinstance(item, Mapping):
+            snapshots.append(TimeLayerCapabilitySnapshot.from_dict(item))
+            continue
+        dump = getattr(item, "model_dump", None)
+        if not callable(dump):
+            raise ContractValidationError("time_layers[] must be objects")
+        payload = dump(mode="python")
+        if not isinstance(payload, Mapping):
+            raise ContractValidationError("time_layers[] must be objects")
+        snapshots.append(TimeLayerCapabilitySnapshot.from_dict(payload))
+    return tuple(snapshots)
+
+
+def _fact_rows(core_facts: Mapping[str, object], key: str) -> tuple[object, ...] | None:
+    raw = core_facts.get(key)
+    if raw is None:
+        return None
+    if not isinstance(raw, (list, tuple)):
+        raise ContractValidationError(f"{key} must be an array or null")
+    return tuple(raw)
+
+
+def _facts_present(rows: tuple[object, ...] | None) -> bool:
+    return rows is not None and len(rows) > 0
+
+
+def _free_year_set(rows: tuple[object, ...] | None) -> tuple[int, ...]:
+    if rows is None:
+        return ()
+    years: list[int] = []
+    seen: set[int] = set()
+    for item in rows:
+        if not isinstance(item, Mapping):
+            dump = getattr(item, "model_dump", None)
+            if not callable(dump):
+                raise ContractValidationError("free year facts must be objects")
+            payload = dump(mode="python")
+            if not isinstance(payload, Mapping):
+                raise ContractValidationError("free year facts must be objects")
+            item = payload
+        year = item.get("year")
+        if isinstance(year, bool) or not isinstance(year, int) or year < 1800 or year > 2199:
+            raise ContractValidationError("free year facts must carry a civil year")
+        if year in seen:
+            raise ContractValidationError("free_year_set cannot contain duplicate years")
+        seen.add(year)
+        years.append(year)
+    return tuple(years)
+
+
+def _layer_available(
+    layer_id: TimeLayerEntitlementLayerId,
+    snapshots: tuple[TimeLayerCapabilitySnapshot, ...],
+    *,
+    structural_present: bool,
+) -> bool:
+    if layer_id in {"luck_cycles", "major_limits"}:
+        return structural_present
+    for snapshot in snapshots:
+        if snapshot.layer_id == layer_id:
+            return snapshot.available
+    return False
+
+
+def project_time_layer_entitlement(
+    view_model: object,
+    *,
+    resolution: TimeLayerEntitlementResolution,
+) -> TimeLayerEntitlementV1 | None:
+    """Project G1/G3 entitlement from a v1 chart ViewModel without mutating it."""
+
+    if resolution not in _RESOLUTION_VALUES:
+        raise ContractValidationError(f"unsupported entitlement resolution: {resolution!r}")
+    payload = _view_model_mapping(view_model)
+    if payload is None:
+        return None
+    schema_version = payload.get("schema_version")
+    if not isinstance(schema_version, str) or schema_version not in _SCHEMA_TO_CAPABILITY:
+        return None
+    capability_id = _SCHEMA_TO_CAPABILITY[schema_version]
+    snapshots = _capability_snapshots(payload)
+    core_facts = _core_facts_mapping(payload)
+    year_rows = _fact_rows(core_facts, _YEAR_FACT_KEY_BY_CAPABILITY[capability_id])
+    month_rows = _fact_rows(core_facts, _MONTH_FACT_KEY_BY_CAPABILITY[capability_id])
+    day_rows = _fact_rows(core_facts, _DAY_FACT_KEY_BY_CAPABILITY[capability_id])
+    hour_rows = _fact_rows(core_facts, "hour_layers")
+    structural_key = "luck_cycles" if capability_id == "bazi" else "major_limits"
+    structural_value = core_facts.get(structural_key)
+    structural_present = structural_value is not None and structural_value != ()
+    facts_by_layer: dict[TimeLayerEntitlementLayerId, bool] = {
+        "life": True,
+        "luck_cycles": structural_present if capability_id == "bazi" else False,
+        "major_limits": structural_present if capability_id == "ziwei" else False,
+        "year": _facts_present(year_rows),
+        "month": _facts_present(month_rows),
+        "day": _facts_present(day_rows),
+        "hour": _facts_present(hour_rows),
+    }
+    free_ids = _FREE_LAYER_IDS_BY_CAPABILITY[capability_id]
+    entries: list[TimeLayerEntitlementEntry] = []
+    for layer_id in _LAYER_IDS_BY_CAPABILITY[capability_id]:
+        tier: TimeLayerEntitlementTier = "free" if layer_id in free_ids else "paid"
+        available = _layer_available(
+            layer_id,
+            snapshots,
+            structural_present=structural_present,
+        )
+        access = _access_for_layer(
+            tier=tier,
+            available=available,
+            facts_present=facts_by_layer[layer_id],
+            resolution=resolution,
+        )
+        entries.append(
+            TimeLayerEntitlementEntry(
+                layer_id=layer_id,
+                tier=tier,
+                access=access,
+                upgrade_cta=_upgrade_cta_for_access(access, tier=tier),
+            )
+        )
+    return TimeLayerEntitlementV1(
+        capability_id=capability_id,
+        resolution=resolution,
+        free_year_set=_free_year_set(year_rows),
+        capability=snapshots,
+        layers=tuple(entries),
+    )
