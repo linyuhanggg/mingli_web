@@ -1,12 +1,106 @@
-import { describe, expect, it } from "vitest";
+import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { createElement } from "react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const mockStartPreviewReading = vi.hoisted(() => vi.fn());
+const mockCreateProfileDraft = vi.hoisted(() => vi.fn());
+const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
+const mockListProfiles = vi.hoisted(() => vi.fn());
+const mockRouterPush = vi.hoisted(() => vi.fn());
+const mockRouterReplace = vi.hoisted(() => vi.fn());
+const mockNavigation = vi.hoisted(() => ({
+  searchParams: new URLSearchParams(),
+}));
+
+vi.mock("next/navigation", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("next/navigation")>()),
+  useRouter: () => ({ push: mockRouterPush, replace: mockRouterReplace }),
+  usePathname: () => "/bazi",
+  useSearchParams: () => mockNavigation.searchParams,
+}));
+
+vi.mock("@/lib/api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/api")>()),
+  getAccount: vi.fn(() => new Promise(() => undefined)),
+  createProfileDraft: mockCreateProfileDraft,
+  confirmProfileDraft: mockConfirmProfileDraft,
+  startPreviewReading: mockStartPreviewReading,
+  listProfiles: mockListProfiles,
+}));
+
+import { ProductTaskExperience } from "@/components/task/product-task-experience";
+import { ApiError } from "@/lib/api";
 import {
   destinationAfterLogin,
   loadPendingStartTask,
   loginContinueHref,
+  PENDING_START_STORAGE_FAILURE_CODE,
   persistPendingStartTask,
   safeContinuePath,
 } from "@/lib/login-continue";
+import { getProductDefinition } from "@/products/catalog";
+
+const profileVersionId = "11111111-1111-4111-8111-111111111111";
+const pendingStartReadError = "无法恢复登录前的排盘资料";
+const pendingStartWriteError = "无法保存登录续接资料，请允许本网站使用会话存储后重试。";
+const nativeSessionStorage = window.sessionStorage;
+const nativeSessionStorageDescriptor = Object.getOwnPropertyDescriptor(
+  window,
+  "sessionStorage",
+);
+
+function installSessionStorage(overrides: Partial<Storage>) {
+  const replacement: Storage = {
+    get length() {
+      return nativeSessionStorage.length;
+    },
+    clear: () => nativeSessionStorage.clear(),
+    getItem: (key) => nativeSessionStorage.getItem(key),
+    key: (index) => nativeSessionStorage.key(index),
+    removeItem: (key) => nativeSessionStorage.removeItem(key),
+    setItem: (key, value) => nativeSessionStorage.setItem(key, value),
+    ...overrides,
+  };
+  Object.defineProperty(window, "sessionStorage", {
+    configurable: true,
+    value: replacement,
+  });
+}
+
+function restoreSessionStorage() {
+  if (nativeSessionStorageDescriptor) {
+    Object.defineProperty(window, "sessionStorage", nativeSessionStorageDescriptor);
+  }
+}
+
+afterEach(() => {
+  restoreSessionStorage();
+  cleanup();
+  vi.restoreAllMocks();
+});
+
+beforeEach(() => {
+  mockNavigation.searchParams = new URLSearchParams();
+  window.sessionStorage.clear();
+  mockRouterPush.mockReset();
+  mockRouterReplace.mockReset();
+  mockListProfiles.mockReset().mockResolvedValue({
+    profiles: [{
+      profile_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      profile_version_id: profileVersionId,
+      subject_ref: `profile-version:${profileVersionId}`,
+      version: 1,
+      display_name: "续接测试档案",
+      created_at: "2026-08-27T00:00:00Z",
+    }],
+  });
+  mockCreateProfileDraft.mockReset();
+  mockConfirmProfileDraft.mockReset();
+  mockStartPreviewReading.mockReset().mockRejectedValue(
+    new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit"),
+  );
+});
 
 describe("safeContinuePath", () => {
   it("keeps same-origin relative destinations", () => {
@@ -83,16 +177,77 @@ describe("destinationAfterLogin", () => {
 
 describe("pending start task storage", () => {
   it("round-trips form values keyed by the idempotency token", () => {
-    persistPendingStartTask("intent-1", {
+    expect(persistPendingStartTask("intent-1", {
       productId: "liuyao",
       fingerprint: "{\"product\":\"liuyao\"}",
       values: { question: "此问事业", hexagram: "111111" },
-    });
+    })).toBeNull();
     expect(loadPendingStartTask("intent-1")).toEqual({
       productId: "liuyao",
       fingerprint: "{\"product\":\"liuyao\"}",
       values: { question: "此问事业", hexagram: "111111" },
     });
     expect(loadPendingStartTask("missing")).toBeNull();
+  });
+});
+
+describe("ProductTaskExperience pending start storage failures", () => {
+  it.each([
+    ["SecurityError", "SecurityError"],
+    ["quota error", "QuotaExceededError"],
+  ])("fails closed when sessionStorage.setItem throws %s", async (_label, errorName) => {
+    installSessionStorage({
+      setItem: () => {
+        throw new DOMException("storage unavailable", errorName);
+      },
+    });
+    const user = userEvent.setup();
+
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("bazi"),
+    }));
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(profileSelect).toHaveValue(profileVersionId));
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+
+    expect(await screen.findByRole("alert", { name: pendingStartWriteError })).toBeVisible();
+    expect(screen.getByRole("button", { name: "重试" })).toBeVisible();
+    expect(screen.queryByRole("link", { name: "登录后继续" })).not.toBeInTheDocument();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+
+    const intentKey = mockStartPreviewReading.mock.calls[0]?.[1] as string;
+    expect(intentKey).toBeTruthy();
+    expect(loadPendingStartTask(intentKey)).toBeNull();
+  });
+
+  it("renders a recoverable error instead of an empty form when sessionStorage.getItem throws", async () => {
+    const resumeKey = "resume-storage-read-failure";
+    mockNavigation.searchParams = new URLSearchParams({ idempotency_key: resumeKey });
+    installSessionStorage({
+      getItem: () => {
+        throw new DOMException("storage blocked", "SecurityError");
+      },
+    });
+    expect(loadPendingStartTask(resumeKey)).toEqual({
+      code: PENDING_START_STORAGE_FAILURE_CODE,
+      operation: "read",
+    });
+    const user = userEvent.setup();
+
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition("bazi"),
+    }));
+
+    expect(await screen.findByRole("alert", { name: pendingStartReadError })).toBeVisible();
+    expect(screen.queryByRole("form", { name: "八字任务输入" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "登录后继续" })).not.toBeInTheDocument();
+    expect(mockRouterPush).not.toHaveBeenCalled();
+    expect(mockRouterReplace).not.toHaveBeenCalled();
+
+    restoreSessionStorage();
+    await user.click(screen.getByRole("button", { name: "重试恢复" }));
+    expect(await screen.findByRole("form", { name: "八字任务输入" })).toBeVisible();
   });
 });

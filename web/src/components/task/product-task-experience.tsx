@@ -56,6 +56,7 @@ import {
   type ProfileNameConflict,
 } from "@/lib/profile-conflict";
 import {
+  isPendingStartStorageFailure,
   loadPendingStartTask,
   loginContinueHref,
   persistPendingStartTask,
@@ -75,6 +76,9 @@ import {
 import styles from "./task-shell.module.css";
 
 type TaskStage = "input" | "workbench";
+
+const PENDING_START_READ_ERROR = "无法恢复登录前的排盘资料";
+const PENDING_START_WRITE_ERROR = "无法保存登录续接资料，请允许本网站使用会话存储后重试。";
 
 type PendingStartFormState = {
   version: 1;
@@ -311,14 +315,22 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const pathname = usePathname() || `/${product.id}`;
   const searchParams = useSearchParams();
   const resumeKey = searchParams.get("idempotency_key");
-  const resumedTask = useSyncExternalStore(
+  const [, setResumeReadAttempt] = useState(0);
+  const pendingStartSnapshot = useSyncExternalStore(
     subscribePendingStartTasks,
     () => {
       const pending = loadPendingStartTask(resumeKey);
+      if (isPendingStartStorageFailure(pending)) return pending;
       return pending?.productId === product.id ? pending : null;
     },
     () => null,
   );
+  const resumeStorageFailure = isPendingStartStorageFailure(pendingStartSnapshot)
+    ? pendingStartSnapshot
+    : null;
+  const resumedTask = isPendingStartStorageFailure(pendingStartSnapshot)
+    ? null
+    : pendingStartSnapshot;
   const resumedFormState = readPendingStartFormState(resumedTask?.values);
   const resumedProfileVersionId = resumedFormState?.profileVersionId ?? "";
   const resumedSelectionContext =
@@ -937,15 +949,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       const action = startReadingFailureAction(reason);
       setSubmitErrorState(mapped.state);
       setSubmitError(mapped.title);
-      setSubmitErrorAction(action);
       const intent = intentKeyRef.current;
-      setLoginIntentKey(intent?.key);
       if (action === "login" && intent) {
         const profileVersionId =
           profileVersionRef.current?.trim()
           || selectedProfileVersionId.trim()
           || undefined;
-        persistPendingStartTask(intent.key, {
+        const storageFailure = persistPendingStartTask(intent.key, {
           productId: product.id,
           fingerprint: intent.fingerprint,
           values: {
@@ -954,7 +964,16 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             ...(profileVersionId ? { profileVersionId } : {}),
           } satisfies PendingStartFormState,
         });
+        if (storageFailure) {
+          setSubmitErrorState("error");
+          setSubmitError(PENDING_START_WRITE_ERROR);
+          setSubmitErrorAction("retry");
+          setLoginIntentKey(undefined);
+          return;
+        }
       }
+      setSubmitErrorAction(action);
+      setLoginIntentKey(intent?.key);
     } finally {
       setBusy(false);
     }
@@ -1054,38 +1073,54 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           data-input-region="first-screen"
           hidden={stage !== "input"}
         >
-          <ProductInputForm
-            key={resumedTask && resumeKey ? `resume-${resumeKey}` : "input"}
-            busy={busy}
-            onProfileVersionChange={(profileVersionId) => {
-              setSelectedProfileVersionId(profileVersionId);
-              profileVersionRef.current = profileVersionId || null;
-              intentKeyRef.current = null;
-            }}
-            product={product}
-            profileLookupError={savedProfilesError}
-            profileLookupPending={savedProfilesLoading}
-            profileLookupSignedOut={savedProfilesSignedOut}
-            profiles={savedProfiles}
-            selectedProfileVersionId={selectedProfileVersionId}
-            initialValues={values ?? resumedFormState?.formValues}
-            onConfirm={handleConfirm}
-            onPhotoChange={setPhotoFile}
-            onRetryProfiles={() => {
-              setSavedProfilesLoading(true);
-              setSavedProfilesError(null);
-              setSavedProfilesSignedOut(false);
-              setSavedProfilesAttempt((value) => value + 1);
-            }}
-            submitError={submitError}
-            submitErrorState={submitErrorState}
-            submitErrorAction={submitErrorAction}
-            loginHref={loginHref}
-            hideUnknownHour={product.id === "bazi"}
-            onRetry={() => {
-              if (values) void startRuntimeReading(values);
-            }}
-          />
+          {resumeStorageFailure ? (
+            <Status
+              actions={(
+                <button
+                  type="button"
+                  onClick={() => setResumeReadAttempt((attempt) => attempt + 1)}
+                >
+                  重试恢复
+                </button>
+              )}
+              description="请允许本网站使用会话存储，或关闭相关隐私限制后重试。"
+              state="error"
+              title={PENDING_START_READ_ERROR}
+            />
+          ) : (
+            <ProductInputForm
+              key={resumedTask && resumeKey ? `resume-${resumeKey}` : "input"}
+              busy={busy}
+              onProfileVersionChange={(profileVersionId) => {
+                setSelectedProfileVersionId(profileVersionId);
+                profileVersionRef.current = profileVersionId || null;
+                intentKeyRef.current = null;
+              }}
+              product={product}
+              profileLookupError={savedProfilesError}
+              profileLookupPending={savedProfilesLoading}
+              profileLookupSignedOut={savedProfilesSignedOut}
+              profiles={savedProfiles}
+              selectedProfileVersionId={selectedProfileVersionId}
+              initialValues={values ?? resumedFormState?.formValues}
+              onConfirm={handleConfirm}
+              onPhotoChange={setPhotoFile}
+              onRetryProfiles={() => {
+                setSavedProfilesLoading(true);
+                setSavedProfilesError(null);
+                setSavedProfilesSignedOut(false);
+                setSavedProfilesAttempt((value) => value + 1);
+              }}
+              submitError={submitError}
+              submitErrorState={submitErrorState}
+              submitErrorAction={submitErrorAction}
+              loginHref={loginHref}
+              hideUnknownHour={product.id === "bazi"}
+              onRetry={() => {
+                if (values) void startRuntimeReading(values);
+              }}
+            />
+          )}
           <InputTrustRail product={product} />
         </div>
       ) : null}

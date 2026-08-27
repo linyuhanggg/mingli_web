@@ -7,6 +7,37 @@ export type PendingStartTask = {
   values: unknown;
 };
 
+export const PENDING_START_STORAGE_FAILURE_CODE = "pending_start_storage_unavailable";
+
+export type PendingStartStorageFailure = Readonly<{
+  code: typeof PENDING_START_STORAGE_FAILURE_CODE;
+  operation: "read" | "write";
+}>;
+
+export type PendingStartTaskLoadResult =
+  | PendingStartTask
+  | PendingStartStorageFailure
+  | null;
+
+const pendingStartReadFailure: PendingStartStorageFailure = Object.freeze({
+  code: PENDING_START_STORAGE_FAILURE_CODE,
+  operation: "read",
+});
+const pendingStartWriteFailure: PendingStartStorageFailure = Object.freeze({
+  code: PENDING_START_STORAGE_FAILURE_CODE,
+  operation: "write",
+});
+
+export function isPendingStartStorageFailure(
+  value: PendingStartTaskLoadResult,
+): value is PendingStartStorageFailure {
+  return Boolean(
+    value
+    && "code" in value
+    && value.code === PENDING_START_STORAGE_FAILURE_CODE,
+  );
+}
+
 export function withIdempotencyKey(
   pathAndSearch: string,
   idempotencyKey?: string,
@@ -65,19 +96,32 @@ const pendingStartCache = new Map<string, PendingStartTask>();
 export function persistPendingStartTask(
   idempotencyKey: string,
   payload: PendingStartTask,
-): void {
-  if (typeof window === "undefined") return;
+): PendingStartStorageFailure | null {
+  if (typeof window === "undefined") return null;
+  try {
+    window.sessionStorage.setItem(
+      `${PENDING_START_PREFIX}${idempotencyKey}`,
+      JSON.stringify(payload),
+    );
+  } catch {
+    return pendingStartWriteFailure;
+  }
   pendingStartCache.set(idempotencyKey, payload);
-  sessionStorage.setItem(`${PENDING_START_PREFIX}${idempotencyKey}`, JSON.stringify(payload));
+  return null;
 }
 
 export function loadPendingStartTask(
   idempotencyKey: string | null | undefined,
-): PendingStartTask | null {
+): PendingStartTaskLoadResult {
   if (!idempotencyKey || typeof window === "undefined") return null;
   const cached = pendingStartCache.get(idempotencyKey);
   if (cached) return cached;
-  const raw = sessionStorage.getItem(`${PENDING_START_PREFIX}${idempotencyKey}`);
+  let raw: string | null;
+  try {
+    raw = window.sessionStorage.getItem(`${PENDING_START_PREFIX}${idempotencyKey}`);
+  } catch {
+    return pendingStartReadFailure;
+  }
   if (!raw) return null;
   try {
     const parsed = JSON.parse(raw) as PendingStartTask;
