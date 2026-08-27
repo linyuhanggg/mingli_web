@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import stat
+import subprocess
 import sys
 import time
 from dataclasses import replace
@@ -627,9 +628,9 @@ def test_production_runtime_configuration_accepts_only_the_frozen_release() -> N
         == "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
     )
     assert profile["release_manifest_sha256"] == (
-        "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
+        "280145cddaaddb693f8256214381d75d8579e620ec731e9a9ce4ec10522bc51d"
     )
-    assert profile["source_commit"] == "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1"
+    assert profile["source_commit"] == "3f70b9025f828343759aaef22dab9ac5f2879a8c"
     assert profile["worker_sha256"] == (
         "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
     )
@@ -817,9 +818,19 @@ _ADMITTED_V53_DESCRIBE_DIGEST = (
 _ADMITTED_V53_CAPABILITY_SHAPE = (
     "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
 )
-_ADMITTED_V51_SOURCE_COMMIT = "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1"
+_ADMITTED_V51_SOURCE_COMMIT = "3f70b9025f828343759aaef22dab9ac5f2879a8c"
 _ADMITTED_V51_RELEASE_MANIFEST_SHA = (
+    "280145cddaaddb693f8256214381d75d8579e620ec731e9a9ce4ec10522bc51d"
+)
+_PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT = (
+    "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1"
+)
+_PREVIOUS_PRODUCTION_V51_LISTING_SHA = (
     "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
+)
+_INTERMEDIATE_V51_SOURCE_COMMIT = "fdf008f47fb5ad963f5d2c7979418388260ebbfa"
+_INTERMEDIATE_V51_LISTING_SHA = (
+    "35325c8553e31e37a07232b2a5b94341844794ec286fb2f8eacbbb581dbd7b62"
 )
 _ADMITTED_V51_WORKER_SHA256 = (
     "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
@@ -865,23 +876,49 @@ def _install_locked_worker(release_root: Path) -> Path:
     return worker
 
 
-def _discover_v51_source_root() -> Path | None:
+def _git_head(path: Path) -> str | None:
+    if not (path / ".git").exists():
+        return None
+    try:
+        completed = subprocess.run(
+            ["git", "-C", str(path), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+    except (OSError, subprocess.CalledProcessError):
+        return None
+    return completed.stdout.strip()
+
+
+def _discover_source_for_commit(commit: str, env_key: str) -> Path | None:
     candidates: list[Path] = []
-    raw = os.environ.get("MINGLI_V51_RELEASE_SOURCE")
+    raw = os.environ.get(env_key)
     if raw:
         candidates.append(Path(raw).expanduser())
+    short = commit[:12]
     candidates.extend(
         (
-            Path("/tmp/ming21-v51-adfd7b6"),
-            _REPO_ROOT / ".runtime-cache" / "v51-adfd7b6",
-            Path.home() / ".codex" / "skills" / "mingli-master",
+            Path(f"/tmp/ming21-v51-{short}"),
+            _REPO_ROOT / ".runtime-cache" / f"v51-{short}",
         )
     )
     for path in candidates:
         worker = path / _WORKER_RELATIVE
-        if worker.is_file() and _sha256(worker) == _ADMITTED_V51_WORKER_SHA256:
+        if (
+            worker.is_file()
+            and _sha256(worker) == _ADMITTED_V51_WORKER_SHA256
+            and _git_head(path) == commit
+        ):
             return path
     return None
+
+
+def _discover_v51_source_root() -> Path | None:
+    return _discover_source_for_commit(
+        _ADMITTED_V51_SOURCE_COMMIT,
+        "MINGLI_V51_RELEASE_SOURCE",
+    )
 
 
 def _install_v51_worker(release_root: Path) -> Path:
@@ -969,22 +1006,25 @@ def _v51_worker_settings(
     )
 
 
-def _materialize_v51_release(destination: Path) -> str:
-    source = _discover_v51_source_root()
-    if source is None:
-        pytest.skip("the admitted v51 worker-v2 source is not present")
+def _materialize_core_release(
+    destination: Path,
+    *,
+    source: Path,
+    source_commit: str,
+    expected_listing: str,
+) -> str:
     scripts = str(source / "scripts")
     if scripts not in sys.path:
         sys.path.insert(0, scripts)
     import release_deploy as rd
 
     files = rd.tracked_release_files(source)
-    manifest = rd.build_manifest(source, files, _ADMITTED_V51_SOURCE_COMMIT)
+    manifest = rd.build_manifest(source, files, source_commit)
     payload = (
         json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
     ).encode("utf-8")
     listing = hashlib.sha256(payload).hexdigest()
-    assert listing == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert listing == expected_listing
     destination.mkdir(mode=0o700)
     for relative in manifest["files"]:
         target = destination / relative
@@ -998,6 +1038,18 @@ def _materialize_v51_release(destination: Path) -> str:
         if path.is_dir():
             path.chmod(stat.S_IMODE(path.stat().st_mode) & ~0o022)
     return listing
+
+
+def _materialize_v51_release(destination: Path) -> str:
+    source = _discover_v51_source_root()
+    if source is None:
+        pytest.skip("the admitted v51 worker-v2 source is not present")
+    return _materialize_core_release(
+        destination,
+        source=source,
+        source_commit=_ADMITTED_V51_SOURCE_COMMIT,
+        expected_listing=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
+    )
 
 
 def test_runtime_startup_gate_admits_the_exact_v51_candidate_identity(
@@ -1045,7 +1097,11 @@ def test_runtime_startup_gate_admits_the_exact_v51_candidate_identity(
     assert profile["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert profile["release_manifest_sha256"] != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
     assert profile["release_manifest_sha256"] != _CLEAN_443A777_RELEASE_MANIFEST_SHA
+    assert profile["release_manifest_sha256"] != _PREVIOUS_PRODUCTION_V51_LISTING_SHA
+    assert profile["release_manifest_sha256"] != _INTERMEDIATE_V51_LISTING_SHA
     assert profile["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
+    assert profile["source_commit"] != _PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT
+    assert profile["source_commit"] != _INTERMEDIATE_V51_SOURCE_COMMIT
     assert profile["worker_sha256"] != _ADMITTED_V53_WORKER_SHA256
     assert Settings().chart_fast_path_timeout_seconds == 2.0
     assert Settings().runtime_adapter == "fake"
@@ -1062,7 +1118,11 @@ def test_production_v51_rejects_unsigned_and_v53_identities() -> None:
     assert v51["release_manifest_sha256"] != _PREVIOUS_V51_WITHOUT_WORKER_LISTING_SHA
     assert v51["release_manifest_sha256"] != _ADMITTED_V53_RELEASE_MANIFEST_SHA
     assert v51["release_manifest_sha256"] != _PREVIOUS_COMBINED_OVERLAY_LISTING_SHA
+    assert v51["release_manifest_sha256"] != _PREVIOUS_PRODUCTION_V51_LISTING_SHA
+    assert v51["release_manifest_sha256"] != _INTERMEDIATE_V51_LISTING_SHA
     assert v51["source_commit"] != _ADMITTED_V53_SOURCE_COMMIT
+    assert v51["source_commit"] != _PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT
+    assert v51["source_commit"] != _INTERMEDIATE_V51_SOURCE_COMMIT
     assert v51["worker_sha256"] != _ADMITTED_V53_WORKER_SHA256
 
 
@@ -1194,8 +1254,8 @@ def _discover_runtime_python() -> Path | None:
         candidates.append(Path(raw).expanduser())
     candidates.extend(
         (
-            Path.home() / ".local/share/mingli-master/venv/bin/python",
-            _QA_RUNTIME_PYTHON,
+            Path("/tmp/ming21-v51-3f70b902-venv/bin/python"),
+            _REPO_ROOT / ".runtime-cache" / "v51-3f70b902-venv" / "bin" / "python",
         )
     )
     for path in candidates:
@@ -1502,6 +1562,170 @@ async def test_build_runtime_startup_gate_and_create_app_reject_previous_overlay
     with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
         async with application.router.lifespan_context(application):
             raise AssertionError("create_app must reject the previous overlay listing")
+
+
+async def _assert_create_app_rejects_release(
+    tmp_path: Path,
+    release_root: Path,
+    *,
+    message: str,
+    assertion: str,
+) -> None:
+    settings = _v51_worker_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=_dummy_runtime_python(tmp_path),
+    )
+    gate = build_runtime_startup_gate(settings)
+    assert gate.expected_release_manifest_sha256 == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert gate.release_inspector.expected_source_commit == _ADMITTED_V51_SOURCE_COMMIT
+    with pytest.raises(RuntimeStartupError, match=message):
+        await gate.startup()
+
+    from app.main import create_app
+
+    application = create_app(settings=settings)
+    with pytest.raises(RuntimeStartupError, match=message):
+        async with application.router.lifespan_context(application):
+            raise AssertionError(assertion)
+
+
+def _rewrite_release_source_commit(release_root: Path, source_commit: str) -> str:
+    manifest_path = release_root / ".mingli-release-manifest.json"
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    manifest["source_commit"] = source_commit
+    payload = (
+        json.dumps(manifest, ensure_ascii=True, indent=2, sort_keys=True) + "\n"
+    ).encode("utf-8")
+    manifest_path.write_bytes(payload)
+    manifest_path.chmod(0o600)
+    return hashlib.sha256(payload).hexdigest()
+
+
+async def test_create_app_rejects_previous_production_v51_identity(
+    tmp_path: Path,
+) -> None:
+    source = _discover_source_for_commit(
+        _PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT,
+        "MINGLI_V51_PREVIOUS_SOURCE",
+    )
+    if source is None:
+        pytest.skip("the previous production v51 source is not present")
+    release_root = tmp_path / "previous-production-v51"
+    listing = _materialize_core_release(
+        release_root,
+        source=source,
+        source_commit=_PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT,
+        expected_listing=_PREVIOUS_PRODUCTION_V51_LISTING_SHA,
+    )
+    assert listing == _PREVIOUS_PRODUCTION_V51_LISTING_SHA
+    assert listing != _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    await _assert_create_app_rejects_release(
+        tmp_path,
+        release_root,
+        message="release manifest digest mismatch",
+        assertion="create_app must reject adfd7b6/93433f7",
+    )
+
+
+async def test_create_app_rejects_intermediate_v51_identity(tmp_path: Path) -> None:
+    source = _discover_source_for_commit(
+        _INTERMEDIATE_V51_SOURCE_COMMIT,
+        "MINGLI_V51_INTERMEDIATE_SOURCE",
+    )
+    if source is None:
+        pytest.skip("the intermediate v51 source is not present")
+    release_root = tmp_path / "intermediate-v51"
+    listing = _materialize_core_release(
+        release_root,
+        source=source,
+        source_commit=_INTERMEDIATE_V51_SOURCE_COMMIT,
+        expected_listing=_INTERMEDIATE_V51_LISTING_SHA,
+    )
+    assert listing == _INTERMEDIATE_V51_LISTING_SHA
+    assert listing != _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    await _assert_create_app_rejects_release(
+        tmp_path,
+        release_root,
+        message="release manifest digest mismatch",
+        assertion="create_app must reject fdf008f/35325c85",
+    )
+
+
+async def test_create_app_rejects_crossed_new_files_previous_source(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "crossed-previous-source"
+    listing = _materialize_v51_release(release_root)
+    assert listing == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    crossed = _rewrite_release_source_commit(
+        release_root,
+        _PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT,
+    )
+    assert crossed != _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert crossed != _PREVIOUS_PRODUCTION_V51_LISTING_SHA
+    await _assert_create_app_rejects_release(
+        tmp_path,
+        release_root,
+        message="release manifest digest mismatch",
+        assertion="create_app must reject new files paired with adfd7b6",
+    )
+
+
+async def test_create_app_rejects_crossed_new_files_intermediate_source(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "crossed-intermediate-source"
+    listing = _materialize_v51_release(release_root)
+    assert listing == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    crossed = _rewrite_release_source_commit(
+        release_root,
+        _INTERMEDIATE_V51_SOURCE_COMMIT,
+    )
+    assert crossed != _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    assert crossed != _INTERMEDIATE_V51_LISTING_SHA
+    await _assert_create_app_rejects_release(
+        tmp_path,
+        release_root,
+        message="release manifest digest mismatch",
+        assertion="create_app must reject new files paired with fdf008f",
+    )
+
+
+def test_filesystem_inspector_rejects_crossed_source_listing_pairs(
+    tmp_path: Path,
+) -> None:
+    release_root = tmp_path / "admitted-release"
+    listing = _materialize_v51_release(release_root)
+    assert listing == _ADMITTED_V51_RELEASE_MANIFEST_SHA
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=_PREVIOUS_PRODUCTION_V51_LISTING_SHA,
+            expected_release_name="mingli-master-portable-core",
+            expected_source_commit=_ADMITTED_V51_SOURCE_COMMIT,
+        ).inspect()
+    with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
+            expected_release_name="mingli-master-portable-core",
+            expected_source_commit=_PREVIOUS_PRODUCTION_V51_SOURCE_COMMIT,
+        ).inspect()
+    with pytest.raises(RuntimeStartupError, match="release manifest digest mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=_INTERMEDIATE_V51_LISTING_SHA,
+            expected_release_name="mingli-master-portable-core",
+            expected_source_commit=_ADMITTED_V51_SOURCE_COMMIT,
+        ).inspect()
+    with pytest.raises(RuntimeStartupError, match="release identity mismatch"):
+        FileSystemRuntimeReleaseInspector(
+            release_root=release_root,
+            expected_release_manifest_sha256=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
+            expected_release_name="mingli-master-portable-core",
+            expected_source_commit=_INTERMEDIATE_V51_SOURCE_COMMIT,
+        ).inspect()
 
 
 async def test_configured_worker_admits_the_real_runtime_before_processing(

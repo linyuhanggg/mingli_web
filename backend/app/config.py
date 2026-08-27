@@ -44,10 +44,10 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
         "manifest_digest": _FROZEN_DESCRIBE_MANIFEST_DIGEST,
         "capability_shape_sha256": _FROZEN_CAPABILITY_SHAPE_SHA256,
         "release_manifest_sha256": (
-            "93433f7fa9a9bef1115216240767c2c8e12e4ad9f0807124d05a47ddd0701f5d"
+            "280145cddaaddb693f8256214381d75d8579e620ec731e9a9ce4ec10522bc51d"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "adfd7b6bf1c6a5e6df184bdd792bbf4956b009e1",
+        "source_commit": "3f70b9025f828343759aaef22dab9ac5f2879a8c",
         "worker_sha256": (
             "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
         ),
