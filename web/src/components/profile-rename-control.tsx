@@ -55,7 +55,7 @@ export function ProfileRenameControl({
   }
 
   return (
-    <div className={styles.form}>
+    <div className={styles.form} aria-busy={busy || undefined}>
       <label className={formControls.field} htmlFor={`rename-${profile.profile_id}`}>
         档案名称
         <input
@@ -69,6 +69,11 @@ export function ProfileRenameControl({
       {error ? (
         <p className={styles.error} role="alert">
           {error}
+        </p>
+      ) : null}
+      {busy ? (
+        <p className={formControls.disabledReason} role="status">
+          正在保存名称…
         </p>
       ) : null}
       <div className={styles.actions}>
