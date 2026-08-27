@@ -351,6 +351,33 @@ def test_result_dtos_validate_and_round_trip_public_json(
         assert result.to_dict() == payload
 
 
+def test_time_layer_entitlement_is_a_sibling_schema_not_v1_stopped() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    payload = {
+        "kind": "stopped",
+        "reason": "error",
+        "public_copy": "测试运行时停止。",
+        "state_token": None,
+        "input_request": None,
+    }
+
+    stopped = contracts.result_from_dict(payload)
+
+    assert stopped.to_dict() == {
+        **payload,
+        "failure": {
+            "schema_version": "mingli-runtime-failure/v1",
+            "code": "runtime.internal_error",
+            "category": "runtime_internal",
+            "retryable": False,
+        },
+    }
+    assert "time_layers" not in stopped.to_dict()
+    assert "layers" not in stopped.to_dict()
+    assert contracts.TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION == "time-layer-entitlement/v1"
+    assert contracts.PAID_TIME_LAYER_IDS == ("month", "day", "hour")
+
+
 def test_runtime_failure_v1_accepts_only_the_closed_non_pii_code_table() -> None:
     contracts = importlib.import_module("app.readings.runtime_contracts")
     payload = {
