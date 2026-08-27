@@ -44,6 +44,7 @@ from app.charts.projectors import (
     project_wenshi_view_model,
 )
 from app.config import Settings
+from app.main import create_app
 from app.readings.errors import RuntimeTransportError
 from app.readings.request_compiler import (
     ConfirmedProfileVersion,
@@ -67,6 +68,7 @@ from app.readings.runtime_contracts import (
     Prepared,
     Stopped,
 )
+from httpx import ASGITransport, AsyncClient
 
 
 def _write_executable(path: Path, source: str) -> Path:
@@ -116,6 +118,65 @@ def _adapter(launcher: Path, state_root: Path, **overrides: object) -> OneShotMi
     return OneShotMingliRuntimeAdapter(**options)  # type: ignore[arg-type]
 
 
+def _idle_worker_adapter(tmp_path: Path) -> tuple[WorkerV2MingliRuntimeAdapter, Path]:
+    release_root = tmp_path / "release"
+    worker = release_root / "scripts" / "reading_engine" / "runtime_worker.py"
+    worker.parent.mkdir(parents=True)
+    exit_signal = worker.parent / "exit"
+    worker.write_text(
+        """from __future__ import annotations
+
+import json
+import os
+from pathlib import Path
+import sys
+import time
+
+
+def argv_value(flag: str) -> str:
+    return sys.argv[sys.argv.index(flag) + 1]
+
+
+payload = {
+    "type": "ready",
+    "protocol": "mingli-runtime-worker-v2",
+    "turn_terminal": "result-idle-v1",
+    "runtime_protocol": "mingli-portable-interface-v2",
+    "identity_sha256": "c" * 64,
+    "listing_sha256": argv_value("--expected-listing-sha256"),
+    "runtime_integrity_sha256": argv_value("--expected-runtime-integrity-sha256"),
+    "single_in_flight": True,
+    "replay_policy": "forbidden",
+    "fallback_policy": "forbidden",
+    "max_frame_bytes": 4 * 1024 * 1024,
+    "sequence_start": 1,
+    "pid": os.getpid(),
+    "boot_nonce": "d" * 64,
+}
+body = json.dumps(payload, separators=(",", ":"), sort_keys=True).encode("utf-8")
+sys.stdout.buffer.write(len(body).to_bytes(4, "big") + body)
+sys.stdout.buffer.flush()
+exit_signal = Path(__file__).with_name("exit")
+while not exit_signal.exists():
+    time.sleep(0.01)
+""",
+        encoding="utf-8",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir(mode=0o700)
+    state_root.chmod(0o700)
+    adapter = WorkerV2MingliRuntimeAdapter(
+        release_root=release_root,
+        runtime_python_path=Path(sys.executable),
+        state_root=state_root,
+        expected_listing_sha256="a" * 64,
+        expected_runtime_integrity_sha256="b" * 64,
+        ready_timeout_seconds=2,
+        request_timeout_seconds=0.4,
+    )
+    return adapter, exit_signal
+
+
 async def test_process_adapter_sends_one_json_command_on_stdin_and_reads_one_result(
     tmp_path: Path,
 ) -> None:
@@ -149,6 +210,43 @@ print(json.dumps({
     assert result.transition_ids == ("correct", "restart")
     assert json.loads(launcher.with_suffix(".stdin").read_bytes()) == {"kind": "describe"}
     assert launcher.with_suffix(".stdin").read_bytes().endswith(b"\n")
+
+
+async def test_readiness_rejects_worker_that_exits_while_idle(tmp_path: Path) -> None:
+    async def database_is_ready() -> None:
+        return None
+
+    adapter, exit_signal = _idle_worker_adapter(tmp_path)
+    await adapter.start()
+    application = create_app(
+        readiness_probe=database_is_ready,
+        chart_runtime=adapter,
+    )
+
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as client:
+            healthy = await client.get("/api/v1/health/ready")
+            assert healthy.status_code == 200
+            assert adapter.process_alive is True
+
+            exit_signal.touch()
+            for _ in range(100):
+                if not adapter.process_alive:
+                    break
+                await asyncio.sleep(0.01)
+
+            assert adapter.isolated is False
+            assert adapter.process_alive is False
+            unavailable = await client.get("/api/v1/health/ready")
+    finally:
+        await adapter.close()
+
+    assert unavailable.status_code == 503
+    assert unavailable.headers["content-type"].startswith("application/problem+json")
+    assert unavailable.json()["title"] == "Service unavailable"
 
 
 def test_worker_turn_audit_redacts_late_stderr_bytes(tmp_path: Path) -> None:

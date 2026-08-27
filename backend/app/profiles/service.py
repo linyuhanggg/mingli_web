@@ -286,6 +286,13 @@ class ProfileService:
         display_name: str,
     ) -> ProfileSummary:
         user_id, guest_id = owner_ids(owner)
+        try:
+            await self.repository.lock_profile_owner(
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+            )
+        except LookupError as error:
+            raise ProfileNotFoundError("Profile owner not found") from error
         profile = await self.repository.get_owned_profile(
             profile_id,
             owner_user_id=user_id,
