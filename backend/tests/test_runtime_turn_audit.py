@@ -16,11 +16,11 @@ from app.adapters.runtime import (
     RUNTIME_TURN_AUDIT_NAME,
     RuntimeTurnAudit,
     WorkerV2MingliRuntimeAdapter,
-    failure_for_transport_fault,
     runtime_command_digest,
 )
 from app.charts.projectors import project_runtime_view_model
 from app.main import create_app
+from app.readings.errors import RuntimeTransportError
 from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
 from app.readings.runtime_contracts import (
     Describe,
@@ -135,9 +135,8 @@ async def test_timeout_turn_audit_keeps_typed_failure_and_transport_fault(
 ) -> None:
     adapter = _adapter(tmp_path, behavior="sleep", request_timeout_seconds=0.2)
     await adapter.start()
-    result = await adapter.execute(Describe())
-    assert isinstance(result, Stopped)
-    assert result.failure == failure_for_transport_fault("timeout")
+    with pytest.raises(RuntimeTransportError, match="runtime_timed_out"):
+        await adapter.execute(Describe())
     audit = adapter.last_turn
     assert audit is not None
     assert audit.command_kind == "describe"

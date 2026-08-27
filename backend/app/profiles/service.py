@@ -267,6 +267,26 @@ class ProfileService:
         latest_version = await self.repository.get_latest_version(profile.id)
         if latest_version is None:
             raise ProfileNotConfirmedError("Subject Profile has no confirmed version")
+        current = self._summary(profile, latest_version)
+        conflict = await self._name_birth_conflict(
+            owner,
+            display_name=display_name,
+            birth_date=current.birth_date,
+            exclude_profile_id=profile.id,
+        )
+        if conflict is not None:
+            existing_profile, existing_version = conflict
+            suggested = await self._unique_save_as_name(
+                owner,
+                display_name,
+                exclude_profile_id=profile.id,
+            )
+            raise ProfileNameConflictError(
+                existing_profile_id=existing_profile.id,
+                existing_profile_version_id=existing_version.id,
+                display_name=display_name,
+                suggested_save_as_name=suggested,
+            )
         profile.label = display_name
         await self.session.flush()
         return self._summary(profile, latest_version)

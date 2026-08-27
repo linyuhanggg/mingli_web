@@ -22,6 +22,7 @@ from app.adapters.runtime import (
     runtime_capability_shape_sha256,
 )
 from app.readings.capability_policy import V51_RELEASE_CAPABILITY_IDS
+from app.readings.errors import RuntimeTransportError
 from app.readings.runtime_contracts import Describe, Described, Prepare, Prepared, Stopped
 
 mingli_paths = importlib.import_module("mingli_paths")
@@ -511,7 +512,6 @@ async def test_worker_ready_failures_isolate_without_ready(tmp_path: Path, behav
         "result-extra-stderr",
         "isolate",
         "invalid-result",
-        "sleep",
         "crash-after-read",
         "v1-result",
     ),
@@ -525,6 +525,21 @@ async def test_worker_request_faults_return_generic_stopped(tmp_path: Path, beha
     assert result.public_copy == WORKER_STOPPED_COPY
     assert result.state_token is None
     assert adapter.isolated is True
+    await adapter.close()
+
+
+async def test_worker_timeout_raises_transport_error_and_keeps_later_calls_retryable(
+    tmp_path: Path,
+) -> None:
+    adapter = _adapter(tmp_path, behavior="sleep", request_timeout_seconds=0.3)
+    await adapter.start()
+    with pytest.raises(RuntimeTransportError, match="runtime_timed_out"):
+        await adapter.execute(Describe())
+    assert adapter.isolated is True
+    assert adapter.last_turn is not None
+    assert adapter.last_turn.transport_fault == "timeout"
+    with pytest.raises(RuntimeTransportError, match="runtime_pipe_unavailable"):
+        await adapter.execute(Describe())
     await adapter.close()
 
 
