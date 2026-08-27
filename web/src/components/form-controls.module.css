@@ -1,154 +1,146 @@
 .field {
   display: grid;
-  gap: 0.45rem;
   min-width: 0;
+  gap: var(--ds-space-2);
 }
 
 .field > label {
   color: var(--color-text);
   font-size: var(--font-size-label);
-  font-weight: 750;
+  font-weight: 560;
 }
 
 .input {
   width: 100%;
-  min-height: 3rem;
-  padding: 0.7rem 0.85rem;
+  min-height: var(--ds-control-lg);
+  padding: var(--ds-space-3) var(--ds-space-4);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background-color: var(--color-canvas);
+  border-radius: var(--ds-radius-1);
+  background-color: var(--color-surface);
   color: var(--color-text);
   font-size: var(--font-size-body);
   transition:
-    border-color var(--duration-feedback) ease,
-    background-color var(--duration-feedback) ease,
-    color var(--duration-feedback) ease;
+    border-color var(--ds-duration-fast) var(--ds-ease-out),
+    box-shadow var(--ds-duration-fast) var(--ds-ease-out);
 }
 
 .input:hover:not(:disabled) {
-  border-color: var(--color-border);
-  background-color: var(--color-surface);
+  border-color: var(--ds-line-ink);
 }
 
-.input:focus {
+.input:focus,
+.input:focus-visible {
   border-color: var(--color-focus);
-  background-color: var(--color-surface);
+  outline: 1px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: var(--ds-shadow-focus);
 }
 
 textarea.input {
   min-height: 7.5rem;
-  padding-block: 0.75rem;
   resize: vertical;
 }
 
-/* select / date / time 的原生外观收口统一在 ui/base.css，此处不再重复。 */
-
-.input[disabled] {
-  cursor: not-allowed;
-  opacity: 0.75;
+.input:disabled {
+  background: var(--color-surface-subtle);
+  opacity: 0.58;
 }
 
 .input[aria-invalid="true"] {
   border-color: var(--color-danger);
 }
 
-.error {
+.error,
+.hint,
+.disabledReason {
   margin: 0;
+  font-size: var(--ds-text-12);
+  line-height: 1.55;
+}
+
+.error {
   color: var(--color-danger);
-  font-size: var(--font-size-aux);
   font-weight: 680;
-  animation: form-error-enter var(--duration-overlay) var(--ease-out) both;
+  animation: form-error-enter var(--ds-duration-fast) var(--ds-ease-out) both;
 }
 
 .hint {
-  margin: 0;
-  color: var(--color-text-secondary);
-  font-size: var(--font-size-aux);
+  color: var(--color-text-muted);
 }
 
 .disabledReason {
-  margin: 0;
-  padding: 0.7rem 0.85rem;
+  padding: var(--ds-space-2) var(--ds-space-3);
   border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-control);
+  border-radius: var(--ds-radius-2);
   background: var(--color-surface-subtle);
   color: var(--color-text-secondary);
-  font-size: var(--font-size-aux);
 }
 
 .actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 0.75rem;
   align-items: center;
-  padding-top: 0.5rem;
+  gap: var(--ds-space-3);
+  padding-top: var(--ds-space-2);
 }
 
 .action {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: var(--ds-touch-min);
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  padding: 0.72rem 1.15rem;
-  border-radius: var(--radius-control);
+  gap: var(--ds-space-2);
+  padding: 0 var(--ds-space-4);
+  border-radius: var(--ds-radius-2);
   cursor: pointer;
-  font-weight: 750;
+  font-weight: 700;
   transition:
-    transform var(--duration-feedback) var(--ease-out),
-    background-color var(--duration-feedback) ease,
-    border-color var(--duration-feedback) ease;
+    transform var(--ds-duration-fast) var(--ds-ease-out),
+    background-color var(--ds-duration-fast) var(--ds-ease-out),
+    border-color var(--ds-duration-fast) var(--ds-ease-out);
 }
 
-.action:hover {
-  transform: translateY(-2px);
-}
-
-.action:active {
-  transform: translateY(0) scale(0.985);
+.action:hover:not(:disabled) {
+  transform: translateY(-1px);
 }
 
 .actionPrimary {
   width: 100%;
   border: 1px solid var(--color-action);
-  border-radius: var(--radius-control);
   background: var(--color-action);
   color: var(--color-on-action);
 }
 
-.actionPrimary:hover {
+.actionPrimary:hover:not(:disabled) {
   background: var(--color-action-hover);
 }
 
 .actionSecondary {
   border: 1px solid var(--color-border-strong);
-  background: var(--color-canvas);
-  color: var(--color-action);
-}
-
-.actionSecondary:hover {
-  border-color: var(--color-border-strong);
   background: var(--color-surface);
+  color: var(--color-text);
 }
 
-.action[disabled] {
-  border-color: var(--color-border);
-  background: var(--color-surface-muted);
-  color: var(--color-text-secondary);
+.actionSecondary:hover:not(:disabled) {
+  border-color: var(--ds-line-ink);
+}
+
+.action:disabled {
+  background: var(--color-surface-subtle);
+  color: var(--color-text-muted);
   cursor: not-allowed;
+  opacity: 0.42;
   transform: none;
-  box-shadow: none;
+}
+
+select.input {
+  padding-right: 2.5rem;
 }
 
 @keyframes form-error-enter {
   from {
     opacity: 0;
     transform: translateY(4px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
@@ -169,13 +161,7 @@ textarea.input {
     animation: none;
   }
 
-  .action:hover,
-  .action:active {
+  .action:hover {
     transform: none;
   }
-}
-
-/* 与 ui/base.css 的下拉箭头留出净空。 */
-select.input {
-  padding-right: 2.5rem;
 }

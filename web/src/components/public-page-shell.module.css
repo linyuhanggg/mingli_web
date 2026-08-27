@@ -1,17 +1,52 @@
 .shell {
   min-height: 100vh;
   overflow-x: hidden;
-  background: var(--color-canvas);
-  color: var(--color-text);
+  background: var(--ds-canvas);
+  color: var(--ds-ink);
 }
 
-.shell[data-home-chrome="true"] {
-  background: var(--paper-canvas);
-  color: var(--paper-text);
+.breadcrumbBar {
+  min-height: 46px;
+  border-bottom: 1px solid var(--ds-line);
+  background: var(--ds-surface-subtle);
 }
 
-@media (max-width: 47.999rem) {
-  .shell {
-    padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
-  }
+.breadcrumb {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: var(--ds-space-2);
+  overflow-x: auto;
+  color: var(--ds-muted);
+  font-size: var(--ds-text-14);
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.breadcrumb::-webkit-scrollbar {
+  display: none;
+}
+
+.breadcrumb a {
+  color: var(--ds-ink-soft);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--ds-accent);
+}
+
+.breadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.breadcrumbSeparator {
+  color: var(--ds-line-ink);
+}
+
+.breadcrumb [aria-current="page"] {
+  color: var(--ds-ink);
+  font-weight: 500;
 }

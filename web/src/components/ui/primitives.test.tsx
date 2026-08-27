@@ -93,18 +93,23 @@ const sampleRows = [
 ];
 
 describe("Button", () => {
-  it("renders every variant and keeps a 44px target", () => {
+  it("renders the canonical variants and size contract", () => {
     const { rerender } = render(<Button>保存</Button>);
     const primary = screen.getByRole("button", { name: "保存" });
     expect(primary).toHaveAttribute("data-variant", "primary");
-    expect(primary).toHaveStyle({ minHeight: "var(--target-min)", minWidth: "var(--target-min)" });
+    expect(primary).toHaveAttribute("data-size", "md");
 
-    for (const variant of ["secondary", "ghost", "destructive"] as const) {
+    for (const variant of ["secondary", "quiet", "signal", "danger"] as const) {
       rerender(<Button variant={variant}>操作</Button>);
       expect(screen.getByRole("button", { name: "操作" })).toHaveAttribute(
         "data-variant",
         variant,
       );
+    }
+
+    for (const size of ["sm", "md", "lg"] as const) {
+      rerender(<Button size={size}>尺寸</Button>);
+      expect(screen.getByRole("button", { name: "尺寸" })).toHaveAttribute("data-size", size);
     }
   });
 
@@ -116,7 +121,7 @@ describe("Button", () => {
     );
     const button = screen.getByRole("button", { name: "关闭" });
     expect(button).toHaveAttribute("data-variant", "icon");
-    expect(button).toHaveStyle({ width: "var(--target-min)", height: "var(--target-min)" });
+    expect(button).toHaveStyle({ width: "var(--ds-touch-min)", height: "var(--ds-touch-min)" });
   });
 
   it("rejects an icon Button without a non-empty aria-label", () => {
@@ -370,25 +375,37 @@ describe("Drawer", () => {
 describe("Status", () => {
   it("renders every state with the correct live-region semantics", () => {
     const { rerender } = render(<Status state="loading" />);
-    const loading = screen.getByRole("status", { name: "正在载入…" });
+    const loading = screen.getByRole("status", { name: "正在同步出盘" });
     expect(loading).toHaveAttribute("data-state", "loading");
+    expect(loading).toHaveAttribute("data-core-state", "loading");
     expect(loading).toHaveAttribute("aria-busy", "true");
-    expect(screen.getByRole("status", { name: "正在载入…" }).textContent).toMatch(/…/);
 
     rerender(<Status state="empty" />);
-    expect(screen.getByRole("status", { name: "暂无内容" })).toHaveAttribute(
+    expect(screen.getByRole("status", { name: "还没有盘面" })).toHaveAttribute(
       "data-state",
       "empty",
     );
 
+    rerender(<Status state="ready" />);
+    expect(screen.getByRole("status", { name: "盘面已就绪" })).toHaveAttribute(
+      "data-core-state",
+      "ready",
+    );
+
+    rerender(<Status state="need-input" />);
+    expect(screen.getByRole("status", { name: "需要补充信息" })).toHaveAttribute(
+      "data-core-state",
+      "need-input",
+    );
+
     rerender(<Status state="error" />);
-    expect(screen.getByRole("alert", { name: "出现错误" })).toHaveAttribute(
+    expect(screen.getByRole("alert", { name: "暂时无法完成" })).toHaveAttribute(
       "data-state",
       "error",
     );
 
     rerender(<Status state="processing" />);
-    const processing = screen.getByRole("status", { name: "正在处理…" });
+    const processing = screen.getByRole("status", { name: "正在处理" });
     expect(processing).toHaveAttribute("data-state", "processing");
     expect(processing).toHaveAttribute("aria-busy", "true");
 
@@ -411,10 +428,11 @@ describe("Status", () => {
     );
 
     rerender(<Status state="locked" />);
-    expect(screen.getByRole("status", { name: "已锁定" })).toHaveAttribute(
+    expect(screen.getByRole("status", { name: "深读暂未解锁" })).toHaveAttribute(
       "data-state",
       "locked",
     );
+    expect(screen.getByText(/免费盘面事实仍可查看/)).toBeVisible();
   });
 
   it("renders clickable recovery actions without changing live-region semantics", async () => {

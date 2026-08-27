@@ -40,8 +40,8 @@ describe("responsive public home", () => {
     expect(within(hero).getByRole("link", { name: /开始排盘/ })).toHaveAttribute("href", "/bazi");
     expect(within(hero).getByRole("link", { name: "命盘合参" })).toHaveAttribute("href", "/hecan");
 
-    // 装饰层不进入阅读或交互语义
-    expect(within(main).getByTestId("home-atmosphere")).toHaveAttribute("aria-hidden", "true");
+    // 首页不再创建第二套宣纸剧场或额外品牌氛围层。
+    expect(within(main).queryByTestId("home-atmosphere")).not.toBeInTheDocument();
 
     // 任务入口链接矩阵：七术 + 见相 + 合参两产品 + 辅助三入口；/canwen 已并入命盘合参
     const expectedEntries = [
@@ -97,28 +97,11 @@ describe("responsive public home", () => {
     expect(screen.getByRole("contentinfo")).toBeVisible();
   });
 
-  it("observes the hero section so its negative-z-index art is not paused on screen", () => {
-    const observe = vi.fn();
-
-    class IntersectionObserverMock {
-      readonly root = null;
-      readonly rootMargin = "0px";
-      readonly thresholds = [0.01];
-
-      disconnect = vi.fn();
-      observe = observe;
-      takeRecords = vi.fn(() => []);
-      unobserve = vi.fn();
-    }
-
-    vi.stubGlobal(
-      "IntersectionObserver",
-      IntersectionObserverMock,
-    );
-
+  it("renders the complete homepage without the retired atmosphere component", () => {
     render(<HomePage />);
 
-    const atmosphere = screen.getByTestId("home-atmosphere");
-    expect(observe).toHaveBeenCalledWith(atmosphere.parentElement);
+    expect(screen.getByRole("main")).toHaveClass("xuan-order-home");
+    expect(screen.queryByTestId("home-atmosphere")).not.toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeVisible();
   });
 });

@@ -14,11 +14,24 @@ import {
 import styles from "./button.module.css";
 
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive" | "icon";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "quiet"
+  | "signal"
+  | "danger"
+  | "icon"
+  /** Compatibility alias. New call sites use `quiet`. */
+  | "ghost"
+  /** Compatibility alias. New call sites use `danger`. */
+  | "destructive";
+
+export type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonBaseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   loading?: boolean;
   asChild?: boolean;
+  size?: ButtonSize;
   children: ReactNode;
 };
 
@@ -37,6 +50,7 @@ export function Button({
   variant = "primary",
   loading = false,
   asChild = false,
+  size = "md",
   disabled,
   className,
   children,
@@ -84,8 +98,9 @@ export function Button({
 
     return (
       <Slot.Root
-        className={clsx(styles.button, styles[variant], className)}
+        className={clsx(styles.button, styles[variant], styles[size], className)}
         data-loading={loading ? "true" : undefined}
+        data-size={size}
         data-variant={variant}
         aria-busy={loading || undefined}
         {...props}
@@ -98,8 +113,9 @@ export function Button({
 
   return (
     <button
-      className={clsx(styles.button, styles[variant], className)}
+      className={clsx(styles.button, styles[variant], styles[size], className)}
       data-loading={loading ? "true" : undefined}
+      data-size={size}
       data-variant={variant}
       aria-busy={loading || undefined}
       disabled={isDisabled}
