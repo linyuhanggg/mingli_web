@@ -468,14 +468,13 @@ async def test_worker_start_binds_ready_and_execute_is_single_result(tmp_path: P
 async def test_worker_does_not_fallback_or_replay_after_a_written_crash(tmp_path: Path) -> None:
     adapter = _adapter(tmp_path, behavior="crash-after-read")
     await adapter.start()
-    first = await adapter.execute(Describe())
-    assert isinstance(first, Stopped)
-    assert first.public_copy == WORKER_STOPPED_COPY
+    with pytest.raises(RuntimeTransportError, match="runtime_invalid_output"):
+        await adapter.execute(Describe())
     assert adapter.isolated is True
     boot = tmp_path / "release" / WORKER_RELATIVE
     assert boot.parent.joinpath("boot.count").read_text() == "1"
-    second = await adapter.execute(Describe())
-    assert isinstance(second, Stopped)
+    with pytest.raises(RuntimeTransportError, match="runtime_pipe_unavailable"):
+        await adapter.execute(Describe())
     assert boot.parent.joinpath("boot.count").read_text() == "1"
     with pytest.raises(RuntimeStartupError, match="isolated"):
         await adapter.start()
@@ -508,11 +507,8 @@ async def test_worker_ready_failures_isolate_without_ready(tmp_path: Path, behav
     "behavior",
     (
         "two-results",
-        "result-extra-stdout",
-        "result-extra-stderr",
         "isolate",
         "invalid-result",
-        "crash-after-read",
         "v1-result",
     ),
 )
@@ -525,6 +521,26 @@ async def test_worker_request_faults_return_generic_stopped(tmp_path: Path, beha
     assert result.public_copy == WORKER_STOPPED_COPY
     assert result.state_token is None
     assert adapter.isolated is True
+    await adapter.close()
+
+
+@pytest.mark.parametrize(
+    "behavior",
+    ("result-extra-stdout", "result-extra-stderr", "crash-after-read"),
+)
+async def test_worker_request_framing_faults_raise_transport_error(
+    tmp_path: Path,
+    behavior: str,
+) -> None:
+    adapter = _adapter(tmp_path, behavior=behavior, request_timeout_seconds=0.3)
+    await adapter.start()
+    with pytest.raises(RuntimeTransportError, match="runtime_invalid_output"):
+        await adapter.execute(Describe())
+    assert adapter.isolated is True
+    assert adapter.last_turn is not None
+    assert adapter.last_turn.transport_fault == "transport:RuntimeTransportError"
+    with pytest.raises(RuntimeTransportError, match="runtime_pipe_unavailable"):
+        await adapter.execute(Describe())
     await adapter.close()
 
 
@@ -574,10 +590,16 @@ async def test_pre_terminal_faults_stop_the_current_request(
     )
     await adapter.start()
     started = asyncio.get_running_loop().time()
-    result = await adapter.execute(Describe())
+    if fault in {"stdout", "stderr"}:
+        with pytest.raises(RuntimeTransportError, match="runtime_invalid_output"):
+            await adapter.execute(Describe())
+        result = None
+    else:
+        result = await adapter.execute(Describe())
     elapsed = asyncio.get_running_loop().time() - started
-    assert isinstance(result, Stopped)
-    assert result.public_copy == WORKER_STOPPED_COPY
+    if result is not None:
+        assert isinstance(result, Stopped)
+        assert result.public_copy == WORKER_STOPPED_COPY
     assert adapter.isolated is True
     if delay:
         assert elapsed >= 0.06

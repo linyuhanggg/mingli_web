@@ -163,7 +163,7 @@ async def test_timeout_turn_audit_keeps_typed_failure_and_transport_fault(
     await adapter.close()
 
 
-async def test_chart_fast_path_rollback_keeps_typed_failure_audit(
+async def test_chart_fast_path_terminal_checkpoint_keeps_typed_failure_audit(
     database: Any,
     test_settings: Any,
     tmp_path: Path,
@@ -226,8 +226,16 @@ async def test_chart_fast_path_rollback_keeps_typed_failure_audit(
             "jobs": int(
                 await session.scalar(select(func.count()).select_from(ReadingJobRecord)) or 0
             ),
+            "job_statuses": list(await session.scalars(select(ReadingJobRecord.status))),
+            "version_statuses": list(await session.scalars(select(ReadingVersion.status))),
         }
-    assert counts == {"roots": 0, "versions": 0, "jobs": 0}
+    assert counts == {
+        "roots": 1,
+        "versions": 1,
+        "jobs": 1,
+        "job_statuses": ["stopped"],
+        "version_statuses": ["terminal_stopped"],
+    }
 
 
 @pytest.mark.skipif(not V51_AVAILABLE, reason="admitted v51 worker artifact is missing")
@@ -420,8 +428,16 @@ async def test_chart_fast_path_v2_audit_keeps_internal_code_off_http(
             "jobs": int(
                 await session.scalar(select(func.count()).select_from(ReadingJobRecord)) or 0
             ),
+            "job_statuses": list(await session.scalars(select(ReadingJobRecord.status))),
+            "version_statuses": list(await session.scalars(select(ReadingVersion.status))),
         }
-    assert counts == {"roots": 0, "versions": 0, "jobs": 0}
+    assert counts == {
+        "roots": 1,
+        "versions": 1,
+        "jobs": 1,
+        "job_statuses": ["stopped"],
+        "version_statuses": ["terminal_stopped"],
+    }
 
 
 def _durable_core_checkout(destination: Path) -> Path:
