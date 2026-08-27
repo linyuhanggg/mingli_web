@@ -49,6 +49,7 @@ from app.readings.api_schemas import (
     ReadingStartResponse,
     ReadingVerificationSummary,
     ReadingVersionSummary,
+    TimeLayerEntitlementResponse,
 )
 from app.readings.capability_policy import (
     project_capability,
@@ -2185,6 +2186,12 @@ class ReadingService:
             view_model,
             job_status=job_status,
         )
+        time_layer_entitlement = self.project_time_layer_entitlement(
+            view_model,
+            owner,
+            request_failed=status
+            in {ReadingStatus.TERMINAL_STOPPED, ReadingStatus.RUNTIME_UNKNOWN},
+        )
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=status,
@@ -2213,6 +2220,9 @@ class ReadingService:
             result_available=result_available,
             poll_required=poll_required,
             poll_after_seconds=poll_after_seconds,
+            time_layer_entitlement=TimeLayerEntitlementResponse.from_contract(
+                time_layer_entitlement
+            ),
         )
 
     async def submit_verification(

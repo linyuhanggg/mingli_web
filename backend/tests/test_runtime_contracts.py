@@ -374,8 +374,14 @@ def test_time_layer_entitlement_is_a_sibling_schema_not_v1_stopped() -> None:
     }
     assert "time_layers" not in stopped.to_dict()
     assert "layers" not in stopped.to_dict()
+    assert "time_layer_entitlement" not in stopped.to_dict()
     assert contracts.TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION == "time-layer-entitlement/v1"
     assert contracts.PAID_TIME_LAYER_IDS == ("month", "day", "hour")
+    schemas = importlib.import_module("app.readings.api_schemas")
+    entitlement_field = schemas.ReadingResultResponse.model_fields["time_layer_entitlement"]
+    assert "TimeLayerEntitlementResponse" in str(entitlement_field.annotation)
+    schema_version = schemas.TimeLayerEntitlementResponse.model_fields["schema_version"]
+    assert "time-layer-entitlement/v1" in str(schema_version.annotation)
 
 
 def test_runtime_failure_v1_accepts_only_the_closed_non_pii_code_table() -> None:

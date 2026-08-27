@@ -13,6 +13,7 @@ from app.adapters.runtime import (
     time_layer_entitlement_resolution_for_transport_fault,
 )
 from app.charts.contracts import TimeLayer
+from app.readings.api_schemas import ReadingResultResponse, TimeLayerEntitlementResponse
 from app.readings.runtime_contracts import (
     PAID_TIME_LAYER_IDS,
     TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
@@ -22,6 +23,7 @@ from app.readings.runtime_contracts import (
     resolve_time_layer_entitlement_resolution,
 )
 from app.readings.service import ReadingService
+from pydantic import ValidationError
 
 
 @dataclass
@@ -646,3 +648,93 @@ def test_other_view_models_are_out_of_scope() -> None:
         is None
     )
     assert project_time_layer_entitlement(None, resolution="denied") is None
+
+
+def _result_response(
+    contract: TimeLayerEntitlementV1 | None,
+) -> ReadingResultResponse:
+    return ReadingResultResponse(
+        reading_version_id=uuid4(),
+        status="accepted",
+        accepted_copy=None,
+        fact_panel=None,
+        view_model=None,
+        verification=None,
+        input_request=None,
+        document=None,
+        time_layer_entitlement=TimeLayerEntitlementResponse.from_contract(contract),
+    )
+
+
+@pytest.mark.parametrize("art", ["bazi", "ziwei"])
+@pytest.mark.parametrize("resolution", _ALL_RESOLUTIONS)
+def test_result_response_exposes_entitlement_as_sibling_v1(
+    art: str,
+    resolution: str,
+) -> None:
+    view = (
+        _bazi_view(
+            year_available=True,
+            month_available=True,
+            years=(2026,),
+            months=("2026-08",),
+            luck_cycles={"status": "calculated"},
+        )
+        if art == "bazi"
+        else _ziwei_view(
+            year_available=True,
+            month_available=True,
+            years=(2026,),
+            months=((2026, 8),),
+            major_limits=({"sequence": 1},),
+        )
+    )
+    original_layers = [dict(item) for item in view["time_layers"]]
+    contract = project_time_layer_entitlement(view, resolution=resolution)
+    assert contract is not None
+
+    dumped = _result_response(contract).model_dump(mode="json")
+    payload = dumped["time_layer_entitlement"]
+    restored = TimeLayerEntitlementV1.from_dict(payload)
+
+    assert payload["schema_version"] == TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
+    assert restored == contract
+    assert dumped["view_model"] is None
+    assert "time_layer_entitlement" in dumped
+    assert view["time_layers"] == original_layers
+    assert all("tier" not in item and "access" not in item for item in original_layers)
+
+
+def test_result_response_rejects_resolution_access_contradiction() -> None:
+    contract = project_time_layer_entitlement(
+        _bazi_view(years=(2026,), month_available=True, months=("2026-08",)),
+        resolution="unknown",
+    )
+    assert contract is not None
+    payload = contract.to_dict()
+    month = next(item for item in payload["layers"] if item["layer_id"] == "month")
+    month["access"] = "readable"
+    month["upgrade_cta"] = None
+
+    with pytest.raises(ValidationError):
+        TimeLayerEntitlementResponse.model_validate(payload)
+
+
+def test_result_response_rejects_parallel_schema_version() -> None:
+    contract = project_time_layer_entitlement(
+        _bazi_view(years=(2026,)),
+        resolution="denied",
+    )
+    assert contract is not None
+    payload = contract.to_dict()
+    payload["schema_version"] = "time-layer-entitlement-http/v1"
+
+    with pytest.raises(ValidationError):
+        TimeLayerEntitlementResponse.model_validate(payload)
+
+
+def test_result_response_omits_entitlement_for_out_of_scope_view() -> None:
+    response = _result_response(None)
+
+    assert response.time_layer_entitlement is None
+    assert response.model_dump(mode="json")["time_layer_entitlement"] is None
