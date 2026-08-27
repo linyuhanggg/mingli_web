@@ -75,14 +75,50 @@ export type BaziDeepTaskFlowProps = {
 
 type PollMode = "preview" | "deep";
 
+export type PreviewPollHints = {
+  result_available?: boolean;
+  poll_required?: boolean;
+};
+
+function previewPollHints(summary: unknown): PreviewPollHints {
+  if (!summary || typeof summary !== "object") return {};
+  const record = summary as Record<string, unknown>;
+  return {
+    result_available: typeof record.result_available === "boolean" ? record.result_available : undefined,
+    poll_required: typeof record.poll_required === "boolean" ? record.poll_required : undefined,
+  };
+}
+
+/**
+ * Free-chart success terminal is `prepared`. Backend GET may also send
+ * `result_available` / `poll_required=false`; consume them without waiting for `accepted`.
+ */
+export function isPreviewChartReady(
+  status: ReadingStatus,
+  hints?: PreviewPollHints,
+): boolean {
+  if (status === "accepted") return true;
+  if (status !== "prepared") return false;
+  if (hints?.poll_required === true) return false;
+  if (hints?.result_available === false) return false;
+  return true;
+}
+
 export function stateForReadingStatus(
   status: ReadingStatus,
   mode: PollMode,
+  hints?: PreviewPollHints,
 ): BaziDeepTaskState {
   if (status === "accepted") {
     return mode === "preview" ? "free" : "succeeded";
   }
-  if (status === "prepared" || status === "completing") {
+  if (status === "prepared") {
+    if (mode === "preview") {
+      return isPreviewChartReady(status, hints) ? "free" : "preview_loading";
+    }
+    return "running";
+  }
+  if (status === "completing") {
     return mode === "preview" ? "preview_loading" : "running";
   }
   if (status === "input_ready") {
@@ -214,9 +250,10 @@ export function BaziDeepTaskFlow({
         if (cancelled) return;
         setError(null);
     setErrorStatus(null);
-        const nextState = stateForReadingStatus(summary.status, "preview");
+        const hints = previewPollHints(summary);
+        const nextState = stateForReadingStatus(summary.status, "preview", hints);
         setState(nextState);
-        if (!shouldKeepPolling(summary)) return;
+        if (nextState === "free" || nextState === "failed" || !shouldKeepPolling(summary)) return;
         timer = setTimeout(run, POLL_MS);
       } catch (reason) {
         if (cancelled) return;
