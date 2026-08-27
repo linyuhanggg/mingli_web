@@ -19,9 +19,7 @@
   background-color: var(--color-surface);
   color: var(--color-text);
   font-size: var(--font-size-body);
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out);
 }
 
 .input:hover:not(:disabled) {
