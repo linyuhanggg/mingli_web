@@ -25,9 +25,7 @@
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
-  transition:
-    border-color var(--ds-duration-fast) var(--ds-ease-out),
-    box-shadow var(--ds-duration-fast) var(--ds-ease-out);
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out);
 }
 
 .control:hover:not(:disabled) {
