@@ -1,6 +1,10 @@
+import asyncio
+import importlib
+import os
+from collections.abc import AsyncIterator
 from types import SimpleNamespace
 from typing import Any
-from uuid import UUID
+from uuid import UUID, uuid4
 
 import pytest
 from app.identity.models import User
@@ -14,7 +18,54 @@ from app.profiles.service import (
     ProfileNameConflictError,
     ProfileService,
 )
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
+
+
+class PostgresProfileDatabaseHarness:
+    def __init__(self, engine: Any) -> None:
+        self.engine = engine
+        self.sessions = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def dispose(self) -> None:
+        await self.engine.dispose()
+
+
+@pytest.fixture
+async def postgres_profile_database() -> AsyncIterator[Any]:
+    url = os.environ.get("MINGLI_TEST_POSTGRES_URL")
+    if not url:
+        pytest.skip("MINGLI_TEST_POSTGRES_URL is required for PostgreSQL concurrency tests")
+    identity_models = importlib.import_module("app.identity.models")
+    importlib.import_module("app.profiles.models")
+    importlib.import_module("app.readings.models")
+    importlib.import_module("app.admin.models")
+    importlib.import_module("app.support.models")
+    importlib.import_module("app.entitlements.models")
+    importlib.import_module("app.commerce.models")
+    importlib.import_module("app.referrals.models")
+    importlib.import_module("app.content.models")
+    importlib.import_module("app.privacy.models")
+    importlib.import_module("app.media.models")
+    schema = f"mingli_profile_test_{uuid4().hex}"
+    admin_engine = create_async_engine(url, pool_pre_ping=True)
+    async with admin_engine.begin() as connection:
+        await connection.execute(text(f'CREATE SCHEMA "{schema}"'))
+    engine = create_async_engine(
+        url,
+        pool_pre_ping=True,
+        connect_args={"server_settings": {"search_path": schema}},
+    )
+    database = PostgresProfileDatabaseHarness(engine)
+    try:
+        async with engine.begin() as connection:
+            await connection.run_sync(identity_models.Base.metadata.create_all)
+        yield database
+    finally:
+        await database.dispose()
+        async with admin_engine.begin() as connection:
+            await connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
+        await admin_engine.dispose()
 
 
 def _owner(user_id: UUID) -> SimpleNamespace:
@@ -506,3 +557,216 @@ async def test_save_as_name_stays_within_label_limit(
         assert stored is not None
         assert stored.label is not None
         assert len(stored.label) <= 80
+
+
+async def test_profile_rename_locks_owner_before_reading_profile(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with database.sessions() as session:
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        draft_id = await service.create_draft(owner, label="旧名字")
+        confirmed = await service.confirm_draft(owner, draft_id, _confirm_payload())
+        calls: list[str] = []
+        original_lock = service.repository.lock_profile_owner
+        original_get = service.repository.get_owned_profile
+
+        async def tracked_lock(**kwargs: Any) -> None:
+            calls.append("lock")
+            await original_lock(**kwargs)
+
+        async def tracked_get(*args: Any, **kwargs: Any) -> SubjectProfile | None:
+            calls.append("read")
+            return await original_get(*args, **kwargs)
+
+        monkeypatch.setattr(service.repository, "lock_profile_owner", tracked_lock)
+        monkeypatch.setattr(service.repository, "get_owned_profile", tracked_get)
+
+        renamed = await service.update_display_name(
+            owner,
+            confirmed.profile_id,
+            "新名字",
+        )
+
+        assert renamed.display_name == "新名字"
+        assert calls[:2] == ["lock", "read"]
+
+
+def _delay_first_profile_conflict_check(
+    monkeypatch: pytest.MonkeyPatch,
+) -> tuple[asyncio.Event, asyncio.Event, asyncio.Event]:
+    first_check_finished = asyncio.Event()
+    second_check_started = asyncio.Event()
+    release_first = asyncio.Event()
+    original_check = ProfileService._name_birth_conflict
+    check_count = 0
+
+    async def delayed_conflict_check(
+        self: ProfileService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal check_count
+        conflict = await original_check(self, *args, **kwargs)
+        check_count += 1
+        if check_count == 1:
+            first_check_finished.set()
+            await release_first.wait()
+        else:
+            second_check_started.set()
+        return conflict
+
+    monkeypatch.setattr(
+        ProfileService,
+        "_name_birth_conflict",
+        delayed_conflict_check,
+    )
+    return first_check_finished, second_check_started, release_first
+
+
+async def _profile_conflict_call_was_blocked(
+    second_check_started: asyncio.Event,
+) -> bool:
+    try:
+        await asyncio.wait_for(second_check_started.wait(), timeout=0.2)
+    except TimeoutError:
+        return True
+    return False
+
+
+async def test_postgresql_owner_lock_serializes_concurrent_profile_renames(
+    postgres_profile_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with postgres_profile_database.sessions() as session, session.begin():
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        first_draft = await service.create_draft(owner, label="甲")
+        second_draft = await service.create_draft(owner, label="乙")
+        first = await service.confirm_draft(owner, first_draft, _confirm_payload())
+        second = await service.confirm_draft(owner, second_draft, _confirm_payload())
+        user_id = user.id
+
+    first_check_finished, second_check_started, release_first = (
+        _delay_first_profile_conflict_check(monkeypatch)
+    )
+
+    async def rename(profile_id: UUID) -> str:
+        async with postgres_profile_database.sessions() as session, session.begin():
+            service = ProfileService(session, test_settings)
+            try:
+                await service.update_display_name(
+                    _owner(user_id),
+                    profile_id,
+                    "同名目标",
+                )
+            except ProfileNameConflictError:
+                return "conflict"
+        return "renamed"
+
+    first_task = asyncio.create_task(rename(first.profile_id))
+    await asyncio.wait_for(first_check_finished.wait(), timeout=2)
+    second_task = asyncio.create_task(rename(second.profile_id))
+    second_was_blocked = await _profile_conflict_call_was_blocked(second_check_started)
+    release_first.set()
+    outcomes = await asyncio.wait_for(
+        asyncio.gather(first_task, second_task),
+        timeout=5,
+    )
+
+    assert second_was_blocked is True
+    assert sorted(outcomes) == ["conflict", "renamed"]
+    async with postgres_profile_database.sessions() as session:
+        confirmed_target_count = await session.scalar(
+            select(func.count())
+            .select_from(SubjectProfile)
+            .join(ProfileVersion, ProfileVersion.profile_id == SubjectProfile.id)
+            .where(
+                SubjectProfile.owner_user_id == user_id,
+                SubjectProfile.label == "同名目标",
+            )
+        )
+    assert confirmed_target_count == 1
+
+
+async def test_postgresql_owner_lock_serializes_rename_with_draft_confirmation(
+    postgres_profile_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async with postgres_profile_database.sessions() as session, session.begin():
+        user = User()
+        session.add(user)
+        await session.flush()
+        service = ProfileService(session, test_settings)
+        owner = _owner(user.id)
+        confirmed_draft = await service.create_draft(owner, label="原名字")
+        confirmed = await service.confirm_draft(
+            owner,
+            confirmed_draft,
+            _confirm_payload(),
+        )
+        competing_draft = await service.create_draft(owner, label="同名目标")
+        user_id = user.id
+
+    first_check_finished, second_check_started, release_first = (
+        _delay_first_profile_conflict_check(monkeypatch)
+    )
+
+    async def rename() -> str:
+        async with postgres_profile_database.sessions() as session, session.begin():
+            service = ProfileService(session, test_settings)
+            await service.update_display_name(
+                _owner(user_id),
+                confirmed.profile_id,
+                "同名目标",
+            )
+        return "renamed"
+
+    async def confirm() -> str:
+        async with postgres_profile_database.sessions() as session, session.begin():
+            service = ProfileService(session, test_settings)
+            try:
+                await service.confirm_draft(
+                    _owner(user_id),
+                    competing_draft,
+                    _confirm_payload(),
+                )
+            except ProfileNameConflictError:
+                return "conflict"
+        return "confirmed"
+
+    rename_task = asyncio.create_task(rename())
+    await asyncio.wait_for(first_check_finished.wait(), timeout=2)
+    confirm_task = asyncio.create_task(confirm())
+    confirm_was_blocked = await _profile_conflict_call_was_blocked(
+        second_check_started
+    )
+    release_first.set()
+    outcomes = await asyncio.wait_for(
+        asyncio.gather(rename_task, confirm_task),
+        timeout=5,
+    )
+
+    assert confirm_was_blocked is True
+    assert sorted(outcomes) == ["conflict", "renamed"]
+    async with postgres_profile_database.sessions() as session:
+        confirmed_target_count = await session.scalar(
+            select(func.count())
+            .select_from(SubjectProfile)
+            .join(ProfileVersion, ProfileVersion.profile_id == SubjectProfile.id)
+            .where(
+                SubjectProfile.owner_user_id == user_id,
+                SubjectProfile.label == "同名目标",
+            )
+        )
+    assert confirmed_target_count == 1

@@ -1139,6 +1139,16 @@ class WorkerV2MingliRuntimeAdapter:
         return self._isolated
 
     @property
+    def process_alive(self) -> bool:
+        process = self._process
+        return (
+            not self._isolated
+            and process is not None
+            and self._ready is not None
+            and process.returncode is None
+        )
+
+    @property
     def ready(self) -> Mapping[str, Any] | None:
         return None if self._ready is None else dict(self._ready)
 

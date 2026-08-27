@@ -103,6 +103,8 @@ def create_app(
         runtime = getattr(application.state, "chart_runtime", None)
         if getattr(runtime, "isolated", False):
             raise RuntimeStartupError("Runtime worker is isolated")
+        if getattr(runtime, "process_alive", True) is False:
+            raise RuntimeStartupError("Runtime worker process is not alive")
         gate = getattr(application.state, "runtime_gate", None)
         if gate is not None:
             await gate.readiness_probe()
