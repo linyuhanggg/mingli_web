@@ -9,10 +9,13 @@ import { ProductInputForm } from "@/components/task/product-input-form";
 import { ApiError } from "@/lib/api";
 import {
   CHART_RUNTIME_FAULT,
+  GUEST_DAILY_PAID_READING_LIMIT,
   GUEST_DAILY_READING_LIMIT,
   PAID_READING_REQUIRES_ACCOUNT,
   RATE_LIMIT_EXCEEDED,
   START_READING_UNAVAILABLE,
+  USER_DAILY_PAID_READING_LIMIT,
+  USER_DAILY_READING_LIMIT,
   mapStartReadingFailure,
   startReadingFailureAction,
 } from "@/lib/start-reading-error";
@@ -85,10 +88,21 @@ describe("bazi start unavailable copy", () => {
       mapStartReadingFailure(new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit")),
     ).toEqual({ state: "error", title: GUEST_DAILY_READING_LIMIT });
     expect(
+      mapStartReadingFailure(new ApiError("Paid cap", 429, undefined, "guest_daily_paid_reading_limit")),
+    ).toEqual({ state: "error", title: GUEST_DAILY_PAID_READING_LIMIT });
+    expect(
+      mapStartReadingFailure(new ApiError("User cap", 429, undefined, "user_daily_reading_limit")),
+    ).toEqual({ state: "error", title: USER_DAILY_READING_LIMIT });
+    expect(
+      mapStartReadingFailure(new ApiError("User paid cap", 429, undefined, "user_daily_paid_reading_limit")),
+    ).toEqual({ state: "error", title: USER_DAILY_PAID_READING_LIMIT });
+    expect(
       mapStartReadingFailure(new ApiError("Stopped", 503, undefined, "chart_runtime_error")),
     ).toEqual({ state: "unavailable", title: CHART_RUNTIME_FAULT });
     expect(startReadingFailureAction(new ApiError("Payment required", 403, undefined, "paid_reading_requires_account"))).toBe("login");
     expect(startReadingFailureAction(new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit"))).toBe("login");
+    expect(startReadingFailureAction(new ApiError("Paid cap", 429, undefined, "guest_daily_paid_reading_limit"))).toBe("login");
+    expect(startReadingFailureAction(new ApiError("User cap", 429, undefined, "user_daily_reading_limit"))).toBeNull();
     expect(startReadingFailureAction(new ApiError("Too many requests", 429, undefined, "rate_limit_exceeded"))).toBe("retry");
     expect(startReadingFailureAction(new ApiError("Stopped", 503, undefined, "chart_runtime_timeout"))).toBe("retry");
   });
