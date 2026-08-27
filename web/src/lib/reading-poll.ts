@@ -3,7 +3,6 @@ const TERMINAL_WITHOUT_POLL = new Set([
   "waiting_input",
   "terminal_stopped",
   "runtime_unknown",
-  "delayed",
 ]);
 
 export function shouldKeepPolling(summary: {
