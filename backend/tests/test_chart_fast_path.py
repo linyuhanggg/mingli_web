@@ -8,6 +8,8 @@ from typing import Any
 from uuid import UUID
 
 from app.adapters.runtime import WorkerV2MingliRuntimeAdapter
+from app.database import Database
+from app.identity.models import Base
 from app.main import create_app
 from app.readings.models import (
     GenerationAttempt,
@@ -19,7 +21,7 @@ from app.readings.models import (
 from app.readings.runtime_contracts import Prepare, Prepared, ReadingBrief
 from app.readings.service import ReadingService
 from httpx import ASGITransport, AsyncClient
-from sqlalchemy import func, select
+from sqlalchemy import func, select, text
 from worker.readings import build_reading_worker
 
 # isort: split
@@ -177,6 +179,23 @@ class DeterministicChartRuntime:
             state_token=f"chart-fast-path:{capability_id}:{len(self.calls)}",
             brief=_brief(command),
         )
+
+
+class BlockingFirstChartRuntime(DeterministicChartRuntime):
+    def __init__(self) -> None:
+        super().__init__()
+        self.first_call_started = asyncio.Event()
+        self.release_first_call = asyncio.Event()
+        self.second_call_started = asyncio.Event()
+
+    async def execute(self, command: Any) -> Prepared:
+        if self.calls:
+            self.second_call_started.set()
+        result = await super().execute(command)
+        if len(self.calls) == 1:
+            self.first_call_started.set()
+            await self.release_first_call.wait()
+        return result
 
 
 class HangingChartRuntime:
@@ -447,6 +466,93 @@ async def test_worker_slot_wait_does_not_consume_chart_execution_timeout(
     assert results == [command, command]
     assert runtime.turns_started == 2
     assert runtime.isolated is False
+
+
+async def test_same_idempotency_key_is_claimed_before_direct_runtime(
+    tmp_path: Path,
+    test_settings: Any,
+) -> None:
+    database = Database(f"sqlite+aiosqlite:///{tmp_path / 'idempotency-race.db'}")
+    async with database.engine.begin() as connection:
+        await connection.execute(text("PRAGMA journal_mode=WAL"))
+        await connection.run_sync(Base.metadata.create_all)
+    runtime = BlockingFirstChartRuntime()
+    settings = test_settings.model_copy(update={"reading_write_rate_limit": 100})
+    application = create_app(
+        settings=settings,
+        database=database,
+        chart_runtime=runtime,
+    )
+    try:
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as client:
+            headers = await create_guest(client)
+            profile = await create_confirmed_profile(client, headers)
+            await seed_runtime_release(database, settings)
+            request_headers = {
+                **headers,
+                "Idempotency-Key": "direct-chart-concurrent-claim",
+            }
+            payload = {
+                "profile_version_id": profile["profile_version_id"],
+                "dimension_ids": ["career"],
+            }
+
+            first = asyncio.create_task(
+                client.post(
+                    "/api/v1/readings/preview",
+                    headers=request_headers,
+                    json=payload,
+                )
+            )
+            await asyncio.wait_for(runtime.first_call_started.wait(), timeout=1.0)
+            second = asyncio.create_task(
+                client.post(
+                    "/api/v1/readings/preview",
+                    headers=request_headers,
+                    json=payload,
+                )
+            )
+            try:
+                await asyncio.sleep(0.05)
+                assert runtime.second_call_started.is_set() is False
+            finally:
+                runtime.release_first_call.set()
+            first_response, second_response = await asyncio.wait_for(
+                asyncio.gather(first, second),
+                timeout=2.0,
+            )
+
+        assert first_response.status_code == 201, first_response.text
+        assert second_response.status_code == 200, second_response.text
+        assert (
+            second_response.json()["reading_version_id"]
+            == first_response.json()["reading_version_id"]
+        )
+        assert runtime.calls == ["bazi"]
+        async with database.sessions() as session:
+            counts = {
+                "roots": int(
+                    await session.scalar(select(func.count()).select_from(ReadingRoot))
+                    or 0
+                ),
+                "versions": int(
+                    await session.scalar(select(func.count()).select_from(ReadingVersion))
+                    or 0
+                ),
+                "idempotency": int(
+                    await session.scalar(
+                        select(func.count()).select_from(ReadingIdempotencyKey)
+                    )
+                    or 0
+                ),
+            }
+        assert counts == {"roots": 1, "versions": 1, "idempotency": 1}
+    finally:
+        runtime.release_first_call.set()
+        await database.dispose()
 
 
 async def test_chart_runtime_timeout_fails_fast_and_rolls_back(
