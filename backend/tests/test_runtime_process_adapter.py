@@ -103,6 +103,7 @@ def _audit_only_worker(
     adapter._isolated = False
     adapter._audit_timeout_seconds = audit_timeout_seconds
     adapter._audit_tail = None
+    adapter._audit_pending = set()
     adapter.last_turn = None
     return adapter
 
@@ -271,7 +272,7 @@ def test_worker_turn_audit_redacts_late_stderr_bytes(tmp_path: Path) -> None:
     assert adapter.last_turn.transport_fault == "stderr-before-write"
 
 
-async def test_worker_durable_audit_write_is_off_loop_bounded_and_ordered(
+async def test_worker_durable_audit_breaks_a_stalled_tail_without_pending_growth(
     tmp_path: Path,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
@@ -285,7 +286,7 @@ async def test_worker_durable_audit_write_is_off_loop_bounded_and_ordered(
         assert isinstance(sequence, int)
         if sequence == 1:
             loop.call_soon_threadsafe(first_write_started.set)
-            release_first_write.wait(timeout=0.5)
+            release_first_write.wait(timeout=1.0)
         persisted_sequences.append(sequence)
 
     monkeypatch.setattr(runtime_module, "append_runtime_turn_audit", slow_append)
@@ -309,14 +310,67 @@ async def test_worker_durable_audit_write_is_off_loop_bounded_and_ordered(
     assert adapter.isolated is False
     assert adapter._transport_fault is None
 
+    try:
+        assert adapter._audit_tail is None
+        assert len(adapter._audit_pending) == 1
+
+        adapter._last_sequence = 2
+        await adapter._publish_turn_durable(Describe(), result)
+        assert persisted_sequences == [2]
+        assert len(adapter._audit_pending) == 1
+
+        adapter._last_sequence = 3
+        await adapter._publish_turn_durable(Describe(), result)
+        assert persisted_sequences == [2, 3]
+        assert len(adapter._audit_pending) == 1
+    finally:
+        release_first_write.set()
+        if adapter._audit_pending:
+            await asyncio.wait_for(
+                asyncio.gather(*tuple(adapter._audit_pending)),
+                timeout=0.5,
+            )
+
+    assert len(adapter._audit_pending) == 0
+
+
+async def test_worker_durable_audit_keeps_normal_turn_order(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    loop = asyncio.get_running_loop()
+    first_write_started = asyncio.Event()
+    release_first_write = threading.Event()
+    persisted_sequences: list[int] = []
+
+    def ordered_append(_path: Path, record: dict[str, object]) -> None:
+        sequence = record["sequence"]
+        assert isinstance(sequence, int)
+        if sequence == 1:
+            loop.call_soon_threadsafe(first_write_started.set)
+            release_first_write.wait(timeout=0.2)
+        persisted_sequences.append(sequence)
+
+    monkeypatch.setattr(runtime_module, "append_runtime_turn_audit", ordered_append)
+    adapter = _audit_only_worker(tmp_path, audit_timeout_seconds=0.15)
+    result = Described(
+        protocol_version="mingli-portable-interface-v2",
+        manifest_digest="0" * 64,
+        capabilities=(),
+    )
+
+    first_publish = asyncio.create_task(adapter._publish_turn_durable(Describe(), result))
+    await asyncio.wait_for(first_write_started.wait(), timeout=0.1)
     adapter._last_sequence = 2
-    await adapter._publish_turn_durable(Describe(), result)
+    second_publish = asyncio.create_task(adapter._publish_turn_durable(Describe(), result))
+    await asyncio.sleep(0.01)
     assert persisted_sequences == []
 
     release_first_write.set()
-    assert adapter._audit_tail is not None
-    await asyncio.wait_for(adapter._audit_tail, timeout=0.5)
+    await asyncio.gather(first_publish, second_publish)
+
     assert persisted_sequences == [1, 2]
+    assert adapter._audit_pending == set()
 
 
 async def test_process_adapter_first_describe_stays_inside_two_second_budget(

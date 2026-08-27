@@ -2,11 +2,13 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 import time
 from pathlib import Path
 from typing import Any
 from uuid import UUID
 
+import app.readings.service as reading_service_module
 from app.adapters.runtime import WorkerV2MingliRuntimeAdapter
 from app.database import Database
 from app.identity.models import Base
@@ -201,8 +203,12 @@ class BlockingFirstChartRuntime(DeterministicChartRuntime):
 class HangingChartRuntime:
     adapter_kind = "test-hanging-chart-runtime"
 
+    def __init__(self) -> None:
+        self.calls = 0
+
     async def execute(self, command: Any) -> Prepared:
         assert isinstance(command, Prepare)
+        self.calls += 1
         await asyncio.Event().wait()
         raise AssertionError("unreachable")
 
@@ -555,15 +561,16 @@ async def test_same_idempotency_key_is_claimed_before_direct_runtime(
         await database.dispose()
 
 
-async def test_chart_runtime_timeout_fails_fast_and_rolls_back(
+async def test_chart_runtime_timeout_persists_unknown_and_idempotency_claim(
     database: Any,
     test_settings: Any,
 ) -> None:
     settings = test_settings.model_copy(update={"chart_fast_path_timeout_seconds": 0.01})
+    runtime = HangingChartRuntime()
     application = create_app(
         settings=settings,
         database=database,
-        chart_runtime=HangingChartRuntime(),
+        chart_runtime=runtime,
     )
     async with AsyncClient(
         transport=ASGITransport(app=application),
@@ -583,11 +590,23 @@ async def test_chart_runtime_timeout_fails_fast_and_rolls_back(
         )
         elapsed = time.perf_counter() - started_at
 
+        replay = await client.post(
+            "/api/v1/readings/preview",
+            headers={**headers, "Idempotency-Key": "chart-timeout-proof"},
+            json={
+                "profile_version_id": profile["profile_version_id"],
+                "dimension_ids": ["career"],
+            },
+        )
+
     assert response.status_code == 503
     assert response.json()["title"] == "Chart generation unavailable"
     assert response.json()["detail"] == "chart_runtime_timeout"
     assert response.json()["request_id"]
     assert elapsed < 0.5
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert runtime.calls == 1
     async with database.sessions() as session:
         counts = {
             "roots": int(await session.scalar(select(func.count()).select_from(ReadingRoot)) or 0),
@@ -600,5 +619,74 @@ async def test_chart_runtime_timeout_fails_fast_and_rolls_back(
             "idempotency": int(
                 await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) or 0
             ),
+            "job_statuses": list(await session.scalars(select(ReadingJobRecord.status))),
+            "version_statuses": list(await session.scalars(select(ReadingVersion.status))),
         }
-    assert counts == {"roots": 0, "versions": 0, "jobs": 0, "idempotency": 0}
+    assert counts == {
+        "roots": 1,
+        "versions": 1,
+        "jobs": 1,
+        "idempotency": 1,
+        "job_statuses": ["runtime_unknown"],
+        "version_statuses": ["runtime_unknown"],
+    }
+
+
+async def test_one_shot_failure_audit_is_off_loop_and_bounded(
+    tmp_path: Path,
+    test_settings: Any,
+    monkeypatch: Any,
+) -> None:
+    loop = asyncio.get_running_loop()
+    write_started = asyncio.Event()
+    release_write = threading.Event()
+
+    def stalled_append(_path: Path, _record: dict[str, object]) -> None:
+        loop.call_soon_threadsafe(write_started.set)
+        release_write.wait(timeout=0.5)
+
+    runtime = HangingChartRuntime()
+    runtime._state_root = tmp_path  # type: ignore[attr-defined]
+    service = ReadingService(
+        session=object(),  # type: ignore[arg-type]
+        settings=test_settings,
+        chart_runtime=runtime,
+    )
+    command = Prepare(
+        query="审计失败路径",
+        intent={
+            "subject_refs": ["fixture:subject"],
+            "object_id": "natal",
+            "dimension_ids": [],
+            "horizon": {"kind_id": "life", "start": None, "end": None},
+            "capability_id": "bazi",
+            "comparisons": [],
+        },
+        facts={"fixture:subject": {"fixture_input": "present"}},
+    )
+    monkeypatch.setattr(
+        reading_service_module,
+        "append_runtime_turn_audit",
+        stalled_append,
+    )
+    monkeypatch.setattr(
+        reading_service_module,
+        "WORKER_AUDIT_TIMEOUT_SECONDS",
+        0.02,
+    )
+    heartbeat = asyncio.Event()
+    loop.call_later(0.005, heartbeat.set)
+
+    started_at = time.perf_counter()
+    publish = asyncio.create_task(
+        service._remember_chart_runtime_audit(command, None, fault="timeout")
+    )
+    await asyncio.wait_for(write_started.wait(), timeout=0.2)
+    try:
+        record = await publish
+    finally:
+        release_write.set()
+
+    assert record.transport_fault == "timeout"
+    assert heartbeat.is_set()
+    assert time.perf_counter() - started_at < 0.15

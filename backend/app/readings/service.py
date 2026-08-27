@@ -19,6 +19,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.adapters.runtime import (
     RUNTIME_TURN_AUDIT_NAME,
+    WORKER_AUDIT_TIMEOUT_SECONDS,
     MingliRuntime,
     RuntimeTurnAudit,
     WorkerV2MingliRuntimeAdapter,
@@ -2482,19 +2483,19 @@ class ReadingService:
         try:
             result = await self._execute_chart_runtime(prepare)
         except TimeoutError as error:
-            self._remember_chart_runtime_audit(prepare, None, fault="timeout")
+            await self._record_chart_runtime_timeout(job, prepare)
             raise ChartFastPathUnavailableError(
                 "chart_runtime_timeout",
                 code="chart_runtime_timeout",
             ) from error
         except RuntimeTransportError as error:
             if str(error) == "runtime_timed_out":
-                self._remember_chart_runtime_audit(prepare, None, fault="timeout")
+                await self._record_chart_runtime_timeout(job, prepare)
                 raise ChartFastPathUnavailableError(
                     "chart_runtime_timeout",
                     code="chart_runtime_timeout",
                 ) from error
-            self._remember_chart_runtime_audit(
+            await self._remember_chart_runtime_audit(
                 prepare,
                 None,
                 fault=f"transport:{type(error).__name__}",
@@ -2504,7 +2505,7 @@ class ReadingService:
                 code="chart_runtime_transport",
             ) from error
         except Exception as error:
-            self._remember_chart_runtime_audit(
+            await self._remember_chart_runtime_audit(
                 prepare,
                 None,
                 fault=f"exception:{type(error).__name__}",
@@ -2542,14 +2543,14 @@ class ReadingService:
         elif isinstance(result, Stopped) and result.reason == "need_input":
             await self.repository.record_waiting_input(str(job.id), result, now)
         elif isinstance(result, Stopped):
-            self._remember_chart_runtime_audit(prepare, result)
+            await self._remember_chart_runtime_audit(prepare, result)
             code = f"chart_runtime_{result.reason}"
             raise ChartFastPathUnavailableError(
                 result.public_copy or code,
                 code=code,
             )
         else:
-            self._remember_chart_runtime_audit(
+            await self._remember_chart_runtime_audit(
                 prepare,
                 result,
                 fault="protocol-error",
@@ -2572,7 +2573,19 @@ class ReadingService:
         async with asyncio.timeout(self.settings.chart_fast_path_timeout_seconds):
             return await self.chart_runtime.execute(prepare)
 
-    def _remember_chart_runtime_audit(
+    async def _record_chart_runtime_timeout(
+        self,
+        job: ReadingJobRecord,
+        prepare: Prepare,
+    ) -> None:
+        if prepare.state_token is None:
+            await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
+            # The API maps this outcome to a 503 and the request dependency rolls
+            # back raised errors. Commit the non-replayable no-token claim first.
+            await self.session.commit()
+        await self._remember_chart_runtime_audit(prepare, None, fault="timeout")
+
+    async def _remember_chart_runtime_audit(
         self,
         prepare: Prepare,
         result: Prepared | Stopped | object | None,
@@ -2624,7 +2637,29 @@ class ReadingService:
         if runtime is not None:
             cast(Any, runtime).last_turn = record
         if audit_path is not None:
-            append_runtime_turn_audit(audit_path, record.to_dict())
+            raw_timeout = getattr(runtime, "_audit_timeout_seconds", None)
+            audit_timeout = (
+                float(raw_timeout)
+                if isinstance(raw_timeout, (int, float)) and raw_timeout > 0
+                else WORKER_AUDIT_TIMEOUT_SECONDS
+            )
+            try:
+                async with asyncio.timeout(audit_timeout):
+                    await asyncio.to_thread(
+                        append_runtime_turn_audit,
+                        audit_path,
+                        record.to_dict(),
+                    )
+            except TimeoutError:
+                _logger.warning(
+                    "chart_runtime_audit_timeout",
+                    extra={"command_kind": prepare.kind},
+                )
+            except Exception:
+                _logger.exception(
+                    "chart_runtime_audit_error",
+                    extra={"command_kind": prepare.kind},
+                )
         return record
 
     async def _create_version_and_job(
