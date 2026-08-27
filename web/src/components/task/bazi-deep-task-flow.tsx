@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 
@@ -26,6 +26,40 @@ import { Status } from "@/components/ui/status";
 import styles from "./bazi-deep-task-flow.module.css";
 
 const POLL_MS = 2_000;
+const EMPTY_SEARCH = new URLSearchParams();
+
+export const BAZI_PREVIEW_READING_QUERY = "reading";
+
+type SearchLike = {
+  get(name: string): string | null;
+  toString(): string;
+};
+
+export function readBaziPreviewReadingId(searchParams: SearchLike): string | null {
+  const value = searchParams.get(BAZI_PREVIEW_READING_QUERY)?.trim() ?? "";
+  return value ? value : null;
+}
+
+export function baziPreviewRestoreHref(
+  pathname: string,
+  searchParams: SearchLike,
+  readingId: string | null,
+  profileVersionId?: string | null,
+): string {
+  const next = new URLSearchParams(searchParams.toString());
+  const trimmedReading = readingId?.trim() ?? "";
+  if (trimmedReading) {
+    next.set(BAZI_PREVIEW_READING_QUERY, trimmedReading);
+  } else {
+    next.delete(BAZI_PREVIEW_READING_QUERY);
+  }
+  const profile = profileVersionId?.trim();
+  if (profile) {
+    next.set("profile", profile);
+  }
+  const query = next.toString();
+  return query ? `${pathname}?${query}` : pathname;
+}
 
 function isStalePolicyVersion(reason: unknown): boolean {
   return (
@@ -75,14 +109,50 @@ export type BaziDeepTaskFlowProps = {
 
 type PollMode = "preview" | "deep";
 
+export type PreviewPollHints = {
+  result_available?: boolean;
+  poll_required?: boolean;
+};
+
+function previewPollHints(summary: unknown): PreviewPollHints {
+  if (!summary || typeof summary !== "object") return {};
+  const record = summary as Record<string, unknown>;
+  return {
+    result_available: typeof record.result_available === "boolean" ? record.result_available : undefined,
+    poll_required: typeof record.poll_required === "boolean" ? record.poll_required : undefined,
+  };
+}
+
+/**
+ * Free-chart success terminal is `prepared`. Backend GET may also send
+ * `result_available` / `poll_required=false`; consume them without waiting for `accepted`.
+ */
+export function isPreviewChartReady(
+  status: ReadingStatus,
+  hints?: PreviewPollHints,
+): boolean {
+  if (status === "accepted") return true;
+  if (status !== "prepared") return false;
+  if (hints?.poll_required === true) return false;
+  if (hints?.result_available === false) return false;
+  return true;
+}
+
 export function stateForReadingStatus(
   status: ReadingStatus,
   mode: PollMode,
+  hints?: PreviewPollHints,
 ): BaziDeepTaskState {
   if (status === "accepted") {
     return mode === "preview" ? "free" : "succeeded";
   }
-  if (status === "prepared" || status === "completing") {
+  if (status === "prepared") {
+    if (mode === "preview") {
+      return isPreviewChartReady(status, hints) ? "free" : "preview_loading";
+    }
+    return "running";
+  }
+  if (status === "completing") {
     return mode === "preview" ? "preview_loading" : "running";
   }
   if (status === "input_ready") {
@@ -182,6 +252,12 @@ export function BaziDeepTaskFlow({
   onBack,
 }: BaziDeepTaskFlowProps) {
   const router = useRouter();
+  const pathname = usePathname() || "/bazi";
+  const searchParams = useSearchParams() ?? EMPTY_SEARCH;
+  const writeHref = useCallback((href: string) => {
+    if (typeof router.replace !== "function") return;
+    router.replace(href);
+  }, [router]);
   const session = useOptionalAccountSession();
   const [state, setState] = useState<BaziDeepTaskState>("preview_loading");
   const [deepReadingId, setDeepReadingId] = useState<string | null>(null);
@@ -204,6 +280,24 @@ export function BaziDeepTaskFlow({
   }, []);
 
   useEffect(() => {
+    const href = baziPreviewRestoreHref(
+      pathname,
+      searchParams,
+      previewReadingId,
+      profileVersionId,
+    );
+    const nextQuery = href.includes("?") ? href.slice(href.indexOf("?") + 1) : "";
+    if (searchParams.toString() !== nextQuery) {
+      writeHref(href);
+    }
+  }, [pathname, previewReadingId, profileVersionId, searchParams, writeHref]);
+
+  const handleBack = useCallback(() => {
+    writeHref(baziPreviewRestoreHref(pathname, searchParams, null));
+    onBack();
+  }, [onBack, pathname, searchParams, writeHref]);
+
+  useEffect(() => {
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
 
@@ -214,9 +308,10 @@ export function BaziDeepTaskFlow({
         if (cancelled) return;
         setError(null);
     setErrorStatus(null);
-        const nextState = stateForReadingStatus(summary.status, "preview");
+        const hints = previewPollHints(summary);
+        const nextState = stateForReadingStatus(summary.status, "preview", hints);
         setState(nextState);
-        if (!shouldKeepPolling(summary)) return;
+        if (nextState === "free" || nextState === "failed" || !shouldKeepPolling(summary)) return;
         timer = setTimeout(run, POLL_MS);
       } catch (reason) {
         if (cancelled) return;
@@ -460,7 +555,7 @@ export function BaziDeepTaskFlow({
   return (
     <section className={styles.flow} aria-labelledby="bazi-deep-task-title">
       <header className={styles.toolbar}>
-        <button className={styles.backButton} onClick={onBack} type="button">
+        <button className={styles.backButton} onClick={handleBack} type="button">
           <ArrowLeft aria-hidden="true" size={17} />
           返回录入
         </button>
@@ -484,7 +579,7 @@ export function BaziDeepTaskFlow({
               ) : (
                 <>
                   <button onClick={retry} type="button">重试状态读取</button>
-                  <button data-variant="secondary" onClick={onBack} type="button">返回修改资料</button>
+                  <button data-variant="secondary" onClick={handleBack} type="button">返回修改资料</button>
                 </>
               )
             }
@@ -627,7 +722,7 @@ export function BaziDeepTaskFlow({
           <p className={styles.securityNote}>没有确认 Payment，不会绑定履约，也不会请求深读结果。</p>
           <div className={styles.actionRow}>
             <button className={styles.primaryAction} onClick={retry} type="button">重试结账状态</button>
-            <button className={styles.secondaryAction} onClick={onBack} type="button">返回修改资料</button>
+            <button className={styles.secondaryAction} onClick={handleBack} type="button">返回修改资料</button>
           </div>
         </section>
       ) : null}
