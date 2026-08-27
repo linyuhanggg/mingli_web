@@ -384,6 +384,130 @@ def test_runtime_failure_v1_accepts_only_the_closed_non_pii_code_table() -> None
             contracts.result_from_dict(malformed)
 
 
+def _v2_failure_payload(internal_code: str | None) -> dict[str, object]:
+    return {
+        "schema_version": "mingli-runtime-failure/v2",
+        "code": "runtime.internal_error",
+        "category": "runtime_internal",
+        "retryable": False,
+        "internal_code": internal_code,
+    }
+
+
+def _stopped_payload(failure: dict[str, object]) -> dict[str, object]:
+    return {
+        "kind": "stopped",
+        "reason": "error",
+        "public_copy": "处理未完成。",
+        "state_token": None,
+        "input_request": None,
+        "failure": failure,
+    }
+
+
+def test_runtime_failure_v1_and_v2_round_trip_public_and_audit() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    v1_payload = _stopped_payload(
+        {
+            "schema_version": "mingli-runtime-failure/v1",
+            "code": "transient.timeout",
+            "category": "transient",
+            "retryable": True,
+        }
+    )
+    v1 = contracts.result_from_dict(v1_payload)
+    assert v1.failure is not None
+    assert v1.failure.internal_code is None
+    assert v1.failure.to_dict() == v1_payload["failure"]
+    assert v1.failure.to_audit_dict() == v1_payload["failure"]
+    assert v1.to_dict() == v1_payload
+
+    v2_payload = _stopped_payload(_v2_failure_payload("RuntimeError"))
+    v2 = contracts.result_from_dict(v2_payload)
+    assert v2.failure is not None
+    assert v2.failure.schema_version == "mingli-runtime-failure/v2"
+    assert v2.failure.internal_code == "RuntimeError"
+    assert v2.failure.to_audit_dict() == v2_payload["failure"]
+    assert v2.failure.to_dict() == {
+        "schema_version": "mingli-runtime-failure/v1",
+        "code": "runtime.internal_error",
+        "category": "runtime_internal",
+        "retryable": False,
+    }
+    assert v2.to_dict()["failure"] == v2.failure.to_dict()
+    assert "internal_code" not in v2.to_dict()["failure"]
+    assert v2.public_copy == "处理未完成。"
+
+
+_V2_INTERNAL_CODES: tuple[str | None, ...] = (
+    None,
+    "KeyError",
+    "OSError",
+    "RuntimeError",
+    "TypeError",
+    "ValueError",
+    "action_requires_correct",
+    "action_requires_correct_or_recast",
+    "action_requires_recast",
+    "descriptor_invalid",
+    "descriptor_unbound",
+    "empty_public_copy",
+    "evidence_binding",
+    "extension_digest_changed",
+    "extension_missing",
+    "invalid_preparation",
+    "invalid_transition",
+    "not_prepared",
+    "subject_scope",
+    "unknown_state_token",
+    "wrong_system",
+)
+
+
+@pytest.mark.parametrize("internal_code", _V2_INTERNAL_CODES)
+def test_runtime_failure_v2_accepts_allowlist_and_null(internal_code: str | None) -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    payload = _stopped_payload(_v2_failure_payload(internal_code))
+
+    stopped = contracts.result_from_dict(payload)
+
+    assert len(_V2_INTERNAL_CODES) == 21
+    assert set(_V2_INTERNAL_CODES) - {None} == contracts.SAFE_INTERNAL_FAILURE_CODES
+    assert stopped.failure is not None
+    assert stopped.failure.to_audit_dict() == payload["failure"]
+    assert "internal_code" not in stopped.to_dict()["failure"]
+
+
+def test_runtime_failure_v2_rejects_unsafe_unknown_and_extra_fields() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    valid = _v2_failure_payload("RuntimeError")
+    for malformed_failure in (
+        {**valid, "internal_code": "subject=PRIVATE-PERSON /Users/private/runtime"},
+        {**valid, "internal_code": "token_conflict"},
+        {**valid, "internal_code": ""},
+        {**valid, "internal_code": 1},
+        {**valid, "exception_text": "PRIVATE-EXCEPTION-PERSON"},
+        {**valid, "path": "/private/runtime"},
+        {**valid, "code": "transient.timeout", "category": "transient", "retryable": True},
+        {
+            "schema_version": "mingli-runtime-failure/v2",
+            "code": "runtime.internal_error",
+            "category": "runtime_internal",
+            "retryable": False,
+        },
+        {**valid, "schema_version": "mingli-runtime-failure/v3"},
+    ):
+        with pytest.raises(contracts.ContractValidationError):
+            contracts.result_from_dict(_stopped_payload(malformed_failure))
+
+    public = json.dumps(
+        contracts.result_from_dict(_stopped_payload(valid)).to_dict(),
+        ensure_ascii=False,
+    )
+    assert "RuntimeError" not in public
+    assert "internal_code" not in public
+
+
 def test_runtime_failure_v1_rejects_failure_on_non_error_stop() -> None:
     contracts = importlib.import_module("app.readings.runtime_contracts")
     payload = {

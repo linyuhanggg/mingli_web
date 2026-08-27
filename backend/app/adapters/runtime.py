@@ -1218,7 +1218,7 @@ class WorkerV2MingliRuntimeAdapter:
     def _publish_turn(self, command: MingliCommand, result: MingliResult) -> None:
         failure = None
         if isinstance(result, Stopped) and result.failure is not None:
-            failure = result.failure.to_dict()
+            failure = result.failure.to_audit_dict()
         record = RuntimeTurnAudit(
             command_digest=runtime_command_digest(command),
             command_kind=command.kind,

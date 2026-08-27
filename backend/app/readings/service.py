@@ -2567,11 +2567,11 @@ class ReadingService:
         if isinstance(result, Stopped):
             result_kind = result.kind
             if result.failure is not None:
-                failure = result.failure.to_dict()
+                failure = result.failure.to_audit_dict()
         elif isinstance(result, Prepared):
             result_kind = result.kind
         if failure is None and fault is not None:
-            failure = failure_for_transport_fault(fault).to_dict()
+            failure = failure_for_transport_fault(fault).to_audit_dict()
         state = getattr(runtime, "_state_root", None)
         if isinstance(state, Path):
             store_root = str(state)

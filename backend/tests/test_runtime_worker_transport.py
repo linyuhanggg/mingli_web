@@ -262,6 +262,46 @@ if BEHAVIOR == "invalid-result":
     _write_frame(payload)
     time.sleep(1)
     raise SystemExit(0)
+if BEHAVIOR == "stopped-v2":
+    payload = _described_result(command)
+    payload["result"] = {
+        "kind": "stopped",
+        "reason": "error",
+        "public_copy": "本次处理未完成，请稍后重试。",
+        "state_token": None,
+        "input_request": None,
+        "failure": {
+            "schema_version": "mingli-runtime-failure/v2",
+            "code": "runtime.internal_error",
+            "category": "runtime_internal",
+            "retryable": False,
+            "internal_code": "RuntimeError",
+        },
+    }
+    _write_frame(payload)
+    _write_frame(_idle(command))
+    time.sleep(1)
+    raise SystemExit(0)
+if BEHAVIOR == "stopped-v2-unsafe":
+    payload = _described_result(command)
+    payload["result"] = {
+        "kind": "stopped",
+        "reason": "error",
+        "public_copy": "本次处理未完成，请稍后重试。",
+        "state_token": None,
+        "input_request": None,
+        "failure": {
+            "schema_version": "mingli-runtime-failure/v2",
+            "code": "runtime.internal_error",
+            "category": "runtime_internal",
+            "retryable": False,
+            "internal_code": "subject=PRIVATE-PERSON /Users/private/runtime",
+        },
+    }
+    _write_frame(payload)
+    _write_frame(_idle(command))
+    time.sleep(1)
+    raise SystemExit(0)
 
 _write_frame(_described_result(command))
 _write_frame(_idle(command))
