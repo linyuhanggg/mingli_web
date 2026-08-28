@@ -147,11 +147,19 @@ describe("BaziChart fact-density workspace", () => {
     expect(within(matrix).getByRole("row", { name: /副星/ })).toBeVisible();
     expect(within(matrix).getByRole("row", { name: /自坐/ })).toBeVisible();
     expect(within(matrix).getByRole("row", { name: /纳音/ })).toBeVisible();
-    expect(within(matrix).getAllByText("ALGO-GAP-1").length).toBeGreaterThan(0);
-    expect(within(matrix).getAllByText("ALGO-GAP-2").length).toBeGreaterThan(0);
+    expect(within(matrix).getAllByText("待接入").length).toBeGreaterThan(0);
+    expect(within(matrix).getAllByText("暂无该项事实").length).toBeGreaterThan(0);
     expect(matrix.querySelector('[data-element="fire"][data-shape="△"]')).not.toBeNull();
-    expect(screen.getByText("ALGO-GAP-3")).toBeVisible();
-    expect(screen.getByText("ALGO-GAP-4")).toBeVisible();
+    expect(screen.getByText("公历起止年份区间待接入。")).toBeVisible();
+    expect(screen.getByText("农历起运文本待接入。")).toBeVisible();
+    expect(screen.queryByText(/ALGO-GAP-/)).not.toBeInTheDocument();
+    const chartSource = readFileSync(
+      join(process.cwd(), "src/components/readings/bazi-chart.tsx"),
+      "utf8",
+    );
+    for (const gapId of ["ALGO-GAP-1", "ALGO-GAP-2", "ALGO-GAP-3", "ALGO-GAP-4"]) {
+      expect(chartSource).toContain(gapId);
+    }
     expect(screen.getByRole("button", { name: "基本排盘" })).toBeVisible();
     expect(screen.getByRole("button", { name: "专业细盘" })).toHaveAttribute(
       "aria-pressed",

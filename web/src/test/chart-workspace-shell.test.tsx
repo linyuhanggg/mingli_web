@@ -100,6 +100,22 @@ function WorkspaceFixture({ view }: Readonly<{ view: ChartWorkspaceView }>) {
 }
 
 describe("ChartWorkspaceShell", () => {
+  it("starts the chart and reading split at 1024px with governed column widths", () => {
+    const css = readFileSync(
+      join(
+        process.cwd(),
+        "src/components/readings/chart-workspace-shell.module.css",
+      ),
+      "utf8",
+    );
+
+    expect(css).toMatch(/@media \(min-width: 1024px\)/);
+    expect(css).toMatch(
+      /grid-template-columns:\s*minmax\(30rem, 32\.5rem\) minmax\(22\.5rem, 1fr\)/,
+    );
+    expect(css).not.toMatch(/@media \(min-width: 1181px\)/);
+  });
+
   it("renders layer tabs from the view model with the natal layer active", () => {
     const view = buildBaziWorkspaceView({
       pillars: FOUR_PILLARS,
