@@ -1,0 +1,87 @@
+{
+  "baseline_commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
+  "baseline_tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+  "case_count": 12,
+  "cases": [
+    {
+      "case_id": "bazi-normal-civil",
+      "category": "normal",
+      "path": "bazi-normal-civil.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "bazi-lichun-before",
+      "category": "solar_term_boundary",
+      "path": "bazi-lichun-before.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "bazi-lichun-after",
+      "category": "solar_term_boundary",
+      "path": "bazi-lichun-after.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "bazi-late-zi-midnight",
+      "category": "zi_hour_boundary",
+      "path": "bazi-late-zi-midnight.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "bazi-late-zi-next-day",
+      "category": "zi_hour_boundary",
+      "path": "bazi-late-zi-next-day.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "bazi-historical-shanghai-dst",
+      "category": "historical_dst",
+      "path": "bazi-historical-shanghai-dst.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "bazi-apparent-solar-hour-cross",
+      "category": "true_solar_time",
+      "path": "bazi-apparent-solar-hour-cross.json",
+      "system": "bazi"
+    },
+    {
+      "case_id": "ziwei-normal-civil",
+      "category": "normal",
+      "path": "ziwei-normal-civil.json",
+      "system": "ziwei"
+    },
+    {
+      "case_id": "ziwei-leap-month-first-day",
+      "category": "lunar_leap_month",
+      "path": "ziwei-leap-month-first-day.json",
+      "system": "ziwei"
+    },
+    {
+      "case_id": "ziwei-late-zi-midnight",
+      "category": "zi_hour_boundary",
+      "path": "ziwei-late-zi-midnight.json",
+      "system": "ziwei"
+    },
+    {
+      "case_id": "ziwei-late-zi-next-day",
+      "category": "zi_hour_boundary",
+      "path": "ziwei-late-zi-next-day.json",
+      "system": "ziwei"
+    },
+    {
+      "case_id": "ziwei-apparent-solar-hour-cross",
+      "category": "true_solar_time",
+      "path": "ziwei-apparent-solar-hour-cross.json",
+      "system": "ziwei"
+    }
+  ],
+  "schema_version": "mingli-oss-chart-golden-manifest-v1",
+  "source_policy": {
+    "allowed_expected_source_types": [
+      "accepted_runtime_replay"
+    ],
+    "candidate_oss_output_role": "differential_actual_only",
+    "pii_policy": "synthetic_inputs_only"
+  }
+}

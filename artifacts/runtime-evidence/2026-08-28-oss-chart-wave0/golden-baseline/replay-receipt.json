@@ -1,0 +1,21 @@
+{
+  "baseline_commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
+  "baseline_tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+  "case_count": 12,
+  "case_schema_version": "mingli-oss-chart-golden-case-v1",
+  "errors": 0,
+  "failures": 0,
+  "manifest_schema_version": "mingli-oss-chart-golden-manifest-v1",
+  "provenance_source_type": "accepted_runtime_replay",
+  "runtime": {
+    "bazi_adapter_version": "1.3.0",
+    "python_implementation": "CPython",
+    "python_version": "3.14.6",
+    "ziwei_adapter_version": "1.2.0",
+    "ziwei_engine_version": "2.5.8"
+  },
+  "schema_version": "mingli-oss-chart-golden-replay-receipt-v1",
+  "skipped": 0,
+  "status": "PASS",
+  "tests_run": 5
+}
