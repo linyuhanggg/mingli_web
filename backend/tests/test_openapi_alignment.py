@@ -1,8 +1,25 @@
 import importlib
 from pathlib import Path
-from typing import Any
+from types import UnionType
+from typing import Any, Literal, Union, get_args, get_origin
+from uuid import uuid4
 
 import yaml
+from app.readings.api_schemas import (
+    CapabilityProjection,
+    ReadingResultResponse,
+    TimeLayerCapabilityItemResponse,
+    TimeLayerEntitlementCapabilityResponse,
+    TimeLayerEntitlementLayerResponse,
+    TimeLayerEntitlementResponse,
+)
+from app.readings.runtime_contracts import (
+    FREE_BOUNDARY_LAYER_ID,
+    PAID_TIME_LAYER_IDS,
+    TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
+    TimeLayerEntitlementV1,
+)
+from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parents[2]
 USER_OPENAPI_PATH = ROOT / "contracts" / "openapi" / "v1.yaml"
@@ -163,3 +180,280 @@ def test_reading_result_response_keeps_required_runtime_and_document_slots() -> 
     assert runtime["properties"]["document"]["anyOf"][0]["$ref"] == (
         "#/components/schemas/ReadingDocumentV1"
     )
+
+
+def _nullable_ref(schema: dict[str, Any]) -> str:
+    variants = schema.get("oneOf") or schema.get("anyOf") or []
+    refs = [item["$ref"] for item in variants if "$ref" in item]
+    has_null = any(item.get("type") == "null" for item in variants)
+    assert len(refs) == 1, schema
+    assert has_null, schema
+    return refs[0]
+
+
+def _literal_values(annotation: object) -> tuple[object, ...]:
+    origin = get_origin(annotation)
+    if origin is Literal:
+        return get_args(annotation)
+    if origin is Union or origin is UnionType:
+        values: list[object] = []
+        for item in get_args(annotation):
+            if item is type(None):
+                continue
+            values.extend(_literal_values(item))
+        return tuple(values)
+    return ()
+
+
+def _openapi_component_validator(name: str) -> Draft202012Validator:
+    with USER_OPENAPI_PATH.open(encoding="utf-8") as stream:
+        document: dict[str, Any] = yaml.safe_load(stream)
+    return Draft202012Validator(
+        {
+            "$ref": f"#/components/schemas/{name}",
+            "components": document["components"],
+        }
+    )
+
+
+def _valid_bazi_entitlement_payload() -> dict[str, Any]:
+    return {
+        "schema_version": TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
+        "capability_id": "bazi",
+        "resolution": "unknown",
+        "free_boundary_layer_id": FREE_BOUNDARY_LAYER_ID,
+        "paid_layer_ids": list(PAID_TIME_LAYER_IDS),
+        "free_year_set": [2026],
+        "capability": {
+            "time_layers": [
+                {
+                    "layer_id": "life",
+                    "label": "本命",
+                    "available": True,
+                    "unavailable_reason": None,
+                },
+                {
+                    "layer_id": "year",
+                    "label": "流年",
+                    "available": True,
+                    "unavailable_reason": None,
+                },
+                {
+                    "layer_id": "month",
+                    "label": "流月",
+                    "available": False,
+                    "unavailable_reason": "本次结果尚未返回流月盘面。",
+                },
+                {
+                    "layer_id": "day",
+                    "label": "流日",
+                    "available": False,
+                    "unavailable_reason": "本次结果尚未返回流日盘面。",
+                },
+                {
+                    "layer_id": "hour",
+                    "label": "流时",
+                    "available": False,
+                    "unavailable_reason": "本次结果尚未返回流时盘面。",
+                },
+            ]
+        },
+        "layers": [
+            {
+                "layer_id": "life",
+                "tier": "free",
+                "access": "readable",
+                "upgrade_cta": None,
+            },
+            {
+                "layer_id": "luck_cycles",
+                "tier": "free",
+                "access": "unavailable",
+                "upgrade_cta": None,
+            },
+            {
+                "layer_id": "year",
+                "tier": "free",
+                "access": "readable",
+                "upgrade_cta": None,
+            },
+            {
+                "layer_id": "month",
+                "tier": "paid",
+                "access": "fail_closed_unknown",
+                "upgrade_cta": "professional_info",
+            },
+            {
+                "layer_id": "day",
+                "tier": "paid",
+                "access": "unavailable",
+                "upgrade_cta": None,
+            },
+            {
+                "layer_id": "hour",
+                "tier": "paid",
+                "access": "unavailable",
+                "upgrade_cta": None,
+            },
+        ],
+    }
+
+
+def _valid_capability_projection_payload() -> dict[str, Any]:
+    return CapabilityProjection(
+        capability_id="bazi",
+        label="八字",
+        tier="A",
+        source_system=None,
+        runtime_active_rule_count=0,
+        judgment_rule_count=0,
+        source_status="unavailable",
+    ).model_dump(mode="json")
+
+
+def test_reading_result_response_declares_nullable_live_capability_slots() -> None:
+    frozen = _frozen_schemas()["ReadingResultResponse"]
+    runtime = _runtime_spec()["components"]["schemas"]["ReadingResultResponse"]
+
+    assert set(frozen["properties"]) == set(runtime["properties"])
+    assert set(frozen["properties"]) == set(ReadingResultResponse.model_fields)
+    assert set(frozen["required"]) == set(runtime["required"])
+    assert frozen["additionalProperties"] is False
+    assert runtime["additionalProperties"] is False
+    assert "capability" not in frozen["required"]
+    assert "time_layer_entitlement" not in frozen["required"]
+    assert _is_nullable(frozen["properties"]["capability"])
+    assert _is_nullable(runtime["properties"]["capability"])
+    assert _is_nullable(frozen["properties"]["time_layer_entitlement"])
+    assert _is_nullable(runtime["properties"]["time_layer_entitlement"])
+    assert _nullable_ref(frozen["properties"]["capability"]) == (
+        "#/components/schemas/CapabilityProjection"
+    )
+    assert _nullable_ref(runtime["properties"]["capability"]) == (
+        "#/components/schemas/CapabilityProjection"
+    )
+    assert _nullable_ref(frozen["properties"]["time_layer_entitlement"]) == (
+        "#/components/schemas/TimeLayerEntitlementResponse"
+    )
+    assert _nullable_ref(runtime["properties"]["time_layer_entitlement"]) == (
+        "#/components/schemas/TimeLayerEntitlementResponse"
+    )
+
+
+def test_time_layer_entitlement_openapi_matches_pydantic_and_v1_closed_tables() -> None:
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = _runtime_spec()["components"]["schemas"]
+
+    for name, model in (
+        ("TimeLayerEntitlementResponse", TimeLayerEntitlementResponse),
+        ("TimeLayerEntitlementLayerResponse", TimeLayerEntitlementLayerResponse),
+        ("TimeLayerEntitlementCapabilityResponse", TimeLayerEntitlementCapabilityResponse),
+        ("TimeLayerCapabilityItemResponse", TimeLayerCapabilityItemResponse),
+        ("CapabilityProjection", CapabilityProjection),
+    ):
+        frozen = frozen_schemas[name]
+        runtime = runtime_schemas[name]
+        assert set(frozen["properties"]) == set(runtime["properties"]) == set(model.model_fields)
+        assert set(frozen["required"]) == set(runtime["required"])
+        assert frozen["additionalProperties"] is False
+        assert runtime["additionalProperties"] is False
+
+    entitlement = frozen_schemas["TimeLayerEntitlementResponse"]
+    layer = frozen_schemas["TimeLayerEntitlementLayerResponse"]
+    capability_item = frozen_schemas["TimeLayerCapabilityItemResponse"]
+    sample = TimeLayerEntitlementV1.from_dict(_valid_bazi_entitlement_payload())
+
+    assert set(entitlement["properties"]) == set(sample.to_dict())
+    assert entitlement["properties"]["schema_version"]["const"] == (
+        TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
+    )
+    assert entitlement["properties"]["free_boundary_layer_id"]["const"] == (
+        FREE_BOUNDARY_LAYER_ID
+    )
+    assert tuple(
+        item["const"] for item in entitlement["properties"]["paid_layer_ids"]["prefixItems"]
+    ) == PAID_TIME_LAYER_IDS
+    assert entitlement["properties"]["capability_id"]["enum"] == list(
+        _literal_values(TimeLayerEntitlementResponse.model_fields["capability_id"].annotation)
+    )
+    assert entitlement["properties"]["resolution"]["enum"] == list(
+        _literal_values(TimeLayerEntitlementResponse.model_fields["resolution"].annotation)
+    )
+    assert layer["properties"]["layer_id"]["enum"] == list(
+        _literal_values(TimeLayerEntitlementLayerResponse.model_fields["layer_id"].annotation)
+    )
+    assert layer["properties"]["tier"]["enum"] == list(
+        _literal_values(TimeLayerEntitlementLayerResponse.model_fields["tier"].annotation)
+    )
+    assert layer["properties"]["access"]["enum"] == list(
+        _literal_values(TimeLayerEntitlementLayerResponse.model_fields["access"].annotation)
+    )
+    assert "enum" not in capability_item["properties"]["layer_id"]
+    assert capability_item["properties"]["layer_id"]["type"] == "string"
+    assert capability_item["properties"]["layer_id"]["minLength"] == 1
+
+
+def test_live_capability_and_entitlement_wire_validates_against_frozen_openapi() -> None:
+    entitlement_payload = TimeLayerEntitlementV1.from_dict(
+        _valid_bazi_entitlement_payload()
+    ).to_dict()
+    entitlement_validator = _openapi_component_validator("TimeLayerEntitlementResponse")
+    capability_validator = _openapi_component_validator("CapabilityProjection")
+    result_validator = _openapi_component_validator("ReadingResultResponse")
+
+    entitlement_validator.validate(entitlement_payload)
+    capability_validator.validate(_valid_capability_projection_payload())
+
+    dumped = ReadingResultResponse(
+        reading_version_id=uuid4(),
+        status="accepted",
+        accepted_copy=None,
+        fact_panel=None,
+        view_model=None,
+        capability=CapabilityProjection.model_validate(
+            _valid_capability_projection_payload()
+        ),
+        verification=None,
+        input_request=None,
+        document=None,
+        time_layer_entitlement=TimeLayerEntitlementResponse.from_contract(
+            TimeLayerEntitlementV1.from_dict(entitlement_payload)
+        ),
+    ).model_dump(mode="json")
+    result_validator.validate(dumped)
+    assert dumped["capability"]["capability_id"] == "bazi"
+    assert dumped["time_layer_entitlement"]["schema_version"] == (
+        TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
+    )
+
+    null_result = dict(dumped)
+    null_result["capability"] = None
+    null_result["time_layer_entitlement"] = None
+    result_validator.validate(null_result)
+
+    extra_entitlement = dict(entitlement_payload)
+    extra_entitlement["parallel_slot"] = True
+    assert list(entitlement_validator.iter_errors(extra_entitlement))
+
+    parallel_version = dict(entitlement_payload)
+    parallel_version["schema_version"] = "time-layer-entitlement/v2"
+    assert list(entitlement_validator.iter_errors(parallel_version))
+
+    invented_resolution = dict(entitlement_payload)
+    invented_resolution["resolution"] = "maybe"
+    assert list(entitlement_validator.iter_errors(invented_resolution))
+
+    extra_capability_layer = dict(entitlement_payload)
+    extra_capability_layer["capability"] = {
+        "time_layers": [
+            {
+                **entitlement_payload["capability"]["time_layers"][0],
+                "tier": "free",
+            }
+        ]
+    }
+    assert list(entitlement_validator.iter_errors(extra_capability_layer))
+
+    extra_result = dict(dumped)
+    extra_result["not_in_contract"] = True
+    assert list(result_validator.iter_errors(extra_result))

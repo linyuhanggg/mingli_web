@@ -1,5 +1,5 @@
 from datetime import date, datetime, timedelta
-from typing import Annotated, Any, Literal
+from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
@@ -7,6 +7,10 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from app.api.validators import validate_iana_timezone
 from app.charts.contracts import ViewModel
 from app.readings.presentation import ReadingDocumentV1
+from app.readings.runtime_contracts import (
+    TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
+    TimeLayerEntitlementV1,
+)
 from app.readings.share_contracts import SharedReadingDocumentV1
 from app.readings.status import ReadingStatus
 
@@ -702,6 +706,77 @@ class CapabilityProjectionResponse(BaseModel):
     capabilities: list[CapabilityProjection]
 
 
+class TimeLayerCapabilityItemResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    layer_id: str = Field(min_length=1)
+    label: str = Field(min_length=1)
+    available: bool
+    unavailable_reason: str | None = Field(default=None, min_length=1)
+
+
+class TimeLayerEntitlementLayerResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    layer_id: Literal[
+        "life",
+        "luck_cycles",
+        "major_limits",
+        "year",
+        "month",
+        "day",
+        "hour",
+    ]
+    tier: Literal["free", "paid"]
+    access: Literal[
+        "readable",
+        "locked_paywall",
+        "fail_closed_unknown",
+        "unavailable",
+    ]
+    upgrade_cta: Literal["professional_info"] | None
+
+
+class TimeLayerEntitlementCapabilityResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    time_layers: list[TimeLayerCapabilityItemResponse]
+
+
+class TimeLayerEntitlementResponse(BaseModel):
+    """HTTP adapter for the frozen time-layer-entitlement/v1 sibling contract."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    schema_version: Literal["time-layer-entitlement/v1"] = (
+        TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
+    )
+    capability_id: Literal["bazi", "ziwei"]
+    resolution: Literal[
+        "granted",
+        "denied",
+        "unknown",
+        "unauthenticated",
+        "request_failed",
+    ]
+    free_boundary_layer_id: Literal["year"]
+    paid_layer_ids: tuple[Literal["month"], Literal["day"], Literal["hour"]]
+    free_year_set: list[int]
+    capability: TimeLayerEntitlementCapabilityResponse
+    layers: list[TimeLayerEntitlementLayerResponse]
+
+    @model_validator(mode="after")
+    def _reuse_closed_entitlement_contract(self) -> Self:
+        TimeLayerEntitlementV1.from_dict(self.model_dump(mode="python"))
+        return self
+
+    @classmethod
+    def from_contract(cls, contract: TimeLayerEntitlementV1 | None) -> Self | None:
+        if contract is None:
+            return None
+        return cls.model_validate(contract.to_dict())
+
+
 class ReadingResultResponse(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -717,6 +792,7 @@ class ReadingResultResponse(BaseModel):
     result_available: bool = False
     poll_required: bool = True
     poll_after_seconds: int | None = Field(default=None, ge=0)
+    time_layer_entitlement: TimeLayerEntitlementResponse | None = None
 
 
 class ClaimVerificationSummary(BaseModel):
