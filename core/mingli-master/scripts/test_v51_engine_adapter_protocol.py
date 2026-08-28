@@ -128,6 +128,46 @@ class _ProjectionFailingFakeAdapter(_HappyFakeAdapter):
         raise _ProjectionFailure(output)
 
 
+def _reachable_projection_private_state(value: object) -> str | None:
+    """Name private projection state reachable from one frame-local value."""
+
+    pending = [value]
+    seen: set[int] = set()
+    while pending:
+        current = pending.pop()
+        if id(current) in seen:
+            continue
+        seen.add(id(current))
+
+        if current is _RawThirdPartyValue:
+            return "private output type"
+        if current is _ProjectionFailure:
+            return "original exception type"
+        if isinstance(current, _RawThirdPartyValue):
+            return "private engine output"
+        if isinstance(current, _ProjectionFailure):
+            return "original projection exception"
+        if isinstance(current, str):
+            if "projection retained private output" in current:
+                return "original exception message"
+            continue
+        if isinstance(current, dict):
+            pending.extend(current.keys())
+            pending.extend(current.values())
+        elif isinstance(current, (list, tuple, set, frozenset)):
+            pending.extend(current)
+        elif isinstance(current, BaseException):
+            pending.extend(current.args)
+            pending.extend(vars(current).values())
+        elif type(current).__module__ == __name__ and hasattr(
+            current,
+            "__dict__",
+        ):
+            pending.extend(vars(current).values())
+
+    return None
+
+
 class EngineAdapterProtocolTests(unittest.TestCase):
     def test_protocol_exposes_only_normalized_request_and_canonical_result(self) -> None:
         adapter = _HappyFakeAdapter()
@@ -190,6 +230,46 @@ class EngineAdapterProtocolTests(unittest.TestCase):
         )
         self.assertIsNone(error.__cause__)
         self.assertIsNone(error.__context__)
+
+    def test_projection_traceback_cannot_reach_private_state(self) -> None:
+        try:
+            _ProjectionFailingFakeAdapter().adapt("normalized")
+        except EngineAdapterError as caught:
+            error = caught
+        else:
+            self.fail("projection failure was not normalized")
+
+        self.assertEqual(error.code, "canonical_projection_failed")
+        self.assertEqual(
+            error.args,
+            ("fixture engine adapter failed (canonical_projection_failed)",),
+        )
+        self.assertEqual(
+            vars(error),
+            {
+                "art_id": "fixture",
+                "code": "canonical_projection_failed",
+            },
+        )
+        self.assertIsNone(error.__cause__)
+        self.assertIsNone(error.__context__)
+
+        frame_names: list[str] = []
+        traceback = error.__traceback__
+        while traceback is not None:
+            frame = traceback.tb_frame
+            frame_names.append(frame.f_code.co_name)
+            for local_name, local_value in dict(frame.f_locals).items():
+                self.assertIsNone(
+                    _reachable_projection_private_state(local_value),
+                    msg=(
+                        "private projection state remains reachable from "
+                        f"{frame.f_code.co_name}.{local_name}"
+                    ),
+                )
+            traceback = traceback.tb_next
+
+        self.assertIn("adapt", frame_names)
 
     def test_bazi_and_ziwei_adapters_satisfy_the_same_minimal_protocol(self) -> None:
         self.assertIsInstance(bazi_fact_adapter.BaziEngineAdapter(), EngineAdapter)
