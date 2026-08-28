@@ -253,6 +253,23 @@ describe("public shell responsive and cache contracts", () => {
     );
   });
 
+  it("keeps fine-pointer desktop header controls compact while raising coarse-capable targets", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/site-chrome.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.navItem\s*\{[^}]*min-width:\s*var\(--ds-control-md\)[^}]*min-height:\s*var\(--ds-control-md\)/,
+    );
+    expect(css).toMatch(
+      /\.utilityLink\s*\{[^}]*min-width:\s*var\(--ds-control-md\)[^}]*min-height:\s*var\(--ds-control-md\)/,
+    );
+    expect(css).toMatch(
+      /@media \(min-width:\s*840px\) and \(any-pointer:\s*coarse\)\s*\{[\s\S]*?\.navItem,\s*\.utilityLink\s*\{[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/,
+    );
+  });
+
   it.each([360, 768])(
     "keeps the mobile bottom bar fixed and reserves its safe area at %ipx",
     (viewportWidth) => {
