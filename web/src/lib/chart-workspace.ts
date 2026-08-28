@@ -147,15 +147,6 @@ export interface BaziWorkspaceFacts {
   highlights?: BaziWorkspaceHighlightFacts[] | null;
 }
 
-const ENTITLEMENT_LAYER_IDS = new Set<TimeLayerEntitlementLayerId>([
-  "life",
-  "luck_cycles",
-  "major_limits",
-  "year",
-  "month",
-  "day",
-  "hour",
-]);
 const ENTITLEMENT_RESOLUTIONS = new Set<TimeLayerEntitlementResolution>([
   "granted",
   "denied",
@@ -169,9 +160,103 @@ const ENTITLEMENT_ACCESS = new Set<TimeLayerEntitlementAccess>([
   "fail_closed_unknown",
   "unavailable",
 ]);
+const ENTITLEMENT_OBJECT_KEYS = [
+  "schema_version",
+  "capability_id",
+  "resolution",
+  "free_boundary_layer_id",
+  "paid_layer_ids",
+  "free_year_set",
+  "capability",
+  "layers",
+] as const;
+const ENTITLEMENT_CAPABILITY_KEYS = ["time_layers"] as const;
+const ENTITLEMENT_CAPABILITY_LAYER_KEYS = [
+  "layer_id",
+  "label",
+  "available",
+  "unavailable_reason",
+] as const;
+const ENTITLEMENT_LAYER_KEYS = [
+  "layer_id",
+  "tier",
+  "access",
+  "upgrade_cta",
+] as const;
+const BAZI_CAPABILITY_LAYER_IDS = new Set([
+  "life",
+  "year",
+  "month",
+  "day",
+  "hour",
+]);
+const BAZI_ENTITLEMENT_LAYER_TABLE = [
+  { layerId: "life", tier: "free" },
+  { layerId: "luck_cycles", tier: "free" },
+  { layerId: "year", tier: "free" },
+  { layerId: "month", tier: "paid" },
+  { layerId: "day", tier: "paid" },
+  { layerId: "hour", tier: "paid" },
+] as const satisfies ReadonlyArray<{
+  layerId: TimeLayerEntitlementLayerId;
+  tier: "free" | "paid";
+}>;
+const PAID_ACCESS_BY_RESOLUTION: Record<
+  TimeLayerEntitlementResolution,
+  ReadonlySet<TimeLayerEntitlementAccess>
+> = {
+  granted: new Set(["readable", "unavailable"]),
+  denied: new Set(["locked_paywall", "unavailable"]),
+  unknown: new Set(["fail_closed_unknown", "unavailable"]),
+  unauthenticated: new Set(["fail_closed_unknown", "unavailable"]),
+  request_failed: new Set(["fail_closed_unknown", "unavailable"]),
+};
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  expected: readonly string[],
+): boolean {
+  const keys = Object.keys(value);
+  return (
+    keys.length === expected.length &&
+    expected.every((key) => Object.prototype.hasOwnProperty.call(value, key))
+  );
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0;
+}
+
+function hasValidBaziCapabilitySnapshot(value: unknown): boolean {
+  if (!isRecord(value) || !hasExactKeys(value, ENTITLEMENT_CAPABILITY_KEYS)) {
+    return false;
+  }
+  if (!Array.isArray(value.time_layers)) return false;
+
+  const seen = new Set<string>();
+  for (const item of value.time_layers) {
+    if (
+      !isRecord(item) ||
+      !hasExactKeys(item, ENTITLEMENT_CAPABILITY_LAYER_KEYS) ||
+      !isNonEmptyString(item.layer_id) ||
+      !BAZI_CAPABILITY_LAYER_IDS.has(item.layer_id) ||
+      seen.has(item.layer_id) ||
+      !isNonEmptyString(item.label) ||
+      typeof item.available !== "boolean" ||
+      (item.unavailable_reason !== null &&
+        !isNonEmptyString(item.unavailable_reason)) ||
+      item.available === (item.unavailable_reason !== null)
+    ) {
+      return false;
+    }
+    seen.add(item.layer_id);
+  }
+
+  return true;
 }
 
 /**
@@ -180,7 +265,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
  * fail-closed; free chart facts never depend on this parser.
  */
 export function parseTimeLayerEntitlement(value: unknown): TimeLayerEntitlement | null {
-  if (!isRecord(value)) return null;
+  if (!isRecord(value) || !hasExactKeys(value, ENTITLEMENT_OBJECT_KEYS)) {
+    return null;
+  }
   if (
     value.schema_version !== "time-layer-entitlement/v1" ||
     value.capability_id !== "bazi" ||
@@ -192,55 +279,65 @@ export function parseTimeLayerEntitlement(value: unknown): TimeLayerEntitlement 
     value.paid_layer_ids[1] !== "day" ||
     value.paid_layer_ids[2] !== "hour" ||
     !Array.isArray(value.free_year_set) ||
-    !value.free_year_set.every((year) => Number.isInteger(year)) ||
-    !Array.isArray(value.layers)
+    !hasValidBaziCapabilitySnapshot(value.capability) ||
+    !Array.isArray(value.layers) ||
+    value.layers.length !== BAZI_ENTITLEMENT_LAYER_TABLE.length
   ) {
     return null;
   }
 
   const resolution = value.resolution as TimeLayerEntitlementResolution;
+  const freeYearSet: number[] = [];
+  const seenYears = new Set<number>();
+  for (const year of value.free_year_set) {
+    if (
+      typeof year !== "number" ||
+      !Number.isInteger(year) ||
+      year < 1800 ||
+      year > 2199 ||
+      seenYears.has(year)
+    ) {
+      return null;
+    }
+    seenYears.add(year);
+    freeYearSet.push(year);
+  }
+
   const layers: TimeLayerEntitlementLayer[] = [];
-  const seen = new Set<TimeLayerEntitlementLayerId>();
-  for (const item of value.layers) {
-    if (!isRecord(item)) return null;
+  for (const [index, item] of value.layers.entries()) {
+    if (!isRecord(item) || !hasExactKeys(item, ENTITLEMENT_LAYER_KEYS)) {
+      return null;
+    }
+    const expected = BAZI_ENTITLEMENT_LAYER_TABLE[index];
     const layerId = item.layer_id as TimeLayerEntitlementLayerId;
     const tier = item.tier;
     const access = item.access as TimeLayerEntitlementAccess;
     const upgradeCta = item.upgrade_cta;
     if (
-      !ENTITLEMENT_LAYER_IDS.has(layerId) ||
-      seen.has(layerId) ||
-      (tier !== "free" && tier !== "paid") ||
+      layerId !== expected.layerId ||
+      tier !== expected.tier ||
       !ENTITLEMENT_ACCESS.has(access) ||
-      (upgradeCta !== null && upgradeCta !== "professional_info")
+      upgradeCta !== (
+        tier === "paid" &&
+        (access === "locked_paywall" || access === "fail_closed_unknown")
+          ? "professional_info"
+          : null
+      )
     ) {
       return null;
     }
-    if (tier === "free" && (upgradeCta !== null || !["readable", "unavailable"].includes(access))) {
+    if (tier === "free" && access !== "readable" && access !== "unavailable") {
       return null;
     }
-    if (tier === "paid") {
-      const allowed = resolution === "granted"
-        ? new Set<TimeLayerEntitlementAccess>(["readable", "unavailable"])
-        : resolution === "denied"
-          ? new Set<TimeLayerEntitlementAccess>(["locked_paywall", "unavailable"])
-          : new Set<TimeLayerEntitlementAccess>(["fail_closed_unknown", "unavailable"]);
-      if (!allowed.has(access)) return null;
-      if (access === "unavailable" && upgradeCta !== null) return null;
+    if (tier === "paid" && !PAID_ACCESS_BY_RESOLUTION[resolution].has(access)) {
+      return null;
     }
-    seen.add(layerId);
     layers.push({
-      layerId,
-      tier,
+      layerId: expected.layerId,
+      tier: expected.tier,
       access,
       upgradeCta: upgradeCta as "professional_info" | null,
     });
-  }
-
-  if (!["life", "luck_cycles", "year", "month", "day", "hour"].every(
-    (layerId) => seen.has(layerId as TimeLayerEntitlementLayerId),
-  )) {
-    return null;
   }
 
   return {
@@ -249,7 +346,7 @@ export function parseTimeLayerEntitlement(value: unknown): TimeLayerEntitlement 
     resolution,
     freeBoundaryLayerId: "year",
     paidLayerIds: ["month", "day", "hour"],
-    freeYearSet: [...value.free_year_set] as number[],
+    freeYearSet,
     layers,
   };
 }
