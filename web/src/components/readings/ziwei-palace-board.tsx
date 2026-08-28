@@ -1,20 +1,65 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+  type KeyboardEvent,
+  type ReactNode,
+} from "react";
 
+import type {
+  ChartWorkspaceView,
+  WorkspaceFocusDetail,
+  WorkspaceLayer,
+  WorkspaceLayerId,
+} from "@/lib/chart-workspace";
 import type { ZiweiChartViewModel } from "@/view-models/registry";
 
-import { ZiweiFreeSummary, type ZiweiS4Offer, type ZiweiS4Phase } from "./ziwei-free-summary";
+import {
+  ZiweiFreeSummary,
+  type ZiweiS4Offer,
+  type ZiweiS4Phase,
+} from "./ziwei-free-summary";
 import { ZiweiCaliberBar } from "./ziwei-caliber-bar";
 import { ZiweiPalaceDetailDrawer } from "./ziwei-palace-detail-drawer";
 import styles from "./ziwei-palace-board.module.css";
 import { ZiweiMajorLimitTrack } from "./ziwei-major-limit-track";
 import { ZiweiSourcePatternDrawer } from "./ziwei-source-pattern-drawer";
 import { ZiweiStarFactList } from "./ziwei-star-fact-list";
+import { TimeLayerTabs } from "./time-layer-tabs";
 import { ZiweiTransformationTable } from "./ziwei-transformation-table";
 
-const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
-const VISUAL_BRANCHES = ["巳", "午", "未", "申", "辰", "酉", "卯", "戌", "寅", "丑", "子", "亥"] as const;
+const BRANCHES = [
+  "子",
+  "丑",
+  "寅",
+  "卯",
+  "辰",
+  "巳",
+  "午",
+  "未",
+  "申",
+  "酉",
+  "戌",
+  "亥",
+] as const;
+const VISUAL_BRANCHES = [
+  "巳",
+  "午",
+  "未",
+  "申",
+  "辰",
+  "酉",
+  "卯",
+  "戌",
+  "寅",
+  "丑",
+  "子",
+  "亥",
+] as const;
 
 const HUA_MARK: Readonly<Record<string, string>> = {
   禄: "禄",
@@ -46,7 +91,11 @@ function useResolvedLayout(explicit?: Layout): Layout {
   const [narrow, setNarrow] = useState(false);
   useEffect(() => {
     if (explicit) return;
-    if (typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    if (
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    )
+      return;
     const media = window.matchMedia(NARROW_LIST_QUERY);
     const apply = () => setNarrow(media.matches);
     apply();
@@ -63,6 +112,10 @@ export type ZiweiPalaceBoardProps = {
   offer?: ZiweiS4Offer | null;
   s4Phase?: ZiweiS4Phase;
   showInterpretiveSections?: boolean;
+  selectedBranch?: string | null;
+  onSelectedBranchChange?: (branch: string | null) => void;
+  onActiveBranchChange?: (branch: string | null) => void;
+  showLocator?: boolean;
 };
 
 function GridOwnedCell({ children }: Readonly<{ children: ReactNode }>) {
@@ -94,7 +147,12 @@ function decadeText(decadal: Palace["decadal"] | undefined): string | null {
   return `${decadal.age_start}–${decadal.age_end}`;
 }
 
-const GOD_KEYS = ["changsheng12", "boshi12", "jiangqian12", "suiqian12"] as const;
+const GOD_KEYS = [
+  "changsheng12",
+  "boshi12",
+  "jiangqian12",
+  "suiqian12",
+] as const;
 type GodKey = (typeof GOD_KEYS)[number];
 type GodDensity = "compact" | "full";
 
@@ -103,8 +161,12 @@ function readGod(value: string | null | undefined): string | null {
   return text ? text : null;
 }
 
-function palaceGods(palace: Palace, density: GodDensity): Array<{ key: GodKey; label: string }> {
-  const keys: readonly GodKey[] = density === "compact" ? ["changsheng12"] : GOD_KEYS;
+function palaceGods(
+  palace: Palace,
+  density: GodDensity,
+): Array<{ key: GodKey; label: string }> {
+  const keys: readonly GodKey[] =
+    density === "compact" ? ["changsheng12"] : GOD_KEYS;
   return keys.flatMap((key) => {
     const label = readGod(palace[key]);
     return label ? [{ key, label }] : [];
@@ -112,7 +174,9 @@ function palaceGods(palace: Palace, density: GodDensity): Array<{ key: GodKey; l
 }
 
 function boardHasGods(palaces: readonly Palace[] | undefined): boolean {
-  return Boolean(palaces?.some((item) => GOD_KEYS.some((key) => readGod(item[key]))));
+  return Boolean(
+    palaces?.some((item) => GOD_KEYS.some((key) => readGod(item[key]))),
+  );
 }
 
 function GodFoot({ palace, density }: { palace: Palace; density: GodDensity }) {
@@ -158,27 +222,39 @@ function DensitySwitch({
   );
 }
 
-function ganzhiText(palace: Pick<Palace, "heavenly_stem" | "earthly_branch"> | undefined): string | null {
+function ganzhiText(
+  palace: Pick<Palace, "heavenly_stem" | "earthly_branch"> | undefined,
+): string | null {
   if (!palace?.heavenly_stem || !palace.earthly_branch) return null;
   return `${palace.heavenly_stem}${palace.earthly_branch}`;
 }
 
 function huaMark(value: string): string | null {
-  return HUA_MARK[value] ?? (/[禄权科忌]/.test(value) ? value.replace("化", "") : null);
+  return (
+    HUA_MARK[value] ??
+    (/[禄权科忌]/.test(value) ? value.replace("化", "") : null)
+  );
 }
 
 function directionMark(value: string | null | undefined): string | null {
   if (!value) return null;
-  return DIRECTION_MARK[value] ?? (/[\u3400-\u9fff]/u.test(value) ? value : null);
+  return (
+    DIRECTION_MARK[value] ?? (/[\u3400-\u9fff]/u.test(value) ? value : null)
+  );
 }
 
 function ringFrom(branch: string): readonly string[] {
   const index = branchIndex(branch);
   const start = index >= 0 ? index : 0;
-  return BRANCHES.map((_, offset) => BRANCHES[(start + offset) % BRANCHES.length]);
+  return BRANCHES.map(
+    (_, offset) => BRANCHES[(start + offset) % BRANCHES.length],
+  );
 }
 
-function highlightFor(branch: string, selected: string | null): "primary" | "related" | undefined {
+function highlightFor(
+  branch: string,
+  selected: string | null,
+): "primary" | "related" | undefined {
   if (!selected) return undefined;
   if (branch === selected) return "primary";
   return relatedBranches(selected).includes(branch) ? "related" : undefined;
@@ -197,10 +273,17 @@ function CenterFacts({
   const wuXing = facts?.five_elements_class?.trim() || null;
   const startAge = facts?.major_limit_starting_age;
   const direction = directionMark(facts?.major_limit_direction?.direction);
-  const hasAny = Boolean(soul || body || wuXing || startAge != null || direction);
+  const hasAny = Boolean(
+    soul || body || wuXing || startAge != null || direction,
+  );
 
   return (
-    <div className={styles.center} data-slot="center" role="group" aria-label="中宫">
+    <div
+      className={styles.center}
+      data-slot="center"
+      role="group"
+      aria-label="中宫"
+    >
       {soul ? (
         <p className={styles.centerLine}>
           <span>命主 </span>
@@ -214,7 +297,9 @@ function CenterFacts({
         </p>
       ) : null}
       {wuXing ? <p className={styles.centerLine}>{wuXing}</p> : null}
-      {startAge != null ? <p className={styles.centerLine}>{startAge}</p> : null}
+      {startAge != null ? (
+        <p className={styles.centerLine}>{startAge}</p>
+      ) : null}
       {direction ? <p className={styles.centerLine}>{direction}</p> : null}
       {!hasAny && emptyLabel ? <p className={styles.centerLine}>命盘</p> : null}
     </div>
@@ -235,7 +320,9 @@ function StarLine({
   return (
     <span className={styles[kind]}>
       {name}
-      {brightness ? <sup className={styles.brightness}>{brightness}</sup> : null}
+      {brightness ? (
+        <sup className={styles.brightness}>{brightness}</sup>
+      ) : null}
       {hua ? <span className={styles.hua}>{hua}</span> : null}
     </span>
   );
@@ -273,7 +360,10 @@ function PalaceBody({
           {minors.map((star) =>
             star.name ? (
               <StarLine
-                brightness={star.brightness ?? brightnessOf(star.name, palace.earthly_branch)}
+                brightness={
+                  star.brightness ??
+                  brightnessOf(star.name, palace.earthly_branch)
+                }
                 hua={huaOf(star.name, palace.earthly_branch)}
                 kind="minor"
                 key={`minor-${star.name}`}
@@ -284,7 +374,10 @@ function PalaceBody({
           {adjectives.map((star) =>
             star.name ? (
               <StarLine
-                brightness={star.brightness ?? brightnessOf(star.name, palace.earthly_branch)}
+                brightness={
+                  star.brightness ??
+                  brightnessOf(star.name, palace.earthly_branch)
+                }
                 hua={huaOf(star.name, palace.earthly_branch)}
                 kind="adjective"
                 key={`adj-${star.name}`}
@@ -293,9 +386,13 @@ function PalaceBody({
             ) : null,
           )}
         </div>
-      ) : null}
+      ) : (
+        <span className={styles.missingPalace}>无主星</span>
+      )}
       <div className={styles.foot}>
-        {palace.label ? <span className={styles.palaceName}>{palace.label}</span> : null}
+        {palace.label ? (
+          <span className={styles.palaceName}>{palace.label}</span>
+        ) : null}
         {decade ? <span className={styles.decade}>{decade}</span> : null}
       </div>
       {ganzhi ? <span className={styles.ganzhi}>{ganzhi}</span> : null}
@@ -306,7 +403,10 @@ function PalaceBody({
 
 function SemanticTable({ view }: { view: ZiweiChartViewModel }) {
   return (
-    <table className={`${styles.table} ${styles.srOnly}`} aria-label="十二宫星曜">
+    <table
+      className={`${styles.table} ${styles.srOnly}`}
+      aria-label="十二宫星曜"
+    >
       <thead>
         <tr>
           <th>宫</th>
@@ -329,6 +429,129 @@ function SemanticTable({ view }: { view: ZiweiChartViewModel }) {
   );
 }
 
+function locatorPalaceName(palace: Palace, view: ZiweiChartViewModel): string {
+  const marks = [
+    palace.palace_id === view.life_palace_id ? "命" : null,
+    palace.palace_id === view.body_palace_id ? "身" : null,
+  ].filter(Boolean);
+  return [palace.earthly_branch, palace.label, ...marks]
+    .filter(Boolean)
+    .join(" ");
+}
+
+function ZiweiPalaceLocator({
+  view,
+  selectedBranch,
+  layout,
+  onSelect,
+}: Readonly<{
+  view: ZiweiChartViewModel;
+  selectedBranch: string | null;
+  layout: Layout;
+  onSelect: (branch: string) => void;
+}>) {
+  const refs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
+  const palaceMap = useMemo(
+    () =>
+      new Map(view.palaces.map((palace) => [palace.earthly_branch, palace])),
+    [view.palaces],
+  );
+  const lifePalace = view.palaces.find(
+    (palace) => palace.palace_id === view.life_palace_id,
+  );
+  const orderedBranches = ringFrom(lifePalace?.earthly_branch ?? "子");
+  const locatorReady =
+    palaceMap.size === BRANCHES.length &&
+    orderedBranches.every((branch) => {
+      const palace = palaceMap.get(branch);
+      return Boolean(palace?.label.trim() && ganzhiText(palace));
+    });
+  const activeBranch =
+    selectedBranch && palaceMap.has(selectedBranch)
+      ? selectedBranch
+      : (lifePalace?.earthly_branch ?? orderedBranches[0]);
+
+  if (!locatorReady) return null;
+
+  function moveFocus(branch: string) {
+    onSelect(branch);
+    const target = refs.current[branch];
+    target?.focus();
+    if (target && typeof target.scrollIntoView === "function") {
+      target.scrollIntoView({ block: "nearest", inline: "nearest" });
+    }
+  }
+
+  function handleKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    branch: string,
+  ) {
+    const index = orderedBranches.indexOf(branch);
+    if (index < 0) return;
+    let target: string | null = null;
+    if (event.key === "ArrowRight") {
+      target = orderedBranches[(index + 1) % orderedBranches.length];
+    } else if (event.key === "ArrowLeft") {
+      target =
+        orderedBranches[
+          (index - 1 + orderedBranches.length) % orderedBranches.length
+        ];
+    } else if (event.key === "Home") {
+      target = orderedBranches[0];
+    } else if (event.key === "End") {
+      target = orderedBranches[orderedBranches.length - 1];
+    }
+    if (!target) return;
+    event.preventDefault();
+    moveFocus(target);
+  }
+
+  return (
+    <nav
+      aria-label="十二宫定位"
+      className={styles.locator}
+      data-testid="ziwei-palace-locator"
+    >
+      <div className={styles.locatorHeading}>
+        <span>十二宫定位</span>
+        <small>左右方向键移动，选择后联动盘面与阅读</small>
+      </div>
+      <div
+        aria-label="十二宫定位"
+        className={styles.locatorTrack}
+        role="tablist"
+      >
+        {orderedBranches.map((branch) => {
+          const palace = palaceMap.get(branch);
+          if (!palace) return null;
+          const active = activeBranch === branch;
+          return (
+            <button
+              aria-controls={`ziwei-${layout}-${branch}`}
+              aria-label={`${locatorPalaceName(palace, view)}，定位至该宫`}
+              aria-selected={active}
+              className={styles.locatorButton}
+              data-branch={branch}
+              key={branch}
+              onClick={() => onSelect(branch)}
+              onKeyDown={(event) => handleKeyDown(event, branch)}
+              ref={(node) => {
+                refs.current[branch] = node;
+              }}
+              role="tab"
+              tabIndex={active ? 0 : -1}
+              type="button"
+            >
+              <span>{palace.label}</span>
+              <span className={styles.locatorBranch}>{ganzhiText(palace)}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 export function ZiweiPalaceBoard({
   view,
   mode = "ready",
@@ -336,16 +559,33 @@ export function ZiweiPalaceBoard({
   offer = null,
   s4Phase = "entry",
   showInterpretiveSections = true,
+  selectedBranch,
+  onSelectedBranchChange,
+  onActiveBranchChange,
+  showLocator = true,
 }: ZiweiPalaceBoardProps) {
   const resolvedLayout = useResolvedLayout(layout);
   const structural = mode !== "ready" || !view;
-  const [selected, setSelected] = useState<string | null>(null);
+  const [internalSelected, setInternalSelected] = useState<string | null>(null);
+  const selected =
+    selectedBranch === undefined ? internalSelected : selectedBranch;
   const [previewedBranch, setPreviewedBranch] = useState<string | null>(null);
   const [density, setDensity] = useState<GodDensity>("compact");
   const [detailBranch, setDetailBranch] = useState<string | null>(null);
-  const [detailReturnFocusTo, setDetailReturnFocusTo] = useState<HTMLElement | null>(null);
-  const buttonRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
+  const [detailReturnFocusTo, setDetailReturnFocusTo] =
+    useState<HTMLElement | null>(null);
+  const buttonRefs = useRef<Partial<Record<string, HTMLButtonElement | null>>>(
+    {},
+  );
   const cardRefs = useRef<Partial<Record<string, HTMLLIElement | null>>>({});
+
+  function updateSelected(
+    next: string | null | ((current: string | null) => string | null),
+  ) {
+    const resolved = typeof next === "function" ? next(selected) : next;
+    if (selectedBranch === undefined) setInternalSelected(resolved);
+    onSelectedBranchChange?.(resolved);
+  }
 
   const palaceMap = useMemo(() => {
     const map = new Map<string, Palace>();
@@ -355,14 +595,19 @@ export function ZiweiPalaceBoard({
     return map;
   }, [view]);
 
-  const lifePalace = view?.palaces.find((item) => item.palace_id === view.life_palace_id);
-  const bodyPalace = view?.palaces.find((item) => item.palace_id === view.body_palace_id);
+  const lifePalace = view?.palaces.find(
+    (item) => item.palace_id === view.life_palace_id,
+  );
+  const bodyPalace = view?.palaces.find(
+    (item) => item.palace_id === view.body_palace_id,
+  );
   const lifeBranch = lifePalace?.earthly_branch ?? null;
   const bodyBranch = bodyPalace?.earthly_branch ?? null;
 
   const brightnessOf = (name: string, branch: string): string | null => {
     const hit = view?.core_facts?.star_facts?.find(
-      (fact) => fact.name === name && fact.palace_branch === branch && fact.brightness,
+      (fact) =>
+        fact.name === name && fact.palace_branch === branch && fact.brightness,
     );
     return hit?.brightness ?? null;
   };
@@ -375,11 +620,14 @@ export function ZiweiPalaceBoard({
   };
 
   function moveTo(branch: string) {
-    setSelected(branch);
+    updateSelected(branch);
     buttonRefs.current[branch]?.focus();
   }
 
-  function onPalaceKey(event: KeyboardEvent<HTMLButtonElement>, branch: string) {
+  function onPalaceKey(
+    event: KeyboardEvent<HTMLButtonElement>,
+    branch: string,
+  ) {
     if (event.key === "ArrowRight" || event.key === "ArrowDown") {
       event.preventDefault();
       moveTo(stepBranch(branch, 1));
@@ -404,7 +652,7 @@ export function ZiweiPalaceBoard({
       event.preventDefault();
       setDetailReturnFocusTo(event.currentTarget);
       setPreviewedBranch(null);
-      setSelected(branch);
+      updateSelected(branch);
       setDetailBranch(branch);
     }
   }
@@ -413,7 +661,7 @@ export function ZiweiPalaceBoard({
     if (event.key !== "Escape" || detailBranch) return;
     event.preventDefault();
     setPreviewedBranch(null);
-    setSelected(null);
+    updateSelected(null);
   }
 
   function palaceName(palace: Palace | undefined, branch: string): string {
@@ -440,7 +688,7 @@ export function ZiweiPalaceBoard({
 
   function openDetail(branch: string, trigger: HTMLElement) {
     setDetailReturnFocusTo(trigger);
-    setSelected(branch);
+    updateSelected(branch);
     setDetailBranch(branch);
   }
 
@@ -453,18 +701,22 @@ export function ZiweiPalaceBoard({
 
   function toggleLockedBranch(branch: string) {
     setPreviewedBranch(null);
-    setSelected((current) => (current === branch ? null : branch));
+    updateSelected((current) => (current === branch ? null : branch));
   }
 
   function selectListBranch(branch: string) {
-    setSelected(branch);
+    updateSelected(branch);
     cardRefs.current[branch]?.scrollIntoView({ block: "nearest" });
   }
 
-  const detailPalace = !structural && detailBranch ? palaceMap.get(detailBranch) ?? null : null;
-  const highlightedBranch = resolvedLayout === "ring"
-    ? previewedBranch ?? selected
-    : selected;
+  const detailPalace =
+    !structural && detailBranch ? (palaceMap.get(detailBranch) ?? null) : null;
+  const highlightedBranch =
+    resolvedLayout === "ring" ? (previewedBranch ?? selected) : selected;
+
+  useEffect(() => {
+    onActiveBranchChange?.(highlightedBranch);
+  }, [highlightedBranch, onActiveBranchChange]);
   const detailDrawer =
     detailPalace && view ? (
       <ZiweiPalaceDetailDrawer
@@ -479,21 +731,43 @@ export function ZiweiPalaceBoard({
     ) : null;
 
   const listOrder = ringFrom(lifeBranch ?? "子");
-  const caliber =
-    !structural ? <ZiweiCaliberBar chineseDate={view?.core_facts?.chinese_date ?? null} /> : null;
+  const caliber = !structural ? (
+    <ZiweiCaliberBar chineseDate={view?.core_facts?.chinese_date ?? null} />
+  ) : null;
   const densitySwitch =
-    !structural && boardHasGods(view?.palaces) ? <DensitySwitch density={density} onChange={setDensity} /> : null;
+    !structural && boardHasGods(view?.palaces) ? (
+      <DensitySwitch density={density} onChange={setDensity} />
+    ) : null;
+  const locator =
+    view && !structural && showLocator ? (
+      <ZiweiPalaceLocator
+        layout={resolvedLayout}
+        onSelect={updateSelected}
+        selectedBranch={selected}
+        view={view}
+      />
+    ) : null;
 
   if (resolvedLayout === "list") {
     return (
-      <div className={styles.board} data-layout="list" data-mode={mode} onKeyDown={onBoardKey}>
+      <div
+        className={styles.board}
+        data-layout="list"
+        data-mode={mode}
+        onKeyDown={onBoardKey}
+      >
+        {locator}
         {caliber}
         {densitySwitch}
         <nav aria-label="宫位缩略" className={styles.thumbs} data-columns="3">
           {VISUAL_BRANCHES.map((branch) => {
             const palace = palaceMap.get(branch);
-            const isLife = Boolean(palace && view && palace.palace_id === view.life_palace_id);
-            const isBody = Boolean(palace && view && palace.palace_id === view.body_palace_id);
+            const isLife = Boolean(
+              palace && view && palace.palace_id === view.life_palace_id,
+            );
+            const isBody = Boolean(
+              palace && view && palace.palace_id === view.body_palace_id,
+            );
             const label = (palace?.label ?? branch).slice(0, 1);
             if (structural) {
               return (
@@ -528,7 +802,10 @@ export function ZiweiPalaceBoard({
         </nav>
         <ul aria-label="十二宫列表" className={styles.list}>
           <li className={styles.card} data-slot="center">
-            <CenterFacts emptyLabel={!structural} view={structural ? undefined : view} />
+            <CenterFacts
+              emptyLabel={!structural}
+              view={structural ? undefined : view}
+            />
           </li>
           {listOrder.map((branch) => {
             const palace = palaceMap.get(branch);
@@ -543,12 +820,21 @@ export function ZiweiPalaceBoard({
                   cardRefs.current[branch] = node;
                 }}
                 tabIndex={structural ? undefined : 0}
-                onClick={structural ? undefined : () => setSelected(branch)}
-                onFocus={structural ? undefined : () => setSelected(branch)}
+                onClick={structural ? undefined : () => updateSelected(branch)}
+                onFocus={structural ? undefined : () => updateSelected(branch)}
               >
                 {renderMarks(palace)}
                 {palace && !structural ? (
-                  <PalaceBody brightnessOf={brightnessOf} density={density} huaOf={huaOf} palace={palace} />
+                  <PalaceBody
+                    brightnessOf={brightnessOf}
+                    density={density}
+                    huaOf={huaOf}
+                    palace={palace}
+                  />
+                ) : !structural ? (
+                  <span className={styles.missingPalace}>
+                    {branch}宫 · 未返回
+                  </span>
                 ) : null}
                 {palace && !structural ? (
                   <button
@@ -567,7 +853,9 @@ export function ZiweiPalaceBoard({
         {!structural ? (
           <ZiweiMajorLimitTrack
             limits={view?.core_facts?.major_limits ?? null}
-            onSelectLimit={(branch) => setSelected((current) => (current === branch ? null : branch))}
+            onSelectLimit={(branch) =>
+              updateSelected((current) => (current === branch ? null : branch))
+            }
             selectedBranch={highlightedBranch}
             sequence={view?.core_facts?.major_limit_sequence ?? null}
           />
@@ -575,21 +863,27 @@ export function ZiweiPalaceBoard({
         {!structural ? (
           <ZiweiTransformationTable
             items={view?.core_facts?.transformations ?? null}
-            onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
+            onSelectStar={(branch) =>
+              updateSelected((current) => (current === branch ? null : branch))
+            }
             selectedBranch={highlightedBranch}
           />
         ) : null}
         {!structural ? (
           <ZiweiStarFactList
             items={view?.core_facts?.star_facts ?? null}
-            onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
+            onSelectStar={(branch) =>
+              updateSelected((current) => (current === branch ? null : branch))
+            }
             selectedBranch={highlightedBranch}
           />
         ) : null}
         {!structural && showInterpretiveSections ? (
           <ZiweiSourcePatternDrawer
             items={view?.core_facts?.source_conditioned_patterns}
-            onSelectPattern={(branch) => setSelected((current) => (current === branch ? null : branch))}
+            onSelectPattern={(branch) =>
+              updateSelected((current) => (current === branch ? null : branch))
+            }
             palaces={view?.palaces}
             selectedBranch={highlightedBranch}
           />
@@ -603,7 +897,13 @@ export function ZiweiPalaceBoard({
   }
 
   return (
-    <div className={styles.board} data-layout="ring" data-mode={mode} onKeyDown={onBoardKey}>
+    <div
+      className={styles.board}
+      data-layout="ring"
+      data-mode={mode}
+      onKeyDown={onBoardKey}
+    >
+      {locator}
       {caliber}
       {densitySwitch}
       <div
@@ -614,12 +914,20 @@ export function ZiweiPalaceBoard({
       >
         {VISUAL_BRANCHES.map((branch) => {
           const palace = palaceMap.get(branch);
-          const isLife = Boolean(palace && view && palace.palace_id === view.life_palace_id);
-          const isBody = Boolean(palace && view && palace.palace_id === view.body_palace_id);
+          const isLife = Boolean(
+            palace && view && palace.palace_id === view.life_palace_id,
+          );
+          const isBody = Boolean(
+            palace && view && palace.palace_id === view.body_palace_id,
+          );
           if (structural) {
             return (
               <GridOwnedCell key={branch}>
-                <div className={styles.cell} data-branch={branch} data-empty="true" />
+                <div
+                  className={styles.cell}
+                  data-branch={branch}
+                  data-empty="true"
+                />
               </GridOwnedCell>
             );
           }
@@ -632,33 +940,66 @@ export function ZiweiPalaceBoard({
                 data-branch={branch}
                 data-highlight={highlightFor(branch, highlightedBranch)}
                 data-life={isLife ? "true" : undefined}
-                onBlur={() => setPreviewedBranch((current) => (current === branch ? null : current))}
+                id={`ziwei-ring-${branch}`}
+                onBlur={() =>
+                  setPreviewedBranch((current) =>
+                    current === branch ? null : current,
+                  )
+                }
                 onClick={() => toggleLockedBranch(branch)}
                 onFocus={() => setPreviewedBranch(branch)}
                 onMouseEnter={() => setPreviewedBranch(branch)}
-                onMouseLeave={() => setPreviewedBranch((current) => (current === branch ? null : current))}
+                onMouseLeave={() =>
+                  setPreviewedBranch((current) =>
+                    current === branch ? null : current,
+                  )
+                }
                 onKeyDown={(event) => onPalaceKey(event, branch)}
                 ref={(node) => {
                   buttonRefs.current[branch] = node;
                 }}
-                tabIndex={selected ? (selected === branch ? 0 : -1) : isLife || (!lifeBranch && branch === "子") ? 0 : -1}
+                tabIndex={
+                  selected
+                    ? selected === branch
+                      ? 0
+                      : -1
+                    : isLife || (!lifeBranch && branch === "子")
+                      ? 0
+                      : -1
+                }
                 type="button"
               >
                 {renderMarks(palace)}
-                {palace ? <PalaceBody brightnessOf={brightnessOf} density={density} huaOf={huaOf} palace={palace} /> : null}
+                {palace ? (
+                  <PalaceBody
+                    brightnessOf={brightnessOf}
+                    density={density}
+                    huaOf={huaOf}
+                    palace={palace}
+                  />
+                ) : (
+                  <span className={styles.missingPalace}>
+                    {branch}宫 · 未返回
+                  </span>
+                )}
               </button>
             </GridOwnedCell>
           );
         })}
         <GridOwnedCell>
-          <CenterFacts emptyLabel={!structural} view={structural ? undefined : view} />
+          <CenterFacts
+            emptyLabel={!structural}
+            view={structural ? undefined : view}
+          />
         </GridOwnedCell>
       </div>
       {view && !structural ? <SemanticTable view={view} /> : null}
       {!structural ? (
         <ZiweiMajorLimitTrack
           limits={view?.core_facts?.major_limits ?? null}
-          onSelectLimit={(branch) => setSelected((current) => (current === branch ? null : branch))}
+          onSelectLimit={(branch) =>
+            updateSelected((current) => (current === branch ? null : branch))
+          }
           selectedBranch={highlightedBranch}
           sequence={view?.core_facts?.major_limit_sequence ?? null}
         />
@@ -666,21 +1007,27 @@ export function ZiweiPalaceBoard({
       {!structural ? (
         <ZiweiTransformationTable
           items={view?.core_facts?.transformations ?? null}
-          onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
+          onSelectStar={(branch) =>
+            updateSelected((current) => (current === branch ? null : branch))
+          }
           selectedBranch={highlightedBranch}
         />
       ) : null}
       {!structural ? (
         <ZiweiStarFactList
           items={view?.core_facts?.star_facts ?? null}
-          onSelectStar={(branch) => setSelected((current) => (current === branch ? null : branch))}
+          onSelectStar={(branch) =>
+            updateSelected((current) => (current === branch ? null : branch))
+          }
           selectedBranch={highlightedBranch}
         />
       ) : null}
       {!structural && showInterpretiveSections ? (
         <ZiweiSourcePatternDrawer
           items={view?.core_facts?.source_conditioned_patterns}
-          onSelectPattern={(branch) => setSelected((current) => (current === branch ? null : branch))}
+          onSelectPattern={(branch) =>
+            updateSelected((current) => (current === branch ? null : branch))
+          }
           palaces={view?.palaces}
           selectedBranch={highlightedBranch}
         />
@@ -690,5 +1037,448 @@ export function ZiweiPalaceBoard({
       ) : null}
       {detailDrawer}
     </div>
+  );
+}
+
+const WORKSPACE_LAYER_META: Readonly<
+  Record<WorkspaceLayerId, { label: string; tier: "free" | "paid" }>
+> = {
+  natal: { label: "原局", tier: "free" },
+  decadal: { label: "大限", tier: "free" },
+  yearly: { label: "流年", tier: "free" },
+  monthly: { label: "流月", tier: "paid" },
+  daily: { label: "流日", tier: "paid" },
+  hourly: { label: "流时", tier: "paid" },
+};
+
+const WORKSPACE_LAYER_ALIASES: Readonly<Record<string, WorkspaceLayerId>> = {
+  life: "natal",
+  natal: "natal",
+  original: "natal",
+  luck_cycles: "decadal",
+  major_limit: "decadal",
+  major_limits: "decadal",
+  decadal: "decadal",
+  year: "yearly",
+  yearly: "yearly",
+  annual: "yearly",
+  month: "monthly",
+  monthly: "monthly",
+  day: "daily",
+  daily: "daily",
+  hour: "hourly",
+  hourly: "hourly",
+};
+
+function layerHasFacts(
+  view: ZiweiChartViewModel,
+  layerId: WorkspaceLayerId,
+): boolean {
+  if (layerId === "natal") return true;
+  if (layerId === "decadal") {
+    return Boolean(
+      view.core_facts?.major_limits?.length ||
+      view.core_facts?.major_limit_sequence?.length,
+    );
+  }
+  if (layerId === "yearly")
+    return Boolean(view.core_facts?.annual_layers?.length);
+  if (layerId === "monthly")
+    return Boolean(view.core_facts?.monthly_layers?.length);
+  return false;
+}
+
+export function projectZiweiWorkspace(
+  view: ZiweiChartViewModel,
+): ChartWorkspaceView {
+  const declared = new Map<
+    WorkspaceLayerId,
+    ZiweiChartViewModel["time_layers"][number]
+  >();
+  for (const layer of view.time_layers) {
+    const layerId =
+      WORKSPACE_LAYER_ALIASES[layer.layer_id.trim().toLowerCase()];
+    if (layerId && layerId !== "natal" && !declared.has(layerId))
+      declared.set(layerId, layer);
+  }
+  if (!declared.has("decadal") && layerHasFacts(view, "decadal")) {
+    declared.set("decadal", {
+      layer_id: "major_limits",
+      label: "大限",
+      available: true,
+      unavailable_reason: null,
+    });
+  }
+  if (!declared.has("yearly") && layerHasFacts(view, "yearly")) {
+    declared.set("yearly", {
+      layer_id: "year",
+      label: "流年",
+      available: true,
+      unavailable_reason: null,
+    });
+  }
+  if (!declared.has("monthly") && layerHasFacts(view, "monthly")) {
+    declared.set("monthly", {
+      layer_id: "month",
+      label: "流月",
+      available: true,
+      unavailable_reason: null,
+    });
+  }
+
+  const layers: WorkspaceLayer[] = [
+    {
+      id: "natal",
+      label: WORKSPACE_LAYER_META.natal.label,
+      status: "ready",
+      summary: view.palaces.length
+        ? "十二宫原局"
+        : "宫位字段缺失，展示诚实空盘",
+    },
+  ];
+
+  for (const layerId of [
+    "decadal",
+    "yearly",
+    "monthly",
+    "daily",
+    "hourly",
+  ] as const) {
+    const capability = declared.get(layerId);
+    if (!capability) continue;
+    const hasFacts = layerHasFacts(view, layerId);
+    const meta = WORKSPACE_LAYER_META[layerId];
+    let status: WorkspaceLayer["status"];
+    if (!capability.available) {
+      status = "locked-unavailable";
+    } else if (!hasFacts) {
+      status = meta.tier === "paid" ? "locked-unavailable" : "empty";
+    } else if (meta.tier === "paid") {
+      // ziwei-chart/v1 目前没有可消费的付费授权结果。即使 Runtime
+      // 返回了结构，也必须保持零事实，直到合同明确声明已授权。
+      status = "fail-closed-unknown";
+    } else {
+      status = "ready";
+    }
+    layers.push({
+      id: layerId,
+      label: meta.label,
+      status,
+      summary:
+        status === "ready"
+          ? `${meta.label}事实已返回`
+          : capability.unavailable_reason?.trim() || null,
+      upgradeCta: null,
+    });
+  }
+
+  return {
+    title: "紫微斗数排盘",
+    subtitle: "十二宫定位与时间层共用同一组已返回事实",
+    layers,
+    activeLayerId: "natal",
+    cells: [],
+    highlights: [],
+    basis: [{ key: "schema", label: "事实合同", text: view.schema_version }],
+  };
+}
+
+function palaceFocusDetail(
+  view: ZiweiChartViewModel,
+  branch: string | null,
+): WorkspaceFocusDetail | null {
+  if (!branch) return null;
+  const palace = view.palaces.find((item) => item.earthly_branch === branch);
+  if (!palace) return null;
+  const opposite = view.palaces.find(
+    (item) => item.earthly_branch === stepBranch(branch, 6),
+  );
+  const facts: WorkspaceFocusDetail["facts"] = [];
+  if (palace.label.trim()) facts.push({ label: "宫位", text: palace.label });
+  const stemBranch = ganzhiText(palace);
+  if (stemBranch) facts.push({ label: "干支", text: stemBranch });
+  facts.push({
+    label: "主星",
+    text: palace.major_stars.length ? palace.major_stars.join("、") : "无主星",
+  });
+  const minorStars = (palace.minor_stars ?? [])
+    .map((star) => star.name?.trim())
+    .filter((name): name is string => Boolean(name));
+  if (minorStars.length)
+    facts.push({ label: "辅星", text: minorStars.join("、") });
+  const limit = decadeText(palace.decadal);
+  if (limit) facts.push({ label: "大限", text: limit });
+  if (!palace.major_stars.length && opposite) {
+    facts.push({
+      label: "对宫参考",
+      text: `${opposite.label} · ${
+        opposite.major_stars.length ? opposite.major_stars.join("、") : "无主星"
+      }`,
+    });
+  }
+
+  return {
+    id: `ziwei-palace-${branch}`,
+    title: `${palace.label || branch} · ${branch}`,
+    facts,
+    limits: [
+      "只展示服务端已返回事实，不在浏览器补算星曜或追加推断。",
+      ...(palace.major_stars.length
+        ? []
+        : ["当前宫位无主星；对宫仅作结构参考，不作推断。"]),
+    ],
+    sources: ["服务端紫微盘面"],
+  };
+}
+
+function ZiweiYearLayer({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
+  const annualLayers = view.core_facts?.annual_layers ?? [];
+  if (!annualLayers.length) return null;
+  return (
+    <div className={styles.layerFacts}>
+      <table className={styles.layerTable}>
+        <caption>流年盘面事实</caption>
+        <thead>
+          <tr>
+            <th scope="col">年份</th>
+            <th scope="col">覆盖区间</th>
+            <th scope="col">分段</th>
+          </tr>
+        </thead>
+        <tbody>
+          {annualLayers.map((item) => (
+            <tr key={`${item.year}-${item.coverage_start}`}>
+              <td>{item.year}</td>
+              <td>{`${item.coverage_start}—${item.coverage_end_exclusive}`}</td>
+              <td>{item.segments.length}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className={styles.layerBoundary}>
+        仅列出服务端已返回的年份、覆盖区间与分段数量。
+      </p>
+    </div>
+  );
+}
+
+function ZiweiWorkspaceState({ layer }: Readonly<{ layer: WorkspaceLayer }>) {
+  if (layer.status === "empty") {
+    return (
+      <div className={styles.workspaceState} data-state="empty">
+        <h4>{layer.label}暂无结构</h4>
+        <p>{layer.summary ?? "服务端尚未返回可展示结构。"}</p>
+      </div>
+    );
+  }
+  if (layer.status === "locked-unavailable") {
+    return (
+      <div className={styles.workspaceState} data-state="unavailable">
+        <h4>{layer.label}待接入</h4>
+        <p>{layer.summary ?? "当前没有可展示事实；此状态不提供购买入口。"}</p>
+      </div>
+    );
+  }
+  return (
+    <div className={styles.workspaceState} data-state="locked">
+      <h4>{layer.label}已锁定</h4>
+      {layer.status === "fail-closed-unknown" ? (
+        <p>
+          <strong>权益状态未确认</strong>
+          <span>当前盘面不会展示或预填任何付费事实。</span>
+        </p>
+      ) : (
+        <p>当前盘面不会展示或预填任何锁定事实。</p>
+      )}
+    </div>
+  );
+}
+
+function ZiweiReadingPane({
+  detail,
+  onClose,
+}: Readonly<{
+  detail: WorkspaceFocusDetail | null;
+  onClose: () => void;
+}>) {
+  return (
+    <div aria-label="连续阅读面" className={styles.readingPane}>
+      <p className={styles.readingOrder}>盘面事实 / 方法边界 / 来源依据</p>
+      <section aria-label="聚焦详情" className={styles.focusDetail}>
+        <header className={styles.focusHeader}>
+          <h4>聚焦详情</h4>
+          {detail ? (
+            <button aria-label="关闭聚焦详情" onClick={onClose} type="button">
+              关闭
+            </button>
+          ) : null}
+        </header>
+        {detail ? (
+          <div aria-live="polite" className={styles.focusBody}>
+            <p className={styles.focusTitle}>{detail.title}</p>
+            {detail.facts.length ? (
+              <dl className={styles.focusFacts}>
+                {detail.facts.map((fact) => (
+                  <div key={`${fact.label}-${fact.text}`}>
+                    <dt>{fact.label}</dt>
+                    <dd>{fact.text}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : null}
+            {detail.limits.length ? (
+              <div className={styles.focusNotes}>
+                <h5>边界</h5>
+                <ul>
+                  {detail.limits.map((limit) => (
+                    <li key={limit}>{limit}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+            {detail.sources.length ? (
+              <div className={styles.focusNotes}>
+                <h5>来源</h5>
+                <ul>
+                  {detail.sources.map((source) => (
+                    <li key={source}>{source}</li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
+          </div>
+        ) : (
+          <p className={styles.focusEmpty}>
+            选择一个宫位后，这里只显示已返回的宫位事实。
+          </p>
+        )}
+      </section>
+    </div>
+  );
+}
+
+export function ZiweiWorkspace({
+  view,
+  showInterpretiveSections = true,
+}: Readonly<{
+  view: ZiweiChartViewModel;
+  showInterpretiveSections?: boolean;
+}>) {
+  const layout = useResolvedLayout();
+  const lifeBranch =
+    view.palaces.find((palace) => palace.palace_id === view.life_palace_id)
+      ?.earthly_branch ?? null;
+  const [selectedBranch, setSelectedBranch] = useState<string | null>(
+    lifeBranch,
+  );
+  const [activeBranch, setActiveBranch] = useState<string | null>(lifeBranch);
+  const workspace = useMemo(() => projectZiweiWorkspace(view), [view]);
+  const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
+    workspace.activeLayerId,
+  );
+  const tabIdPrefix = useId();
+  const activeLayer =
+    workspace.layers.find((layer) => layer.id === activeLayerId) ??
+    workspace.layers[0];
+  const detail = useMemo(
+    () => palaceFocusDetail(view, activeBranch),
+    [activeBranch, view],
+  );
+
+  function selectBranch(branch: string | null) {
+    setSelectedBranch(branch);
+    setActiveBranch(branch);
+  }
+
+  function selectLayer(layerId: WorkspaceLayerId) {
+    setActiveLayerId(layerId);
+    selectBranch(null);
+  }
+
+  function renderReadyLayer(layer: WorkspaceLayer) {
+    if (layer.id === "natal") {
+      return (
+        <ZiweiPalaceBoard
+          layout={layout}
+          onActiveBranchChange={setActiveBranch}
+          onSelectedBranchChange={setSelectedBranch}
+          selectedBranch={selectedBranch}
+          showInterpretiveSections={showInterpretiveSections}
+          showLocator={false}
+          view={view}
+        />
+      );
+    }
+    if (layer.id === "decadal") {
+      return (
+        <ZiweiMajorLimitTrack
+          limits={view.core_facts?.major_limits ?? null}
+          onSelectLimit={selectBranch}
+          selectedBranch={selectedBranch}
+          sequence={view.core_facts?.major_limit_sequence ?? null}
+        />
+      );
+    }
+    if (layer.id === "yearly") return <ZiweiYearLayer view={view} />;
+    return null;
+  }
+
+  return (
+    <section
+      className={styles.workspaceFrame}
+      data-schema={view.schema_version}
+      onKeyDown={(event) => {
+        if (
+          event.key !== "Escape" ||
+          !activeBranch ||
+          document.querySelector('[data-slot="palace-detail"]')
+        ) {
+          return;
+        }
+        event.preventDefault();
+        selectBranch(null);
+      }}
+    >
+      <ZiweiPalaceLocator
+        layout={layout}
+        onSelect={selectBranch}
+        selectedBranch={selectedBranch}
+        view={view}
+      />
+      <section aria-label="排盘工作台" className={styles.workspace}>
+        <header className={styles.workspaceHeader}>
+          <div>
+            <h3>{workspace.title}</h3>
+            <p>定位与时间层 → 盘面 → 连续阅读面</p>
+          </div>
+          {workspace.subtitle ? <p>{workspace.subtitle}</p> : null}
+        </header>
+        <TimeLayerTabs
+          activeLayerId={activeLayer.id}
+          idPrefix={tabIdPrefix}
+          layers={workspace.layers}
+          onSelect={selectLayer}
+        />
+        <div className={styles.workspaceBody}>
+          <div
+            aria-labelledby={`${tabIdPrefix}-tab-${activeLayer.id}`}
+            className={styles.workspaceBoard}
+            id={`${tabIdPrefix}-panel-${activeLayer.id}`}
+            role="tabpanel"
+            tabIndex={0}
+          >
+            {activeLayer.status === "ready" ? (
+              renderReadyLayer(activeLayer)
+            ) : (
+              <ZiweiWorkspaceState layer={activeLayer} />
+            )}
+          </div>
+          <ZiweiReadingPane
+            detail={detail}
+            onClose={() => selectBranch(null)}
+          />
+        </div>
+      </section>
+    </section>
   );
 }
