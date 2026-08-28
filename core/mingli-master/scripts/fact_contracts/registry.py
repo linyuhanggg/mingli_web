@@ -35,6 +35,7 @@ class FactContractError(RuntimeError):
 _CATALOG_CACHE: dict[str, Any] = {}
 
 _REQUIRED_HOOKS = (
+    "bind_canonical_facts",
     "required_output_ids",
     "required_calendar_keys",
     "validate_output",
