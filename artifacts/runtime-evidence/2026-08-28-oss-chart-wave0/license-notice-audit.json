@@ -1,0 +1,519 @@
+{
+  "schema_version": "mingli-oss-chart-license-audit-v1",
+  "issue": "MING-66",
+  "audit_date": "2026-08-28",
+  "legal_disclaimer": "Engineering compliance audit; not legal advice.",
+  "source_ref": {
+    "commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
+    "tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+    "ref": "origin/main"
+  },
+  "scope": {
+    "runtime_lock": {
+      "path": "core/mingli-master/requirements-runtime.lock",
+      "sha256": "d3e7afd811a151d8443e6aacd8fc48ea263c1f21cb5de6d34520c6b9b2c5ee35"
+    },
+    "release_closure": {
+      "path": "core/mingli-master/release/runtime-closure-v1.json",
+      "sha256": "6a4917f2e3e867d2d5801b75905d181acc377158533816c481cbac3836fd4230"
+    },
+    "actual_runtime_components": [
+      "pyyaml-6.0.3",
+      "sxtwl-2.0.7",
+      "astronomy-engine-2.1.19",
+      "cnlunar-0.2.4",
+      "zhconv-1.4.3",
+      "iztro-2.5.8",
+      "look-fate-liuren-table-8e9a7b5"
+    ],
+    "report_only_components": [
+      "lunar-python-1.4.8",
+      "lunar-javascript-1.7.7"
+    ],
+    "excluded": [
+      "build-only packages removed before Runtime handoff",
+      "host language runtimes and base-image operating-system packages governed by their own SBOM",
+      "retired infra/mingli-runtime image flow"
+    ]
+  },
+  "summary": {
+    "overall_decision": "HOLD",
+    "allow_count": 5,
+    "hold_count": 4,
+    "reject_count": 0,
+    "notice_admitted_count": 4,
+    "notice_admitted_components": [
+      "astronomy-engine-2.1.19",
+      "cnlunar-0.2.4",
+      "iztro-2.5.8",
+      "look-fate-liuren-table-8e9a7b5"
+    ],
+    "current_release_blockers": [
+      "pyyaml-6.0.3",
+      "sxtwl-2.0.7",
+      "zhconv-1.4.3",
+      "third-party-notices-not-in-release-closure"
+    ],
+    "reject_items": []
+  },
+  "components": [
+    {
+      "id": "pyyaml-6.0.3",
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "purpose": "YAML support for Runtime manifests and contracts",
+      "classification": "runtime_python_dependency",
+      "actually_distributed": true,
+      "architecture_policy": "KEEP",
+      "notice_included": false,
+      "upstream": {
+        "repository_url": "https://github.com/yaml/pyyaml",
+        "official_release_url": "https://pypi.org/project/PyYAML/6.0.3/",
+        "reviewed_ref": "6.0.3",
+        "reviewed_commit": "49790e73684bebad1df05ef8d828fa12f685bffb"
+      },
+      "distribution": {
+        "method": "unmodified hash-locked wheels",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "pyyaml-6.0.3-cp311-cp311-macosx_11_0_arm64.whl",
+            "sha256": "652cb6edd41e718550aad172851962662ff2681490a8a711af6a4d288dd96824"
+          },
+          {
+            "filename": "pyyaml-6.0.3-cp314-cp314-macosx_11_0_arm64.whl",
+            "sha256": "34d5fcd24b8445fadc33f9cf348c1047101756fd760b4dacb5c3e99755703310"
+          },
+          {
+            "filename": "pyyaml-6.0.3-cp314-cp314-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+            "sha256": "c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "full_text_source_url": "https://github.com/yaml/pyyaml/blob/49790e73684bebad1df05ef8d828fa12f685bffb/LICENSE",
+        "repository_local_path": null,
+        "distribution_member_path": "pyyaml-6.0.3.dist-info/licenses/LICENSE",
+        "license_sha256": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4"
+      },
+      "obligations": {
+        "attribution": "retain copyright, MIT permission notice, and disclaimer",
+        "notice": "license text must remain with distributed copies",
+        "source_offer": "not required",
+        "modification_notice": "not required; artifact is unmodified"
+      },
+      "decision": "HOLD",
+      "decision_scope": "current Runtime distribution",
+      "rationale": "Exact wheels carry the MIT license, but no repository-local license path is selected by the release closure.",
+      "unblock_conditions": [
+        "vendor the exact license under an approved repository path",
+        "include the license and THIRD_PARTY_NOTICES.md in the release closure"
+      ]
+    },
+    {
+      "id": "sxtwl-2.0.7",
+      "name": "sxtwl",
+      "version": "2.0.7",
+      "purpose": "solar terms, sexagenary calendar, and lunar conversion",
+      "classification": "runtime_chart_engine",
+      "actually_distributed": true,
+      "architecture_policy": "KEEP/WRAP",
+      "notice_included": false,
+      "upstream": {
+        "repository_url": "https://github.com/yuangu/sxtwl_cpp",
+        "official_release_url": "https://pypi.org/project/sxtwl/2.0.7/",
+        "reviewed_ref": "master-license-only; no 2.0.7 tag exists",
+        "reviewed_commit": "7598b0601a76cfdaa9266257b1b5690720c1e2ce"
+      },
+      "distribution": {
+        "method": "locally compiled from the exact hash-locked sdist without source patches",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "sxtwl-2.0.7.tar.gz",
+            "sha256": "38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512"
+          }
+        ]
+      },
+      "license": {
+        "spdx": null,
+        "package_metadata_label": "BSD",
+        "upstream_current_spdx": "BSD-3-Clause",
+        "full_text_source_url": "https://github.com/yuangu/sxtwl_cpp/blob/7598b0601a76cfdaa9266257b1b5690720c1e2ce/LICENSE",
+        "repository_local_path": null,
+        "distribution_member_path": null,
+        "license_sha256": null,
+        "upstream_current_license_sha256": "f90cebec40217aac9f464602fbbff397b7cd6bf580c34c0cc377638886202523"
+      },
+      "obligations": {
+        "attribution": "if version binding confirms BSD-3-Clause, retain copyright, conditions, and disclaimer",
+        "notice": "binary distribution materials must reproduce the BSD notice",
+        "source_offer": "not required for BSD-3-Clause",
+        "modification_notice": "not required; source is unpatched",
+        "non_endorsement": "required for BSD-3-Clause"
+      },
+      "decision": "HOLD",
+      "decision_scope": "legal evidence only; architecture remains KEEP/WRAP",
+      "rationale": "The exact PyPI sdist contains no license file and no exact upstream 2.0.7 ref binds the generic BSD metadata to full BSD-3-Clause bytes.",
+      "unblock_conditions": [
+        "bind the sdist to an exact authenticated upstream source",
+        "vendor the corresponding full license with SHA-256",
+        "include the license and THIRD_PARTY_NOTICES.md in the release closure"
+      ]
+    },
+    {
+      "id": "astronomy-engine-2.1.19",
+      "name": "astronomy-engine",
+      "version": "2.1.19",
+      "purpose": "ephemeris calculations behind the Runtime Provider",
+      "classification": "runtime_chart_engine",
+      "actually_distributed": true,
+      "architecture_policy": "KEEP/WRAP",
+      "notice_included": true,
+      "upstream": {
+        "repository_url": "https://github.com/cosinekitty/astronomy",
+        "official_release_url": "https://pypi.org/project/astronomy-engine/2.1.19/",
+        "reviewed_ref": "v2.1.19",
+        "reviewed_tag_object": "03084ee684bdcc490273fe85f9df4f1c8fb66199",
+        "reviewed_commit": "61dc07020aaa6885d2c7f688a4d82beaf6edb9ef"
+      },
+      "distribution": {
+        "method": "unmodified hash-locked wheel",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "astronomy_engine-2.1.19-py3-none-any.whl",
+            "sha256": "232ba7dd2bbf42225c48be6721b676e8c6c079dbd4588d2781dfa68adcb6f67f"
+          },
+          {
+            "filename": "astronomy-engine-2.1.19.tar.gz",
+            "sha256": "95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b",
+            "role": "official source provenance"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "full_text_source_url": "https://pypi.org/project/astronomy-engine/2.1.19/",
+        "repository_local_path": "core/mingli-master/vendor/astronomy-engine-2.1.19/LICENSE",
+        "distribution_member_path": "astronomy_engine-2.1.19.dist-info/LICENSE",
+        "license_sha256": "b4d9dd0fd80fce3879c4cd9e3754364f74fc5ec046f33276475ba3876785c8b7",
+        "upstream_tag_root_license_sha256": "690dd98cb13ba4db77c6327deea852a816892bb9debbad5943405c66972f8023",
+        "byte_variance": "distributed wheel says 2019-2022; tag-root license says 2019-2023; both are MIT"
+      },
+      "obligations": {
+        "attribution": "retain copyright, MIT permission notice, and disclaimer",
+        "notice": "local license and combined notice are present",
+        "source_offer": "not required",
+        "modification_notice": "not required; artifact is unmodified"
+      },
+      "decision": "ALLOW",
+      "decision_scope": "current Runtime distribution at 2.1.19",
+      "rationale": "Exact version, registry artifacts, local license/hash, and MIT obligations are closed; the harmless copyright-year byte variance is disclosed."
+    },
+    {
+      "id": "cnlunar-0.2.4",
+      "name": "cnlunar",
+      "version": "0.2.4",
+      "purpose": "selected Xieji almanac tables behind the Runtime Provider",
+      "classification": "runtime_engine_support",
+      "actually_distributed": true,
+      "architecture_policy": "KEEP",
+      "notice_included": true,
+      "upstream": {
+        "repository_url": "https://github.com/OPN48/cnlunar",
+        "official_release_url": "https://pypi.org/project/cnlunar/0.2.4/",
+        "reviewed_ref": "0.2.4",
+        "reviewed_tag_object": "b3e1cb1e78a62431405d90a685671c7dd4a3f990",
+        "reviewed_commit": "71e448a3ad4fa17bb731a57637ee0728e6f53d37"
+      },
+      "distribution": {
+        "method": "unmodified hash-locked wheel",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "cnlunar-0.2.4-py3-none-any.whl",
+            "sha256": "19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea"
+          },
+          {
+            "filename": "cnlunar-0.2.4.tar.gz",
+            "sha256": "a270238a657744dbc477cb48207b4dffe7c03100b327c81ae4622055d593463f",
+            "role": "official source provenance"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "full_text_source_url": "https://github.com/OPN48/cnlunar/blob/71e448a3ad4fa17bb731a57637ee0728e6f53d37/LICENSE",
+        "repository_local_path": "core/mingli-master/vendor/cnlunar-0.2.4/LICENSE",
+        "distribution_member_path": "cnlunar-0.2.4.dist-info/licenses/LICENSE",
+        "license_sha256": "8bc77e1f9ab5c48cfc9e532b5eb30ff02c67cdc14af27b88b9c1ae815f1364bc"
+      },
+      "obligations": {
+        "attribution": "retain copyright, MIT permission notice, and disclaimer",
+        "notice": "local license and combined notice are present",
+        "source_offer": "not required",
+        "modification_notice": "not required; artifact is unmodified"
+      },
+      "decision": "ALLOW",
+      "decision_scope": "current Runtime distribution at 0.2.4",
+      "rationale": "Exact version, registry artifacts, upstream ref, byte-identical local license, and MIT obligations are closed."
+    },
+    {
+      "id": "iztro-2.5.8",
+      "name": "iztro",
+      "version": "2.5.8",
+      "purpose": "Ziwei chart engine behind the Runtime Provider",
+      "classification": "vendored_runtime_chart_engine",
+      "actually_distributed": true,
+      "architecture_policy": "KEEP/WRAP",
+      "notice_included": true,
+      "upstream": {
+        "repository_url": "https://github.com/SylarLong/iztro",
+        "official_release_url": "https://registry.npmjs.org/iztro/2.5.8",
+        "reviewed_ref": "2.5.8",
+        "reviewed_commit": "9d39f1743bf31c2b3c635c9b9556215d9c90ee2c"
+      },
+      "distribution": {
+        "method": "vendored npm distribution member",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "iztro-2.5.8.tgz",
+            "sha256": "8293c6a587de521b0713e45826745ba4b7482fc507bd2da43fc820cadf06deca"
+          },
+          {
+            "filename": "core/mingli-master/vendor/iztro-2.5.8/iztro.min.js",
+            "source_member": "package/dist/iztro.min.js",
+            "sha256": "4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "full_text_source_url": "https://github.com/SylarLong/iztro/blob/9d39f1743bf31c2b3c635c9b9556215d9c90ee2c/LICENSE",
+        "repository_local_path": "core/mingli-master/vendor/iztro-2.5.8/LICENSE",
+        "distribution_member_path": "package/LICENSE",
+        "license_sha256": "e6c7b6e313cbda3135b41bccc66c98be132cb8319d0d465903d17e669e748b36"
+      },
+      "obligations": {
+        "attribution": "retain copyright, MIT permission notice, and disclaimer",
+        "notice": "local license and combined notice are present",
+        "source_offer": "not required",
+        "modification_notice": "not required; vendored file is byte-identical"
+      },
+      "decision": "ALLOW",
+      "decision_scope": "current Runtime distribution at 2.5.8",
+      "rationale": "The vendored JavaScript and license are byte-identical to the exact npm artifact and tag."
+    },
+    {
+      "id": "look-fate-liuren-table-8e9a7b5",
+      "name": "look-fate/liuren-ts-lib transmission table",
+      "version": "8e9a7b53245c8ae19fa12773087e1f90b3376d5e",
+      "purpose": "Da Liu Ren 60 x 12 audit witness",
+      "classification": "vendored_runtime_audit_data",
+      "actually_distributed": true,
+      "architecture_policy": "KEEP_AS_AUDIT_WITNESS",
+      "notice_included": true,
+      "upstream": {
+        "repository_url": "https://github.com/look-fate/liuren-ts-lib",
+        "official_release_url": "https://github.com/look-fate/liuren-ts-lib/tree/8e9a7b53245c8ae19fa12773087e1f90b3376d5e",
+        "reviewed_ref": "8e9a7b53245c8ae19fa12773087e1f90b3376d5e",
+        "reviewed_commit": "8e9a7b53245c8ae19fa12773087e1f90b3376d5e"
+      },
+      "distribution": {
+        "method": "vendored upstream JSON member",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "core/mingli-master/scripts/data/liuren-720-transmissions.json",
+            "source_member": "src/sanchuan.json",
+            "sha256": "f4e77cce9d72c000aae228d1d07ed1ca9361baf3fbbad9f41f5fbe4ca346483b"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "Apache-2.0",
+        "full_text_source_url": "https://github.com/look-fate/liuren-ts-lib/blob/8e9a7b53245c8ae19fa12773087e1f90b3376d5e/LICENSE",
+        "repository_local_path": "core/mingli-master/scripts/data/LICENSE.Apache-2.0.txt",
+        "distribution_member_path": "LICENSE",
+        "license_sha256": "26049b4e4af10b0c5ad392100980605ce14ef532d22197ab621fe605156adf75",
+        "local_notice_path": "core/mingli-master/scripts/data/LIUREN-720-NOTICE.md",
+        "local_notice_sha256": "2199bf8ae17dd13919efce112183c4001f23222b5e1e79e1101185533212d327",
+        "upstream_notice_present": false
+      },
+      "obligations": {
+        "attribution": "ship Apache-2.0 and preserve applicable attribution notices",
+        "notice": "upstream has no NOTICE; local attribution record is present",
+        "source_offer": "not required",
+        "modification_notice": "not required; data file is byte-identical",
+        "patent_terms": "Apache-2.0 patent grant and termination terms apply"
+      },
+      "decision": "ALLOW",
+      "decision_scope": "current audit-witness distribution",
+      "rationale": "The data and license are byte-identical to the pinned upstream commit, the upstream tree has no NOTICE, and the local notice records scope."
+    },
+    {
+      "id": "lunar-python-1.4.8",
+      "name": "lunar-python",
+      "version": "1.4.8",
+      "purpose": "frozen independent engineering comparator",
+      "classification": "repository_only_comparator",
+      "actually_distributed": false,
+      "architecture_policy": "COMPARATOR_ONLY",
+      "notice_included": false,
+      "upstream": {
+        "repository_url": "https://github.com/6tail/lunar-python",
+        "official_release_url": "https://pypi.org/project/lunar-python/1.4.8/",
+        "reviewed_ref": "v1.4.8",
+        "reviewed_commit": "000c8a3d74eed098d6256a28fdd51b869324c559"
+      },
+      "distribution": {
+        "method": "not shipped; repository stores license/provenance and an implementation digest",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "lunar_python-1.4.8.tar.gz",
+            "sha256": "3aa11cc73c25e70ddf0ba5bdac7398c03acc9491a3aa512a91c9642973b669d6",
+            "role": "official comparison source provenance"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "full_text_source_url": "https://github.com/6tail/lunar-python/blob/000c8a3d74eed098d6256a28fdd51b869324c559/LICENSE",
+        "repository_local_path": "core/mingli-master/vendor/lunar-python-1.4.8/LICENSE",
+        "distribution_member_path": "lunar_python-1.4.8/LICENSE",
+        "license_sha256": "097ec7989106eb9a27b6eff71dbaf1cd6bb04a9b35b6c94b54fff0829a041a8c",
+        "upstream_artifact_license_sha256": "a9d04f47f0615c0ce48bdbe2ff58d5c174279d9f20f044ef29249632302a4ab3",
+        "byte_variance": "local file adds one terminal LF only"
+      },
+      "obligations": {
+        "attribution": "retain copyright, MIT permission notice, and disclaimer if code is later distributed",
+        "notice": "not included because implementation is not in the Runtime distribution",
+        "source_offer": "not required",
+        "modification_notice": "not applicable"
+      },
+      "decision": "ALLOW",
+      "decision_scope": "repository-only comparator at 1.4.8; not approval for Runtime promotion",
+      "rationale": "Exact version/source and local MIT license are closed for the current comparator-only role."
+    },
+    {
+      "id": "zhconv-1.4.3",
+      "name": "zhconv",
+      "version": "1.4.3",
+      "purpose": "simplified/traditional text conversion",
+      "classification": "runtime_python_dependency",
+      "actually_distributed": true,
+      "architecture_policy": "REVIEW_OR_REPLACE",
+      "notice_included": false,
+      "upstream": {
+        "repository_url": "https://github.com/gumblex/zhconv",
+        "official_release_url": "https://pypi.org/project/zhconv/1.4.3/",
+        "reviewed_ref": "v1.4.3",
+        "reviewed_tag_object": "bbc9d85702c2e0be0f3acd10a161b9eaafa38b5a",
+        "reviewed_commit": "0f066eb3df92f73714eedf36f287839e993fa922"
+      },
+      "distribution": {
+        "method": "installed from exact hash-locked sdist without source patches",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "zhconv-1.4.3.tar.gz",
+            "sha256": "ad42d9057ca0605f8e41d62b67ca797f879f58193ee6840562c51459b2698c45"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "GPL-2.0-or-later",
+        "package_metadata_label": "GPLv2+",
+        "full_text_source_url": "https://github.com/gumblex/zhconv/tree/0f066eb3df92f73714eedf36f287839e993fa922",
+        "repository_local_path": null,
+        "distribution_member_path": "zhconv-1.4.3/LICENSE and zhconv-1.4.3/LICENSE.data",
+        "license_sha256": null,
+        "code_license": {
+          "spdx": "MIT",
+          "member": "zhconv-1.4.3/LICENSE",
+          "sha256": "03321beb8e1d0b1ac0ef01174b9c207d7c3f43d401ba49c2ea803b518c341607"
+        },
+        "data_license": {
+          "spdx": "GPL-2.0-or-later",
+          "member": "zhconv-1.4.3/LICENSE.data",
+          "sha256": "ee56fcd554ea3522420571898a8c63ff6193d78111c07b63599f36e338376237"
+        }
+      },
+      "obligations": {
+        "attribution": "preserve both code and data notices",
+        "notice": "provide GPLv2+ license terms and required attribution",
+        "source_offer": "complete corresponding source or a compliant written offer may be required depending on distribution mode",
+        "modification_notice": "state changes if modified; current source is unpatched",
+        "copyleft": "combined product compatibility and derivative-data licensing require an explicit project decision"
+      },
+      "decision": "HOLD",
+      "decision_scope": "current Runtime distribution",
+      "rationale": "The package is GPLv2+ because of its MediaWiki-derived payload, but local license files, source-compliance procedure, and a project compatibility decision are absent.",
+      "unblock_conditions": [
+        "vendor both exact license files with hashes",
+        "record and implement a corresponding-source/source-offer procedure and compatibility decision",
+        "or replace the dependency in a separately reviewed task"
+      ]
+    },
+    {
+      "id": "lunar-javascript-1.7.7",
+      "name": "lunar-javascript",
+      "version": "1.7.7",
+      "purpose": "independently discovered calendar/Bazi mechanical-engine candidate",
+      "classification": "proposed_candidate",
+      "actually_distributed": false,
+      "architecture_policy": "CANDIDATE_ONLY",
+      "notice_included": false,
+      "upstream": {
+        "repository_url": "https://github.com/6tail/lunar-javascript",
+        "official_release_url": "https://registry.npmjs.org/lunar-javascript/1.7.7",
+        "reviewed_ref": "v1.7.7",
+        "reviewed_commit": "4c45a59f79b856125516f31aefa8295035c16afd"
+      },
+      "distribution": {
+        "method": "not distributed",
+        "modified": false,
+        "artifacts": [
+          {
+            "filename": "lunar-javascript-1.7.7.tgz",
+            "sha256": "d1359ab9ca4913d1db3978a42ddfc290eb8ea9de54ce043f5b1f718ff71eea36"
+          }
+        ]
+      },
+      "license": {
+        "spdx": "MIT",
+        "full_text_source_url": "https://github.com/6tail/lunar-javascript/blob/4c45a59f79b856125516f31aefa8295035c16afd/LICENSE",
+        "repository_local_path": null,
+        "distribution_member_path": "package/LICENSE",
+        "license_sha256": "d9210caf1844dcf410095cea464b79800aad30dbd49df092076b9f0ddc015404"
+      },
+      "obligations": {
+        "attribution": "retain copyright, MIT permission notice, and disclaimer if later distributed",
+        "notice": "must not enter current NOTICE before actual admission",
+        "source_offer": "not required",
+        "modification_notice": "not applicable"
+      },
+      "decision": "HOLD",
+      "decision_scope": "pre-admission candidate only",
+      "rationale": "Official artifact and MIT terms are clear, but there is no approved lock, local license, Provider coverage matrix, or lawful golden-difference evidence.",
+      "unblock_conditions": [
+        "create an approved immutable dependency lock",
+        "vendor the exact license under an approved local path",
+        "pass Provider coverage, policy-normalization, and lawful golden-difference gates"
+      ]
+    }
+  ],
+  "future_candidate_gate": [
+    "record exact version, immutable artifact hash, official URLs, and exact upstream ref",
+    "store complete license and NOTICE bytes under approved local paths with SHA-256",
+    "record distribution form, modifications, attribution, patent, copyleft, corresponding-source, and source-offer obligations",
+    "keep candidate/comparator entries out of the Runtime NOTICE until actually distributed",
+    "include THIRD_PARTY_NOTICES.md and every required license in the release closure",
+    "reject dependency/audit/NOTICE drift and any ALLOW entry without an exact local license and hash",
+    "treat license admission as independent from Provider coverage and Canonical Facts correctness"
+  ]
+}
