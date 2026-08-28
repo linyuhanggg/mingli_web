@@ -602,8 +602,7 @@ export function ZiweiPalaceBoard({
 
   const brightnessOf = (name: string, branch: string): string | null => {
     const hit = view?.core_facts?.star_facts?.find(
-      (fact) =>
-        fact.name === name && fact.palace_branch === branch && fact.brightness,
+      (fact) => fact.name === name && fact.palace_branch === branch,
     );
     return hit?.brightness ?? null;
   };
@@ -1171,9 +1170,31 @@ type ZiweiTemporalStar = {
 };
 
 type ZiweiTemporalPalace = {
+  index: number;
   branch: string;
   label: string;
   stars: readonly ZiweiTemporalStar[];
+};
+
+type ZiweiTemporalTransformation = {
+  star: string;
+  transformation: string;
+  palace: string;
+  palace_branch: string;
+  scope: string;
+};
+
+type ZiweiTemporalLayerId = "yearly" | "monthly";
+
+type ZiweiTemporalOption = {
+  id: string;
+  label: string;
+  view: ZiweiChartViewModel;
+};
+
+type ZiweiTemporalSelection = {
+  options: readonly ZiweiTemporalOption[];
+  initialId: string;
 };
 
 function isEarthlyBranch(value: unknown): value is (typeof BRANCHES)[number] {
@@ -1190,10 +1211,19 @@ function optionalText(value: unknown): string | null | undefined {
 
 function parseTemporalStar(value: unknown): ZiweiTemporalStar | null {
   if (!isRecord(value) || !isNonEmptyText(value.name)) return null;
-  const starType = optionalText(value.star_type ?? value.type);
+  const starTypeField = optionalText(value.star_type);
+  const typeField = optionalText(value.type);
+  if (
+    starTypeField === undefined ||
+    typeField === undefined ||
+    (starTypeField && typeField && starTypeField !== typeField)
+  ) {
+    return null;
+  }
+  const starType = starTypeField ?? typeField;
   const scope = optionalText(value.scope);
   const brightness = optionalText(value.brightness);
-  if (starType === undefined || scope === undefined || brightness === undefined) {
+  if (!starType || !scope || brightness === undefined) {
     return null;
   }
   return {
@@ -1248,6 +1278,7 @@ function parseTemporalPalaces(
     indexes.add(raw.index);
     branches.add(raw.natal_branch);
     assignments.push({
+      index: raw.index,
       branch: raw.natal_branch,
       label: raw.temporal_palace.trim(),
       stars: stars as ZiweiTemporalStar[],
@@ -1257,11 +1288,63 @@ function parseTemporalPalaces(
   return assignments;
 }
 
+function parseTemporalTransformations(
+  value: Readonly<Record<string, unknown>>,
+): readonly ZiweiTemporalTransformation[] | null {
+  const rawFacts = value.transformation_facts;
+  if (rawFacts === undefined || rawFacts === null) return [];
+  if (!Array.isArray(rawFacts)) return null;
+  const transformations: ZiweiTemporalTransformation[] = [];
+  const seen = new Set<string>();
+  for (const raw of rawFacts) {
+    if (
+      !isRecord(raw) ||
+      !isNonEmptyText(raw.star) ||
+      !isNonEmptyText(raw.transformation) ||
+      !isNonEmptyText(raw.palace) ||
+      !isEarthlyBranch(raw.palace_branch) ||
+      !isNonEmptyText(raw.scope)
+    ) {
+      return null;
+    }
+    const item = {
+      star: raw.star.trim(),
+      transformation: raw.transformation.trim(),
+      palace: raw.palace.trim(),
+      palace_branch: raw.palace_branch,
+      scope: raw.scope.trim(),
+    };
+    const identity = [
+      item.star,
+      item.transformation,
+      item.palace_branch,
+      item.scope,
+    ].join("\u0000");
+    if (seen.has(identity)) return null;
+    seen.add(identity);
+    transformations.push(item);
+  }
+  return transformations;
+}
+
+function mergeTemporalStars<T extends { readonly name: string }>(
+  natal: readonly T[],
+  temporal: readonly T[],
+): readonly T[] {
+  const temporalNames = new Set(temporal.map((star) => star.name));
+  return [
+    ...natal.filter((star) => !temporalNames.has(star.name)),
+    ...temporal,
+  ];
+}
+
 function projectTemporalPalaceView(
   view: ZiweiChartViewModel,
   value: Readonly<Record<string, unknown>>,
 ): ZiweiChartViewModel | null {
   const assignments = parseTemporalPalaces(view, value);
+  const transformations = parseTemporalTransformations(value);
+  if (transformations === null) return null;
   if (assignments) {
     const byBranch = new Map(
       assignments.map((assignment) => [assignment.branch, assignment]),
@@ -1275,9 +1358,41 @@ function projectTemporalPalaceView(
     );
     if (!lifePalace) return null;
 
+    const temporalStarFacts = assignments.flatMap((assignment) =>
+      assignment.stars.map((star) => ({
+        name: star.name,
+        star_type: star.starType,
+        scope: star.scope,
+        brightness: star.brightness,
+        palace: assignment.label,
+        palace_branch: assignment.branch,
+        palace_index: assignment.index,
+      })),
+    );
+    const temporalStarKeys = new Set(
+      temporalStarFacts.map(
+        (star) => `${star.palace_branch}\u0000${star.name}`,
+      ),
+    );
+
     return {
       ...view,
       life_palace_id: lifePalace.palace_id,
+      core_facts: view.core_facts
+        ? {
+            ...view.core_facts,
+            transformations: transformations.length ? transformations : null,
+            star_facts: [
+              ...temporalStarFacts,
+              ...(view.core_facts.star_facts ?? []).filter(
+                (star) =>
+                  !temporalStarKeys.has(
+                    `${star.palace_branch}\u0000${star.name}`,
+                  ),
+              ),
+            ],
+          }
+        : view.core_facts,
       palaces: view.palaces.map((palace) => {
         const assignment = byBranch.get(palace.earthly_branch);
         if (!assignment) return palace;
@@ -1295,11 +1410,14 @@ function projectTemporalPalaceView(
         return {
           ...palace,
           label: assignment.label,
-          major_stars: [...palace.major_stars, ...temporalMajorStars],
-          minor_stars: [
-            ...(palace.minor_stars ?? []),
-            ...temporalMinorStars,
-          ],
+          major_stars: mergeTemporalStars(
+            palace.major_stars.map((name) => ({ name })),
+            temporalMajorStars.map((name) => ({ name })),
+          ).map((star) => star.name),
+          minor_stars: mergeTemporalStars(
+            palace.minor_stars ?? [],
+            temporalMinorStars,
+          ),
         };
       }),
     };
@@ -1309,26 +1427,153 @@ function projectTemporalPalaceView(
   const lifePalace = view.palaces.find(
     (palace) => palace.earthly_branch === value.life_palace,
   );
-  return lifePalace ? { ...view, life_palace_id: lifePalace.palace_id } : null;
+  return lifePalace
+    ? {
+        ...view,
+        life_palace_id: lifePalace.palace_id,
+        core_facts: view.core_facts
+          ? {
+              ...view.core_facts,
+              transformations: transformations.length ? transformations : null,
+            }
+          : view.core_facts,
+      }
+    : null;
+}
+
+type ZiweiTemporalTarget =
+  | { status: "none" }
+  | { status: "valid"; id: string }
+  | { status: "invalid" };
+
+function targetFromRecord(
+  value: unknown,
+  layerId: ZiweiTemporalLayerId,
+): ZiweiTemporalTarget {
+  if (!isRecord(value)) return { status: "none" };
+  if (layerId === "yearly") {
+    if (!Object.prototype.hasOwnProperty.call(value, "target_year")) {
+      return { status: "none" };
+    }
+    return typeof value.target_year === "number" &&
+      Number.isInteger(value.target_year) &&
+      value.target_year >= 1800 &&
+      value.target_year <= 2199
+      ? { status: "valid", id: String(value.target_year) }
+      : { status: "invalid" };
+  }
+  if (!Object.prototype.hasOwnProperty.call(value, "target_month")) {
+    return { status: "none" };
+  }
+  if (
+    typeof value.target_month === "string" &&
+    /^(18|19|20|21)\d{2}-(0[1-9]|1[0-2])$/.test(value.target_month)
+  ) {
+    return { status: "valid", id: value.target_month };
+  }
+  if (
+    typeof value.target_month === "number" &&
+    Number.isInteger(value.target_month) &&
+    value.target_month >= 1 &&
+    value.target_month <= 12 &&
+    typeof value.target_year === "number" &&
+    Number.isInteger(value.target_year) &&
+    value.target_year >= 1800 &&
+    value.target_year <= 2199
+  ) {
+    return {
+      status: "valid",
+      id: `${value.target_year}-${String(value.target_month).padStart(2, "0")}`,
+    };
+  }
+  return { status: "invalid" };
+}
+
+function temporalSelectionForLayer(
+  view: ZiweiChartViewModel,
+  layerId: ZiweiTemporalLayerId,
+): ZiweiTemporalSelection | null {
+  const options: ZiweiTemporalOption[] = [];
+  const identities = new Set<string>();
+  const targetRecords: unknown[] = [view.core_facts?.chart_convention];
+  if (layerId === "yearly") {
+    const layers = view.core_facts?.annual_layers;
+    if (!layers?.length) return null;
+    for (const layer of layers) {
+      if (
+        !Number.isInteger(layer.year) ||
+        layer.year < 1800 ||
+        layer.year > 2199 ||
+        !isNonEmptyText(layer.coverage_start) ||
+        !isNonEmptyText(layer.coverage_end_exclusive) ||
+        !Array.isArray(layer.segments) ||
+        !layer.segments.length ||
+        !isRecord(layer.liu_nian)
+      ) {
+        return null;
+      }
+      const id = String(layer.year);
+      const temporalView = projectTemporalPalaceView(view, layer.liu_nian);
+      if (identities.has(id) || !temporalView) return null;
+      identities.add(id);
+      options.push({ id, label: id, view: temporalView });
+      targetRecords.push(layer.liu_nian);
+    }
+  } else {
+    const layers = view.core_facts?.monthly_layers;
+    if (!layers?.length) return null;
+    for (const layer of layers) {
+      if (
+        !Number.isInteger(layer.year) ||
+        layer.year < 1800 ||
+        layer.year > 2199 ||
+        !Number.isInteger(layer.month) ||
+        layer.month < 1 ||
+        layer.month > 12 ||
+        !Array.isArray(layer.segments) ||
+        !layer.segments.length ||
+        !isRecord(layer.liu_yue)
+      ) {
+        return null;
+      }
+      const id = `${layer.year}-${String(layer.month).padStart(2, "0")}`;
+      const temporalView = projectTemporalPalaceView(view, layer.liu_yue);
+      if (identities.has(id) || !temporalView) return null;
+      identities.add(id);
+      options.push({ id, label: id, view: temporalView });
+      targetRecords.push(layer.liu_yue);
+    }
+  }
+
+  const explicitTargets = new Set<string>();
+  for (const record of targetRecords) {
+    const target = targetFromRecord(record, layerId);
+    if (target.status === "invalid") return null;
+    if (target.status === "valid") explicitTargets.add(target.id);
+  }
+  if (explicitTargets.size > 1) return null;
+  const explicitTarget = [...explicitTargets][0];
+  if (explicitTarget && !identities.has(explicitTarget)) return null;
+  return {
+    options,
+    initialId: explicitTarget ?? options[0].id,
+  };
 }
 
 function temporalPalaceViewForLayer(
   view: ZiweiChartViewModel,
-  layerId: WorkspaceLayerId,
+  layerId: ZiweiTemporalLayerId,
+  selectedId?: string | null,
 ): ZiweiChartViewModel | null {
-  if (layerId === "yearly") {
-    const layers = view.core_facts?.annual_layers;
-    return layers?.length === 1
-      ? projectTemporalPalaceView(view, layers[0].liu_nian)
-      : null;
-  }
-  if (layerId === "monthly") {
-    const layers = view.core_facts?.monthly_layers;
-    return layers?.length === 1
-      ? projectTemporalPalaceView(view, layers[0].liu_yue)
-      : null;
-  }
-  return null;
+  const selection = temporalSelectionForLayer(view, layerId);
+  if (!selection) return null;
+  const resolvedId =
+    selectedId && selection.options.some((option) => option.id === selectedId)
+      ? selectedId
+      : selection.initialId;
+  return (
+    selection.options.find((option) => option.id === resolvedId)?.view ?? null
+  );
 }
 
 function parseZiweiEntitlement(value: unknown): ParsedZiweiEntitlement | null {
@@ -1616,11 +1861,56 @@ function palaceFocusDetail(
   };
 }
 
-function ZiweiYearLayer({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
+function TemporalLayerSelector({
+  label,
+  onSelect,
+  options,
+  selectedId,
+}: Readonly<{
+  label: string;
+  onSelect: (id: string) => void;
+  options: readonly ZiweiTemporalOption[];
+  selectedId: string;
+}>) {
+  if (options.length < 2) return null;
+  return (
+    <label className={styles.temporalSelector}>
+      <span>{label}</span>
+      <select
+        value={selectedId}
+        onChange={(event) => onSelect(event.currentTarget.value)}
+      >
+        {options.map((option) => (
+          <option key={option.id} value={option.id}>
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+function ZiweiYearLayer({
+  onSelect,
+  selectedId,
+  selection,
+  view,
+}: Readonly<{
+  onSelect: (id: string) => void;
+  selectedId: string;
+  selection: ZiweiTemporalSelection;
+  view: ZiweiChartViewModel;
+}>) {
   const annualLayers = view.core_facts?.annual_layers ?? [];
   if (!annualLayers.length) return null;
   return (
     <div className={styles.layerFacts}>
+      <TemporalLayerSelector
+        label="流年年份"
+        onSelect={onSelect}
+        options={selection.options}
+        selectedId={selectedId}
+      />
       <table className={styles.layerTable}>
         <caption>流年盘面事实</caption>
         <thead>
@@ -1647,11 +1937,27 @@ function ZiweiYearLayer({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
   );
 }
 
-function ZiweiMonthLayer({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
+function ZiweiMonthLayer({
+  onSelect,
+  selectedId,
+  selection,
+  view,
+}: Readonly<{
+  onSelect: (id: string) => void;
+  selectedId: string;
+  selection: ZiweiTemporalSelection;
+  view: ZiweiChartViewModel;
+}>) {
   const monthlyLayers = view.core_facts?.monthly_layers ?? [];
   if (!monthlyLayers.length) return null;
   return (
     <div className={styles.layerFacts}>
+      <TemporalLayerSelector
+        label="流月月份"
+        onSelect={onSelect}
+        options={selection.options}
+        selectedId={selectedId}
+      />
       <table className={styles.layerTable}>
         <caption>流月盘面事实</caption>
         <thead>
@@ -1797,6 +2103,32 @@ export function ZiweiWorkspace({
     () => projectZiweiWorkspace(view, timeLayerEntitlement),
     [timeLayerEntitlement, view],
   );
+  const temporalSelections = useMemo(
+    () => ({
+      yearly: temporalSelectionForLayer(view, "yearly"),
+      monthly: temporalSelectionForLayer(view, "monthly"),
+    }),
+    [view],
+  );
+  const temporalSelectionKey = [
+    view.subject_ref,
+    ...(["yearly", "monthly"] as const).map((layerId) => {
+      const selection = temporalSelections[layerId];
+      return selection
+        ? `${layerId}:${selection.initialId}:${selection.options
+            .map((option) => option.id)
+            .join(",")}`
+        : `${layerId}:none`;
+    }),
+  ].join("|");
+  const [temporalSelectionState, setTemporalSelectionState] = useState<{
+    key: string;
+    ids: Partial<Record<ZiweiTemporalLayerId, string>>;
+  }>({ key: temporalSelectionKey, ids: {} });
+  const selectedTemporalIds =
+    temporalSelectionState.key === temporalSelectionKey
+      ? temporalSelectionState.ids
+      : {};
   const unavailableLayerReasons = workspace.layers.flatMap((layer) => {
     const reason =
       layer.status === "locked-unavailable" ? layer.summary?.trim() : null;
@@ -1809,6 +2141,14 @@ export function ZiweiWorkspace({
   const activeLayer =
     workspace.layers.find((layer) => layer.id === activeLayerId) ??
     workspace.layers[0];
+  const activeTemporalSelection =
+    activeLayer.id === "yearly" || activeLayer.id === "monthly"
+      ? temporalSelections[activeLayer.id]
+      : null;
+  const activeTemporalId = activeTemporalSelection
+    ? (selectedTemporalIds[activeLayer.id as ZiweiTemporalLayerId] ??
+      activeTemporalSelection.initialId)
+    : null;
   const activePalaceView = useMemo(() => {
     if (
       activeLayer.status !== "ready" ||
@@ -1816,8 +2156,10 @@ export function ZiweiWorkspace({
     ) {
       return view;
     }
-    return temporalPalaceViewForLayer(view, activeLayer.id) ?? view;
-  }, [activeLayer.id, activeLayer.status, view]);
+    return (
+      temporalPalaceViewForLayer(view, activeLayer.id, activeTemporalId) ?? view
+    );
+  }, [activeLayer.id, activeLayer.status, activeTemporalId, view]);
   const detail = useMemo(
     () => palaceFocusDetail(activePalaceView, activeBranch),
     [activeBranch, activePalaceView],
@@ -1832,6 +2174,18 @@ export function ZiweiWorkspace({
     setActiveLayerId(layerId);
   }
 
+  function selectTemporalLayer(layerId: ZiweiTemporalLayerId, id: string) {
+    const selection = temporalSelections[layerId];
+    if (!selection?.options.some((option) => option.id === id)) return;
+    setTemporalSelectionState((current) => ({
+      key: temporalSelectionKey,
+      ids: {
+        ...(current.key === temporalSelectionKey ? current.ids : {}),
+        [layerId]: id,
+      },
+    }));
+  }
+
   function renderReadyLayer(layer: WorkspaceLayer) {
     if (layer.id === "natal") return null;
     if (layer.id === "decadal") {
@@ -1844,8 +2198,30 @@ export function ZiweiWorkspace({
         />
       );
     }
-    if (layer.id === "yearly") return <ZiweiYearLayer view={view} />;
-    if (layer.id === "monthly") return <ZiweiMonthLayer view={view} />;
+    if (layer.id === "yearly" && temporalSelections.yearly) {
+      return (
+        <ZiweiYearLayer
+          onSelect={(id) => selectTemporalLayer("yearly", id)}
+          selectedId={
+            selectedTemporalIds.yearly ?? temporalSelections.yearly.initialId
+          }
+          selection={temporalSelections.yearly}
+          view={view}
+        />
+      );
+    }
+    if (layer.id === "monthly" && temporalSelections.monthly) {
+      return (
+        <ZiweiMonthLayer
+          onSelect={(id) => selectTemporalLayer("monthly", id)}
+          selectedId={
+            selectedTemporalIds.monthly ?? temporalSelections.monthly.initialId
+          }
+          selection={temporalSelections.monthly}
+          view={view}
+        />
+      );
+    }
     return null;
   }
 
