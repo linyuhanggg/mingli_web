@@ -99,6 +99,35 @@ class _HappyFakeAdapter(
         )
 
 
+class _OrderedHappyFakeAdapter(_HappyFakeAdapter):
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def _build_engine_request(self, request: str) -> _PrivateEngineRequest:
+        self.calls.append("build_request")
+        return super()._build_engine_request(request)
+
+    def _provenance(self, request: str) -> EngineProvenance:
+        self.calls.append("provenance")
+        return super()._provenance(request)
+
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
+        self.calls.append("invoke")
+        return super()._invoke_engine(request)
+
+    def _project_engine_output(
+        self,
+        request: str,
+        output: _RawThirdPartyValue,
+        provenance: EngineProvenance,
+    ) -> _FakeCanonicalFacts:
+        self.calls.append("project")
+        return super()._project_engine_output(request, output, provenance)
+
+
 class _FailingFakeAdapter(_HappyFakeAdapter):
     def _invoke_engine(
         self,
@@ -131,6 +160,41 @@ class _OwnedPolicyFailingFakeAdapter(_HappyFakeAdapter):
     def _provenance(self, request: str) -> EngineProvenance:
         del request
         raise ValueError("owned policy validation failed")
+
+
+class _OwnedProvenanceCause(Exception):
+    pass
+
+
+class _OwnedProvenanceFailure(ValueError):
+    pass
+
+
+class _ProvenanceTracebackFailingFakeAdapter(_HappyFakeAdapter):
+    def __init__(self) -> None:
+        self.calls: list[str] = []
+
+    def _build_engine_request(self, request: str) -> _PrivateEngineRequest:
+        self.calls.append("build_request")
+        return _PrivateEngineRequest(normalized=f"private:{request}")
+
+    def _provenance(self, request: str) -> EngineProvenance:
+        self.calls.append("provenance")
+        if request != "normalized":
+            raise AssertionError("unexpected normalized request")
+        try:
+            raise _OwnedProvenanceCause("owned provenance cause")
+        except _OwnedProvenanceCause as cause:
+            raise _OwnedProvenanceFailure(
+                "owned provenance validation failed"
+            ) from cause
+
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
+        self.calls.append("invoke")
+        return super()._invoke_engine(request)
 
 
 class _InvocationFailure(Exception):
@@ -224,6 +288,7 @@ def _reachable_private_adapter_state(value: object) -> str | None:
         elif isinstance(current, BaseException):
             pending.extend(current.args)
             pending.extend(vars(current).values())
+            pending.extend((current.__cause__, current.__context__))
         elif type(current).__module__ == __name__ and hasattr(
             current,
             "__dict__",
@@ -234,6 +299,41 @@ def _reachable_private_adapter_state(value: object) -> str | None:
 
 
 class EngineAdapterProtocolTests(unittest.TestCase):
+    def assert_traceback_private_state_isolated(
+        self,
+        error: BaseException,
+    ) -> list[str]:
+        frame_names: list[str] = []
+        pending = [error]
+        seen_errors: set[int] = set()
+        while pending:
+            current = pending.pop()
+            if id(current) in seen_errors:
+                continue
+            seen_errors.add(id(current))
+
+            traceback = current.__traceback__
+            while traceback is not None:
+                frame = traceback.tb_frame
+                frame_names.append(frame.f_code.co_name)
+                for local_name, local_value in dict(frame.f_locals).items():
+                    self.assertIsNone(
+                        _reachable_private_adapter_state(local_value),
+                        msg=(
+                            "private adapter state remains reachable from "
+                            f"{type(current).__name__} traceback "
+                            f"{frame.f_code.co_name}.{local_name}"
+                        ),
+                    )
+                traceback = traceback.tb_next
+
+            for chained in (current.__cause__, current.__context__):
+                if chained is not None:
+                    pending.append(chained)
+
+        self.assertIn("adapt", frame_names)
+        return frame_names
+
     def assert_normalized_error_isolated(
         self,
         error: EngineAdapterError,
@@ -256,25 +356,10 @@ class EngineAdapterProtocolTests(unittest.TestCase):
         self.assertIsNone(error.__cause__)
         self.assertIsNone(error.__context__)
 
-        frame_names: list[str] = []
-        traceback = error.__traceback__
-        while traceback is not None:
-            frame = traceback.tb_frame
-            frame_names.append(frame.f_code.co_name)
-            for local_name, local_value in dict(frame.f_locals).items():
-                self.assertIsNone(
-                    _reachable_private_adapter_state(local_value),
-                    msg=(
-                        "private adapter state remains reachable from "
-                        f"{frame.f_code.co_name}.{local_name}"
-                    ),
-                )
-            traceback = traceback.tb_next
-
-        self.assertIn("adapt", frame_names)
+        self.assert_traceback_private_state_isolated(error)
 
     def test_protocol_exposes_only_normalized_request_and_canonical_result(self) -> None:
-        adapter = _HappyFakeAdapter()
+        adapter = _OrderedHappyFakeAdapter()
 
         self.assertIsInstance(adapter, EngineAdapter)
         result = adapter.adapt("normalized")
@@ -285,6 +370,10 @@ class EngineAdapterProtocolTests(unittest.TestCase):
         self.assertNotIn(
             "_RawThirdPartyValue",
             repr(result),
+        )
+        self.assertEqual(
+            adapter.calls,
+            ["build_request", "provenance", "invoke", "project"],
         )
 
     def test_third_party_exception_is_normalized_at_the_seam(self) -> None:
@@ -314,6 +403,28 @@ class EngineAdapterProtocolTests(unittest.TestCase):
             adapter.adapt("normalized")
 
         self.assertFalse(adapter.engine_invoked)
+
+    def test_provenance_traceback_cannot_reach_private_state(self) -> None:
+        adapter = _ProvenanceTracebackFailingFakeAdapter()
+
+        try:
+            adapter.adapt("normalized")
+        except _OwnedProvenanceFailure as caught:
+            error = caught
+        else:
+            self.fail("owned provenance validation did not fail")
+
+        self.assertIs(type(error), _OwnedProvenanceFailure)
+        self.assertEqual(error.args, ("owned provenance validation failed",))
+        self.assertEqual(str(error), "owned provenance validation failed")
+        self.assertIs(type(error.__cause__), _OwnedProvenanceCause)
+        self.assertEqual(error.__cause__.args, ("owned provenance cause",))
+        self.assertIs(error.__context__, error.__cause__)
+        self.assertTrue(error.__suppress_context__)
+        self.assertEqual(adapter.calls, ["build_request", "provenance"])
+
+        frame_names = self.assert_traceback_private_state_isolated(error)
+        self.assertIn("_provenance", frame_names)
 
     def test_invocation_traceback_cannot_reach_private_state(self) -> None:
         try:

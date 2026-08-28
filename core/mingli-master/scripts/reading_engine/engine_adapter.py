@@ -76,7 +76,13 @@ class EngineAdapterBase(
         # actionable deterministic errors cannot be confused with engine
         # failures.
         engine_request = self._build_engine_request(request)
-        provenance = self._provenance(request)
+        try:
+            provenance = self._provenance(request)
+        except BaseException:
+            # Provenance validation remains an owned error and must escape
+            # unchanged, but its traceback still includes this frame.
+            del engine_request
+            raise
 
         engine_output: PrivateEngineOutputT
         try:
