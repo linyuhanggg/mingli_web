@@ -758,6 +758,10 @@
   border-top: 1px solid var(--color-border);
 }
 
+.luckSection {
+  container-type: inline-size;
+}
+
 .relationViewport,
 .relationTableViewport,
 .elementTableViewport,
