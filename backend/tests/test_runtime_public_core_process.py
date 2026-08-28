@@ -425,6 +425,65 @@ async def test_real_runtime_projects_ziwei_and_qizheng_year_layers() -> None:
 
 
 @pytest.mark.asyncio
+async def test_real_runtime_projects_ziwei_major_limit_boundary_segments() -> None:
+    runtime = await _runtime()
+    boundary_profile = ConfirmedProfileVersion(
+        subject_ref="profile-version:public-core-major-limit-boundary",
+        birth_datetime="1990-06-15T10:00:00+08:00",
+        birth_datetime_or_four_pillars="1990-06-15T10:00:00+08:00",
+        timezone=SYNTHETIC_PROFILE.timezone,
+        location=SYNTHETIC_PROFILE.location,
+        gender=SYNTHETIC_PROFILE.gender,
+        time_basis_policy=SYNTHETIC_PROFILE.time_basis_policy,
+        zi_hour_policy=SYNTHETIC_PROFILE.zi_hour_policy,
+        longitude=SYNTHETIC_PROFILE.longitude,
+        latitude=SYNTHETIC_PROFILE.latitude,
+        coordinate_source="synthetic-boundary-fixture",
+    )
+
+    ziwei = await runtime.execute(
+        compile_ziwei_year_prepare(
+            action="ziwei_year_preview",
+            query="验证紫微跨大限边界事实",
+            profile=boundary_profile,
+            year=2025,
+            dimension_ids=("career",),
+        )
+    )
+
+    assert isinstance(ziwei, Prepared)
+    brief = ziwei.to_dict()["brief"]
+    raw_segments = next(
+        item["value"]
+        for item in brief["facts"]
+        if isinstance(item, dict)
+        and str(item.get("ref", "")).endswith("/active_major_limit_segments")
+    )
+    view = project_ziwei_view_model(brief)
+    assert isinstance(view, ZiweiChartV1)
+    assert view.core_facts is not None
+    assert view.core_facts.active_major_limit_segments is not None
+    projected_segments = view.model_dump(mode="json")["core_facts"][
+        "active_major_limit_segments"
+    ]
+    expected_segments = [
+        {
+            key: segment[key]
+            for key in ("start_inclusive", "end_exclusive", "major_limit")
+        }
+        for segment in raw_segments
+    ]
+    assert projected_segments == expected_segments
+    assert len(projected_segments) >= 2
+    assert projected_segments[0]["end_exclusive"] == (
+        projected_segments[1]["start_inclusive"]
+    )
+    assert projected_segments[0]["major_limit"] != (
+        projected_segments[1]["major_limit"]
+    )
+
+
+@pytest.mark.asyncio
 async def test_real_runtime_projects_declared_month_and_day_layers() -> None:
     runtime = await _runtime()
 
