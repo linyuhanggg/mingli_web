@@ -2451,7 +2451,9 @@ function TemporalLayerSelector({
   placeholder?: string;
   selectedId: string | null;
 }>) {
-  if (options.length < 2) return null;
+  const needsExplicitSingleOptionChoice =
+    options.length === 1 && selectedId === null && Boolean(placeholder);
+  if (options.length < 2 && !needsExplicitSingleOptionChoice) return null;
   return (
     <label className={styles.temporalSelector}>
       <span>{label}</span>

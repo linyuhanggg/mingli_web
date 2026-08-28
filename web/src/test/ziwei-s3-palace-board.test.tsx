@@ -1744,6 +1744,78 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(palaceButton("未")).getByText("年度后段星")).toBeVisible();
   });
 
+  it("keeps a manual selector for one major-limit segment without an exact target", () => {
+    const natal = chart();
+    const onlyMajorLimit = temporalPalaceFacts(natal, "辰", "decadal", {
+      stars: [
+        {
+          name: "唯一大限星",
+          type: "major",
+          scope: "decadal",
+          brightness: "旺",
+        },
+      ],
+      transformations: [
+        {
+          star: "唯一大限星",
+          transformation: "化禄",
+          palace: "命宫",
+          palace_branch: "辰",
+          scope: "decadal",
+        },
+      ],
+    });
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "major_limits",
+          label: "大限",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        active_major_limit_segments: [
+          {
+            start_inclusive: "2199-01-01",
+            end_exclusive: "2200-01-01",
+            major_limit: onlyMajorLimit,
+          },
+        ],
+        calendar_coverage: {
+          start_inclusive: "2199-01-01",
+          end_exclusive: "2200-01-01",
+          requested_target_date: null,
+        },
+      } as unknown as Partial<ZiweiCoreFacts>),
+    });
+
+    render(<ZiweiWorkspace view={view} />);
+    const board = ring();
+    const decadal = timeLayerButton(/大限/);
+    expect(decadal).toHaveAttribute("data-status", "ready");
+
+    fireEvent.click(decadal);
+    expect(ring()).toBe(board);
+    expect(palaceButton("寅")).toHaveAttribute("data-life", "true");
+    expect(within(board).queryByText("唯一大限星")).not.toBeInTheDocument();
+
+    const segment = screen.getByRole("combobox", { name: "大限分段" });
+    const options = within(segment).getAllByRole("option");
+    expect(options).toHaveLength(2);
+    expect(options[0]).toHaveTextContent("请选择服务端大限分段");
+    expect(segment).toHaveValue("");
+
+    fireEvent.change(segment, {
+      target: { value: options[1].getAttribute("value") },
+    });
+    expect(ring()).toBe(board);
+    expect(palaceButton("辰")).toHaveAttribute("data-life", "true");
+    expect(within(palaceButton("辰")).getByText("唯一大限星")).toHaveTextContent(
+      "唯一大限星旺禄",
+    );
+  });
+
   it("accepts 2200-01-01 only as the exclusive boundary for 2199 layers", () => {
     const natal = chart();
     const decadalFacts = temporalPalaceFacts(natal, "辰", "decadal", {
