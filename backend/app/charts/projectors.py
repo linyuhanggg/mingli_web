@@ -2738,11 +2738,27 @@ def _ziwei_major_limit_segments(
 def _ziwei_calendar_coverage(value: object) -> ZiweiCalendarCoverage | None:
     if not isinstance(value, Mapping):
         return None
+    required_keys = ("start_inclusive", "end_exclusive", "requested_target_date")
+    runtime_keys = {
+        *required_keys,
+        "status",
+        "horoscope_divide",
+        "age_divide",
+    }
+    if any(key not in value for key in required_keys) or any(
+        key not in runtime_keys for key in value
+    ):
+        return None
+    requested_target_date = value["requested_target_date"]
+    if requested_target_date == "":
+        requested_target_date = None
+    elif requested_target_date is None:
+        return None
     try:
         return ZiweiCalendarCoverage(
-            start_inclusive=value.get("start_inclusive"),
-            end_exclusive=value.get("end_exclusive"),
-            requested_target_date=value.get("requested_target_date"),
+            start_inclusive=value["start_inclusive"],
+            end_exclusive=value["end_exclusive"],
+            requested_target_date=requested_target_date,
         )
     except ValidationError:
         return None

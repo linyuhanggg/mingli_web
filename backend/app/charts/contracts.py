@@ -955,12 +955,11 @@ class ZiweiCalendarCoverage(ContractModel):
 
     start_inclusive: str = Field(min_length=1)
     end_exclusive: str = Field(min_length=1)
-    requested_target_date: str = Field(min_length=1)
+    requested_target_date: str | None
 
     @field_validator(
         "start_inclusive",
         "end_exclusive",
-        "requested_target_date",
         mode="before",
     )
     @classmethod
@@ -975,14 +974,35 @@ class ZiweiCalendarCoverage(ContractModel):
             raise ValueError("Ziwei calendar coverage dates must be canonical ISO dates")
         return value
 
+    @field_validator("requested_target_date", mode="before")
+    @classmethod
+    def _requires_optional_canonical_iso_date(cls, value: object) -> object:
+        if value is None:
+            return value
+        if not isinstance(value, str):
+            raise ValueError("Ziwei requested target date must be an ISO date or null")
+        try:
+            parsed = date.fromisoformat(value)
+        except ValueError as error:
+            raise ValueError(
+                "Ziwei requested target date must be an ISO date or null"
+            ) from error
+        if parsed.isoformat() != value:
+            raise ValueError("Ziwei requested target date must be canonical")
+        return value
+
     @model_validator(mode="after")
     def _requires_target_inside_forward_interval(self) -> ZiweiCalendarCoverage:
         start = date.fromisoformat(self.start_inclusive)
         end = date.fromisoformat(self.end_exclusive)
-        target = date.fromisoformat(self.requested_target_date)
         if start >= end:
             raise ValueError("Ziwei calendar coverage start must precede end")
-        if not start <= target < end:
+        target = (
+            date.fromisoformat(self.requested_target_date)
+            if self.requested_target_date is not None
+            else None
+        )
+        if target is not None and not start <= target < end:
             raise ValueError("Ziwei requested target date must fall inside coverage")
         return self
 
