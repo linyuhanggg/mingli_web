@@ -350,6 +350,9 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(denied.layers.find((layer) => layer.id === "monthly")?.status).toBe(
       "locked-paywall",
     );
+    expect(
+      denied.layers.find((layer) => layer.id === "monthly")?.upgradeCta,
+    ).toBe("professional_info");
 
     const unknown = projectZiweiWorkspace(
       view,
@@ -370,16 +373,30 @@ describe("紫微 S3 十二宫环盘", () => {
       "fail-closed-unknown",
     );
     expect(
+      unknown.layers.find((layer) => layer.id === "monthly")?.upgradeCta,
+    ).toBe("professional_info");
+    expect(
       projectZiweiWorkspace(view, null).layers.find(
         (layer) => layer.id === "monthly",
       )?.status,
     ).toBe("fail-closed-unknown");
+    expect(
+      projectZiweiWorkspace(view, null).layers.find(
+        (layer) => layer.id === "monthly",
+      )?.upgradeCta,
+    ).toBeNull();
     expect(
       projectZiweiWorkspace(view, {
         ...ziweiEntitlement(),
         capability_id: "bazi",
       }).layers.find((layer) => layer.id === "monthly")?.status,
     ).toBe("fail-closed-unknown");
+    expect(
+      projectZiweiWorkspace(view, {
+        ...ziweiEntitlement(),
+        capability_id: "bazi",
+      }).layers.find((layer) => layer.id === "monthly")?.upgradeCta,
+    ).toBeNull();
 
     const contradictory = ziweiEntitlement({ resolution: "denied" });
     expect(
@@ -395,6 +412,12 @@ describe("紫微 S3 十二宫环盘", () => {
     ).toBe("locked-unavailable");
     expect(
       projectZiweiWorkspace(
+        ziweiMonthView({ core_facts: facts({ monthly_layers: [] }) }),
+        ziweiEntitlement(),
+      ).layers.find((layer) => layer.id === "monthly")?.upgradeCta,
+    ).toBeNull();
+    expect(
+      projectZiweiWorkspace(
         ziweiMonthView({
           time_layers: [
             {
@@ -408,6 +431,121 @@ describe("紫微 S3 十二宫环盘", () => {
         ziweiEntitlement(),
       ).layers.find((layer) => layer.id === "monthly")?.status,
     ).toBe("locked-unavailable");
+  });
+
+  it("keeps the frozen six-layer inventory when projector capabilities are partial", () => {
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "life",
+          label: "原局",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "year",
+          label: "流年",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "month",
+          label: "流月",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "day",
+          label: "流日",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        annual_layers: [
+          {
+            year: 2026,
+            coverage_start: "2026-02-17",
+            coverage_end_exclusive: "2027-02-06",
+            liu_nian: { life_palace: "午" },
+            segments: [{ segment: "annual" }],
+            representative_scope: "annual",
+          },
+        ],
+        monthly_layers: [
+          {
+            year: 2026,
+            month: 8,
+            liu_yue: { life_palace: "申" },
+            segments: [{ segment: "monthly" }],
+            representative_scope: "monthly",
+          },
+        ],
+      }),
+    });
+    const denied = ziweiEntitlement({
+      resolution: "denied",
+      layers: ziweiEntitlement().layers.map((layer) =>
+        layer.tier === "paid" && layer.access !== "unavailable"
+          ? {
+              ...layer,
+              access: "locked_paywall" as const,
+              upgrade_cta: "professional_info" as const,
+            }
+          : layer,
+      ),
+    });
+
+    const workspace = projectZiweiWorkspace(view, denied);
+    expect(workspace.layers.map((layer) => layer.id)).toEqual([
+      "natal",
+      "decadal",
+      "yearly",
+      "monthly",
+      "daily",
+      "hourly",
+    ]);
+    expect(workspace.layers.map((layer) => layer.label)).toEqual([
+      "原局",
+      "大限",
+      "流年",
+      "流月",
+      "流日",
+      "流时",
+    ]);
+    expect(workspace.layers.find((layer) => layer.id === "decadal")).toMatchObject(
+      {
+        status: "locked-unavailable",
+        summary: "暂不可用",
+        upgradeCta: null,
+      },
+    );
+    expect(workspace.layers.find((layer) => layer.id === "hourly")).toMatchObject(
+      {
+        status: "locked-unavailable",
+        summary: "本次结果未返回逐时盘面。",
+        upgradeCta: null,
+      },
+    );
+
+    render(<ZiweiWorkspace timeLayerEntitlement={denied} view={view} />);
+    const tabs = screen.getAllByRole("tab");
+    expect(tabs).toHaveLength(6);
+    const natal = screen.getByRole("tab", { name: /原局/ });
+    const decadal = screen.getByRole("tab", { name: /大限/ });
+    const yearly = screen.getByRole("tab", { name: /流年/ });
+    const monthly = screen.getByRole("tab", { name: /流月/ });
+    const hourly = screen.getByRole("tab", { name: /流时/ });
+    expect(decadal).toBeDisabled();
+    expect(hourly).toBeDisabled();
+
+    natal.focus();
+    fireEvent.keyDown(natal, { key: "ArrowRight" });
+    expect(yearly).toHaveFocus();
+    expect(yearly).toHaveAttribute("aria-selected", "true");
+    fireEvent.keyDown(yearly, { key: "End" });
+    expect(monthly).toHaveFocus();
+    expect(monthly).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders granted month facts but keeps denied month facts at zero", () => {
@@ -436,8 +574,31 @@ describe("紫微 S3 十二宫环盘", () => {
     rerender(<ZiweiWorkspace timeLayerEntitlement={denied} view={view} />);
     expect(screen.getByText("流月已锁定")).toBeVisible();
     expect(screen.queryByText("权益状态未确认")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "了解专业版" })).toHaveAttribute(
+      "href",
+      "/pricing",
+    );
     expect(
       screen.queryByRole("table", { name: "流月盘面事实" }),
+    ).not.toBeInTheDocument();
+
+    rerender(<ZiweiWorkspace view={view} />);
+    expect(screen.getByText("权益状态未确认")).toBeVisible();
+    expect(
+      screen.queryByRole("link", { name: "了解专业版" }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <ZiweiWorkspace
+        timeLayerEntitlement={denied}
+        view={ziweiMonthView({
+          core_facts: facts({ monthly_layers: [] }),
+        })}
+      />,
+    );
+    expect(screen.getByText("流月待接入")).toBeVisible();
+    expect(
+      screen.queryByRole("link", { name: "了解专业版" }),
     ).not.toBeInTheDocument();
   });
 

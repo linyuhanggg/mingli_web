@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import {
   useEffect,
   useId,
@@ -1335,7 +1336,6 @@ export function projectZiweiWorkspace(
     "hourly",
   ] as const) {
     const capability = declared.get(layerId);
-    if (!capability) continue;
     const hasFacts = layerHasFacts(view, layerId);
     const meta = WORKSPACE_LAYER_META[layerId];
     const entitlementLayerId =
@@ -1352,21 +1352,24 @@ export function projectZiweiWorkspace(
     const entitlementCapability =
       entitlement?.capability.get(entitlementLayerId);
     let status: WorkspaceLayer["status"];
-    if (!capability.available) {
+    let upgradeCta: WorkspaceLayer["upgradeCta"] = null;
+    if (!capability || !capability.available) {
       status = "locked-unavailable";
     } else if (!hasFacts) {
       status = meta.tier === "paid" ? "locked-unavailable" : "empty";
     } else if (meta.tier === "paid") {
       if (!entitlement || !entitlementLayer) {
         status = "fail-closed-unknown";
-      } else if (entitlementCapability?.available === false) {
+      } else if (!entitlementCapability?.available) {
         status = "locked-unavailable";
       } else if (entitlementLayer.access === "readable") {
         status = "ready";
       } else if (entitlementLayer.access === "locked_paywall") {
         status = "locked-paywall";
+        upgradeCta = entitlementLayer.upgrade_cta;
       } else if (entitlementLayer.access === "fail_closed_unknown") {
         status = "fail-closed-unknown";
+        upgradeCta = entitlementLayer.upgrade_cta;
       } else {
         status = "locked-unavailable";
       }
@@ -1380,10 +1383,10 @@ export function projectZiweiWorkspace(
       summary:
         status === "ready"
           ? `${meta.label}事实已返回`
-          : capability.unavailable_reason?.trim() ||
+          : capability?.unavailable_reason?.trim() ||
             entitlementCapability?.unavailable_reason?.trim() ||
-            null,
-      upgradeCta: null,
+            (status === "locked-unavailable" ? "暂不可用" : null),
+      upgradeCta,
     });
   }
 
@@ -1534,6 +1537,9 @@ function ZiweiWorkspaceState({ layer }: Readonly<{ layer: WorkspaceLayer }>) {
       ) : (
         <p>当前盘面不会展示或预填任何锁定事实。</p>
       )}
+      {layer.upgradeCta === "professional_info" ? (
+        <Link href="/pricing">了解专业版</Link>
+      ) : null}
     </div>
   );
 }
