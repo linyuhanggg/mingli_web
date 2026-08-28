@@ -1528,6 +1528,181 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(board).queryByText("后段主星")).not.toBeInTheDocument();
   });
 
+  it("uses the Runtime requested target date when calendar coverage crosses a major-limit boundary", () => {
+    const natal = chart();
+    const firstMajorLimit = temporalPalaceFacts(natal, "辰", "decadal", {
+      stars: [
+        {
+          name: "旧口径前段星",
+          type: "major",
+          scope: "decadal",
+          brightness: "得",
+        },
+      ],
+    });
+    const secondMajorLimit = temporalPalaceFacts(natal, "未", "decadal", {
+      stars: [
+        {
+          name: "请求日后段星",
+          type: "major",
+          scope: "decadal",
+          brightness: "旺",
+        },
+      ],
+    });
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "major_limits",
+          label: "大限",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        chart_convention: { target_date: "2025-01-02" },
+        active_major_limit: firstMajorLimit,
+        active_major_limit_segments: [
+          {
+            start_inclusive: "2025-01-01",
+            end_exclusive: "2025-01-15",
+            major_limit: firstMajorLimit,
+          },
+          {
+            start_inclusive: "2025-01-15",
+            end_exclusive: "2025-02-01",
+            major_limit: secondMajorLimit,
+          },
+        ],
+        calendar_coverage: {
+          start_inclusive: "2025-01-01",
+          end_exclusive: "2025-02-01",
+          requested_target_date: "2025-01-20",
+        },
+      }),
+    });
+
+    render(<ZiweiWorkspace view={view} />);
+    const board = ring();
+    fireEvent.click(timeLayerButton(/大限/));
+
+    expect(ring()).toBe(board);
+    expect(palaceButton("未")).toHaveAttribute("data-life", "true");
+    expect(within(palaceButton("未")).getByText("请求日后段星")).toHaveTextContent(
+      "请求日后段星旺",
+    );
+    expect(within(board).queryByText("旧口径前段星")).not.toBeInTheDocument();
+
+    const segment = screen.getByRole("combobox", { name: "大限分段" });
+    const options = within(segment).getAllByRole("option");
+    expect(segment).toHaveValue(options[1].getAttribute("value"));
+
+    fireEvent.change(segment, {
+      target: { value: options[0].getAttribute("value") },
+    });
+    expect(ring()).toBe(board);
+    expect(palaceButton("辰")).toHaveAttribute("data-life", "true");
+  });
+
+  it("fails closed when present calendar coverage is invalid instead of using legacy targets", () => {
+    const natal = chart();
+    const firstMajorLimit = temporalPalaceFacts(natal, "辰", "decadal", {
+      stars: [
+        {
+          name: "不得使用旧目标",
+          type: "major",
+          scope: "decadal",
+          brightness: "旺",
+        },
+      ],
+    });
+    const secondMajorLimit = temporalPalaceFacts(natal, "未", "decadal");
+    const segments = [
+      {
+        start_inclusive: "2025-01-01",
+        end_exclusive: "2025-01-15",
+        major_limit: firstMajorLimit,
+      },
+      {
+        start_inclusive: "2025-01-15",
+        end_exclusive: "2025-02-01",
+        major_limit: secondMajorLimit,
+      },
+    ];
+    const cases: ReadonlyArray<{ label: string; coverage: unknown }> = [
+      { label: "null", coverage: null },
+      {
+        label: "missing target",
+        coverage: {
+          start_inclusive: "2025-01-01",
+          end_exclusive: "2025-02-01",
+        },
+      },
+      {
+        label: "extra field",
+        coverage: {
+          start_inclusive: "2025-01-01",
+          end_exclusive: "2025-02-01",
+          requested_target_date: "2025-01-20",
+          representative_scope: "must not be consumed",
+        },
+      },
+      {
+        label: "non canonical date",
+        coverage: {
+          start_inclusive: "2025-1-1",
+          end_exclusive: "2025-02-01",
+          requested_target_date: "2025-01-20",
+        },
+      },
+      {
+        label: "reversed range",
+        coverage: {
+          start_inclusive: "2025-02-01",
+          end_exclusive: "2025-01-01",
+          requested_target_date: "2025-01-20",
+        },
+      },
+      {
+        label: "target outside range",
+        coverage: {
+          start_inclusive: "2025-01-01",
+          end_exclusive: "2025-01-15",
+          requested_target_date: "2025-01-20",
+        },
+      },
+    ];
+
+    for (const testCase of cases) {
+      const view = chart({
+        time_layers: [
+          {
+            layer_id: "major_limits",
+            label: "大限",
+            available: true,
+            unavailable_reason: null,
+          },
+        ],
+        core_facts: facts({
+          chart_convention: { target_date: "2025-01-02" },
+          active_major_limit: firstMajorLimit,
+          active_major_limit_segments: segments,
+          calendar_coverage: testCase.coverage,
+        } as unknown as Partial<ZiweiCoreFacts>),
+      });
+
+      render(<ZiweiWorkspace view={view} />);
+      const decadal = timeLayerButton(/大限/);
+      expect(decadal, testCase.label).toHaveAttribute("data-status", "empty");
+      fireEvent.click(decadal);
+      expect(
+        within(ring()).queryByText("不得使用旧目标"),
+        testCase.label,
+      ).not.toBeInTheDocument();
+      cleanup();
+    }
+  });
+
   it("requires an explicit segment choice when a target range crosses a major-limit boundary", () => {
     const natal = chart();
     const firstMajorLimit = temporalPalaceFacts(natal, "辰", "decadal");

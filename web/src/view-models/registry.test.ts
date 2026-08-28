@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import type {
   DaliurenDimensionFact,
+  ZiweiCalendarCoverage,
   ZiweiCoreFacts,
   ZiweiMajorLimitSegment,
 } from "./registry";
@@ -85,6 +86,36 @@ describe("versioned ViewModel registry", () => {
       end_exclusive: "2026-01-01",
     };
     void missingMajorLimit;
+  });
+
+  it("keeps Ziwei calendar coverage typed as the exact Runtime date envelope", () => {
+    const coverage: ZiweiCalendarCoverage = {
+      start_inclusive: "2025-01-01",
+      end_exclusive: "2025-02-01",
+      requested_target_date: "2025-01-29",
+    };
+    const coreCoverage: NonNullable<ZiweiCoreFacts["calendar_coverage"]> =
+      coverage;
+
+    expect(coreCoverage).toEqual(coverage);
+    expect(Object.keys(coreCoverage)).toEqual([
+      "start_inclusive",
+      "end_exclusive",
+      "requested_target_date",
+    ]);
+
+    // @ts-expect-error Runtime calendar coverage always includes the request date.
+    const missingTarget: ZiweiCalendarCoverage = {
+      start_inclusive: "2025-01-01",
+      end_exclusive: "2025-02-01",
+    };
+    void missingTarget;
+
+    // @ts-expect-error Present strict optional coverage cannot be null.
+    const nullCoverage: NonNullable<
+      ZiweiCoreFacts["calendar_coverage"]
+    > = null;
+    void nullCoverage;
   });
 
   it("requires the complete Runtime envelope on every Daliuren dimension fact", () => {
