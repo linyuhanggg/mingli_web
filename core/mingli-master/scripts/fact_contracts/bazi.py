@@ -9,13 +9,732 @@ self-contained here: it must never import the generating adapter
 
 from __future__ import annotations
 
+import json
+from dataclasses import dataclass, field
 from typing import Any
 
 from evidence_contract import canonical_digest
 
-from fact_contracts.common import FactContract
+from fact_contracts.common import (
+    COMMON_CANONICAL_OBJECT_FIELDS,
+    CanonicalFactsError,
+    CanonicalFactsFieldClosure,
+    EngineProvenance,
+    FactContract,
+    canonical_object_fields,
+    canonical_json_snapshot,
+)
 from fact_contracts.common import finding as _finding
 from fact_contracts.common import valid_text as _valid_text
+
+
+_BAZI_CANONICAL_FIELDS = CanonicalFactsFieldClosure(
+    root_fields=frozenset(
+        {
+            "adapter",
+            "calendar_normalization",
+            "capabilities",
+            "conflicts",
+            "fact_layer_scope",
+            "fact_layer_status",
+            "input",
+            "output",
+            "schema_version",
+            "trace",
+            "warnings",
+        }
+    ),
+    output_fields=frozenset(
+        {
+            "branch_relations",
+            "day_master",
+            "element_inventory",
+            "four_pillars",
+            "hidden_stems",
+            "interpretive_candidates",
+            "luck_cycles",
+            "month_command",
+            "nayin",
+            "san_yuan",
+            "seasonal_profile",
+            "shensha_auxiliary",
+            "source_conditioned_patterns",
+            "ten_gods",
+            "tiaohou_markers",
+            "twelve_growth_stages",
+            "xunkong",
+        }
+    ),
+    optional_root_fields=frozenset({"public_calendar_normalization"}),
+    nested_object_fields=(
+        COMMON_CANONICAL_OBJECT_FIELDS
+        + canonical_object_fields(
+            (
+                "adapter",
+                "generated_at license_status name rule_profile version",
+            ),
+            (
+                "input",
+                "location missing_or_ambiguous mode normalized_input raw_user_input "
+                "source source_ref timezone",
+            ),
+            (
+                "input/normalized_input",
+                "civil_datetime coordinate_source gender latitude location longitude "
+                "pillars time_basis_policy timezone zi_hour_policy",
+            ),
+            ("input/normalized_input/pillars", "day hour month year"),
+            (
+                "input/raw_user_input",
+                "civil_datetime coordinate_source expected_pillars gender latitude "
+                "location longitude pillars timezone",
+            ),
+            ("conflicts/*", "action calculated supplied type"),
+            ("conflicts/*/calculated", "day hour month year"),
+            ("conflicts/*/supplied", "day hour month year"),
+            ("output/branch_relations/*", "branches positions type"),
+            ("output/day_master", "element polarity stem"),
+            (
+                "output/element_inventory",
+                "hidden_stem_occurrence_counts scope visible_stem_branch_counts",
+            ),
+            (
+                "output/element_inventory/hidden_stem_occurrence_counts",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/element_inventory/visible_stem_branch_counts",
+                "土 木 水 火 金",
+            ),
+            ("output/four_pillars", "day hour month year"),
+            ("output/hidden_stems", "day hour month year"),
+            ("output/hidden_stems/*", "branch stems"),
+            (
+                "output/interpretive_candidates",
+                "following_and_transformation reasoning_tools salience_signals "
+                "strength structure",
+            ),
+            (
+                "output/interpretive_candidates/following_and_transformation",
+                "boundary branch_formation_candidates hard_verdict status "
+                "stem_combination_candidates",
+            ),
+            (
+                "output/interpretive_candidates/following_and_transformation/"
+                "branch_formation_candidates/*",
+                "branches positions type",
+            ),
+            (
+                "output/interpretive_candidates/following_and_transformation/"
+                "stem_combination_candidates/*",
+                "candidate_element status stems with_position",
+            ),
+            (
+                "output/interpretive_candidates/salience_signals/*",
+                "basis boundary hard_verdict signal_id status",
+            ),
+            (
+                "output/interpretive_candidates/salience_signals/*/basis",
+                "branch branches candidate_element count day_element day_stem element "
+                "main_qi main_qi_element main_qi_ten_god month_branch month_qi "
+                "positions season status stem stems type visible_positions with_position",
+            ),
+            (
+                "output/interpretive_candidates/strength",
+                "all_element_occurrences boundary day_element "
+                "day_master_root_support_adjudication hard_verdict "
+                "month_command_element month_order_adjudication resource_element "
+                "resource_occurrences same_element_occurrences seasonal_state "
+                "seasonal_state_source_rule_id status",
+            ),
+            (
+                "output/interpretive_candidates/strength/all_element_occurrences",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/strength/"
+                "day_master_root_support_adjudication",
+                "all_element_occurrences day_master_element decision_scope "
+                "month_command_element month_command_support_or_drain regime_blockers "
+                "resource_branch_positions resource_element resource_occurrences "
+                "same_element_occurrences same_element_root_positions seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "visible_pressure_role_count visible_support_role_count "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/strength/"
+                "day_master_root_support_adjudication/all_element_occurrences",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/strength/"
+                "day_master_root_support_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/strength/month_order_adjudication",
+                "day_master_element decision_scope month_command_element seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/strength/"
+                "month_order_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/structure",
+                "boundary hard_verdict main_qi_visible month_main_qi "
+                "month_main_qi_ten_god status visible_positions",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools",
+                "conflict_arbitration domain_appearance domain_children "
+                "domain_education domain_family domain_finance domain_health "
+                "domain_personality domain_relationship domain_travel domain_work "
+                "month_structure_candidate strength_evidence tiaohou_candidates "
+                "ziping_month_pattern_adjudication",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*",
+                "caveats confidence_bucket confidence_ceiling fact_refs output "
+                "schema_version source_refs tool_digest tool_id tool_kind "
+                "visibility_class",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/fact_refs/*",
+                "path value",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/source_refs/*",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value",
+                "element heavenly_stems hidden_stem_occurrence_counts hidden_stems "
+                "polarity scope stem visible_stem_branch_counts",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/*",
+                "branches positions type",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/heavenly_stems",
+                "day hour month year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/heavenly_stems/*",
+                "stem ten_god",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/hidden_stems",
+                "day hour month year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/hidden_stems/*/*",
+                "stem ten_god",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/hidden_stem_occurrence_counts",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "fact_refs/*/value/visible_stem_branch_counts",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/output",
+                "branch_relations domain element_inventory gender palace_anchor "
+                "palace_value primary_ten_god_roles role_counts role_occurrences status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "output/branch_relations/*",
+                "branches positions type",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "output/element_inventory",
+                "hidden_stem_occurrence_counts scope visible_stem_branch_counts",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/output/"
+                "element_inventory/hidden_stem_occurrence_counts",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/output/"
+                "element_inventory/visible_stem_branch_counts",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "output/role_counts",
+                "七杀 伤官 偏印 偏财 劫财 正印 正官 正财 比肩 食神",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/*/"
+                "output/role_occurrences/*",
+                "layer position stem ten_god",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "month_structure_candidate/fact_refs/*/value",
+                "branch day hour label main_qi main_qi_element month year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "month_structure_candidate/fact_refs/*/value/*",
+                "stem ten_god",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "month_structure_candidate/output",
+                "main_qi_visible month_main_qi month_main_qi_ten_god "
+                "special_month_role status visible_positions",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value",
+                "branch day element heavenly_stems hidden_stems hour label main_qi "
+                "main_qi_element month polarity stem year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/day",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/hour",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/month",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/year",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/heavenly_stems",
+                "day hour month year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/heavenly_stems/*",
+                "stem ten_god",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/hidden_stems",
+                "day hour month year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/fact_refs/*/value/hidden_stems/*/*",
+                "stem ten_god",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/output",
+                "day_master_element day_master_root_support_adjudication evidence_lean "
+                "month_command_element month_order_adjudication oppose_evidence_groups "
+                "resource_branch_positions resource_element same_element_root_positions "
+                "seasonal_state seasonal_state_table status support_evidence_groups "
+                "visible_pressure_role_count visible_support_role_count",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/output/day_master_root_support_adjudication",
+                "all_element_occurrences day_master_element decision_scope "
+                "month_command_element month_command_support_or_drain regime_blockers "
+                "resource_branch_positions resource_element resource_occurrences "
+                "same_element_occurrences same_element_root_positions seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "visible_pressure_role_count visible_support_role_count "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/strength_evidence/"
+                "output/day_master_root_support_adjudication/all_element_occurrences",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/strength_evidence/"
+                "output/day_master_root_support_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/output/month_order_adjudication",
+                "day_master_element decision_scope month_command_element seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/strength_evidence/"
+                "output/month_order_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "strength_evidence/output/seasonal_state_table",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/fact_refs/*/value",
+                "applicability_identity branch day element hour label main_qi "
+                "main_qi_element markers moisture month polarity scope stem "
+                "temperature year",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/tiaohou_candidates/"
+                "fact_refs/*/value/applicability_identity",
+                "day_stem month_branch source_dependency_id",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/fact_refs/*/value/day",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/fact_refs/*/value/hour",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/fact_refs/*/value/month",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/fact_refs/*/value/year",
+                "branch stems",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/output",
+                "coverage_status day_stem hard_verdict matches month_branch "
+                "priority_stems rule_id season status verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "tiaohou_candidates/output/matches/*",
+                "element hidden_positions priority status stem visible_positions",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "ziping_month_pattern_adjudication/fact_refs/*/value",
+                "branch label main_qi main_qi_element",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "ziping_month_pattern_adjudication/output",
+                "decision_scope exception_branch hard_verdict month_branch "
+                "month_main_qi month_main_qi_ten_god pattern_entry pattern_label "
+                "school status unresolved_checks",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "conflict_arbitration/fact_refs/*/value",
+                "output tool_digest",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "conflict_arbitration/fact_refs/*/value/output",
+                "coverage_status day_master_element "
+                "day_master_root_support_adjudication day_stem decision_scope "
+                "evidence_lean exception_branch hard_verdict matches month_branch "
+                "month_command_element month_main_qi month_main_qi_ten_god "
+                "month_order_adjudication oppose_evidence_groups pattern_entry "
+                "pattern_label priority_stems resource_branch_positions "
+                "resource_element rule_id same_element_root_positions school season "
+                "seasonal_state seasonal_state_table status support_evidence_groups "
+                "unresolved_checks verification_status visible_pressure_role_count "
+                "visible_support_role_count",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/day_master_root_support_adjudication",
+                "all_element_occurrences day_master_element decision_scope "
+                "month_command_element month_command_support_or_drain regime_blockers "
+                "resource_branch_positions resource_element resource_occurrences "
+                "same_element_occurrences same_element_root_positions seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "visible_pressure_role_count visible_support_role_count "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/day_master_root_support_adjudication/"
+                "all_element_occurrences",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/day_master_root_support_adjudication/"
+                "source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/month_order_adjudication",
+                "day_master_element decision_scope month_command_element seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/month_order_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/matches/*",
+                "element hidden_positions priority status stem visible_positions",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "fact_refs/*/value/output/seasonal_state_table",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "conflict_arbitration/output",
+                "downgraded_layers focus hard_verdict layers policy_anchor policy_id "
+                "policy_status preserved_disagreements requested_domains "
+                "selected_primary_view status unresolved_checks "
+                "unresolved_required_rule",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/"
+                "conflict_arbitration/output/layers",
+                "pattern_layer strength_flow_layer tiaohou_layer",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/pattern_layer",
+                "decision_scope exception_branch hard_verdict month_branch "
+                "month_main_qi month_main_qi_ten_god pattern_entry pattern_label "
+                "school status unresolved_checks",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer",
+                "day_master_element day_master_root_support_adjudication evidence_lean "
+                "month_command_element month_order_adjudication oppose_evidence_groups "
+                "resource_branch_positions resource_element same_element_root_positions "
+                "seasonal_state seasonal_state_table status support_evidence_groups "
+                "visible_pressure_role_count visible_support_role_count",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer/"
+                "day_master_root_support_adjudication",
+                "all_element_occurrences day_master_element decision_scope "
+                "month_command_element month_command_support_or_drain regime_blockers "
+                "resource_branch_positions resource_element resource_occurrences "
+                "same_element_occurrences same_element_root_positions seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "visible_pressure_role_count visible_support_role_count "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer/"
+                "day_master_root_support_adjudication/all_element_occurrences",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer/"
+                "day_master_root_support_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer/month_order_adjudication",
+                "day_master_element decision_scope month_command_element seasonal_state "
+                "source_ref status unresolved_checks useful_god_verdict "
+                "whole_chart_strength_verdict",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer/month_order_adjudication/source_ref",
+                "binding_digest pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/strength_flow_layer/seasonal_state_table",
+                "土 木 水 火 金",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/tiaohou_layer",
+                "coverage_status day_stem hard_verdict matches month_branch "
+                "priority_stems rule_id season status verification_status",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/layers/tiaohou_layer/matches/*",
+                "element hidden_positions priority status stem visible_positions",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/preserved_disagreements/*",
+                "between policy",
+            ),
+            (
+                "output/interpretive_candidates/reasoning_tools/conflict_arbitration/"
+                "output/unresolved_required_rule",
+                "pack rule_id source_anchor verification_status",
+            ),
+            (
+                "output/luck_cycles",
+                "approximate_start_datetime boundary_term cycles direction "
+                "direction_rule interval_days start_age_rule start_age_years status "
+                "unavailable",
+            ),
+            (
+                "output/luck_cycles/boundary_term",
+                "datetime index instant_utc is_month_boundary_jie name",
+            ),
+            (
+                "output/luck_cycles/cycles/*",
+                "end_age_years pillar sequence start_age_years",
+            ),
+            ("output/month_command", "branch label main_qi main_qi_element"),
+            ("output/nayin", "day hour month year"),
+            (
+                "output/san_yuan",
+                "boundary ming_gong shen_gong source source_dependency_id tai_yuan",
+            ),
+            ("output/seasonal_profile", "moisture month_qi season temperature"),
+            (
+                "output/shensha_auxiliary",
+                "boundary calculated_items cannot_override evaluated_rules "
+                "may_override precedence source_dependency_id status temporal_scope",
+            ),
+            (
+                "output/shensha_auxiliary/calculated_items/*",
+                "anchor_branches anchor_positions id matched_positions name "
+                "rule_version source_dependency_id status target_branch",
+            ),
+            (
+                "output/shensha_auxiliary/evaluated_rules/*",
+                "anchor_branch anchor_position id matched name target_branch",
+            ),
+            (
+                "output/source_conditioned_patterns/*",
+                "fact_paths local_rule_id predicate_audit rule_id source_anchor "
+                "source_dependency_id source_pack status title",
+            ),
+            ("output/ten_gods", "heavenly_stems hidden_stems"),
+            ("output/ten_gods/heavenly_stems", "day hour month year"),
+            ("output/ten_gods/heavenly_stems/*", "stem ten_god"),
+            ("output/ten_gods/hidden_stems", "day hour month year"),
+            ("output/ten_gods/hidden_stems/*/*", "stem ten_god"),
+            (
+                "output/tiaohou_markers",
+                "applicability_identity markers moisture scope temperature",
+            ),
+            (
+                "output/tiaohou_markers/applicability_identity",
+                "day_stem month_branch source_dependency_id",
+            ),
+            ("output/twelve_growth_stages", "day hour month year"),
+            (
+                "output/twelve_growth_stages/*",
+                "boundary branch direction position source_dependency_id stage "
+                "stage_index stem",
+            ),
+            (
+                "output/xunkong",
+                "boundary branches day_pillar source_dependency_id xun",
+            ),
+        )
+    ),
+)
+
+
+@dataclass(frozen=True)
+class BaziCanonicalFacts:
+    """Nominal, immutable Bazi facts at the Engine Adapter boundary."""
+
+    provenance: EngineProvenance
+    _payload_json: str = field(repr=False)
+
+    @classmethod
+    def from_payload(
+        cls,
+        payload: dict[str, Any],
+        provenance: EngineProvenance,
+    ) -> "BaziCanonicalFacts":
+        snapshot = canonical_json_snapshot(
+            payload,
+            field_closure=_BAZI_CANONICAL_FIELDS,
+        )
+        if snapshot.get("schema_version") != "mingli-bazi-fact-v1":
+            raise CanonicalFactsError("invalid Bazi Canonical Facts schema")
+        adapter = snapshot.get("adapter")
+        calendar = snapshot.get("calendar_normalization")
+        if not isinstance(adapter, dict) or not isinstance(calendar, dict):
+            raise CanonicalFactsError(
+                "Bazi Canonical Facts require adapter and calendar metadata"
+            )
+        if adapter.get("rule_profile") != provenance.policy_profile:
+            raise CanonicalFactsError("Bazi policy provenance mismatch")
+
+        scope = snapshot.get("fact_layer_scope")
+        if scope == "natal_static":
+            actual_engine = "mingli-bazi-static-facts"
+            actual_version = adapter.get("version")
+            actual_time_basis = "not_applicable"
+        else:
+            convention = calendar.get("calendar_convention")
+            time_basis = calendar.get("time_basis")
+            if not isinstance(convention, dict) or not isinstance(time_basis, dict):
+                raise CanonicalFactsError(
+                    "Bazi timed facts require engine and time-basis metadata"
+                )
+            actual_engine = convention.get("engine")
+            actual_version = convention.get("engine_version")
+            actual_time_basis = time_basis.get("policy")
+
+        if (
+            actual_engine != provenance.engine_id
+            or actual_version != provenance.engine_version
+            or actual_time_basis != provenance.time_basis
+        ):
+            raise CanonicalFactsError("Bazi engine provenance mismatch")
+        return cls(
+            provenance=provenance,
+            _payload_json=json.dumps(
+                snapshot,
+                ensure_ascii=False,
+                allow_nan=False,
+                separators=(",", ":"),
+            ),
+        )
+
+    def to_payload(self) -> dict[str, Any]:
+        return json.loads(self._payload_json)
 
 _MONTH_ORDER_STATES = {
     "木": {"木": "旺", "火": "相", "水": "休", "金": "囚", "土": "死"},
@@ -1317,6 +2036,7 @@ class BaziFactContract(FactContract):
 
     contract_id = "bazi.supplied-and-computed.v1"
     replaces_legacy_validation = True
+    canonical_facts_type = BaziCanonicalFacts
 
     #: Required output ids owned by the bazi fact contract. Frozen from the
     #: legacy facade table so migrating changes nothing about the report.
