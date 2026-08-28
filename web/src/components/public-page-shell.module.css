@@ -34,6 +34,11 @@
 }
 
 .breadcrumb a {
+  display: inline-flex;
+  min-width: var(--ds-touch-min);
+  min-height: var(--ds-touch-min);
+  align-items: center;
+  justify-content: center;
   color: var(--ds-ink-soft);
   text-decoration: none;
 }

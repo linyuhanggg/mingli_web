@@ -126,6 +126,26 @@ describe("public home shell", () => {
     ).toBeGreaterThanOrEqual(4.5);
   });
 
+  it("keeps the 12px observation eyebrow at WCAG AA contrast in both themes", () => {
+    const homeCss = readFileSync(resolve(process.cwd(), "src/app/home.module.css"), "utf8");
+    const tokens = readFileSync(resolve(process.cwd(), "../ui/tokens.css"), "utf8");
+    const darkTheme = tokens.match(/\[data-theme="dark"\]\s*\{([^}]*)\}/s)?.[1];
+
+    expect(homeCss).toMatch(
+      /\.observation\s*\{[^}]*background:\s*var\(--ds-ink\)[^}]*color:\s*var\(--ds-on-ink\)/s,
+    );
+    expect(homeCss).toMatch(
+      /\.eyebrowInverse\s*\{[^}]*color:\s*var\(--ds-on-ink\)/s,
+    );
+    expect(darkTheme, "missing explicit dark theme tokens").toBeDefined();
+
+    for (const palette of [tokens, darkTheme!]) {
+      expect(
+        contrastRatio(readHexToken(palette, "ds-on-ink"), readHexToken(palette, "ds-ink")),
+      ).toBeGreaterThanOrEqual(4.5);
+    }
+  });
+
   it("uses one Xuan Order visual authority instead of a second homepage brand", () => {
     const home = readFileSync(resolve(process.cwd(), "src/app/page.tsx"), "utf8");
     const homeCss = readFileSync(resolve(process.cwd(), "src/app/home.module.css"), "utf8");

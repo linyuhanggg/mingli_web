@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 
@@ -57,6 +60,30 @@ afterEach(() => {
 
 
 describe("public contract pages", () => {
+  it("keeps /bazi/hepan breadcrumb semantics and 44px link targets", () => {
+    usePathnameMock.mockReturnValue("/bazi/hepan");
+    render(
+      <PublicPageShell>
+        <main id="main-content">八字合盘</main>
+      </PublicPageShell>,
+    );
+
+    const breadcrumb = screen.getByRole("navigation", { name: "面包屑" });
+    expect(within(breadcrumb).getByRole("link", { name: "首页" })).toHaveAttribute("href", "/");
+    expect(within(breadcrumb).getByRole("link", { name: "八字" })).toHaveAttribute("href", "/bazi");
+    expect(within(breadcrumb).getByText("八字合盘")).toHaveAttribute("aria-current", "page");
+
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/public-page-shell.module.css"),
+      "utf8",
+    );
+    const tokens = readFileSync(resolve(process.cwd(), "../ui/tokens.css"), "utf8");
+    expect(css).toMatch(
+      /\.breadcrumb a\s*\{[^}]*display:\s*inline-flex[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/s,
+    );
+    expect(tokens).toMatch(/--ds-touch-min:\s*44px/);
+  });
+
   it.each([
     ["/auth/login", "登录", "auth"],
     ["/invite/private-code", "邀请有礼", "private-code"],
