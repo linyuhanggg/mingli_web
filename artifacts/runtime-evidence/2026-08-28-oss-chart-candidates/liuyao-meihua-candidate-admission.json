@@ -1,0 +1,452 @@
+{
+  "schema_version": "mingli-oss-chart-candidate-admission-v1",
+  "issue": "MING-68",
+  "generated_at": "2026-08-28T11:38:12Z",
+  "decision": "NO-QUALIFIED-CANDIDATE",
+  "adapter_issue_recommended": false,
+  "decision_scope": "The focused 2026-08-28 evidence window for Liuyao and Meihua OSS ChartProvider candidates; this is not a permanent ban on future candidates.",
+  "decision_rationale": [
+    "The Liuyao candidate has useful mechanical coverage but its exact distribution, transitive provenance, and license evidence are not closed, and required mutual/opposite/reverse relations are absent.",
+    "The Meihua candidate has an exact MIT release but does not implement the current five-method input contract and has deterministic chart-name and no-moving-line failures visible in the tagged source.",
+    "Neither candidate is eligible to replace the current self-owned migration oracle or become a second production fact source."
+  ],
+  "baseline": {
+    "repository_ref": {
+      "ref": "origin/main",
+      "commit": "dd9ad426af1619dab7590e2e91ffdbacb7ef1bdd",
+      "tree": "cd952da2375244af6b2c0dce658d0590f3483211"
+    },
+    "ming_65": {
+      "pull_request": "https://github.com/linyuhanggg/mingli_web/pull/46",
+      "merged_commit": "ccf5ac811e55c9ced54f8b41cca5f451bf6a5f5f",
+      "artifact": "artifacts/runtime-evidence/2026-08-28-oss-chart-wave0/provider-engine-coverage-matrix.json",
+      "artifact_sha256": "b03660ea08a7a317b013bc385f3890393aba5ee99d6fd3f149de62ace105af88",
+      "liuyao_classification": "SELF-OWNED",
+      "meihua_classification": "SELF-OWNED",
+      "interpretation": "Temporary engineering state pending a qualified candidate, not a permanent architecture exception."
+    },
+    "ming_66": {
+      "pull_request": "https://github.com/linyuhanggg/mingli_web/pull/45",
+      "merged_commit": "dd9ad426af1619dab7590e2e91ffdbacb7ef1bdd",
+      "artifact": "artifacts/runtime-evidence/2026-08-28-oss-chart-wave0/license-notice-audit.json",
+      "artifact_sha256": "f4b860d3778680b39c7a07bcb8a8595ec4ad7d2f32a227fc5f8cde4c862d68d9",
+      "admission_rule": "License admission is independent of Provider coverage; runtime promotion requires an exact artifact/ref, complete local/upstream license evidence, and closed distribution obligations.",
+      "sxtwl_status": "HOLD: 2.0.7 sdist has no license member and no exact upstream ref binds the BSD-3-Clause text to that artifact."
+    },
+    "canonical_rule": "Owned Request Compiler and Time/Policy Normalizer -> Runtime Provider -> licensed pinned OSS Chart Engine -> Engine Adapter -> per-art Canonical Facts. Runtime Canonical Facts remain the only external fact truth; third-party raw objects remain private."
+  },
+  "current_sources": {
+    "liuyao": {
+      "engine": "core/mingli-master/scripts/reading_engine/liuyao.py",
+      "engine_sha256": "099f50428746467f6bdb1ddc911c1e46f6ba01c1a843f2a342cfcb7d545ca231",
+      "fixture": "core/mingli-master/references/fixtures/liuyao-v51.yaml",
+      "fixture_sha256": "c0e36e39191fab1eff941058e49a4660346e0cc68dd2b7340d712dd11ca2d5d6",
+      "qualifying_cases": 41,
+      "boundary_cases": 11,
+      "accepted_casting_methods": [
+        "supplied_complete_cast",
+        "digital_coin"
+      ]
+    },
+    "meihua": {
+      "engine": "core/mingli-master/scripts/reading_engine/meihua.py",
+      "engine_sha256": "f57313665de9d7021530fe0c94255fc599791d76088ac21a3226395922ab962b",
+      "fixture": "core/mingli-master/references/fixtures/meihua-v51.yaml",
+      "fixture_sha256": "4d791d72356a7b4d63d7f4e4083726611dc1b845d3bb5ce78fdb6efe74ad9a25",
+      "qualifying_cases": 30,
+      "boundary_cases": 8,
+      "accepted_casting_methods": [
+        "time",
+        "supplied_number",
+        "sound_count",
+        "observation",
+        "supplied_hexagram"
+      ]
+    }
+  },
+  "candidates": [
+    {
+      "candidate_id": "yaomancy-liuyao-engine-0.1.0",
+      "art": "liuyao",
+      "name": "yaomancy/liuyao-engine",
+      "version": "0.1.0",
+      "reviewed_ref": "v0.1.0",
+      "reviewed_tag_object": "6763d2365e52a1f956b4d069e417e962fce37228",
+      "reviewed_commit": "562b902eb3ec47d4dadb326b6dc98e8ee09b4295",
+      "reviewed_tree": "48ac5f1738fdcf66743ed368e3d311dbf06b30b3",
+      "language_runtime": "Python >=3.11",
+      "runtime_dependencies": [
+        "sxtwl>=2.0.6"
+      ],
+      "official_sources": {
+        "repository": "https://github.com/yaomancy/liuyao-engine",
+        "tag": "https://github.com/yaomancy/liuyao-engine/tree/v0.1.0",
+        "commit": "https://github.com/yaomancy/liuyao-engine/commit/562b902eb3ec47d4dadb326b6dc98e8ee09b4295",
+        "registry": "https://pypi.org/pypi/liuyao-engine/json",
+        "registry_status_at_retrieval": "HTTP 404; no PyPI project or immutable wheel/sdist was available",
+        "github_release_status": "No GitHub Release; one annotated tag only"
+      },
+      "maintenance": {
+        "created_at": "2026-06-29T20:27:13Z",
+        "last_pushed_at": "2026-06-29T21:52:06Z",
+        "retrieved_at": "2026-08-28T11:38:12Z",
+        "archived": false,
+        "stars_at_retrieval": 3,
+        "open_issues_at_retrieval": 0,
+        "maturity": "v0.1.0 single-tag young project; useful for evidence, not a mature release channel"
+      },
+      "license": {
+        "declared_spdx": "Apache-2.0",
+        "root_license_url": "https://github.com/yaomancy/liuyao-engine/blob/562b902eb3ec47d4dadb326b6dc98e8ee09b4295/LICENSE",
+        "root_license_sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+        "notice_url": "https://github.com/yaomancy/liuyao-engine/blob/562b902eb3ec47d4dadb326b6dc98e8ee09b4295/NOTICE",
+        "notice_sha256": "5b5231506e4daf9de323e40ea7d6858508d1f68d1e8548a79a0d5462b097cf95",
+        "bundled_mit_license_sha256": {
+          "najia": "041f69ab8b03575a0229e12ddd886df6452881b31422001a9df0917854cbda8e",
+          "yigram_najia_rules": "3116e1221a4447b8136fe7b6f2c093f2e1b0c79a80fae4406b3f9f9260e10958"
+        },
+        "mingli_repository_local_path": null,
+        "obligations": [
+          "Ship Apache-2.0 text and preserve applicable NOTICE attribution.",
+          "Mark modified files prominently and preserve copyright, attribution, patent, and trademark terms.",
+          "Retain the bundled MIT copyright, permission, and disclaimer texts for najia and yigram-derived data.",
+          "Audit and bind sxtwl and every bundled/derived data source to exact upstream versions before distribution."
+        ],
+        "decision": "HOLD",
+        "gaps": [
+          "No official wheel or sdist is published; the tag is the only immutable source unit.",
+          "NOTICE calls sxtwl MIT, conflicting with the exact-version MING-66 finding: upstream current text is BSD-3-Clause and the 2.0.7 sdist lacks version-bound license bytes.",
+          "NOTICE names najia and yigram-najia-rules but does not pin the upstream commits from which tests/data were copied or derived.",
+          "Bundled ctext-derived classical text bytes are attributed but no exact retrieval/version record or reviewed redistribution terms are pinned.",
+          "No approved mingli_web local license/provenance path exists; this evidence task is not authorized to create one."
+        ]
+      },
+      "interfaces_reviewed": [
+        "liuyao.cast:toss, toss_line, lines_from_tosses, CastResult.changed_bits",
+        "liuyao.hexagram:cast_chart, HexagramChart, find_fushen",
+        "liuyao.calendar:compute_four_pillars",
+        "liuyao.reading:build_reading",
+        "tests/test_differential.py: 200 randomized chart projections against najia with the calendar isolated"
+      ],
+      "coverage": [
+        {
+          "area": "casting_input",
+          "status": "PARTIAL",
+          "candidate_support": "CSPRNG three-coin tosses or caller-supplied six tuples of coin faces.",
+          "canonical_gap": "No owned transaction seed commitment/provenance contract and no direct supplied 6/7/8/9 totals contract; an Adapter must normalize without exposing candidate randomness."
+        },
+        {
+          "area": "primary_hexagram_and_lines",
+          "status": "SUPPORTED",
+          "candidate_support": "64-hexagram catalog, six lines, palace and type.",
+          "canonical_gap": "Names, line order and key casing still require the full existing fixture differential."
+        },
+        {
+          "area": "moving_lines_and_changed_hexagram",
+          "status": "SUPPORTED_WITH_POLICY_DIFFERENCE",
+          "candidate_support": "Moving-line map and changed bits/chart.",
+          "canonical_gap": "Static casts return changed=null while current Canonical Facts retain a changed plate equal to the primary plate."
+        },
+        {
+          "area": "mutual_opposite_reverse_relations",
+          "status": "NOT_SUPPORTED",
+          "candidate_support": "No mutual, opposite/cuo, or reverse/zong hexagram API was found in the tagged source or tests.",
+          "canonical_gap": "The current public output also does not declare these fields; they cannot be claimed as candidate coverage or added by ad-hoc browser/backend arithmetic."
+        },
+        {
+          "area": "najia_shi_ying_six_relatives_six_spirits",
+          "status": "SUPPORTED",
+          "candidate_support": "Najia, palace, Shi/Ying, six relatives, six spirits and hidden lines.",
+          "canonical_gap": "Must compare every Canonical Fact after calendar and school/profile normalization; candidate camelCase/raw dictionaries cannot become public contracts."
+        },
+        {
+          "area": "calendar_xunkong_strength_relations",
+          "status": "PARTIAL",
+          "candidate_support": "sxtwl-based four pillars, Xunkong, strength and relation helpers.",
+          "canonical_gap": "Candidate accepts fixed UTC offsets and defaults to +480; current policy owns IANA timezone, location and Zi-hour behavior. Calendar remains owned input and must not be recomputed as a second fact source."
+        },
+        {
+          "area": "canonical_policy_and_interpretive_facts",
+          "status": "NOT_A_REPLACEMENT_TARGET",
+          "candidate_support": "Useful-spirit and assessment dictionaries exist.",
+          "canonical_gap": "Current useful-spirit/source-conditioned facts are owned policy/evidence; candidate assessment must be ignored rather than adopted."
+        }
+      ],
+      "admission_decision": "HOLD",
+      "adapter_issue_recommended": false,
+      "unblock_conditions": [
+        "Publish or otherwise approve an immutable distribution unit and bind it to the reviewed tag/commit.",
+        "Correct and pin the full transitive license/provenance chain, including sxtwl and derived data.",
+        "Demonstrate the selected Jingfang profile against the existing lawful fixture set, including static, one-moving and multi-moving casts.",
+        "Decide whether mutual/opposite/reverse relations are genuinely required Canonical Facts and provide them in the engine or a separately approved owned policy layer."
+      ]
+    },
+    {
+      "candidate_id": "handsomejustin-meihua-yi-0.1.1",
+      "art": "meihua",
+      "name": "handsomejustin/meihua-yi",
+      "version": "0.1.1",
+      "reviewed_ref": "v0.1.1",
+      "reviewed_commit": "19760a55814bdd53ceef9f6da34ee030b90ba1a1",
+      "reviewed_tree": "ca01b9ec8bffffc5f5a933058df80b30a38f938d",
+      "language_runtime": "Python >=3.8",
+      "runtime_dependencies": [],
+      "optional_dependencies": {
+        "lunar": [
+          "lunardate"
+        ]
+      },
+      "official_sources": {
+        "repository": "https://github.com/handsomejustin/meihua-yi",
+        "tag": "https://github.com/handsomejustin/meihua-yi/tree/v0.1.1",
+        "commit": "https://github.com/handsomejustin/meihua-yi/commit/19760a55814bdd53ceef9f6da34ee030b90ba1a1",
+        "registry": "https://pypi.org/project/meihua-yi/0.1.1/",
+        "registry_json": "https://pypi.org/pypi/meihua-yi/0.1.1/json",
+        "github_release_status": "No GitHub Release; lightweight tags v0.1.0 and v0.1.1"
+      },
+      "distribution": {
+        "wheel": {
+          "filename": "meihua_yi-0.1.1-py3-none-any.whl",
+          "sha256": "700706626b4d9142d70616c95c330fd4acfa66912893aa083379eeb93b89a6db",
+          "license_member": "meihua_yi-0.1.1.dist-info/LICENSE"
+        },
+        "sdist": {
+          "filename": "meihua_yi-0.1.1.tar.gz",
+          "sha256": "5d5c3cb9beec101a5895a853e9e688c4f81a4d680f0a17ef90f523c5ff0d12cb",
+          "license_member": "meihua_yi-0.1.1/LICENSE"
+        }
+      },
+      "maintenance": {
+        "created_at": "2026-05-13T10:37:34Z",
+        "last_pushed_at": "2026-05-13T15:18:45Z",
+        "retrieved_at": "2026-08-28T11:38:12Z",
+        "archived": false,
+        "stars_at_retrieval": 4,
+        "open_issues_at_retrieval": 1,
+        "maturity": "Package classifier is Alpha; two same-day tags and no later source push."
+      },
+      "license": {
+        "declared_spdx": "MIT",
+        "root_license_url": "https://github.com/handsomejustin/meihua-yi/blob/19760a55814bdd53ceef9f6da34ee030b90ba1a1/LICENSE",
+        "root_license_sha256": "025fdb985a7c50a67dd8f795469c2b2962ac452c5afd22c3844cf7611c7d1250",
+        "wheel_license_sha256": "025fdb985a7c50a67dd8f795469c2b2962ac452c5afd22c3844cf7611c7d1250",
+        "sdist_license_sha256": "025fdb985a7c50a67dd8f795469c2b2962ac452c5afd22c3844cf7611c7d1250",
+        "mingli_repository_local_path": null,
+        "obligations": [
+          "Retain the MIT copyright, permission notice, and warranty disclaimer in distributed copies.",
+          "Audit the optional lunardate dependency separately if the candidate's lunar path is ever evaluated or distributed."
+        ],
+        "decision": "ALLOW",
+        "decision_scope": "Exact upstream/PyPI 0.1.1 code and artifacts only; this is not Runtime admission.",
+        "runtime_promotion_gap": "The approved mingli_web local license/provenance path does not exist and may be created only by a later authorized admission task."
+      },
+      "interfaces_reviewed": [
+        "meihua_yi.engine:qigua_time",
+        "meihua_yi.engine:qigua_coin",
+        "meihua_yi.engine:compute_hexagrams",
+        "meihua_yi.engine:get_gua_name",
+        "meihua_yi.engine:analyze_ti_yong",
+        "tests/test_engine.py"
+      ],
+      "coverage": [
+        {
+          "area": "time_casting",
+          "status": "PARTIAL_FAIL_OPEN",
+          "candidate_support": "Accepts a naive datetime; uses lunardate when installed and silently falls back to Gregorian month/day when absent.",
+          "canonical_gap": "No IANA timezone, location, Zi-hour, shared calendar facts, leap-month provenance, or explicit failure when lunar conversion is unavailable."
+        },
+        {
+          "area": "supplied_number",
+          "status": "NOT_SUPPORTED",
+          "candidate_support": "No number-plus-hour casting interface.",
+          "canonical_gap": "Current explicit supplied_number method and its provenance cannot be represented."
+        },
+        {
+          "area": "sound_count_observation_supplied_hexagram",
+          "status": "NOT_SUPPORTED",
+          "candidate_support": "No matching explicit methods; coin toss is a different method and cannot be substituted.",
+          "canonical_gap": "Three current input methods and their provenance contracts are absent."
+        },
+        {
+          "area": "upper_lower_primary_mutual_changed",
+          "status": "IMPLEMENTED_BUT_INCORRECT",
+          "candidate_support": "Computes upper/lower trigrams, primary, mutual and changed line arrays.",
+          "canonical_gap": "The tagged 64-name table contradicts its declared (lower, upper) key order. For Qian below/Dui above, bits 111110, current Golden expects 泽天夬 while candidate key (7,1) returns 天泽履."
+        },
+        {
+          "area": "moving_line_and_body_use",
+          "status": "PARTIAL",
+          "candidate_support": "Computes moving lines and chooses body/use from the first moving line.",
+          "canonical_gap": "compute_hexagrams indexes moving_indices[0]; a valid no-moving coin cast from qigua_coin raises IndexError. Multi-moving body/use policy is not the current explicit-method contract."
+        },
+        {
+          "area": "seasonal_and_source_profile_facts",
+          "status": "NOT_SUPPORTED",
+          "candidate_support": "Static five-element relation labels plus fortune verdict strings.",
+          "canonical_gap": "No month-branch seasonal strength, source-conditioned patterns, dimension facts, or evidence-bound adjudication; candidate fortune verdicts are outside the mechanical engine boundary."
+        },
+        {
+          "area": "canonical_contract",
+          "status": "NOT_SUPPORTED",
+          "candidate_support": "Unversioned Python dictionaries and formatted text.",
+          "canonical_gap": "Raw dictionaries/text cannot become Backend/Web/LLM facts."
+        }
+      ],
+      "first_static_failure": {
+        "case": "Qian below / Dui above (bits bottom-to-top 111110)",
+        "expected": "泽天夬",
+        "candidate_observed_from_tagged_table": "天泽履",
+        "evidence": "meihua_yi/engine.py at 19760a55814bdd53ceef9f6da34ee030b90ba1a1, GUA_NAMES[(7,1)]",
+        "test_gap": "test_all_64 asserts only that a name is not '未知'; it does not assert all 64 exact names."
+      },
+      "admission_decision": "HOLD",
+      "adapter_issue_recommended": false,
+      "unblock_conditions": [
+        "Correct and exhaustively test all 64 exact hexagram names against an independent lawful table.",
+        "Remove silent Gregorian fallback and accept owned, provenance-bound calendar/method facts rather than recomputing policy.",
+        "Implement or explicitly map all five current casting methods without substituting coin casting for unsupported methods.",
+        "Define no-moving and multi-moving behavior and pass the existing lawful fixture differential.",
+        "Add an approved local license/provenance bundle only in a later authorized admission task."
+      ]
+    }
+  ],
+  "synthetic_differential": {
+    "principles": [
+      "Use only existing repository fixtures and synthetic boundary inputs; do not add or modify Golden expected values in MING-68.",
+      "The current self-owned engine is the migration oracle only. Candidate output is shadow data until every gate passes.",
+      "Compare normalized Canonical Facts, never raw third-party JSON or formatted text.",
+      "Ignore candidate interpretation/verdict fields and preserve owned source, policy, evidence, and adjudication facts."
+    ],
+    "liuyao_cases": [
+      {
+        "id": "LY-STATIC-QIAN",
+        "source": "liuyao-v51.yaml synthetic_boundaries.stable-all-yang",
+        "input": "fixed owned calendar facts plus toss totals [7,7,7,7,7,7]",
+        "compare": [
+          "primary_hexagram",
+          "moving_lines",
+          "normalized changed_hexagram",
+          "najia",
+          "shi_ying",
+          "six_relatives",
+          "six_spirits",
+          "xunkong",
+          "hidden_lines"
+        ]
+      },
+      {
+        "id": "LY-ONE-MOVING",
+        "source": "liuyao-v51.yaml zengshan-02",
+        "input": "month 辰, day 戊子, toss totals [7,7,7,7,7,9]",
+        "compare": [
+          "primary 乾为天",
+          "moving line 6",
+          "changed 泽天夬",
+          "changed Najia/six relatives",
+          "returning and line relations"
+        ]
+      },
+      {
+        "id": "LY-MULTI-MOVING",
+        "source": "liuyao-v51.yaml synthetic_boundaries.middle-pair",
+        "input": "fixed owned calendar facts plus toss totals [7,8,9,6,7,8]",
+        "compare": [
+          "primary 水火既济",
+          "moving lines [3,4]",
+          "changed 泽雷随",
+          "all per-line facts"
+        ]
+      },
+      {
+        "id": "LY-CALENDAR-POLICY",
+        "source": "liuyao-v51.yaml before-li-chun, late-zi-current-day, late-zi-next-day, new-york-dst and historical-offset",
+        "input": "candidate receives already-normalized owned calendar facts",
+        "compare": [
+          "calendar identity is preserved",
+          "no candidate default timezone or Zi-hour policy leaks into Canonical Facts"
+        ]
+      }
+    ],
+    "meihua_cases": [
+      {
+        "id": "MH-NAME-SENTINEL",
+        "source": "existing Meihua source table / current Golden name contract",
+        "input": "Qian below, Dui above, bits 111110",
+        "compare": [
+          "primary_hexagram.name == 泽天夬"
+        ],
+        "expected_first_result_for_0_1_1": "FAIL"
+      },
+      {
+        "id": "MH-SUPPLIED-NUMBERS",
+        "source": "meihua-v51.yaml supplied-number-9-zi and supplied-number-8-hai",
+        "input": "owned method facts and calendar facts",
+        "compare": [
+          "upper_trigram",
+          "lower_trigram",
+          "moving_lines",
+          "primary_hexagram",
+          "mutual_hexagram",
+          "changed_hexagram",
+          "body_use"
+        ]
+      },
+      {
+        "id": "MH-METHOD-COVERAGE",
+        "source": "meihua-v51.yaml exact_replays",
+        "input": "one time, supplied_number, sound_count, observation and supplied_hexagram case",
+        "compare": [
+          "all five explicit casting methods",
+          "method provenance",
+          "no fallback or method substitution"
+        ]
+      },
+      {
+        "id": "MH-CALENDAR-BOUNDARIES",
+        "source": "meihua-v51.yaml before-li-chun, after-li-chun, leap-lunar-month, new-york-dst and historical-offset",
+        "input": "owned normalized calendar facts",
+        "compare": [
+          "time totals",
+          "primary/mutual/changed",
+          "moving line",
+          "no candidate local-time or optional-dependency drift"
+        ]
+      },
+      {
+        "id": "MH-STATIC-API",
+        "source": "candidate qigua_coin([7,8,7,8,7,8]) and compute_hexagrams",
+        "input": "valid six-line cast with no moving line",
+        "compare": [
+          "deterministic no-moving behavior"
+        ],
+        "expected_first_result_for_0_1_1": "FAIL with IndexError at moving_indices[0]"
+      }
+    ],
+    "allowed_policy_differences": [
+      "Field naming/casing and 0-based versus 1-based line indices after a lossless Adapter normalization.",
+      "For Liuyao static casts only, candidate changed=null may normalize to a changed plate equal to the primary plate if the Canonical contract continues to require the latter.",
+      "Candidate random generation, formatted prose, fortune/verdict fields and useful-spirit assessment are excluded rather than compared.",
+      "Owned timezone/location/Zi-hour/casting provenance and source-profile policy are inputs or retained owned facts, never candidate authority."
+    ],
+    "first_failure_gate": "Stop on the first mismatch in primary/mutual/changed identity, line order, moving lines, Najia/Shi-Ying/six-relatives/six-spirits/Xunkong, body/use, method provenance, or owned calendar identity. Missing required facts, a fail-open fallback, unresolved license provenance, or any raw-object leak is also an immediate failure.",
+    "single_fact_source_cutover_gate": [
+      "Close candidate license/provenance and immutable-version evidence first.",
+      "Run the candidate only behind a private Engine Adapter in shadow mode; current self-owned Canonical Facts remain authoritative.",
+      "Pass all selected existing Goldens and boundaries without changing expected values; classify every accepted difference as an explicit Adapter normalization or owned policy difference.",
+      "Emit the existing per-art Canonical Facts with third-party raw objects removed and owned policy/evidence layers unchanged.",
+      "Switch one versioned Provider configuration atomically, retain old fixtures as regression evidence, and remove/disable the parallel self-owned production mechanical path so only one chart engine supplies facts.",
+      "Rollback on any post-switch mismatch, missing fact, provenance drift, or release-closure failure."
+    ]
+  },
+  "next_action": {
+    "decision": "NO-QUALIFIED-CANDIDATE",
+    "create_adapter_issue_now": false,
+    "recommended_follow_up": "Keep both Providers self-owned as migration oracles. Open a new evidence-only admission task only when an upstream release closes the listed legal and mechanical gaps or when a different focused candidate is identified; do not keep an implementation slot open meanwhile."
+  },
+  "self_checks": {
+    "json_parse": "PASS",
+    "markdown_json_consistency": "PASS",
+    "git_diff_check": "PASS",
+    "touched_paths_are_exact_lease": "PASS"
+  }
+}
