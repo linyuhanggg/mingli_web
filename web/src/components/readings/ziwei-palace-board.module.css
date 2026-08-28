@@ -13,6 +13,7 @@
 }
 
 .workspace {
+  container: ziwei-workspace / inline-size;
   display: grid;
   gap: var(--ds-space-4);
   min-width: 0;
@@ -67,6 +68,16 @@
 
 .workspaceBoard,
 .readingPane {
+  min-width: 0;
+}
+
+.workspaceBoard,
+.layerContext {
+  display: grid;
+  gap: var(--ds-space-4);
+}
+
+.layerContext {
   min-width: 0;
 }
 
@@ -730,9 +741,12 @@
     grid-template-columns: repeat(12, minmax(0, 1fr));
     grid-auto-flow: row;
   }
+}
 
+@container ziwei-workspace (min-width: 45.5rem) {
   .workspaceBody {
-    grid-template-columns: minmax(30rem, 32.5rem) minmax(22.5rem, 1fr);
+    grid-template-columns: minmax(22.5rem, 1.25fr) minmax(22.5rem, 1fr);
+    gap: var(--ds-space-2);
   }
 }
 

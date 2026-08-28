@@ -1,6 +1,7 @@
 import {
   act,
   cleanup,
+  fireEvent,
   render,
   screen,
   waitFor,
@@ -11,7 +12,10 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { ZiweiPalaceBoard } from "@/components/readings/ziwei-palace-board";
+import {
+  ZiweiPalaceBoard,
+  ZiweiWorkspace,
+} from "@/components/readings/ziwei-palace-board";
 import type {
   ZiweiChartViewModel,
   ZiweiCoreFacts,
@@ -216,6 +220,89 @@ function palaceButton(branch: string) {
 }
 
 describe("紫微 S3 十二宫环盘", () => {
+  it("keeps the base palace board and its focus mounted across ready and locked layers", () => {
+    render(
+      <ZiweiWorkspace
+        view={chart({
+          time_layers: [
+            {
+              layer_id: "year",
+              label: "流年",
+              available: true,
+              unavailable_reason: null,
+            },
+            {
+              layer_id: "month",
+              label: "流月",
+              available: true,
+              unavailable_reason: null,
+            },
+          ],
+          core_facts: facts({
+            annual_layers: [
+              {
+                year: 2026,
+                coverage_start: "2026-02-17",
+                coverage_end_exclusive: "2027-02-06",
+                liu_nian: { life_palace: "午" },
+                segments: [{ segment: "annual" }],
+                representative_scope: "annual",
+              },
+            ],
+            monthly_layers: [
+              {
+                year: 2026,
+                month: 8,
+                liu_yue: { life_palace: "申" },
+                segments: [{ segment: "monthly" }],
+                representative_scope: "monthly",
+              },
+            ],
+          }),
+        })}
+      />,
+    );
+
+    const locator = screen.getByRole("navigation", { name: "十二宫定位" });
+    fireEvent.click(within(locator).getByRole("tab", { name: /午 官禄/ }));
+    const board = screen.getByRole("grid", { name: "十二宫环盘" });
+    const selectedPalace = within(board).getByRole("button", { name: /^午/ });
+    act(() => selectedPalace.focus());
+    expect(selectedPalace).toHaveAttribute("data-highlight", "primary");
+    expect(selectedPalace).toHaveFocus();
+
+    fireEvent.click(screen.getByRole("tab", { name: /流年/ }));
+    expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBe(board);
+    expect(selectedPalace).toHaveAttribute("data-highlight", "primary");
+    expect(selectedPalace).toHaveFocus();
+    expect(screen.getByRole("table", { name: "流年盘面事实" })).toBeVisible();
+
+    fireEvent.click(screen.getByRole("tab", { name: /流月/ }));
+    expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBe(board);
+    expect(selectedPalace).toHaveAttribute("data-highlight", "primary");
+    expect(selectedPalace).toHaveFocus();
+    expect(screen.getByText("权益状态未确认")).toBeVisible();
+    expect(
+      screen.queryByRole("table", { name: "流月盘面事实" }),
+    ).not.toBeInTheDocument();
+  });
+
+  it("gates the two-column workspace by its host container width", () => {
+    const css = boardCss();
+
+    expect(css).toMatch(
+      /\.workspace\s*\{[\s\S]*container:\s*ziwei-workspace\s*\/\s*inline-size/,
+    );
+    expect(css).toMatch(
+      /@container\s+ziwei-workspace\s*\(min-width:\s*45\.5rem\)[\s\S]*\.workspaceBody\s*\{[\s\S]*grid-template-columns:\s*minmax\(22\.5rem,\s*1\.25fr\)\s+minmax\(22\.5rem,\s*1fr\)[\s\S]*gap:\s*var\(--ds-space-2\)/,
+    );
+    const viewportDesktopRules =
+      css.match(
+        /@media\s*\(min-width:\s*64rem\)\s*\{([\s\S]*?)\n\}/,
+      )?.[1] ?? "";
+    expect(viewportDesktopRules).not.toContain(".workspaceBody");
+  });
+
   it("places twelve palaces by earthly branch instead of array index", () => {
     render(<ZiweiPalaceBoard view={chart()} />);
 
