@@ -55,6 +55,77 @@ test("bazi result six states stay within the viewport", async ({ page }, testInf
   await expect(page.getByRole("table", { name: "四柱专业矩阵" })).toBeVisible();
 });
 
+test("bazi mobile luck cycles form a 4 by 2 grid without local scrolling", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "360",
+    "This focused contract covers the 360px and 390px mobile layouts once.",
+  );
+
+  for (const width of [360, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/_ui-lab/bazi-result", {
+      waitUntil: "domcontentloaded",
+    });
+    await page.getByRole("button", { name: "ready", exact: true }).click();
+    await page.getByRole("tab", { name: /^大运/ }).click();
+
+    const panel = page.getByRole("tabpanel", { name: /^大运/ });
+    const table = panel.getByRole("table", { name: "完整大运序列" });
+    await expect(table).toBeVisible();
+
+    const layout = await table.evaluate((element) => {
+      const luckTable = element as HTMLTableElement;
+      const viewport = luckTable.parentElement;
+      const body = luckTable.tBodies.item(0);
+      const rows = body ? Array.from(body.rows) : [];
+      const rowYs = rows.map((row) => row.getBoundingClientRect().y);
+
+      return {
+        bodyDisplay: body ? getComputedStyle(body).display : "missing",
+        gridTemplateColumns: body
+          ? getComputedStyle(body).gridTemplateColumns
+          : "missing",
+        rowYs,
+        tableWidth: luckTable.getBoundingClientRect().width,
+        viewportClientWidth: viewport?.clientWidth ?? 0,
+        viewportScrollWidth: viewport?.scrollWidth ?? 0,
+      };
+    });
+
+    expect(layout.rowYs, `${width}px luck-cycle count`).toHaveLength(8);
+    expect(layout.bodyDisplay, `${width}px tbody display`).toBe("grid");
+    expect(
+      layout.gridTemplateColumns.split(" ").filter(Boolean),
+      `${width}px luck-cycle columns`,
+    ).toHaveLength(4);
+    expect(
+      layout.viewportScrollWidth,
+      `${width}px luck-cycle viewport scroll width`,
+    ).toBeLessThanOrEqual(layout.viewportClientWidth + 1);
+    expect(layout.tableWidth, `${width}px luck-cycle table width`)
+      .toBeLessThanOrEqual(layout.viewportClientWidth + 1);
+
+    const firstRow = layout.rowYs.slice(0, 4);
+    const secondRow = layout.rowYs.slice(4, 8);
+    expect(
+      Math.max(...firstRow) - Math.min(...firstRow),
+      `${width}px first luck-cycle row alignment`,
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.max(...secondRow) - Math.min(...secondRow),
+      `${width}px second luck-cycle row alignment`,
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.min(...secondRow),
+      `${width}px second luck-cycle row follows the first`,
+    ).toBeGreaterThan(Math.max(...firstRow));
+
+    console.log(`MING58_LUCK_GRID ${JSON.stringify({ width, ...layout })}`);
+  }
+});
+
 test("bazi 360 first-screen controls stay above the mobile bottom bar", async ({ page }) => {
   test.skip(page.viewportSize()?.width !== 360, "This is the focused 360px geometry contract.");
 
