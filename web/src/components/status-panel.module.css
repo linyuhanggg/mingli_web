@@ -1,14 +1,14 @@
 .panel {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
-  gap: 1rem;
   align-items: start;
+  gap: var(--space-md);
   padding: clamp(1.25rem, 5vw, 2rem);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-panel);
   background: var(--color-surface);
   color: var(--color-text);
-  animation: status-panel-enter var(--duration-overlay) var(--ease-out) both;
+  animation: status-panel-enter var(--ds-duration-base) var(--ds-ease-out) both;
 }
 
 .icon {
@@ -16,138 +16,108 @@
   width: 3rem;
   height: 3rem;
   place-items: center;
-  border-radius: 50%;
+  border: 1px solid var(--color-border);
+  border-radius: var(--ds-radius-2);
   background: var(--color-surface-subtle);
   color: var(--color-text-secondary);
 }
 
-.content {
-  min-width: 0;
-}
+.content { min-width: 0; }
 
 .title {
   margin: 0;
+  overflow-wrap: anywhere;
   font-family: var(--font-sans);
   font-size: var(--font-size-card);
   font-weight: 650;
   letter-spacing: -0.02em;
-  line-height: 1.25;
-  overflow-wrap: anywhere;
-  text-wrap: balance;
+  line-height: var(--line-height-title);
 }
 
 .description {
   max-width: 62ch;
-  margin: 0.45rem 0 0;
+  margin: var(--ds-space-2) 0 0;
   color: var(--color-text-secondary);
   font-size: var(--font-size-body);
-  line-height: 1.7;
+  line-height: var(--line-height-body);
   overflow-wrap: anywhere;
 }
 
 .action {
   display: inline-flex;
-  min-height: 2.75rem;
+  min-height: var(--ds-touch-min);
   align-items: center;
   justify-content: center;
-  gap: 0.55rem;
-  margin-top: 1rem;
-  padding: 0.65rem 1rem;
-  border: 0;
-  border-radius: var(--radius-control);
+  gap: var(--ds-space-2);
+  margin-top: var(--space-md);
+  padding: 0 var(--space-md);
+  border: 1px solid var(--color-action);
+  border-radius: var(--ds-radius-2);
   background: var(--color-action);
   color: var(--color-on-action);
   font-size: var(--font-size-body);
   font-weight: 700;
-  line-height: 1.35;
   text-align: center;
-  -webkit-tap-highlight-color: var(--color-text-secondary);
-  touch-action: manipulation;
   transition:
-    transform var(--duration-feedback) var(--ease-out),
-    background-color var(--duration-feedback) ease;
+    transform var(--ds-duration-fast) var(--ds-ease-out),
+    background-color var(--ds-duration-fast) var(--ds-ease-out);
 }
 
 .action:hover {
   background: var(--color-action-hover);
-  transform: translateY(-2px);
+  transform: translateY(-1px);
 }
 
-.action:active {
-  transform: translateY(0);
-}
+.loading,
+.empty,
+.disabled { border-style: dashed; }
 
 .loading .icon,
 .processing .icon {
-  color: var(--color-border-strong);
   animation: status-icon-pulse 1.6s ease-in-out infinite;
 }
 
-@keyframes status-icon-pulse {
-  0%,
-  100% {
-    opacity: 1;
-    transform: scale(1);
-  }
+.ready,
+.success { border-left: 3px solid var(--color-success); }
+.ready .icon,
+.success .icon { color: var(--color-success); }
 
-  50% {
-    opacity: 0.72;
-    transform: scale(0.96);
-  }
+.need-input {
+  border-left: 3px solid var(--color-warning);
+  background: var(--surface-warning);
 }
+.need-input .icon { color: var(--color-warning); }
 
 .error {
-  border-color: var(--color-danger);
+  border-left: 3px solid var(--color-danger);
+  background: var(--surface-danger);
 }
+.error .icon { color: var(--color-danger); }
 
-.error .icon {
-  color: var(--color-danger);
-}
+.locked,
+.disabled { background: var(--color-surface-subtle); }
+.locked { border-left: 3px solid var(--ds-line-ink); }
 
-.success .icon {
-  color: var(--color-action-hover);
-}
-
-.disabled {
-  border-style: dashed;
-  background: var(--color-surface-subtle);
-}
-
-.disabled .icon {
-  background: var(--color-surface-muted);
-  color: var(--color-text-secondary);
+@keyframes status-icon-pulse {
+  50% { opacity: 0.62; }
 }
 
 @keyframes status-panel-enter {
   from {
-    opacity: 0.72;
+    opacity: 0;
     transform: translateY(0.25rem);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @media (max-width: 24rem) {
-  .panel {
-    grid-template-columns: 1fr;
-  }
+  .panel { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .panel,
   .loading .icon,
-  .processing .icon {
-    animation: none;
-  }
+  .processing .icon { animation: none; }
 
-  .action {
-    transition: none;
-  }
-
-  .action:hover {
-    transform: none;
-  }
+  .action { transition: none; }
+  .action:hover { transform: none; }
 }

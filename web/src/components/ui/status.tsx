@@ -2,6 +2,7 @@ import {
   AlertCircle,
   Ban,
   CheckCircle2,
+  CircleHelp,
   Inbox,
   Loader2,
   LockKeyhole,
@@ -12,26 +13,37 @@ import { useId, type ReactNode } from "react";
 
 import styles from "./status.module.css";
 
-
-export type StatusState =
+export type CoreStatusState =
   | "loading"
   | "empty"
-  | "error"
+  | "ready"
+  | "locked"
+  | "need-input"
+  | "error";
+
+export type StatusState =
+  | CoreStatusState
   | "processing"
   | "success"
   | "unavailable"
-  | "unauthorized"
-  | "locked";
+  | "unauthorized";
 
-export const STATUS_STATES = [
+export const CORE_STATUS_STATES = [
   "loading",
   "empty",
+  "ready",
+  "locked",
+  "need-input",
   "error",
+] as const satisfies readonly CoreStatusState[];
+
+/** All accepted states, including compatibility projections used by older flows. */
+export const STATUS_STATES = [
+  ...CORE_STATUS_STATES,
   "processing",
   "success",
   "unavailable",
   "unauthorized",
-  "locked",
 ] as const satisfies readonly StatusState[];
 
 export type StatusProps = {
@@ -43,23 +55,38 @@ export type StatusProps = {
 
 const copy: Record<StatusState, { title: string; description: string; icon: LucideIcon }> = {
   loading: {
-    title: "正在载入…",
-    description: "内容正在准备，请稍候…",
+    title: "正在同步出盘",
+    description: "正在按真实盘面结构准备内容，请稍候。",
     icon: Loader2,
   },
   empty: {
-    title: "暂无内容",
-    description: "完成第一步后，这里会显示新的记录。",
+    title: "还没有盘面",
+    description: "完成录入后，这里会显示确定性盘面事实。",
     icon: Inbox,
   },
+  ready: {
+    title: "盘面已就绪",
+    description: "盘面事实已经返回，可以继续核对时间层与说明。",
+    icon: CheckCircle2,
+  },
+  locked: {
+    title: "深读暂未解锁",
+    description: "已返回的免费盘面事实仍可查看；锁定只作用于深读或付费时间层。",
+    icon: LockKeyhole,
+  },
+  "need-input": {
+    title: "需要补充信息",
+    description: "当前输入处在边界口径，请确认后再继续计算。",
+    icon: CircleHelp,
+  },
   error: {
-    title: "出现错误",
-    description: "这次请求没有成功，请重试或检查输入。",
+    title: "暂时无法完成",
+    description: "这次请求没有成功。请检查输入或稍后重试，不会显示猜测结果。",
     icon: AlertCircle,
   },
   processing: {
-    title: "正在处理…",
-    description: "任务正在运行，请稍候…",
+    title: "正在处理",
+    description: "任务正在运行，请稍候。",
     icon: Loader2,
   },
   success: {
@@ -77,11 +104,6 @@ const copy: Record<StatusState, { title: string; description: string; icon: Luci
     description: "登录后才能查看或继续这项操作。",
     icon: ShieldAlert,
   },
-  locked: {
-    title: "已锁定",
-    description: "当前内容被锁定，暂不能修改或访问。",
-    icon: LockKeyhole,
-  },
 };
 
 const busyStates: ReadonlySet<StatusState> = new Set(["loading", "processing"]);
@@ -98,6 +120,7 @@ export function Status({ state, title, description, actions }: StatusProps) {
   return (
     <section
       className={`${styles.panel} ${styles[state]}`}
+      data-core-state={CORE_STATUS_STATES.includes(state as CoreStatusState) ? state : undefined}
       data-state={state}
       role={state === "error" ? "alert" : "status"}
       aria-atomic="true"

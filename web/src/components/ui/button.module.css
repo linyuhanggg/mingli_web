@@ -1,48 +1,73 @@
 .button {
   display: inline-flex;
-  min-height: var(--target-min);
-  min-width: var(--target-min);
+  min-width: var(--ds-control-md);
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
-  padding: 0.7rem 1.1rem;
   border: 1px solid transparent;
-  border-radius: var(--radius-control);
+  border-radius: var(--ds-radius-2);
   font-family: var(--font-sans);
   font-size: var(--font-size-label);
   font-weight: 700;
   line-height: var(--line-height-ui);
   cursor: pointer;
   transition:
-    background-color var(--duration-feedback) ease,
-    border-color var(--duration-feedback) ease,
-    color var(--duration-feedback) ease;
+    transform var(--ds-duration-fast) var(--ds-ease-out),
+    background-color var(--ds-duration-fast) var(--ds-ease-out),
+    border-color var(--ds-duration-fast) var(--ds-ease-out),
+    color var(--ds-duration-fast) var(--ds-ease-out);
+}
+
+.button:hover:not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(-1px);
+}
+
+.button:active:not([disabled]):not([aria-disabled="true"]) {
+  transform: translateY(0);
 }
 
 .button:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
+  outline: 1px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: var(--ds-shadow-focus);
 }
 
 .button[disabled],
 .button[aria-disabled="true"],
 .button[data-loading="true"] {
   cursor: not-allowed;
-  opacity: 0.58;
+  opacity: 0.42;
+  transform: none;
 }
 
-/* `asChild` targets cannot take native `disabled`; block real pointer and
-   keyboard activation while leaving them in the accessibility tree. */
 .button[aria-disabled="true"] {
   pointer-events: none;
 }
 
+.sm {
+  min-height: var(--ds-control-sm);
+  padding: 0 var(--ds-space-3);
+}
+
+.md {
+  min-height: var(--ds-control-md);
+  padding: 0 var(--ds-space-4);
+}
+
+.lg {
+  min-height: var(--ds-control-lg);
+  padding: 0 var(--ds-space-6);
+  font-size: var(--font-size-body);
+}
+
 .primary {
+  border-color: var(--color-action);
   background: var(--color-action);
   color: var(--color-on-action);
 }
 
 .primary:hover:not([disabled]):not([aria-disabled="true"]) {
+  border-color: var(--color-action-hover);
   background: var(--color-action-hover);
 }
 
@@ -53,30 +78,51 @@
 }
 
 .secondary:hover:not([disabled]):not([aria-disabled="true"]) {
-  background: var(--color-surface-subtle);
+  border-color: var(--ds-line-ink);
 }
 
+.quiet,
 .ghost {
+  border-color: transparent;
   background: transparent;
   color: var(--color-text);
+  text-decoration: underline;
+  text-decoration-color: var(--ds-line-ink);
+  text-underline-offset: var(--ds-space-1);
 }
 
+.quiet:hover:not([disabled]):not([aria-disabled="true"]),
 .ghost:hover:not([disabled]):not([aria-disabled="true"]) {
   background: var(--color-surface-subtle);
 }
 
-.destructive {
-  background: var(--color-danger);
-  color: var(--color-on-action);
+.signal {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
 }
 
+.signal:hover:not([disabled]):not([aria-disabled="true"]) {
+  border-color: var(--color-accent-hover);
+  background: var(--color-accent-hover);
+}
+
+.danger,
+.destructive {
+  border-color: var(--color-danger);
+  background: transparent;
+  color: var(--color-danger);
+}
+
+.danger:hover:not([disabled]):not([aria-disabled="true"]),
 .destructive:hover:not([disabled]):not([aria-disabled="true"]) {
-  background: color-mix(in srgb, var(--color-danger) 85%, var(--color-text));
+  background: var(--surface-danger);
 }
 
 .icon {
-  width: var(--target-min);
-  height: var(--target-min);
+  width: var(--ds-touch-min);
+  height: var(--ds-touch-min);
+  min-height: var(--ds-touch-min);
   padding: 0;
   background: transparent;
   color: var(--color-text);
@@ -92,12 +138,24 @@
   border: 2px solid color-mix(in srgb, currentColor 35%, transparent);
   border-top-color: currentColor;
   border-radius: 50%;
-  animation: button-spin 0.7s linear infinite;
+  animation: button-spin 700ms linear infinite;
+}
+
+@media (max-width: 839px), (any-pointer: coarse) {
+  .button {
+    min-width: var(--ds-touch-min);
+    min-height: var(--ds-touch-min);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .button {
     transition: none;
+  }
+
+  .button:hover,
+  .button:active {
+    transform: none;
   }
 
   .spinner {
