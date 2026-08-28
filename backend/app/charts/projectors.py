@@ -150,11 +150,13 @@ from app.charts.contracts import (
     ViewModel,
     WenshiViewV1,
     ZiweiAnnualLayer,
+    ZiweiCalendarCoverage,
     ZiweiChartV1,
     ZiweiCoreFacts,
     ZiweiDecadal,
     ZiweiLimit,
     ZiweiMajorLimitDirection,
+    ZiweiMajorLimitSegment,
     ZiweiMingShen,
     ZiweiMonthlyLayer,
     ZiweiPalace,
@@ -2708,6 +2710,60 @@ def _ziwei_star_facts(value: object) -> tuple[ZiweiStarFact, ...] | None:
     return tuple(result)
 
 
+def _ziwei_major_limit_segments(
+    value: object,
+) -> tuple[ZiweiMajorLimitSegment, ...] | None:
+    if not isinstance(value, (list, tuple)) or not value:
+        return None
+    result: list[ZiweiMajorLimitSegment] = []
+    for raw in value:
+        if not isinstance(raw, Mapping):
+            return None
+        major_limit = _mapping_copy(raw.get("major_limit"))
+        if not major_limit:
+            return None
+        try:
+            result.append(
+                ZiweiMajorLimitSegment(
+                    start_inclusive=raw.get("start_inclusive"),
+                    end_exclusive=raw.get("end_exclusive"),
+                    major_limit=major_limit,
+                )
+            )
+        except ValidationError:
+            return None
+    return tuple(result)
+
+
+def _ziwei_calendar_coverage(value: object) -> ZiweiCalendarCoverage | None:
+    if not isinstance(value, Mapping):
+        return None
+    required_keys = ("start_inclusive", "end_exclusive", "requested_target_date")
+    runtime_keys = {
+        *required_keys,
+        "status",
+        "horoscope_divide",
+        "age_divide",
+    }
+    if any(key not in value for key in required_keys) or any(
+        key not in runtime_keys for key in value
+    ):
+        return None
+    requested_target_date = value["requested_target_date"]
+    if requested_target_date == "":
+        requested_target_date = None
+    elif requested_target_date is None:
+        return None
+    try:
+        return ZiweiCalendarCoverage(
+            start_inclusive=value["start_inclusive"],
+            end_exclusive=value["end_exclusive"],
+            requested_target_date=requested_target_date,
+        )
+    except ValidationError:
+        return None
+
+
 def _ziwei_annual_layers(value: object) -> tuple[ZiweiAnnualLayer, ...] | None:
     if not isinstance(value, Mapping) or not value:
         return None
@@ -2798,6 +2854,8 @@ def _ziwei_core_facts(facts: object) -> ZiweiCoreFacts | None:
             "chart_convention",
             "chinese_date",
             "active_major_limit",
+            "active_major_limit_segments",
+            "calendar_coverage",
             "five_elements_class",
             "interpretive_candidates",
             "source_conditioned_patterns",
@@ -2812,41 +2870,64 @@ def _ziwei_core_facts(facts: object) -> ZiweiCoreFacts | None:
             "monthly_layers",
         )
     }
-    core = ZiweiCoreFacts(
-        chart_convention=_mapping_copy(_calculated_value(values, "chart_convention")),
-        chinese_date=_text(_calculated_value(values, "chinese_date")),
-        active_major_limit=_mapping_copy(
+    segments_fact = values["active_major_limit_segments"]
+    active_major_limit_segments = _ziwei_major_limit_segments(
+        _calculated_value(values, "active_major_limit_segments")
+    )
+    if segments_fact is not None and active_major_limit_segments is None:
+        return None
+    coverage_fact = values["calendar_coverage"]
+    calendar_coverage = _ziwei_calendar_coverage(
+        _calculated_value(values, "calendar_coverage")
+    )
+    if coverage_fact is not None and calendar_coverage is None:
+        return None
+    core_values: dict[str, object] = {
+        "chart_convention": _mapping_copy(
+            _calculated_value(values, "chart_convention")
+        ),
+        "chinese_date": _text(_calculated_value(values, "chinese_date")),
+        "active_major_limit": _mapping_copy(
             _calculated_value(values, "active_major_limit")
         ),
-        five_elements_class=_text(_calculated_value(values, "five_elements_class")),
-        interpretive_candidates=_mapping_copy(
+        "five_elements_class": _text(
+            _calculated_value(values, "five_elements_class")
+        ),
+        "interpretive_candidates": _mapping_copy(
             _calculated_value(values, "interpretive_candidates")
         ),
-        source_conditioned_patterns=_source_conditioned_patterns(
+        "source_conditioned_patterns": _source_conditioned_patterns(
             _calculated_value(values, "source_conditioned_patterns"),
             ZiweiSourcePattern,
         )
         or (),
-        ming_shen=_ziwei_ming_shen(_calculated_value(values, "ming_shen")),
-        major_limit_direction=_ziwei_direction(
+        "ming_shen": _ziwei_ming_shen(_calculated_value(values, "ming_shen")),
+        "major_limit_direction": _ziwei_direction(
             _calculated_value(values, "major_limit_direction")
         ),
-        major_limit_starting_age=_integer(
+        "major_limit_starting_age": _integer(
             _calculated_value(values, "major_limit_starting_age")
         ),
-        major_limit_sequence=_ziwei_limits(
+        "major_limit_sequence": _ziwei_limits(
             _calculated_value(values, "major_limit_sequence")
         ),
-        major_limits=_ziwei_limits(_calculated_value(values, "major_limits")),
-        transformations=_ziwei_transformations(
+        "major_limits": _ziwei_limits(_calculated_value(values, "major_limits")),
+        "transformations": _ziwei_transformations(
             _calculated_value(values, "natal_transformation_facts")
         ),
-        star_facts=_ziwei_star_facts(_calculated_value(values, "star_facts")),
-        annual_layers=_ziwei_annual_layers(_calculated_value(values, "annual_layers")),
-        monthly_layers=_ziwei_monthly_layers(
+        "star_facts": _ziwei_star_facts(_calculated_value(values, "star_facts")),
+        "annual_layers": _ziwei_annual_layers(
+            _calculated_value(values, "annual_layers")
+        ),
+        "monthly_layers": _ziwei_monthly_layers(
             _calculated_value(values, "monthly_layers")
         ),
-    )
+    }
+    if segments_fact is not None:
+        core_values["active_major_limit_segments"] = active_major_limit_segments
+    if coverage_fact is not None:
+        core_values["calendar_coverage"] = calendar_coverage
+    core = ZiweiCoreFacts.model_validate(core_values)
     return core if any(value is not None for value in core.model_dump().values()) else None
 
 

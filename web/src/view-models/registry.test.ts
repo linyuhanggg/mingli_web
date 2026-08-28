@@ -1,6 +1,11 @@
 import { describe, expect, it } from "vitest";
 
-import type { DaliurenDimensionFact } from "./registry";
+import type {
+  DaliurenDimensionFact,
+  ZiweiCalendarCoverage,
+  ZiweiCoreFacts,
+  ZiweiMajorLimitSegment,
+} from "./registry";
 import {
   VIEW_MODEL_FIXTURES,
   VIEW_MODEL_VERSIONS,
@@ -56,6 +61,68 @@ describe("versioned ViewModel registry", () => {
 
   it("does not resolve an unregistered version", () => {
     expect(getViewModelFixture("reading-document/v1")).toBeUndefined();
+  });
+
+  it("keeps dated Ziwei major-limit segments typed as complete ViewModel facts", () => {
+    const segment: ZiweiMajorLimitSegment = {
+      start_inclusive: "2025-01-01",
+      end_exclusive: "2026-01-01",
+      major_limit: { index: 2 },
+    };
+    const segments: NonNullable<
+      ZiweiCoreFacts["active_major_limit_segments"]
+    > = [segment];
+
+    expect(segments).toEqual([segment]);
+    expect(Object.keys(segments[0])).toEqual([
+      "start_inclusive",
+      "end_exclusive",
+      "major_limit",
+    ]);
+
+    // @ts-expect-error A dated segment without Runtime major-limit facts is incomplete.
+    const missingMajorLimit: ZiweiMajorLimitSegment = {
+      start_inclusive: "2025-01-01",
+      end_exclusive: "2026-01-01",
+    };
+    void missingMajorLimit;
+  });
+
+  it("keeps Ziwei calendar coverage typed as the exact Runtime date envelope", () => {
+    const coverage: ZiweiCalendarCoverage = {
+      start_inclusive: "2025-01-01",
+      end_exclusive: "2025-02-01",
+      requested_target_date: "2025-01-29",
+    };
+    const coreCoverage: NonNullable<ZiweiCoreFacts["calendar_coverage"]> =
+      coverage;
+
+    expect(coreCoverage).toEqual(coverage);
+    expect(Object.keys(coreCoverage)).toEqual([
+      "start_inclusive",
+      "end_exclusive",
+      "requested_target_date",
+    ]);
+
+    const annualCoverage: ZiweiCalendarCoverage = {
+      start_inclusive: "2199-01-01",
+      end_exclusive: "2200-01-01",
+      requested_target_date: null,
+    };
+    expect(annualCoverage.requested_target_date).toBeNull();
+
+    // @ts-expect-error Runtime calendar coverage always includes the target key.
+    const missingTarget: ZiweiCalendarCoverage = {
+      start_inclusive: "2025-01-01",
+      end_exclusive: "2025-02-01",
+    };
+    void missingTarget;
+
+    // @ts-expect-error Present strict optional coverage cannot be null.
+    const nullCoverage: NonNullable<
+      ZiweiCoreFacts["calendar_coverage"]
+    > = null;
+    void nullCoverage;
   });
 
   it("requires the complete Runtime envelope on every Daliuren dimension fact", () => {

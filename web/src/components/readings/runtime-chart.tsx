@@ -27,14 +27,17 @@ import type {
   ZiweiChartViewModel,
   ZiweiRelationshipViewModel,
 } from "@/view-models/registry";
-import type { CapabilityProjection } from "@/lib/api/contracts";
+import type {
+  CapabilityProjection,
+  TimeLayerEntitlementResponse,
+} from "@/lib/api/contracts";
 import {
   formatBaziInterpretiveCandidateRows,
   formatLiuyaoRoleAdjudicationRows,
 } from "@/lib/reading-display";
 
 import { DaliurenBoard } from "./daliuren-board";
-import { ZiweiPalaceBoard } from "./ziwei-palace-board";
+import { ZiweiWorkspace } from "./ziwei-palace-board";
 import styles from "./runtime-chart.module.css";
 
 function Table({
@@ -73,13 +76,19 @@ function Table({
   );
 }
 
-function isStructuredObject(value: StructuredFactValue | undefined): value is StructuredFactObject {
+function isStructuredObject(
+  value: StructuredFactValue | undefined,
+): value is StructuredFactObject {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
 
 function displayValue(value: unknown): string {
   if (value === null || value === undefined || value === "") return "—";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
     return String(value);
   }
   try {
@@ -92,7 +101,8 @@ function displayValue(value: unknown): string {
 const FACT_STATUS_LABELS: Record<string, string> = {
   calculated: "已计算",
   calculated_assignment_not_verdict: "已计算赋值",
-  calculated_facts_and_predicates_only_no_event_verdicts: "只展示计算事实与结构命题",
+  calculated_facts_and_predicates_only_no_event_verdicts:
+    "只展示计算事实与结构命题",
   calculated_limit_span_not_verdict: "已计算区间",
   calculated_not_interpreted: "已计算，仅展示事实",
   calculated_position_not_verdict: "已计算位置",
@@ -105,7 +115,10 @@ const FACT_STATUS_LABELS: Record<string, string> = {
   sequence_only: "仅展示顺序",
 };
 
-function factStatusLabel(value: string, labels?: readonly PublicKeyLabel[]): string {
+function factStatusLabel(
+  value: string,
+  labels?: readonly PublicKeyLabel[],
+): string {
   return displayPublicText(labels, value, FACT_STATUS_LABELS) || "—";
 }
 
@@ -116,8 +129,14 @@ function structuredValueSummary(
   if (value == null) {
     return "—";
   }
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return typeof value === "string" ? factStatusLabel(value, labels) : String(value);
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return typeof value === "string"
+      ? factStatusLabel(value, labels)
+      : String(value);
   }
   if (Array.isArray(value)) {
     return value.length === 0 ? "无" : `${value.length} 项结构化事实`;
@@ -142,13 +161,22 @@ function structuredPrimitive(
   if (value == null) {
     return "—";
   }
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return typeof value === "string" ? factStatusLabel(value, labels) : String(value);
+  if (
+    typeof value === "string" ||
+    typeof value === "number" ||
+    typeof value === "boolean"
+  ) {
+    return typeof value === "string"
+      ? factStatusLabel(value, labels)
+      : String(value);
   }
   return structuredValueSummary(value, labels);
 }
 
-function structuredText(value: StructuredFactObject, keys: ReadonlyArray<string>): string | null {
+function structuredText(
+  value: StructuredFactObject,
+  keys: ReadonlyArray<string>,
+): string | null {
   for (const key of keys) {
     const candidate = value[key];
     if (typeof candidate === "string" && candidate.trim()) {
@@ -188,7 +216,8 @@ const LUMING_CATEGORY_LABELS: Record<"lu" | "ma" | "gui", string> = {
 function internalScopeLabel(value: string): string {
   const labels: Record<string, string> = {
     annual_macro_historical_board_facts: "年度宏观历史盘面事实",
-    calculated_facts_and_predicates_only_no_event_verdicts: "只展示计算事实与结构命题",
+    calculated_facts_and_predicates_only_no_event_verdicts:
+      "只展示计算事实与结构命题",
     macro_historical: "宏观历史对象",
     lunar_new_year_from_shared_calendar: "共享历法农历新年",
     not_required_for_bazhai: "八宅模式不要求建筑年代",
@@ -215,7 +244,9 @@ function candidateTimeLabel(value: string): string {
 }
 
 function selectionComponentLabel(value: string): string {
-  return value === "hard_eligible_first" ? "先排除不合格候选" : "排序组件已声明";
+  return value === "hard_eligible_first"
+    ? "先排除不合格候选"
+    : "排序组件已声明";
 }
 
 function fengshuiSubprofileLabel(value: "form" | "liqi"): string {
@@ -236,39 +267,19 @@ function fengshuiMissingLabel(value: string): string {
 function ZiweiChart({
   view,
   showInterpretiveSections,
+  timeLayerEntitlement,
 }: Readonly<{
   view: ZiweiChartViewModel;
   showInterpretiveSections: boolean;
+  timeLayerEntitlement?: TimeLayerEntitlementResponse | null;
 }>) {
-  const annualLayers = view.core_facts?.annual_layers ?? [];
-  const monthlyLayers = view.core_facts?.monthly_layers ?? [];
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
-      <ZiweiPalaceBoard showInterpretiveSections={showInterpretiveSections} view={view} />
-      {annualLayers.length ? (
-        <Table
-          caption="流年盘面事实"
-          headers={["年份", "覆盖区间", "流年结构", "分段"]}
-          rows={annualLayers.map((item) => [
-            String(item.year),
-            `${item.coverage_start}—${item.coverage_end_exclusive}`,
-            item.representative_scope,
-            String(item.segments.length),
-          ])}
-        />
-      ) : null}
-      {monthlyLayers.length ? (
-        <Table
-          caption="流月盘面事实"
-          headers={["年份", "月份", "流月结构", "分段"]}
-          rows={monthlyLayers.map((item) => [
-            String(item.year),
-            String(item.month),
-            item.representative_scope,
-            String(item.segments.length),
-          ])}
-        />
-      ) : null}
+      <ZiweiWorkspace
+        showInterpretiveSections={showInterpretiveSections}
+        timeLayerEntitlement={timeLayerEntitlement}
+        view={view}
+      />
     </div>
   );
 }
@@ -289,7 +300,10 @@ function QizhengChart({
         <dl className={styles.meta}>
           <div>
             <dt>命度 / 身度</dt>
-            <dd>{coreFacts.ming_shen.ming_degree.toFixed(2)}° / {coreFacts.ming_shen.shen_degree.toFixed(2)}°</dd>
+            <dd>
+              {coreFacts.ming_shen.ming_degree.toFixed(2)}° /{" "}
+              {coreFacts.ming_shen.shen_degree.toFixed(2)}°
+            </dd>
           </div>
           <div>
             <dt>命身距</dt>
@@ -340,13 +354,19 @@ function QizhengChart({
             body.classical_name,
             body.point_kind ?? "—",
             body.source_dependency_id ?? "—",
-            body.latitude_degrees == null ? "—" : `${body.latitude_degrees.toFixed(2)}°`,
-            body.house_degree == null ? "—" : `${body.house_degree.toFixed(2)}°`,
+            body.latitude_degrees == null
+              ? "—"
+              : `${body.latitude_degrees.toFixed(2)}°`,
+            body.house_degree == null
+              ? "—"
+              : `${body.house_degree.toFixed(2)}°`,
             body.motion_state ?? "—",
           ])}
         />
       ) : null}
-      {coreFacts?.classical_bodies?.some((body) => body.observed_body === false && body.trace) ? (
+      {coreFacts?.classical_bodies?.some(
+        (body) => body.observed_body === false && body.trace,
+      ) ? (
         <Table
           caption="四余算法来源事实"
           headers={["点", "计算类型", "公式/校准档案", "来源依赖"]}
@@ -355,7 +375,11 @@ function QizhengChart({
             .map((body) => [
               body.classical_name,
               body.point_kind ?? "计算虚点",
-              displayValue(body.trace?.profile ?? body.trace?.id ?? body.trace?.calibration_path),
+              displayValue(
+                body.trace?.profile ??
+                  body.trace?.id ??
+                  body.trace?.calibration_path,
+              ),
               body.source_dependency_id ?? "—",
             ])}
         />
@@ -376,10 +400,16 @@ function QizhengChart({
         <Table
           caption="十干变换事实"
           headers={["序", "变换", "星体", "年干"]}
-          rows={coreFacts.transformations.map((item) => [String(item.sequence), item.label, item.classical_body, item.year_stem])}
+          rows={coreFacts.transformations.map((item) => [
+            String(item.sequence),
+            item.label,
+            item.classical_body,
+            item.year_stem,
+          ])}
         />
       ) : null}
-      {showInterpretiveSections && coreFacts?.source_conditioned_patterns.length ? (
+      {showInterpretiveSections &&
+      coreFacts?.source_conditioned_patterns.length ? (
         <Table
           caption="古籍来源条件候选"
           headers={["规则", "来源", "命中条件", "状态"]}
@@ -415,7 +445,9 @@ function QizhengChart({
           ])}
         />
       ) : null}
-      <p className={styles.note}>盘面只保留计算位置；未返回相位时，页面不自行补算。</p>
+      <p className={styles.note}>
+        盘面只保留计算位置；未返回相位时，页面不自行补算。
+      </p>
     </div>
   );
 }
@@ -464,9 +496,15 @@ function LiuyaoChart({
         />
       ) : null}
       {coreRows.length ? (
-        <Table caption="六爻结构事实" headers={["事实项", "状态"]} rows={coreRows} />
+        <Table
+          caption="六爻结构事实"
+          headers={["事实项", "状态"]}
+          rows={coreRows}
+        />
       ) : null}
-      <p className={styles.note}>卦象与爻位由服务端固定；求财角色、唯一可见妻财爻，以及妻财两现时唯一发动的一爻可由核验规则裁定。月令仅显示旺相/休囚季节带；页面不自行排序同动静候选，也不补写综合旺衰、成败或应期。</p>
+      <p className={styles.note}>
+        卦象与爻位由服务端固定；求财角色、唯一可见妻财爻，以及妻财两现时唯一发动的一爻可由核验规则裁定。月令仅显示旺相/休囚季节带；页面不自行排序同动静候选，也不补写综合旺衰、成败或应期。
+      </p>
     </div>
   );
 }
@@ -487,65 +525,118 @@ function MeihuaChart({
     harmonious: "体用比和",
   } as const;
   const hexagramRows = [
-    ["本卦", view.primary_hexagram.name, view.primary_hexagram.upper_trigram, view.primary_hexagram.lower_trigram],
+    [
+      "本卦",
+      view.primary_hexagram.name,
+      view.primary_hexagram.upper_trigram,
+      view.primary_hexagram.lower_trigram,
+    ],
     view.mutual_hexagram
-      ? ["互卦", view.mutual_hexagram.name, view.mutual_hexagram.upper_trigram, view.mutual_hexagram.lower_trigram]
+      ? [
+          "互卦",
+          view.mutual_hexagram.name,
+          view.mutual_hexagram.upper_trigram,
+          view.mutual_hexagram.lower_trigram,
+        ]
       : ["互卦", "无", "—", "—"],
     view.changed_hexagram
-      ? ["变卦", view.changed_hexagram.name, view.changed_hexagram.upper_trigram, view.changed_hexagram.lower_trigram]
+      ? [
+          "变卦",
+          view.changed_hexagram.name,
+          view.changed_hexagram.upper_trigram,
+          view.changed_hexagram.lower_trigram,
+        ]
       : ["变卦", "无", "—", "—"],
   ];
-  const bodyRelationRows = (view.core_facts?.body_relation_facts ?? []).map((item) => [
-    structuredText(item, ["position"]) ?? "—",
-    structuredText(item, ["trigram"]) ?? "—",
-    structuredText(item, ["element"]) ?? "—",
-    structuredText(item, ["relation"]) ?? "—",
-    structuredPrimitive(item.status, labels),
-  ]);
+  const bodyRelationRows = (view.core_facts?.body_relation_facts ?? []).map(
+    (item) => [
+      structuredText(item, ["position"]) ?? "—",
+      structuredText(item, ["trigram"]) ?? "—",
+      structuredText(item, ["element"]) ?? "—",
+      structuredText(item, ["relation"]) ?? "—",
+      structuredPrimitive(item.status, labels),
+    ],
+  );
   const seasonalRows = view.core_facts?.seasonal_strength
-    ? Object.entries(view.core_facts.seasonal_strength).flatMap(([name, value]) => {
-        if (!isStructuredObject(value)) return [];
-        const caption = displayPublicText(labels, name) || structuredText(value, ["trigram"]);
-        if (!caption) return [];
-        return [[
-          caption,
-          structuredText(value, ["trigram"]) ?? "—",
-          structuredText(value, ["month_branch"]) ?? "—",
-          displayPublicText(labels, structuredText(value, ["season"]) ?? "") || structuredText(value, ["season"]) || "—",
-          structuredPrimitive(value.state, labels),
-          structuredPrimitive(value.status, labels),
-        ]];
-      })
+    ? Object.entries(view.core_facts.seasonal_strength).flatMap(
+        ([name, value]) => {
+          if (!isStructuredObject(value)) return [];
+          const caption =
+            displayPublicText(labels, name) ||
+            structuredText(value, ["trigram"]);
+          if (!caption) return [];
+          return [
+            [
+              caption,
+              structuredText(value, ["trigram"]) ?? "—",
+              structuredText(value, ["month_branch"]) ?? "—",
+              displayPublicText(
+                labels,
+                structuredText(value, ["season"]) ?? "",
+              ) ||
+                structuredText(value, ["season"]) ||
+                "—",
+              structuredPrimitive(value.state, labels),
+              structuredPrimitive(value.status, labels),
+            ],
+          ];
+        },
+      )
     : [];
   const interpretiveCandidates = view.core_facts?.interpretive_candidates;
-  const relationCandidateRows = interpretiveCandidates?.relation_candidates.map((value) => [
-    value.source_plate,
-    value.position,
-    value.relation,
-    value.seasonal_state ?? "—",
-    relationPolarityLabels[value.relation_adjudication.source_polarity],
-    "关系极性已裁定",
-  ]) ?? [];
+  const relationCandidateRows =
+    interpretiveCandidates?.relation_candidates.map((value) => [
+      value.source_plate,
+      value.position,
+      value.relation,
+      value.seasonal_state ?? "—",
+      relationPolarityLabels[value.relation_adjudication.source_polarity],
+      "关系极性已裁定",
+    ]) ?? [];
   const bodyUseStatus = factStatusLabel(view.body_use.status, labels);
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <dl className={styles.meta}>
         <div>
           <dt>起卦方式</dt>
-          <dd>{view.casting_method === "time" ? "按时间起卦" : view.casting_method}</dd>
+          <dd>
+            {view.casting_method === "time"
+              ? "按时间起卦"
+              : view.casting_method}
+          </dd>
         </div>
         <div>
           <dt>动爻</dt>
-          <dd>{view.moving_lines.length ? view.moving_lines.map((line) => `第${line}爻`).join("、") : "无"}</dd>
+          <dd>
+            {view.moving_lines.length
+              ? view.moving_lines.map((line) => `第${line}爻`).join("、")
+              : "无"}
+          </dd>
         </div>
       </dl>
-      <Table caption="卦象结构" headers={["层次", "卦名", "上卦", "下卦"]} rows={hexagramRows} />
+      <Table
+        caption="卦象结构"
+        headers={["层次", "卦名", "上卦", "下卦"]}
+        rows={hexagramRows}
+      />
       <Table
         caption="体用关系"
         headers={["位置", "卦", "五行", "关系", "状态"]}
         rows={[
-          ["体", view.body_use.body.trigram, view.body_use.body.element, view.body_use.relation, bodyUseStatus],
-          ["用", view.body_use.use.trigram, view.body_use.use.element, view.body_use.relation, bodyUseStatus],
+          [
+            "体",
+            view.body_use.body.trigram,
+            view.body_use.body.element,
+            view.body_use.relation,
+            bodyUseStatus,
+          ],
+          [
+            "用",
+            view.body_use.use.trigram,
+            view.body_use.use.element,
+            view.body_use.relation,
+            bodyUseStatus,
+          ],
         ]}
       />
       {bodyRelationRows.length ? (
@@ -570,13 +661,16 @@ function MeihuaChart({
         />
       ) : null}
       <p className={styles.note}>
-        Runtime 已按核验古籍裁定每条体用生克的来源极性；多条关系、月令、具体问题的综合成败与应期仍待正式合成裁决。
+        Runtime
+        已按核验古籍裁定每条体用生克的来源极性；多条关系、月令、具体问题的综合成败与应期仍待正式合成裁决。
       </p>
     </div>
   );
 }
 
-function LumingNayinChart({ view }: Readonly<{ view: LumingNayinChartViewModel }>) {
+function LumingNayinChart({
+  view,
+}: Readonly<{ view: LumingNayinChartViewModel }>) {
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <Table
@@ -620,7 +714,8 @@ function LumingNayinChart({ view }: Readonly<{ view: LumingNayinChartViewModel }
           headers={["规则", "规则角色", "来源", "命中条件", "状态"]}
           rows={view.source_conditioned_patterns.map((pattern) => [
             `${pattern.local_rule_id} · ${pattern.title}`,
-            pattern.applicability_adjudication.evidence_role === "methodology_rule"
+            pattern.applicability_adjudication.evidence_role ===
+            "methodology_rule"
               ? "方法规则"
               : "实质判断规则",
             `${pattern.applicability_adjudication.source_ref.pack} · ${pattern.applicability_adjudication.source_ref.rule_id}`,
@@ -629,7 +724,9 @@ function LumingNayinChart({ view }: Readonly<{ view: LumingNayinChartViewModel }
           ])}
         />
       ) : null}
-      <p className={styles.note}>这里只展示禄命纳音的四柱、纳音、已计算关系和已核验规则适用性；多条规则尚未完成整体权衡，因此不追加吉凶、人生等级或时限判断。</p>
+      <p className={styles.note}>
+        这里只展示禄命纳音的四柱、纳音、已计算关系和已核验规则适用性；多条规则尚未完成整体权衡，因此不追加吉凶、人生等级或时限判断。
+      </p>
     </div>
   );
 }
@@ -666,7 +763,9 @@ function RhythmFactsChart({ view }: Readonly<{ view: RhythmFactsViewModel }>) {
   );
 }
 
-function FortuneFactsChart({ view }: Readonly<{ view: FortuneFactsViewModel }>) {
+function FortuneFactsChart({
+  view,
+}: Readonly<{ view: FortuneFactsViewModel }>) {
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <dl className={styles.meta}>
@@ -680,15 +779,23 @@ function FortuneFactsChart({ view }: Readonly<{ view: FortuneFactsViewModel }>) 
         </div>
         <div>
           <dt>目标周期</dt>
-          <dd>{view.target_period.kind} · {view.target_period.start} 至 {view.target_period.end}</dd>
+          <dd>
+            {view.target_period.kind} · {view.target_period.start} 至{" "}
+            {view.target_period.end}
+          </dd>
         </div>
         <div>
           <dt>日主</dt>
-          <dd>{view.day_master.stem} · {view.day_master.element} · {view.day_master.polarity}</dd>
+          <dd>
+            {view.day_master.stem} · {view.day_master.element} ·{" "}
+            {view.day_master.polarity}
+          </dd>
         </div>
         <div>
           <dt>月令</dt>
-          <dd>{view.month_command.label} · {view.month_command.main_qi}</dd>
+          <dd>
+            {view.month_command.label} · {view.month_command.main_qi}
+          </dd>
         </div>
       </dl>
       <Table
@@ -738,7 +845,9 @@ function TaiyiChart({ view }: Readonly<{ view: TaiyiChartViewModel }>) {
         </div>
         <div>
           <dt>局 / 理</dt>
-          <dd>{view.cycle.bureau} · {view.cycle.governance}</dd>
+          <dd>
+            {view.cycle.bureau} · {view.cycle.governance}
+          </dd>
         </div>
         <div>
           <dt>太乙所在</dt>
@@ -766,7 +875,10 @@ function TaiyiChart({ view }: Readonly<{ view: TaiyiChartViewModel }>) {
           ["计神", view.board.jishen],
           ["始击", view.board.shiji],
           ["太岁", view.board.taisui],
-          ["天目 / 文昌", `${view.board.tianmu_wenchang.name} · ${view.board.tianmu_wenchang.position}`],
+          [
+            "天目 / 文昌",
+            `${view.board.tianmu_wenchang.name} · ${view.board.tianmu_wenchang.position}`,
+          ],
           ["主客结构", structuredValueSummary(view.host_guest)],
         ]}
       />
@@ -774,8 +886,16 @@ function TaiyiChart({ view }: Readonly<{ view: TaiyiChartViewModel }>) {
         caption="四将位置"
         headers={["类别", "辅将", "大将"]}
         rows={[
-          ["客", String(view.four_generals.guest_assistant), String(view.four_generals.guest_major)],
-          ["主", String(view.four_generals.host_assistant), String(view.four_generals.host_major)],
+          [
+            "客",
+            String(view.four_generals.guest_assistant),
+            String(view.four_generals.guest_major),
+          ],
+          [
+            "主",
+            String(view.four_generals.host_assistant),
+            String(view.four_generals.host_major),
+          ],
         ]}
       />
       {view.long_cycle_deities.length ? (
@@ -807,13 +927,33 @@ function TaiyiChart({ view }: Readonly<{ view: TaiyiChartViewModel }>) {
         caption="范围合同"
         headers={["项目", "声明"]}
         rows={[
-          ["支持时间层", view.scope_contract.supported_horizons.map(internalScopeLabel).join("、") || "—"],
-          ["支持对象", view.scope_contract.supported_objects.map(internalScopeLabel).join("、") || "—"],
-          ["不支持范围", view.scope_contract.unsupported_scopes.map(internalScopeLabel).join("、") || "无"],
-          ["解释边界", internalScopeLabel(view.scope_contract.interpretation_policy)],
+          [
+            "支持时间层",
+            view.scope_contract.supported_horizons
+              .map(internalScopeLabel)
+              .join("、") || "—",
+          ],
+          [
+            "支持对象",
+            view.scope_contract.supported_objects
+              .map(internalScopeLabel)
+              .join("、") || "—",
+          ],
+          [
+            "不支持范围",
+            view.scope_contract.unsupported_scopes
+              .map(internalScopeLabel)
+              .join("、") || "无",
+          ],
+          [
+            "解释边界",
+            internalScopeLabel(view.scope_contract.interpretation_policy),
+          ],
         ]}
       />
-      <p className={styles.note}>太乙格局身份已由核验来源裁定；仍不把格局名称扩展成个人事件、现实成败、吉凶或应期结论。</p>
+      <p className={styles.note}>
+        太乙格局身份已由核验来源裁定；仍不把格局名称扩展成个人事件、现实成败、吉凶或应期结论。
+      </p>
     </div>
   );
 }
@@ -828,7 +968,11 @@ function SelectionChart({ view }: Readonly<{ view: SelectionChartViewModel }>) {
         </div>
         <div>
           <dt>候选状态</dt>
-          <dd>{view.no_valid_candidate ? "当前没有合格候选" : `${view.eligible_candidates.length} 个合格日期`}</dd>
+          <dd>
+            {view.no_valid_candidate
+              ? "当前没有合格候选"
+              : `${view.eligible_candidates.length} 个合格日期`}
+          </dd>
         </div>
       </dl>
       {view.eligible_candidates.length ? (
@@ -838,8 +982,12 @@ function SelectionChart({ view }: Readonly<{ view: SelectionChartViewModel }>) {
           rows={view.eligible_candidates.map((candidate) => [
             candidate.civil_date,
             candidateTimeLabel(candidate.best_candidate_time_id),
-            candidate.eligibility.eligible === true ? "符合" : structuredValueSummary(candidate.eligibility),
-            candidate.rejection_reasons.length ? `${candidate.rejection_reasons.length} 项` : "无",
+            candidate.eligibility.eligible === true
+              ? "符合"
+              : structuredValueSummary(candidate.eligibility),
+            candidate.rejection_reasons.length
+              ? `${candidate.rejection_reasons.length} 项`
+              : "无",
             structuredValueSummary(candidate.ranking_components),
           ])}
         />
@@ -849,10 +997,18 @@ function SelectionChart({ view }: Readonly<{ view: SelectionChartViewModel }>) {
         headers={["项目", "声明"]}
         rows={[
           ["排序方法", "可解释的分层排序"],
-          ["排序组件", view.ranking.component_order.map(selectionComponentLabel).join("、") || "—"],
+          [
+            "排序组件",
+            view.ranking.component_order
+              .map(selectionComponentLabel)
+              .join("、") || "—",
+          ],
           ["候选时刻", `${view.eligible_date_time_candidates.length} 个候选`],
           ["民俗资料影响排序", view.ranking.folk_affects_rank ? "是" : "否"],
-          ["使用不透明数值分数", view.ranking.opaque_numeric_score ? "是" : "否"],
+          [
+            "使用不透明数值分数",
+            view.ranking.opaque_numeric_score ? "是" : "否",
+          ],
         ]}
       />
       {view.eliminations.length ? (
@@ -861,7 +1017,11 @@ function SelectionChart({ view }: Readonly<{ view: SelectionChartViewModel }>) {
           headers={["记录", "原因"]}
           rows={view.eliminations.map((elimination, index) => [
             `第${index + 1}项`,
-            structuredText(elimination, ["reason", "message", "display_text"]) ?? structuredValueSummary(elimination),
+            structuredText(elimination, [
+              "reason",
+              "message",
+              "display_text",
+            ]) ?? structuredValueSummary(elimination),
           ])}
         />
       ) : null}
@@ -888,13 +1048,17 @@ function SelectionChart({ view }: Readonly<{ view: SelectionChartViewModel }>) {
           ])}
         />
       ) : null}
-      <p className={styles.note}>择日只展示候选、淘汰和可解释排序；页面不把排序结果包装成绝对吉日或保证。</p>
+      <p className={styles.note}>
+        择日只展示候选、淘汰和可解释排序；页面不把排序结果包装成绝对吉日或保证。
+      </p>
     </div>
   );
 }
 
 function FengshuiChart({ view }: Readonly<{ view: FengshuiViewModel }>) {
-  const facing = isStructuredObject(view.compass.facing) ? view.compass.facing : null;
+  const facing = isStructuredObject(view.compass.facing)
+    ? view.compass.facing
+    : null;
   const layoutNodes = view.layout_graph.nodes;
   const layoutEdges = view.layout_graph.edges;
   const buildingPeriod = view.building_chronology.period_use;
@@ -907,7 +1071,10 @@ function FengshuiChart({ view }: Readonly<{ view: FengshuiViewModel }>) {
       <dl className={styles.meta}>
         <div>
           <dt>启用分支</dt>
-          <dd>{view.active_subprofiles.map(fengshuiSubprofileLabel).join("、") || "—"}</dd>
+          <dd>
+            {view.active_subprofiles.map(fengshuiSubprofileLabel).join("、") ||
+              "—"}
+          </dd>
         </div>
         <div>
           <dt>罗盘状态</dt>
@@ -915,18 +1082,37 @@ function FengshuiChart({ view }: Readonly<{ view: FengshuiViewModel }>) {
         </div>
         <div>
           <dt>图像观察</dt>
-          <dd>{view.observation_provenance.provider_performed_vision === true ? "已执行" : "未执行"}</dd>
+          <dd>
+            {view.observation_provenance.provider_performed_vision === true
+              ? "已执行"
+              : "未执行"}
+          </dd>
         </div>
       </dl>
       <Table
         caption="空间观测事实"
         headers={["项目", "记录"]}
         rows={[
-          ["罗盘朝向", facing ? `${structuredPrimitive(facing.mountain)} · ${structuredPrimitive(facing.trigram)}` : "—"],
+          [
+            "罗盘朝向",
+            facing
+              ? `${structuredPrimitive(facing.mountain)} · ${structuredPrimitive(facing.trigram)}`
+              : "—",
+          ],
           ["朝向度数", facing ? structuredPrimitive(facing.degrees) : "—"],
           ["建筑年代", buildingChronology],
-          ["布局节点", Array.isArray(layoutNodes) ? `${layoutNodes.length} 个` : structuredValueSummary(layoutNodes)],
-          ["布局连接", Array.isArray(layoutEdges) ? `${layoutEdges.length} 条` : structuredValueSummary(layoutEdges)],
+          [
+            "布局节点",
+            Array.isArray(layoutNodes)
+              ? `${layoutNodes.length} 个`
+              : structuredValueSummary(layoutNodes),
+          ],
+          [
+            "布局连接",
+            Array.isArray(layoutEdges)
+              ? `${layoutEdges.length} 条`
+              : structuredValueSummary(layoutEdges),
+          ],
           ["形势状态", structuredValueSummary(view.form)],
           ["理气状态", structuredValueSummary(view.liqi)],
           ["来源规则", `${view.active_source_rule_ids.length} 条已绑定`],
@@ -938,7 +1124,8 @@ function FengshuiChart({ view }: Readonly<{ view: FengshuiViewModel }>) {
           headers={["记录", "状态"]}
           rows={view.conflicts.map((conflict, index) => [
             `第${index + 1}项`,
-            structuredText(conflict, ["message", "display_text"]) ?? structuredValueSummary(conflict),
+            structuredText(conflict, ["message", "display_text"]) ??
+              structuredValueSummary(conflict),
           ])}
         />
       ) : null}
@@ -948,7 +1135,8 @@ function FengshuiChart({ view }: Readonly<{ view: FengshuiViewModel }>) {
           headers={["记录", "状态"]}
           rows={view.uncertainties.map((uncertainty, index) => [
             `第${index + 1}项`,
-            structuredText(uncertainty, ["message", "display_text"]) ?? structuredValueSummary(uncertainty),
+            structuredText(uncertainty, ["message", "display_text"]) ??
+              structuredValueSummary(uncertainty),
           ])}
         />
       ) : null}
@@ -956,10 +1144,15 @@ function FengshuiChart({ view }: Readonly<{ view: FengshuiViewModel }>) {
         <Table
           caption="关键资料缺失"
           headers={["资料", "状态"]}
-          rows={view.critical_missing.map((missing) => [fengshuiMissingLabel(missing), "需要补充"])}
+          rows={view.critical_missing.map((missing) => [
+            fengshuiMissingLabel(missing),
+            "需要补充",
+          ])}
         />
       ) : null}
-      <p className={styles.note}>风水页面只复述测量、布局、形势/理气状态和边界；没有图像识别或居住吉凶判断时，不会补造结论。</p>
+      <p className={styles.note}>
+        风水页面只复述测量、布局、形势/理气状态和边界；没有图像识别或居住吉凶判断时，不会补造结论。
+      </p>
     </div>
   );
 }
@@ -978,15 +1171,21 @@ function QimenChart({ view }: Readonly<{ view: QimenChartViewModel }>) {
         </div>
         <div>
           <dt>值符 / 值使</dt>
-          <dd>{view.chief.star} / {view.director.door}</dd>
+          <dd>
+            {view.chief.star} / {view.director.door}
+          </dd>
         </div>
         <div>
           <dt>旬空</dt>
-          <dd>{view.xunkong.xun} · {view.xunkong.branches.join("、")}</dd>
+          <dd>
+            {view.xunkong.xun} · {view.xunkong.branches.join("、")}
+          </dd>
         </div>
         <div>
           <dt>驿马</dt>
-          <dd>{view.horse.branch} · 第{view.horse.palace}宫</dd>
+          <dd>
+            {view.horse.branch} · 第{view.horse.palace}宫
+          </dd>
         </div>
       </dl>
       <Table
@@ -1007,14 +1206,17 @@ function QimenChart({ view }: Readonly<{ view: QimenChartViewModel }>) {
         rows={view.named_patterns.map((pattern) => [
           pattern.id,
           pattern.name,
-          pattern.identity_adjudication.status === "adjudicated_pattern_identity"
+          pattern.identity_adjudication.status ===
+          "adjudicated_pattern_identity"
             ? "格局身份已裁定（未断吉凶）"
             : "仅命中结构谓词",
           pattern.palace === null ? "全局" : `第${pattern.palace}宫`,
           `${pattern.identity_adjudication.source_ref.rule_id} · ${pattern.identity_adjudication.source_ref.pack}`,
         ])}
       />
-      <p className={styles.note}>中宫缺项按服务端空值显示；已核验格局只裁定格局身份，页面不自行追加格局强弱、事项吉凶、成败或应期。</p>
+      <p className={styles.note}>
+        中宫缺项按服务端空值显示；已核验格局只裁定格局身份，页面不自行追加格局强弱、事项吉凶、成败或应期。
+      </p>
     </div>
   );
 }
@@ -1028,7 +1230,10 @@ function DaliurenChart({
 }>) {
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
-      <DaliurenBoard view={view} showInterpretiveSections={showInterpretiveSections} />
+      <DaliurenBoard
+        view={view}
+        showInterpretiveSections={showInterpretiveSections}
+      />
     </div>
   );
 }
@@ -1065,22 +1270,40 @@ function PhysiognomyChart({ view }: Readonly<{ view: PhysiognomyViewModel }>) {
         ])}
       />
       <p className={styles.note}>
-        只展示 Runtime 接纳的结构化可见观察；页面不做身份识别，也不追加健康、性格或财富推断。
+        只展示 Runtime
+        接纳的结构化可见观察；页面不做身份识别，也不追加健康、性格或财富推断。
       </p>
       {sourceRows.length ? (
-        <Table caption="相法来源层" headers={["来源", "版本说明"]} rows={sourceRows} />
+        <Table
+          caption="相法来源层"
+          headers={["来源", "版本说明"]}
+          rows={sourceRows}
+        />
       ) : null}
       {disagreementRows.length ? (
-        <Table caption="来源分歧（保留）" headers={["来源", "说明"]} rows={disagreementRows} />
+        <Table
+          caption="来源分歧（保留）"
+          headers={["来源", "说明"]}
+          rows={disagreementRows}
+        />
       ) : null}
       {missingRows.length ? (
-        <Table caption="尚缺观察" headers={["区域", "特征", "原因"]} rows={missingRows} />
+        <Table
+          caption="尚缺观察"
+          headers={["区域", "特征", "原因"]}
+          rows={missingRows}
+        />
       ) : null}
       {uncertaintyRows.length ? (
-        <Table caption="观察不确定性" headers={["区域", "特征", "原因"]} rows={uncertaintyRows} />
+        <Table
+          caption="观察不确定性"
+          headers={["区域", "特征", "原因"]}
+          rows={uncertaintyRows}
+        />
       ) : null}
       <p className={styles.note}>
-        已保留 {view.active_source_rule_ids.length} 条来源规则标记；本页只呈现可见观察、来源层、分歧和资料缺口，不作身份、健康、财富、寿命或性格断语。
+        已保留 {view.active_source_rule_ids.length}{" "}
+        条来源规则标记；本页只呈现可见观察、来源层、分歧和资料缺口，不作身份、健康、财富、寿命或性格断语。
       </p>
     </div>
   );
@@ -1128,16 +1351,34 @@ function FiveElementsFactsChart({
         headers={["元素", "可见干支", "藏干出现"]}
         rows={Object.keys(FIVE_ELEMENT_LABELS).map((element) => [
           FIVE_ELEMENT_LABELS[element],
-          String(inventory?.visible_stem_branch_counts.find((item) => item.element === element)?.value ?? "—"),
-          String(inventory?.hidden_stem_occurrence_counts.find((item) => item.element === element)?.value ?? "—"),
+          String(
+            inventory?.visible_stem_branch_counts.find(
+              (item) => item.element === element,
+            )?.value ?? "—",
+          ),
+          String(
+            inventory?.hidden_stem_occurrence_counts.find(
+              (item) => item.element === element,
+            )?.value ?? "—",
+          ),
         ])}
       />
       <Table
         caption="季节与调候事实"
         headers={["项目", "Runtime 事实"]}
         rows={[
-          ["季节画像", view.seasonal_profile ? `${view.seasonal_profile.season} · ${view.seasonal_profile.month_qi}` : "—"],
-          ["温湿度", view.seasonal_profile ? `${view.seasonal_profile.temperature} · ${view.seasonal_profile.moisture}` : "—"],
+          [
+            "季节画像",
+            view.seasonal_profile
+              ? `${view.seasonal_profile.season} · ${view.seasonal_profile.month_qi}`
+              : "—",
+          ],
+          [
+            "温湿度",
+            view.seasonal_profile
+              ? `${view.seasonal_profile.temperature} · ${view.seasonal_profile.moisture}`
+              : "—",
+          ],
           ["调候标记", view.tiaohou_markers?.markers.join("、") ?? "—"],
           ["适用性范围", view.tiaohou_markers?.scope ?? "—"],
           ["来源依赖", view.source_dependency_ids.join("、") || "—"],
@@ -1148,25 +1389,30 @@ function FiveElementsFactsChart({
         <Table
           caption="月令状态裁定与强弱 / 结构边界"
           headers={["层", "Runtime 输出"]}
-          rows={formatBaziInterpretiveCandidateRows(view.interpretive_candidates)}
+          rows={formatBaziInterpretiveCandidateRows(
+            view.interpretive_candidates,
+          )}
         />
       ) : null}
       {view.source_gaps.length ? (
         <div className={styles.note}>
           <strong>来源缺口</strong>
           <ul>
-            {view.source_gaps.map((gap) => <li key={gap}>{gap}</li>)}
+            {view.source_gaps.map((gap) => (
+              <li key={gap}>{gap}</li>
+            ))}
           </ul>
         </div>
       ) : null}
-      <p className={styles.note}>
-        {view.limitations.join(" ")}
-      </p>
+      <p className={styles.note}>{view.limitations.join(" ")}</p>
     </div>
   );
 }
 
-const CHART_SIMILARITY_POSITION_LABELS: Record<ChartSimilarityViewModel["comparisons"][number]["position"], string> = {
+const CHART_SIMILARITY_POSITION_LABELS: Record<
+  ChartSimilarityViewModel["comparisons"][number]["position"],
+  string
+> = {
   year: "年柱",
   month: "月柱",
   day: "日柱",
@@ -1191,7 +1437,9 @@ function ChartSimilarityChart({
           <dt>相同柱位</dt>
           <dd>
             {view.matched_positions.length
-              ? view.matched_positions.map((position) => CHART_SIMILARITY_POSITION_LABELS[position]).join("、")
+              ? view.matched_positions
+                  .map((position) => CHART_SIMILARITY_POSITION_LABELS[position])
+                  .join("、")
               : "无"}
           </dd>
         </div>
@@ -1206,9 +1454,7 @@ function ChartSimilarityChart({
           comparison.exact_match ? "相同" : "不同",
         ])}
       />
-      <p className={styles.note}>
-        {view.limitations.join(" ")}
-      </p>
+      <p className={styles.note}>{view.limitations.join(" ")}</p>
     </div>
   );
 }
@@ -1232,10 +1478,13 @@ function timeCheckEvidenceReasons(value: unknown): string {
 function timeCheckEvidenceRelations(value: unknown): string {
   if (!Array.isArray(value) || value.length === 0) return "无";
   const relations = value.flatMap((item) => {
-    if (item === null || typeof item !== "object" || Array.isArray(item)) return [];
+    if (item === null || typeof item !== "object" || Array.isArray(item))
+      return [];
     const row = item as Record<string, unknown>;
-    const relation = typeof row.relation_type === "string" ? row.relation_type : "";
-    const position = typeof row.natal_position === "string" ? row.natal_position : "";
+    const relation =
+      typeof row.relation_type === "string" ? row.relation_type : "";
+    const position =
+      typeof row.natal_position === "string" ? row.natal_position : "";
     return relation ? [`${position || "柱位"}${relation}`] : [];
   });
   return relations.length ? relations.join("、") : "无";
@@ -1244,13 +1493,16 @@ function timeCheckEvidenceRelations(value: unknown): string {
 function timeCheckEvidenceRows(view: TimeCheckViewModel): string[][] {
   return view.candidate_rankings.flatMap((candidate) =>
     candidate.event_evidence.map((evidence) => {
-      const score = typeof evidence.evidence_score === "number"
-        ? String(evidence.evidence_score)
-        : "—";
-      const eventId = typeof evidence.event_id === "string" ? evidence.event_id : "—";
-      const tenGod = typeof evidence.event_year_ten_god === "string"
-        ? evidence.event_year_ten_god
-        : "无";
+      const score =
+        typeof evidence.evidence_score === "number"
+          ? String(evidence.evidence_score)
+          : "—";
+      const eventId =
+        typeof evidence.event_id === "string" ? evidence.event_id : "—";
+      const tenGod =
+        typeof evidence.event_year_ten_god === "string"
+          ? evidence.event_year_ten_god
+          : "无";
       return [
         candidate.hour_branch,
         eventId,
@@ -1280,7 +1532,10 @@ function TimeCheckChart({ view }: Readonly<{ view: TimeCheckViewModel }>) {
         <div>
           <dt>已知事件</dt>
           <dd>
-            {view.known_event_count} 条 · {view.ranking_status === "candidate_evidence_ranked" ? "已生成候选证据排序" : "未生成候选排序"}
+            {view.known_event_count} 条 ·{" "}
+            {view.ranking_status === "candidate_evidence_ranked"
+              ? "已生成候选证据排序"
+              : "未生成候选排序"}
           </dd>
         </div>
       </dl>
@@ -1303,7 +1558,9 @@ function TimeCheckChart({ view }: Readonly<{ view: TimeCheckViewModel }>) {
             String(candidate.rank),
             candidate.hour_branch,
             String(candidate.evidence_score),
-            candidate.matched_event_ids.length ? candidate.matched_event_ids.join("、") : "无",
+            candidate.matched_event_ids.length
+              ? candidate.matched_event_ids.join("、")
+              : "无",
             candidate.eligible ? "范围内" : "范围外",
           ])}
         />
@@ -1311,7 +1568,15 @@ function TimeCheckChart({ view }: Readonly<{ view: TimeCheckViewModel }>) {
       {evidenceRows.length > 0 ? (
         <Table
           caption="结构化事件证据明细"
-          headers={["候选时辰", "事件", "分数", "结果", "支关系", "事件年柱十神", "证据说明"]}
+          headers={[
+            "候选时辰",
+            "事件",
+            "分数",
+            "结果",
+            "支关系",
+            "事件年柱十神",
+            "证据说明",
+          ]}
           rows={evidenceRows}
         />
       ) : null}
@@ -1333,7 +1598,9 @@ function CanwenChart({ view }: Readonly<{ view: CanwenViewModel }>) {
       <dl className={styles.meta}>
         <div>
           <dt>选用术数</dt>
-          <dd>{view.selected_art_ids.map((art) => artLabels[art]).join("、")}</dd>
+          <dd>
+            {view.selected_art_ids.map((art) => artLabels[art]).join("、")}
+          </dd>
         </div>
       </dl>
       {view.dimensions.map((dimension) => (
@@ -1342,19 +1609,36 @@ function CanwenChart({ view }: Readonly<{ view: CanwenViewModel }>) {
             caption={`维度：${dimension.dimension_id}`}
             headers={["术数", "事实范围", "状态"]}
             rows={dimension.signals.map((signal) => [
-              artLabels[signal.art_id as "bazi" | "ziwei" | "qizheng"] ?? signal.art_id,
+              artLabels[signal.art_id as "bazi" | "ziwei" | "qizheng"] ??
+                signal.art_id,
               signal.display_text,
               "已提供",
             ])}
           />
           {dimension.missing_art_ids.length > 0 ? (
-            <p className={styles.note}>缺少跨术事实范围：{dimension.missing_art_ids.map(labelFor).join("、")}</p>
+            <p className={styles.note}>
+              缺少跨术事实范围：
+              {dimension.missing_art_ids.map(labelFor).join("、")}
+            </p>
           ) : null}
-          {dimension.convergence.map((item) => <p className={styles.note} key={item}>{item}</p>)}
-          {dimension.disagreements.map((item) => <p className={styles.note} key={item}>{item}</p>)}
+          {dimension.convergence.map((item) => (
+            <p className={styles.note} key={item}>
+              {item}
+            </p>
+          ))}
+          {dimension.disagreements.map((item) => (
+            <p className={styles.note} key={item}>
+              {item}
+            </p>
+          ))}
         </div>
       ))}
-      {view.dimensions.some((dimension) => dimension.signals.length > 0 || dimension.convergence.length > 0 || dimension.disagreements.length > 0) ? (
+      {view.dimensions.some(
+        (dimension) =>
+          dimension.signals.length > 0 ||
+          dimension.convergence.length > 0 ||
+          dimension.disagreements.length > 0,
+      ) ? (
         <p className={styles.note}>八字为主理。</p>
       ) : (
         <p className={styles.note}>没有可展示的互证</p>
@@ -1374,7 +1658,9 @@ function HecanChart({ view }: Readonly<{ view: HecanViewModel }>) {
       <dl className={styles.meta}>
         <div>
           <dt>选用术数</dt>
-          <dd>{view.selected_art_ids.map((art) => artLabels[art]).join("、")}</dd>
+          <dd>
+            {view.selected_art_ids.map((art) => artLabels[art]).join("、")}
+          </dd>
         </div>
       </dl>
       {view.dimensions.map((dimension) => (
@@ -1383,19 +1669,41 @@ function HecanChart({ view }: Readonly<{ view: HecanViewModel }>) {
             caption={`维度：${dimension.dimension_id}`}
             headers={["术数", "事实范围", "状态"]}
             rows={dimension.signals.map((signal) => [
-              artLabels[signal.art_id as "bazi" | "ziwei" | "qizheng"] ?? signal.art_id,
+              artLabels[signal.art_id as "bazi" | "ziwei" | "qizheng"] ??
+                signal.art_id,
               signal.display_text,
               "已提供",
             ])}
           />
           {dimension.missing_art_ids.length > 0 ? (
-            <p className={styles.note}>缺少跨术事实范围：{dimension.missing_art_ids.map((art) => artLabels[art as "bazi" | "ziwei" | "qizheng"] ?? art).join("、")}</p>
+            <p className={styles.note}>
+              缺少跨术事实范围：
+              {dimension.missing_art_ids
+                .map(
+                  (art) =>
+                    artLabels[art as "bazi" | "ziwei" | "qizheng"] ?? art,
+                )
+                .join("、")}
+            </p>
           ) : null}
-          {dimension.convergence.map((item) => <p className={styles.note} key={item}>{item}</p>)}
-          {dimension.disagreements.map((item) => <p className={styles.note} key={item}>{item}</p>)}
+          {dimension.convergence.map((item) => (
+            <p className={styles.note} key={item}>
+              {item}
+            </p>
+          ))}
+          {dimension.disagreements.map((item) => (
+            <p className={styles.note} key={item}>
+              {item}
+            </p>
+          ))}
         </div>
       ))}
-      {view.dimensions.some((dimension) => dimension.signals.length > 0 || dimension.convergence.length > 0 || dimension.disagreements.length > 0) ? (
+      {view.dimensions.some(
+        (dimension) =>
+          dimension.signals.length > 0 ||
+          dimension.convergence.length > 0 ||
+          dimension.disagreements.length > 0,
+      ) ? (
         <p className={styles.note}>八字为主理。</p>
       ) : (
         <p className={styles.note}>没有可展示的互证</p>
@@ -1417,7 +1725,9 @@ function WenshiChart({ view }: Readonly<{ view: WenshiViewModel }>) {
       <dl className={styles.meta}>
         <div>
           <dt>选用术数</dt>
-          <dd>{view.selected_art_ids.map((art) => artLabels[art]).join("、")}</dd>
+          <dd>
+            {view.selected_art_ids.map((art) => artLabels[art]).join("、")}
+          </dd>
         </div>
       </dl>
       {view.dimensions.map((dimension) => (
@@ -1432,13 +1742,27 @@ function WenshiChart({ view }: Readonly<{ view: WenshiViewModel }>) {
             ])}
           />
           {dimension.missing_art_ids.length > 0 ? (
-            <p className={styles.note}>缺少三术结构事实：{dimension.missing_art_ids.map(labelFor).join("、")}</p>
+            <p className={styles.note}>
+              缺少三术结构事实：
+              {dimension.missing_art_ids.map(labelFor).join("、")}
+            </p>
           ) : null}
-          {dimension.convergence.map((item) => <p className={styles.note} key={item}>{item}</p>)}
-          {dimension.disagreements.map((item) => <p className={styles.note} key={item}>{item}</p>)}
+          {dimension.convergence.map((item) => (
+            <p className={styles.note} key={item}>
+              {item}
+            </p>
+          ))}
+          {dimension.disagreements.map((item) => (
+            <p className={styles.note} key={item}>
+              {item}
+            </p>
+          ))}
         </div>
       ))}
-      <p className={styles.note}>这里只展示同一问题、同一时空下 Runtime 已计算的三术结构事实，不把不同术数拼成实质性结论。</p>
+      <p className={styles.note}>
+        这里只展示同一问题、同一时空下 Runtime
+        已计算的三术结构事实，不把不同术数拼成实质性结论。
+      </p>
     </div>
   );
 }
@@ -1448,7 +1772,10 @@ type RelationshipViewModel =
   | ZiweiRelationshipViewModel
   | QizhengRelationshipViewModel;
 
-const RELATIONSHIP_TYPE_LABELS: Record<RelationshipViewModel["relationship_type"], string> = {
+const RELATIONSHIP_TYPE_LABELS: Record<
+  RelationshipViewModel["relationship_type"],
+  string
+> = {
   romantic: "情侣",
   married: "夫妻",
   parent_child: "亲子",
@@ -1457,7 +1784,9 @@ const RELATIONSHIP_TYPE_LABELS: Record<RelationshipViewModel["relationship_type"
   friend: "朋友",
 };
 
-function RelationshipChart({ view }: Readonly<{ view: RelationshipViewModel }>) {
+function RelationshipChart({
+  view,
+}: Readonly<{ view: RelationshipViewModel }>) {
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <dl className={styles.meta}>
@@ -1493,9 +1822,11 @@ function RelationshipChart({ view }: Readonly<{ view: RelationshipViewModel }>) 
 export function RuntimeChart({
   viewModel,
   capability,
+  timeLayerEntitlement,
 }: Readonly<{
   viewModel: ViewModel;
   capability?: CapabilityProjection | null;
+  timeLayerEntitlement?: TimeLayerEntitlementResponse | null;
 }>) {
   const showInterpretiveSections = capability ? capability.tier === "A" : true;
   switch (viewModel.schema_version) {
@@ -1510,13 +1841,34 @@ export function RuntimeChart({
     case "wenshi-view/v1":
       return <WenshiChart view={viewModel} />;
     case "ziwei-chart/v1":
-      return <ZiweiChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
+      return (
+        <ZiweiChart
+          view={viewModel}
+          showInterpretiveSections={showInterpretiveSections}
+          timeLayerEntitlement={timeLayerEntitlement}
+        />
+      );
     case "qizheng-chart/v1":
-      return <QizhengChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
+      return (
+        <QizhengChart
+          view={viewModel}
+          showInterpretiveSections={showInterpretiveSections}
+        />
+      );
     case "liuyao-chart/v1":
-      return <LiuyaoChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
+      return (
+        <LiuyaoChart
+          view={viewModel}
+          showInterpretiveSections={showInterpretiveSections}
+        />
+      );
     case "meihua-chart/v1":
-      return <MeihuaChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
+      return (
+        <MeihuaChart
+          view={viewModel}
+          showInterpretiveSections={showInterpretiveSections}
+        />
+      );
     case "luming-nayin-chart/v1":
       return <LumingNayinChart view={viewModel} />;
     case "rhythm-facts-view/v1":
@@ -1532,7 +1884,12 @@ export function RuntimeChart({
     case "qimen-chart/v1":
       return <QimenChart view={viewModel} />;
     case "daliuren-chart/v1":
-      return <DaliurenChart view={viewModel} showInterpretiveSections={showInterpretiveSections} />;
+      return (
+        <DaliurenChart
+          view={viewModel}
+          showInterpretiveSections={showInterpretiveSections}
+        />
+      );
     case "physiognomy-view/v1":
       return <PhysiognomyChart view={viewModel} />;
     case "five-elements-facts-view/v1":
