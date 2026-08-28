@@ -20,14 +20,21 @@ import json
 import re
 import sys
 from collections import Counter
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta
 from pathlib import Path
-from typing import Any, Iterator, Mapping
+from typing import Any, Iterator, Mapping, TypeAlias
 from zoneinfo import ZoneInfo
 
 from evidence_contract import canonical_digest
+from fact_contracts.bazi import BaziCanonicalFacts, BaziFactContract
+from fact_contracts.common import EngineProvenance
 from reading_engine import calendar_core, evidence_rules
 from reading_engine.contracts import FactRef
+from reading_engine.engine_adapter import (
+    EngineAdapterBase,
+    EngineAdapterResult,
+)
 
 
 VERSION = "1.3.0"
@@ -983,7 +990,7 @@ def _base_adapter(rule_profile: str, license_status: str) -> dict[str, Any]:
     }
 
 
-def build_from_pillars(
+def _build_from_pillars_payload(
     values: list[str],
     *,
     gender: str | None,
@@ -1177,7 +1184,7 @@ def _luck_cycles(
     }
 
 
-def build_from_birth(
+def _build_from_birth_payload(
     civil_datetime: str,
     *,
     timezone_name: str,
@@ -1311,6 +1318,224 @@ def build_from_birth(
         "conflicts": conflicts,
     }
     return payload, bool(conflicts)
+
+
+@dataclass(frozen=True)
+class BaziBirthEngineRequest:
+    """Owned normalized input for the Bazi chart-engine path."""
+
+    civil_datetime: str
+    timezone_name: str
+    location: str
+    gender: str
+    expected_pillars: tuple[str, ...] | None = None
+    zi_hour_policy: str = "midnight"
+    longitude: float | None = None
+    latitude: float | None = None
+    coordinate_source: str | None = None
+    coordinate_accuracy_meters: float | None = None
+    time_basis_policy: str = "civil"
+    question_contract: Mapping[str, Any] | None = None
+
+
+@dataclass(frozen=True)
+class BaziPillarsEngineRequest:
+    """Owned normalized input for the self-owned static-facts path."""
+
+    pillars: tuple[str, ...]
+    gender: str | None
+    source: str
+    source_ref: str | None
+    question_contract: Mapping[str, Any] | None = None
+
+
+BaziNormalizedEngineRequest: TypeAlias = (
+    BaziBirthEngineRequest | BaziPillarsEngineRequest
+)
+
+
+@dataclass(frozen=True)
+class _BaziPrivateEngineRequest:
+    normalized: BaziNormalizedEngineRequest
+
+
+@dataclass(frozen=True)
+class _BaziPrivateEngineOutput:
+    payload: dict[str, Any]
+
+
+class BaziEngineAdapter(
+    EngineAdapterBase[
+        BaziNormalizedEngineRequest,
+        _BaziPrivateEngineRequest,
+        _BaziPrivateEngineOutput,
+        BaziCanonicalFacts,
+    ]
+):
+    """Wrap the pinned Bazi pipeline without exposing its private output."""
+
+    art_id = "bazi"
+
+    def _build_engine_request(
+        self,
+        request: BaziNormalizedEngineRequest,
+    ) -> _BaziPrivateEngineRequest:
+        if not isinstance(
+            request,
+            (BaziBirthEngineRequest, BaziPillarsEngineRequest),
+        ):
+            raise ValueError("unsupported Bazi normalized engine request")
+        return _BaziPrivateEngineRequest(normalized=request)
+
+    def _invoke_engine(
+        self,
+        request: _BaziPrivateEngineRequest,
+    ) -> _BaziPrivateEngineOutput:
+        normalized = request.normalized
+        if isinstance(normalized, BaziBirthEngineRequest):
+            payload, _conflict = _build_from_birth_payload(
+                normalized.civil_datetime,
+                timezone_name=normalized.timezone_name,
+                location=normalized.location,
+                gender=normalized.gender,
+                expected_pillars=(
+                    list(normalized.expected_pillars)
+                    if normalized.expected_pillars is not None
+                    else None
+                ),
+                zi_hour_policy=normalized.zi_hour_policy,
+                longitude=normalized.longitude,
+                latitude=normalized.latitude,
+                coordinate_source=normalized.coordinate_source,
+                coordinate_accuracy_meters=normalized.coordinate_accuracy_meters,
+                time_basis_policy=normalized.time_basis_policy,
+                question_contract=(
+                    dict(normalized.question_contract)
+                    if normalized.question_contract is not None
+                    else None
+                ),
+            )
+        else:
+            payload = _build_from_pillars_payload(
+                list(normalized.pillars),
+                gender=normalized.gender,
+                source=normalized.source,
+                source_ref=normalized.source_ref,
+                question_contract=(
+                    dict(normalized.question_contract)
+                    if normalized.question_contract is not None
+                    else None
+                ),
+            )
+        return _BaziPrivateEngineOutput(payload=payload)
+
+    def _project_engine_output(
+        self,
+        request: BaziNormalizedEngineRequest,
+        output: _BaziPrivateEngineOutput,
+        provenance: EngineProvenance,
+    ) -> BaziCanonicalFacts:
+        del request
+        return BaziFactContract().bind_canonical_facts(
+            output.payload,
+            provenance,
+        )
+
+    def _provenance(
+        self,
+        request: BaziNormalizedEngineRequest,
+    ) -> EngineProvenance:
+        if isinstance(request, BaziBirthEngineRequest):
+            return EngineProvenance(
+                engine_id="sxtwl",
+                engine_version=calendar_core.ENGINE_VERSION,
+                policy_profile=(
+                    "sxtwl-local-civil/jieqi-month/major-luck-3days-per-year/"
+                    f"zi-hour-{request.zi_hour_policy}"
+                ),
+                time_basis=request.time_basis_policy,
+            )
+        return EngineProvenance(
+            engine_id="mingli-bazi-static-facts",
+            engine_version=VERSION,
+            policy_profile="supplied-four-pillars/static-ziping-v1",
+            time_basis="not_applicable",
+        )
+
+    def bind_canonical_facts(
+        self,
+        request: BaziNormalizedEngineRequest,
+        payload: dict[str, Any],
+    ) -> EngineAdapterResult[BaziCanonicalFacts]:
+        """Bind facts already returned by the private Runtime subprocess."""
+
+        provenance = self._provenance(request)
+        facts = BaziFactContract().bind_canonical_facts(payload, provenance)
+        return EngineAdapterResult(
+            canonical_facts=facts,
+            provenance=provenance,
+        )
+
+
+def build_from_pillars(
+    values: list[str],
+    *,
+    gender: str | None,
+    source: str,
+    source_ref: str | None,
+    question_contract: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Compatibility facade returning the unchanged Bazi fact JSON shape."""
+
+    result = BaziEngineAdapter().adapt(
+        BaziPillarsEngineRequest(
+            pillars=tuple(values),
+            gender=gender,
+            source=source,
+            source_ref=source_ref,
+            question_contract=question_contract,
+        )
+    )
+    return result.canonical_facts.to_payload()
+
+
+def build_from_birth(
+    civil_datetime: str,
+    *,
+    timezone_name: str,
+    location: str,
+    gender: str,
+    expected_pillars: list[str] | None,
+    zi_hour_policy: str,
+    longitude: float | None = None,
+    latitude: float | None = None,
+    coordinate_source: str | None = None,
+    coordinate_accuracy_meters: float | None = None,
+    time_basis_policy: str = "civil",
+    question_contract: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], bool]:
+    """Compatibility facade returning the unchanged Bazi fact JSON shape."""
+
+    result = BaziEngineAdapter().adapt(
+        BaziBirthEngineRequest(
+            civil_datetime=civil_datetime,
+            timezone_name=timezone_name,
+            location=location,
+            gender=gender,
+            expected_pillars=(
+                tuple(expected_pillars) if expected_pillars is not None else None
+            ),
+            zi_hour_policy=zi_hour_policy,
+            longitude=longitude,
+            latitude=latitude,
+            coordinate_source=coordinate_source,
+            coordinate_accuracy_meters=coordinate_accuracy_meters,
+            time_basis_policy=time_basis_policy,
+            question_contract=question_contract,
+        )
+    )
+    payload = result.canonical_facts.to_payload()
+    return payload, bool(payload.get("conflicts"))
 
 
 def _extension_year_ganzhi(year: int) -> str:

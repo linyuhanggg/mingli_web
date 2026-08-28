@@ -8,14 +8,70 @@ facts.  It deliberately does not import or call the Ziwei generator.
 
 from __future__ import annotations
 
+import json
 from collections.abc import Iterator, Mapping
+from dataclasses import dataclass, field
 from typing import Any
 
 from reading_engine import evidence_rules
 from reading_engine.contracts import FactRef
 
-from fact_contracts.common import FactContract
+from fact_contracts.common import (
+    CanonicalFactsError,
+    EngineProvenance,
+    FactContract,
+    canonical_json_snapshot,
+)
 from fact_contracts.common import finding as _finding
+
+
+@dataclass(frozen=True)
+class ZiweiCanonicalFacts:
+    """Nominal, immutable Ziwei facts at the Engine Adapter boundary."""
+
+    provenance: EngineProvenance
+    _payload_json: str = field(repr=False)
+
+    @classmethod
+    def from_payload(
+        cls,
+        payload: dict[str, Any],
+        provenance: EngineProvenance,
+    ) -> "ZiweiCanonicalFacts":
+        snapshot = canonical_json_snapshot(payload)
+        if snapshot.get("schema_version") != "mingli-ziwei-fact-v1":
+            raise CanonicalFactsError("invalid Ziwei Canonical Facts schema")
+        adapter = snapshot.get("adapter")
+        calendar = snapshot.get("calendar_normalization")
+        if not isinstance(adapter, dict) or not isinstance(calendar, dict):
+            raise CanonicalFactsError(
+                "Ziwei Canonical Facts require adapter and calendar metadata"
+            )
+        engine = adapter.get("engine_contract")
+        time_basis = calendar.get("time_basis")
+        if not isinstance(engine, dict) or not isinstance(time_basis, dict):
+            raise CanonicalFactsError(
+                "Ziwei Canonical Facts require engine and time-basis metadata"
+            )
+        if (
+            engine.get("name") != provenance.engine_id
+            or engine.get("version") != provenance.engine_version
+            or adapter.get("rule_profile") != provenance.policy_profile
+            or time_basis.get("policy") != provenance.time_basis
+        ):
+            raise CanonicalFactsError("Ziwei engine provenance mismatch")
+        return cls(
+            provenance=provenance,
+            _payload_json=json.dumps(
+                snapshot,
+                ensure_ascii=False,
+                allow_nan=False,
+                separators=(",", ":"),
+            ),
+        )
+
+    def to_payload(self) -> dict[str, Any]:
+        return json.loads(self._payload_json)
 
 
 _CALCULATED_STATUS = "calculated_ziwei_chart_from_birth_datetime"
@@ -131,6 +187,7 @@ class ZiweiFactContract(FactContract):
     """Verify source-conditioned rule bindings independently of generation."""
 
     contract_id = "ziwei.source-pattern-integrity-v1"
+    canonical_facts_type = ZiweiCanonicalFacts
 
     def validate_output(
         self,
@@ -154,4 +211,4 @@ class ZiweiFactContract(FactContract):
         ]
 
 
-__all__ = ["ZiweiFactContract"]
+__all__ = ["ZiweiCanonicalFacts", "ZiweiFactContract"]

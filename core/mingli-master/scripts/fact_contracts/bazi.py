@@ -9,13 +9,81 @@ self-contained here: it must never import the generating adapter
 
 from __future__ import annotations
 
+import json
+from dataclasses import dataclass, field
 from typing import Any
 
 from evidence_contract import canonical_digest
 
-from fact_contracts.common import FactContract
+from fact_contracts.common import (
+    CanonicalFactsError,
+    EngineProvenance,
+    FactContract,
+    canonical_json_snapshot,
+)
 from fact_contracts.common import finding as _finding
 from fact_contracts.common import valid_text as _valid_text
+
+
+@dataclass(frozen=True)
+class BaziCanonicalFacts:
+    """Nominal, immutable Bazi facts at the Engine Adapter boundary."""
+
+    provenance: EngineProvenance
+    _payload_json: str = field(repr=False)
+
+    @classmethod
+    def from_payload(
+        cls,
+        payload: dict[str, Any],
+        provenance: EngineProvenance,
+    ) -> "BaziCanonicalFacts":
+        snapshot = canonical_json_snapshot(payload)
+        if snapshot.get("schema_version") != "mingli-bazi-fact-v1":
+            raise CanonicalFactsError("invalid Bazi Canonical Facts schema")
+        adapter = snapshot.get("adapter")
+        calendar = snapshot.get("calendar_normalization")
+        if not isinstance(adapter, dict) or not isinstance(calendar, dict):
+            raise CanonicalFactsError(
+                "Bazi Canonical Facts require adapter and calendar metadata"
+            )
+        if adapter.get("rule_profile") != provenance.policy_profile:
+            raise CanonicalFactsError("Bazi policy provenance mismatch")
+
+        scope = snapshot.get("fact_layer_scope")
+        if scope == "natal_static":
+            actual_engine = "mingli-bazi-static-facts"
+            actual_version = adapter.get("version")
+            actual_time_basis = "not_applicable"
+        else:
+            convention = calendar.get("calendar_convention")
+            time_basis = calendar.get("time_basis")
+            if not isinstance(convention, dict) or not isinstance(time_basis, dict):
+                raise CanonicalFactsError(
+                    "Bazi timed facts require engine and time-basis metadata"
+                )
+            actual_engine = convention.get("engine")
+            actual_version = convention.get("engine_version")
+            actual_time_basis = time_basis.get("policy")
+
+        if (
+            actual_engine != provenance.engine_id
+            or actual_version != provenance.engine_version
+            or actual_time_basis != provenance.time_basis
+        ):
+            raise CanonicalFactsError("Bazi engine provenance mismatch")
+        return cls(
+            provenance=provenance,
+            _payload_json=json.dumps(
+                snapshot,
+                ensure_ascii=False,
+                allow_nan=False,
+                separators=(",", ":"),
+            ),
+        )
+
+    def to_payload(self) -> dict[str, Any]:
+        return json.loads(self._payload_json)
 
 _MONTH_ORDER_STATES = {
     "木": {"木": "旺", "火": "相", "水": "休", "金": "囚", "土": "死"},
@@ -1317,6 +1385,7 @@ class BaziFactContract(FactContract):
 
     contract_id = "bazi.supplied-and-computed.v1"
     replaces_legacy_validation = True
+    canonical_facts_type = BaziCanonicalFacts
 
     #: Required output ids owned by the bazi fact contract. Frozen from the
     #: legacy facade table so migrating changes nothing about the report.

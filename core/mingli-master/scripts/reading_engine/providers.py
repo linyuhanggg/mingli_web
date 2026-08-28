@@ -3218,6 +3218,39 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
             facts["public_calendar_normalization"] = _public_calendar_normalization(
                 calendar
             )
+        if args.mode == "birth":
+            engine_request: (
+                bazi_fact_adapter.BaziBirthEngineRequest
+                | bazi_fact_adapter.BaziPillarsEngineRequest
+            ) = bazi_fact_adapter.BaziBirthEngineRequest(
+                civil_datetime=str(args.civil_datetime),
+                timezone_name=str(args.timezone),
+                location=str(args.location),
+                gender=str(args.gender),
+                expected_pillars=(
+                    tuple(args.expected_pillars)
+                    if args.expected_pillars is not None
+                    else None
+                ),
+                zi_hour_policy=str(args.zi_hour_policy),
+                longitude=args.longitude,
+                latitude=args.latitude,
+                coordinate_source=args.coordinate_source,
+                coordinate_accuracy_meters=args.coordinate_accuracy_meters,
+                time_basis_policy=str(args.time_basis_policy),
+            )
+        else:
+            engine_request = bazi_fact_adapter.BaziPillarsEngineRequest(
+                pillars=tuple(args.pillars),
+                gender=args.gender,
+                source=str(args.source),
+                source_ref=args.source_ref,
+            )
+        facts = (
+            bazi_fact_adapter.BaziEngineAdapter()
+            .bind_canonical_facts(engine_request, facts)
+            .canonical_facts.to_payload()
+        )
         calendar_digest = _bound_calendar_digest(facts)
         result_facts = {
             "chart_digest": _chart_digest(facts),
@@ -6819,8 +6852,8 @@ class ZiweiProvider(_AdapterSeam, _SourceRouteMixin):
     def calculate(self, request: ReadingRequest) -> CalculationResult:
         birth = request.birth_data
         birth_datetime = str(_birth_value(request, "birth_datetime"))
-        facts = ziwei_fact_adapter.build_from_birth(
-            birth_datetime,
+        engine_request = ziwei_fact_adapter.ZiweiNormalizedEngineRequest(
+            civil_datetime=birth_datetime,
             timezone_name=str(birth.get("timezone") or request.timezone),
             location=str(birth.get("location") or request.location),
             gender=str(birth["gender"]),
@@ -6831,7 +6864,16 @@ class ZiweiProvider(_AdapterSeam, _SourceRouteMixin):
             zi_hour_policy=str(birth.get("zi_hour_policy") or "midnight"),
             time_basis_policy=str(birth.get("time_basis_policy") or "civil"),
         )
+        engine_result = ziwei_fact_adapter.ZiweiEngineAdapter().adapt(
+            engine_request
+        )
+        facts = engine_result.canonical_facts.to_payload()
         facts["adapter"]["generated_at"] = "deterministic-chart-identity"
+        facts = (
+            ziwei_fact_adapter.ZiweiEngineAdapter()
+            .bind_canonical_facts(engine_request, facts)
+            .canonical_facts.to_payload()
+        )
         validation = adapter_validate.validate_payload("ziwei", facts)
         if not validation["ok"]:
             raise RuntimeError(
