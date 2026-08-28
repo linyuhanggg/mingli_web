@@ -2165,6 +2165,77 @@ describe("紫微 S3 十二宫环盘", () => {
     }
   });
 
+  it("uses calendar coverage as the exact target for cross-boundary monthly segments", () => {
+    const natal = chart();
+    const representative = temporalPalaceFacts(natal, "申", "monthly", {
+      stars: [
+        {
+          name: "代表段流月星",
+          type: "major",
+          scope: "monthly",
+          brightness: "得",
+        },
+      ],
+    });
+    const requested = temporalPalaceFacts(natal, "酉", "monthly", {
+      stars: [
+        {
+          name: "请求日流月星",
+          type: "major",
+          scope: "monthly",
+          brightness: "旺",
+        },
+      ],
+    });
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "month",
+          label: "流月",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        chart_convention: { target_date: "2025-01-02" },
+        calendar_coverage: {
+          start_inclusive: "2025-01-01",
+          end_exclusive: "2025-02-01",
+          requested_target_date: "2025-01-20",
+        },
+        monthly_layers: [
+          {
+            year: 2025,
+            month: 1,
+            liu_yue: representative,
+            segments: [
+              {
+                start_inclusive: "2025-01-01",
+                end_exclusive: "2025-01-15",
+                liu_yue: representative,
+              },
+              {
+                start_inclusive: "2025-01-15",
+                end_exclusive: "2025-02-01",
+                liu_yue: requested,
+              },
+            ],
+            representative_scope: "must not be consumed as the exact target",
+          },
+        ],
+      }),
+    });
+
+    render(
+      <ZiweiWorkspace timeLayerEntitlement={ziweiEntitlement()} view={view} />,
+    );
+    fireEvent.click(timeLayerButton(/流月/));
+
+    expect(palaceButton("酉")).toHaveAttribute("data-life", "true");
+    expect(within(palaceButton("酉")).getByText("请求日流月星")).toBeVisible();
+    expect(within(ring()).queryByText("代表段流月星")).not.toBeInTheDocument();
+  });
+
   it("selects exact yearly and monthly segments without remounting the palace board", () => {
     const natal = chart();
     const annualFirst = temporalPalaceFacts(natal, "午", "yearly", {
