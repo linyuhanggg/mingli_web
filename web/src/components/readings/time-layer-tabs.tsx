@@ -1,5 +1,12 @@
 "use client";
 
+import {
+  AlertCircle,
+  Ban,
+  CheckCircle2,
+  LockKeyhole,
+  type LucideIcon,
+} from "lucide-react";
 import { useRef, type KeyboardEvent } from "react";
 
 import type {
@@ -11,8 +18,10 @@ import styles from "./time-layer-tabs.module.css";
 
 /**
  * Time layer switcher built strictly from the workspace view model.
- * Layers the server did not generate are visible but disabled: the UI never
- * pretends a layer is ready when no public facts back it.
+ * Every layer remains visible. Its icon, label, and status copy distinguish
+ * readable facts from unavailable capability and fail-closed entitlement;
+ * capability-unavailable layers are disabled while entitlement locks remain
+ * inspectable.
  */
 export function TimeLayerTabs({
   layers,
@@ -33,29 +42,29 @@ export function TimeLayerTabs({
     event: KeyboardEvent<HTMLButtonElement>,
     currentLayerId: WorkspaceLayerId,
   ) {
-    const availableLayers = layers.filter(
-      (layer) => layer.status !== "unavailable",
+    const interactiveLayers = layers.filter(
+      (layer) => layer.status !== "locked-unavailable",
     );
-    const currentIndex = availableLayers.findIndex(
+    const currentIndex = interactiveLayers.findIndex(
       (layer) => layer.id === currentLayerId,
     );
-    if (currentIndex < 0 || availableLayers.length === 0) return;
+    if (currentIndex < 0 || interactiveLayers.length === 0) return;
 
     let targetIndex: number | null = null;
     if (event.key === "ArrowRight") {
-      targetIndex = (currentIndex + 1) % availableLayers.length;
+      targetIndex = (currentIndex + 1) % interactiveLayers.length;
     } else if (event.key === "ArrowLeft") {
       targetIndex =
-        (currentIndex - 1 + availableLayers.length) % availableLayers.length;
+        (currentIndex - 1 + interactiveLayers.length) % interactiveLayers.length;
     } else if (event.key === "Home") {
       targetIndex = 0;
     } else if (event.key === "End") {
-      targetIndex = availableLayers.length - 1;
+      targetIndex = interactiveLayers.length - 1;
     }
 
     if (targetIndex === null) return;
     event.preventDefault();
-    const targetLayer = availableLayers[targetIndex];
+    const targetLayer = interactiveLayers[targetIndex];
     tabRefs.current[targetLayer.id]?.focus();
     onSelect(targetLayer.id);
   }
@@ -63,8 +72,20 @@ export function TimeLayerTabs({
   return (
     <div className={styles.tabs} role="tablist" aria-label="时间层">
       {layers.map((layer) => {
-        const unavailable = layer.status === "unavailable";
-        const active = !unavailable && activeLayerId === layer.id;
+        const active = activeLayerId === layer.id;
+        const unavailable = layer.status === "locked-unavailable";
+        const statusDefinition: Record<
+          WorkspaceLayer["status"],
+          { label: string; icon: LucideIcon }
+        > = {
+          ready: { label: layer.summary ?? "可查看", icon: CheckCircle2 },
+          empty: { label: "暂无结构", icon: AlertCircle },
+          "locked-paywall": { label: "PRO · 已锁定", icon: LockKeyhole },
+          "locked-unavailable": { label: layer.summary ?? "待接入", icon: Ban },
+          "fail-closed-unknown": { label: "权益未确认", icon: AlertCircle },
+        };
+        const status = statusDefinition[layer.status];
+        const StatusIcon = status.icon;
         return (
           <button
             key={layer.id}
@@ -78,25 +99,18 @@ export function TimeLayerTabs({
             aria-selected={active}
             aria-disabled={unavailable}
             disabled={unavailable}
-            tabIndex={active ? 0 : -1}
+            tabIndex={!unavailable && active ? 0 : -1}
             className={styles.tab}
             data-active={active}
             data-status={layer.status}
-            onClick={() => onSelect(layer.id)}
+            onClick={unavailable ? undefined : () => onSelect(layer.id)}
             onKeyDown={(event) => handleKeyDown(event, layer.id)}
           >
             <span className={styles.tabLabel}>{layer.label}</span>
-            {layer.status === "ready" && layer.summary ? (
-              <span className={styles.tabSummary}>{layer.summary}</span>
-            ) : null}
-            {layer.status === "empty" ? (
-              <span className={styles.tabStatus}>暂无结构</span>
-            ) : null}
-            {unavailable ? (
-              <span className={styles.tabStatus}>
-                {layer.summary ?? "暂不可用"}
-              </span>
-            ) : null}
+            <span className={styles.tabStatus}>
+              <StatusIcon aria-hidden="true" size={13} strokeWidth={2} />
+              <span>{status.label}</span>
+            </span>
           </button>
         );
       })}

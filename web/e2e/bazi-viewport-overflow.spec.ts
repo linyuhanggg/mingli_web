@@ -22,13 +22,12 @@ async function assertNoOverflow(page: Page, label: string) {
 }
 
 const RESULT_TABS = [
-  "已返回事实",
+  "ready",
   "loading",
   "empty",
+  "locked",
+  "need-input",
   "error",
-  "processing",
-  "unavailable",
-  "unauthorized",
 ] as const;
 
 const WORKBENCH_STATES = [
@@ -40,6 +39,110 @@ const WORKBENCH_STATES = [
   "unavailable",
   "unauthorized",
 ] as const;
+
+test("bazi result six states stay within the viewport", async ({ page }, testInfo) => {
+  const viewport = testInfo.project.name;
+  await page.goto("/_ui-lab/bazi-result", { waitUntil: "domcontentloaded" });
+
+  for (const state of RESULT_TABS) {
+    await page.getByRole("button", { name: state, exact: true }).click();
+    await assertNoOverflow(page, `${viewport} bazi-result ${state}`);
+  }
+
+  await page.getByRole("button", { name: "ready", exact: true }).click();
+  await expect(page.getByRole("tablist", { name: "时间层" })).toBeVisible();
+  await expect(page.getByRole("tab")).toHaveCount(6);
+  await expect(page.getByRole("table", { name: "四柱专业矩阵" })).toBeVisible();
+
+  if (page.viewportSize()?.width === 1024) {
+    const workspace = page.getByRole("region", { name: "排盘工作台" });
+    const chartPane = workspace.getByRole("tabpanel", { name: /^本命/ });
+    const readingPane = workspace.getByLabel("连续阅读面");
+    const [chartBox, readingBox] = await Promise.all([
+      chartPane.boundingBox(),
+      readingPane.boundingBox(),
+    ]);
+
+    expect(chartBox, "1024px chart column box").not.toBeNull();
+    expect(readingBox, "1024px reading column box").not.toBeNull();
+    expect(chartBox!.width, "1024px chart column minimum").toBeGreaterThanOrEqual(480);
+    expect(chartBox!.width, "1024px chart column maximum").toBeLessThanOrEqual(520);
+    expect(readingBox!.width, "1024px reading column minimum").toBeGreaterThanOrEqual(360);
+    expect(readingBox!.x, "1024px reading follows chart horizontally")
+      .toBeGreaterThanOrEqual(chartBox!.x + chartBox!.width);
+  }
+});
+
+test("bazi mobile luck cycles form a 4 by 2 grid without local scrolling", async ({
+  page,
+}, testInfo) => {
+  test.skip(
+    testInfo.project.name !== "360",
+    "This focused contract covers the 360px and 390px mobile layouts once.",
+  );
+
+  for (const width of [360, 390]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto("/_ui-lab/bazi-result", {
+      waitUntil: "domcontentloaded",
+    });
+    await page.getByRole("button", { name: "ready", exact: true }).click();
+    await page.getByRole("tab", { name: /^大运/ }).click();
+
+    const panel = page.getByRole("tabpanel", { name: /^大运/ });
+    const table = panel.getByRole("table", { name: "完整大运序列" });
+    await expect(table).toBeVisible();
+
+    const layout = await table.evaluate((element) => {
+      const luckTable = element as HTMLTableElement;
+      const viewport = luckTable.parentElement;
+      const body = luckTable.tBodies.item(0);
+      const rows = body ? Array.from(body.rows) : [];
+      const rowYs = rows.map((row) => row.getBoundingClientRect().y);
+
+      return {
+        bodyDisplay: body ? getComputedStyle(body).display : "missing",
+        gridTemplateColumns: body
+          ? getComputedStyle(body).gridTemplateColumns
+          : "missing",
+        rowYs,
+        tableWidth: luckTable.getBoundingClientRect().width,
+        viewportClientWidth: viewport?.clientWidth ?? 0,
+        viewportScrollWidth: viewport?.scrollWidth ?? 0,
+      };
+    });
+
+    expect(layout.rowYs, `${width}px luck-cycle count`).toHaveLength(8);
+    expect(layout.bodyDisplay, `${width}px tbody display`).toBe("grid");
+    expect(
+      layout.gridTemplateColumns.split(" ").filter(Boolean),
+      `${width}px luck-cycle columns`,
+    ).toHaveLength(4);
+    expect(
+      layout.viewportScrollWidth,
+      `${width}px luck-cycle viewport scroll width`,
+    ).toBeLessThanOrEqual(layout.viewportClientWidth + 1);
+    expect(layout.tableWidth, `${width}px luck-cycle table width`)
+      .toBeLessThanOrEqual(layout.viewportClientWidth + 1);
+
+    const firstRow = layout.rowYs.slice(0, 4);
+    const secondRow = layout.rowYs.slice(4, 8);
+    expect(
+      Math.max(...firstRow) - Math.min(...firstRow),
+      `${width}px first luck-cycle row alignment`,
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.max(...secondRow) - Math.min(...secondRow),
+      `${width}px second luck-cycle row alignment`,
+    ).toBeLessThanOrEqual(1);
+    expect(
+      Math.min(...secondRow),
+      `${width}px second luck-cycle row follows the first`,
+    ).toBeGreaterThan(Math.max(...firstRow));
+
+    console.log(`MING58_LUCK_GRID ${JSON.stringify({ width, ...layout })}`);
+  }
+});
 
 test("bazi 360 first-screen controls stay above the mobile bottom bar", async ({ page }) => {
   test.skip(page.viewportSize()?.width !== 360, "This is the focused 360px geometry contract.");

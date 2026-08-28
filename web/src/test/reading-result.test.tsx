@@ -7,7 +7,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReadingResult } from "@/components/readings/reading-result";
 import { VerificationForm } from "@/components/readings/verification-form";
+import { BAZI_EVIDENCE_RESULT_VIEW_MODEL } from "@/fixtures/bazi-evidence-result";
 import { resetApiCache } from "@/lib/api";
+import type { ReadingResultResponse } from "@/lib/api/contracts";
 
 const { routerPush } = vi.hoisted(() => ({ routerPush: vi.fn() }));
 
@@ -83,6 +85,32 @@ const baziCapabilityA = {
   judgment_rule_count: 19,
   source_status: "available" as const,
 };
+
+const baziTimeLayerEntitlement = {
+  schema_version: "time-layer-entitlement/v1",
+  capability_id: "bazi",
+  resolution: "granted",
+  free_boundary_layer_id: "year",
+  paid_layer_ids: ["month", "day", "hour"],
+  free_year_set: [2026],
+  capability: {
+    time_layers: [
+      { layer_id: "life", label: "本命", available: true, unavailable_reason: null },
+      { layer_id: "year", label: "流年", available: true, unavailable_reason: null },
+      { layer_id: "month", label: "流月", available: true, unavailable_reason: null },
+      { layer_id: "day", label: "流日", available: true, unavailable_reason: null },
+      { layer_id: "hour", label: "流时", available: false, unavailable_reason: "本次结果尚未返回逐时盘面。" },
+    ],
+  },
+  layers: [
+    { layer_id: "life", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "luck_cycles", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "year", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "month", tier: "paid", access: "readable", upgrade_cta: null },
+    { layer_id: "day", tier: "paid", access: "readable", upgrade_cta: null },
+    { layer_id: "hour", tier: "paid", access: "unavailable", upgrade_cta: null },
+  ],
+} satisfies NonNullable<ReadingResultResponse["time_layer_entitlement"]>;
 
 const meihuaCapabilityB = {
   capability_id: "meihua",
@@ -1547,6 +1575,37 @@ describe("Web interface regression guards", () => {
 });
 
 describe("bazi chart workspace", () => {
+  it("consumes the typed time-layer entitlement sibling from GET /result", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            capability: baziCapabilityA,
+            view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+            time_layer_entitlement: baziTimeLayerEntitlement,
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          object_id: "natal",
+          dimension_ids: ["career"],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const monthly = await screen.findByRole("tab", { name: /流月/ });
+    expect(within(monthly).getByText(/2026-08/)).toBeVisible();
+    await user.click(monthly);
+    expect(screen.getByRole("table", { name: "流月总览" })).toBeVisible();
+  });
+
   it("presents a Bazi preview as a Chinese chart instead of internal metadata or fake interpretation", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       if (String(url).endsWith("/result")) {
@@ -1596,7 +1655,7 @@ describe("bazi chart workspace", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<ReadingResult readingId={VERSION_ID} />);
+    const view = render(<ReadingResult readingId={VERSION_ID} />);
 
     expect(await screen.findAllByRole("heading", { name: "八字命盘" })).toHaveLength(2);
     const workspaceSection = screen.getByRole("heading", { name: "排盘结果" }).closest("section");
@@ -1604,6 +1663,7 @@ describe("bazi chart workspace", () => {
     expect(screen.getByRole("heading", { name: "阅读说明" }).closest("section"))
       .toHaveAttribute("data-layout", "full-width-reading-section");
     expect(screen.getByText(/免费排盘预览/)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "专业深读已锁定" })).toBeVisible();
     const visible = document.body.textContent ?? "";
     expect(visible).not.toContain("这是合同测试候选稿");
     expect(visible).not.toMatch(/branch relations|branch_relations|positions|year|month/i);
@@ -1613,6 +1673,12 @@ describe("bazi chart workspace", () => {
     expect(screen.queryByRole("heading", { name: "判断" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "事实" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "依据与边界" })).not.toBeInTheDocument();
+
+    view.rerender(<ReadingResult baziDeepFulfilled readingId={VERSION_ID} />);
+    expect(screen.getByText(/专业深读已交付；免费盘面继续保留/)).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "专业深读已锁定" }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "了解专业版" })).not.toBeInTheDocument();
   });
 
   it("fails closed when the Bazi Runtime capability projection is missing", async () => {
@@ -1859,15 +1925,16 @@ describe("bazi chart workspace", () => {
     ).toBeVisible();
     expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
     expect(screen.getAllByText("八字命盘").length).toBeGreaterThan(0);
-    expect(screen.getByText("年柱")).toBeVisible();
+    expect(screen.getAllByText("年柱")[0]).toBeVisible();
     expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
-    expect(screen.getByText("全局强弱证据（未裁定）")).toBeVisible();
+    expect(screen.queryByText("全局结论：未裁定")).not.toBeInTheDocument();
     expect(screen.getByText("月令状态裁定")).toBeVisible();
     expect(screen.getByText(/月令状态 旺/)).toBeVisible();
     expect(screen.getByText(/同类 5 项；生扶 火 3 项/)).toBeVisible();
     expect(screen.getByText(/不等于旺衰定论/)).toBeVisible();
+    expect(document.body.textContent?.match(/未裁定/gu)).toBeNull();
     expect(screen.getByText("十二长生")).toBeVisible();
     expect(screen.getByText(/年柱 庚辰：养；月柱 丙戌：冠带/)).toBeVisible();
     expect(screen.getByText("旬空")).toBeVisible();
