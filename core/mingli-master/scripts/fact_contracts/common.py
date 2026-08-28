@@ -26,41 +26,230 @@ class CanonicalFactsError(ValueError):
     """An art-specific fact snapshot is not safe or provenance-complete."""
 
 
+CanonicalObjectFieldRules = tuple[
+    tuple[tuple[str, ...], frozenset[str]],
+    ...,
+]
+
+
+def canonical_object_fields(
+    *rules: tuple[str, str],
+) -> CanonicalObjectFieldRules:
+    """Build auditable path-specific positive object-field rules.
+
+    Paths are slash separated and use ``*`` for one list item.  Field names
+    are whitespace separated because Runtime JSON keys cannot contain
+    whitespace.  Keeping this representation compact lets each art own its
+    full recursive object vocabulary without depending on a fixture or raw
+    engine response at runtime.
+    """
+
+    result: list[tuple[tuple[str, ...], frozenset[str]]] = []
+    seen: set[tuple[str, ...]] = set()
+    for path_text, fields_text in rules:
+        path = tuple(part for part in path_text.split("/") if part)
+        if not path or path in seen:
+            raise ValueError(f"duplicate or empty canonical object path: {path_text!r}")
+        seen.add(path)
+        result.append((path, frozenset(fields_text.split())))
+    return tuple(result)
+
+
 @dataclass(frozen=True)
 class CanonicalFactsFieldClosure:
     """Positive field closure for one art-specific fact boundary.
 
-    Root and ``output`` are the two maps through which an engine-owned blob
-    could otherwise be attached to an existing Runtime payload.  Requiring
-    exact field equality makes unknown containers fail independently of their
-    spelling; this is intentionally not a denylist of guessed raw aliases.
+    Root and ``output`` keep their required-field checks.  Every deeper JSON
+    object must also match one art-owned path rule, and may contain only that
+    rule's positive field set.  This closes arrays and nested objects without
+    relying on guessed raw-field aliases.
     """
 
     root_fields: frozenset[str]
     output_fields: frozenset[str]
     optional_root_fields: frozenset[str] = frozenset()
     optional_output_fields: frozenset[str] = frozenset()
+    nested_object_fields: CanonicalObjectFieldRules = ()
+
+    @staticmethod
+    def _path_matches(
+        pattern: tuple[str, ...],
+        path: tuple[str, ...],
+    ) -> bool:
+        return len(pattern) == len(path) and all(
+            expected == "*" or expected == actual
+            for expected, actual in zip(pattern, path)
+        )
+
+    def _allowed_nested_fields(
+        self,
+        path: tuple[str, ...],
+    ) -> frozenset[str] | None:
+        matches = [
+            (sum(part != "*" for part in pattern), fields)
+            for pattern, fields in self.nested_object_fields
+            if self._path_matches(pattern, path)
+        ]
+        if not matches:
+            return None
+        best_specificity = max(specificity for specificity, _fields in matches)
+        return frozenset().union(
+            *(
+                fields
+                for specificity, fields in matches
+                if specificity == best_specificity
+            )
+        )
+
+    def validate_object(
+        self,
+        value: dict[str, Any],
+        path: tuple[str, ...],
+    ) -> None:
+        actual = frozenset(value)
+        if not path:
+            if (
+                not self.root_fields <= actual
+                or not actual <= self.root_fields | self.optional_root_fields
+            ):
+                raise CanonicalFactsError(
+                    "canonical facts contain unknown or missing root fields"
+                )
+            return
+        if path == ("output",):
+            if (
+                not self.output_fields <= actual
+                or not actual <= self.output_fields | self.optional_output_fields
+            ):
+                raise CanonicalFactsError(
+                    "canonical facts contain unknown or missing output fields"
+                )
+            return
+
+        allowed = self._allowed_nested_fields(path)
+        path_text = "/" + "/".join(path)
+        if allowed is None:
+            raise CanonicalFactsError(
+                f"canonical facts contain an unclosed object at {path_text}"
+            )
+        if not actual <= allowed:
+            raise CanonicalFactsError(
+                f"canonical facts contain unknown fields at {path_text}"
+            )
 
     def validate(self, payload: dict[str, Any]) -> None:
-        actual_root = frozenset(payload)
-        if (
-            not self.root_fields <= actual_root
-            or not actual_root <= self.root_fields | self.optional_root_fields
-        ):
-            raise CanonicalFactsError(
-                "canonical facts contain unknown or missing root fields"
-            )
+        self.validate_object(payload, ())
         output = payload.get("output")
-        actual_output = frozenset(output) if type(output) is dict else frozenset()
-        if (
-            type(output) is not dict
-            or not self.output_fields <= actual_output
-            or not actual_output
-            <= self.output_fields | self.optional_output_fields
-        ):
+        if type(output) is not dict:
             raise CanonicalFactsError(
                 "canonical facts contain unknown or missing output fields"
             )
+        self.validate_object(output, ("output",))
+
+
+COMMON_CANONICAL_OBJECT_FIELDS = canonical_object_fields(
+    (
+        "calendar_normalization",
+        "algorithm_version calendar_convention calendar_digest changed_pillars "
+        "civil_datetime day_boundary digest dst_offset_seconds effective_datetime "
+        "effective_lunar_date effective_solar_date ganzhi instant_utc location "
+        "lunar_date schema_version solar_date solar_terms status time_basis timezone "
+        "timezone_details timezone_offset_seconds true_solar_time utc_datetime "
+        "zi_hour_policy",
+    ),
+    (
+        "calendar_normalization/calendar_convention",
+        "day_rollover engine engine_version hour_basis id month_boundary "
+        "source_dependency_id version year_boundary zi_hour_policy",
+    ),
+    (
+        "calendar_normalization/day_boundary",
+        "correction_crossed_date zi_policy_advanced_day_pillar",
+    ),
+    ("calendar_normalization/effective_lunar_date", "day is_leap_month month year"),
+    ("calendar_normalization/ganzhi", "day hour month year"),
+    (
+        "calendar_normalization/location",
+        "coordinate_accuracy_meters coordinate_source latitude longitude "
+        "longitude_offset_degrees name",
+    ),
+    ("calendar_normalization/lunar_date", "day is_leap_month month year"),
+    (
+        "calendar_normalization/solar_terms",
+        "active_month_boundary_jie active_year_boundary_li_chun exact_boundary "
+        "month_switch_policy next next_month_boundary_jie next_year_boundary_li_chun "
+        "previous previous_month_boundary_jie",
+    ),
+    (
+        "calendar_normalization/solar_terms/*",
+        "datetime index instant_utc is_month_boundary_jie name",
+    ),
+    (
+        "calendar_normalization/time_basis",
+        "algorithm boundary equation_of_time_seconds local_apparent_solar_datetime "
+        "local_mean_solar_datetime longitude_correction_seconds policy "
+        "standard_meridian_degrees total_correction_seconds",
+    ),
+    (
+        "calendar_normalization/time_basis/algorithm",
+        "id source supported_range uncertainty_seconds version",
+    ),
+    (
+        "calendar_normalization/time_basis/boundary",
+        "correction_changes_hour_branch distance_seconds "
+        "nearest_double_hour_boundary within_uncertainty",
+    ),
+    (
+        "calendar_normalization/timezone_details",
+        "dst_offset_seconds fold name standard_meridian_degrees "
+        "standard_offset_seconds utc_offset_seconds",
+    ),
+    (
+        "calendar_normalization/true_solar_time",
+        "equation_of_time_seconds longitude_correction_seconds policy status "
+        "total_correction_seconds",
+    ),
+    ("capabilities", "allowed blocked"),
+    (
+        "public_calendar_normalization",
+        "algorithm_version calendar_convention changed_pillars day_boundary "
+        "effective_datetime solar_terms status time_basis true_solar_time",
+    ),
+    (
+        "public_calendar_normalization/calendar_convention",
+        "day_rollover hour_basis id month_boundary version year_boundary zi_hour_policy",
+    ),
+    (
+        "public_calendar_normalization/day_boundary",
+        "correction_crossed_date zi_policy_advanced_day_pillar",
+    ),
+    (
+        "public_calendar_normalization/solar_terms",
+        "month_switch_policy next previous",
+    ),
+    (
+        "public_calendar_normalization/solar_terms/*",
+        "datetime index instant_utc is_month_boundary_jie name",
+    ),
+    (
+        "public_calendar_normalization/time_basis",
+        "algorithm boundary equation_of_time_seconds longitude_correction_seconds "
+        "policy standard_meridian_degrees total_correction_seconds",
+    ),
+    (
+        "public_calendar_normalization/time_basis/algorithm",
+        "id source uncertainty_seconds version",
+    ),
+    (
+        "public_calendar_normalization/time_basis/boundary",
+        "correction_changes_hour_branch distance_seconds within_uncertainty",
+    ),
+    (
+        "public_calendar_normalization/true_solar_time",
+        "equation_of_time_seconds longitude_correction_seconds policy status "
+        "total_correction_seconds",
+    ),
+)
 
 
 @dataclass(frozen=True)
@@ -118,7 +307,11 @@ def canonical_json_snapshot(
     cannot be smuggled into a public calculation record.
     """
 
-    def clone(value: Any, path: str) -> Any:
+    def clone(
+        value: Any,
+        path: str,
+        object_path: tuple[str, ...],
+    ) -> Any:
         value_type = type(value)
         if value is None or value_type in (str, bool, int):
             return value
@@ -129,21 +322,30 @@ def canonical_json_snapshot(
                 )
             return value
         if value_type is list:
-            return [clone(item, f"{path}/{index}") for index, item in enumerate(value)]
+            return [
+                clone(item, f"{path}/{index}", object_path + ("*",))
+                for index, item in enumerate(value)
+            ]
         if value_type is dict:
-            result: dict[str, Any] = {}
-            for key, item in value.items():
+            for key in value:
                 if type(key) is not str:
                     raise CanonicalFactsError(
                         f"canonical facts contain a non-text key at {path}"
                     )
-                result[key] = clone(item, f"{path}/{key}")
+            field_closure.validate_object(value, object_path)
+            result: dict[str, Any] = {}
+            for key, item in value.items():
+                result[key] = clone(
+                    item,
+                    f"{path}/{key}",
+                    object_path + (key,),
+                )
             return result
         raise CanonicalFactsError(
             f"canonical facts contain a private runtime value at {path}"
         )
 
-    snapshot = clone(payload, "")
+    snapshot = clone(payload, "", ())
     if type(snapshot) is not dict:
         raise CanonicalFactsError("canonical facts must be a JSON object")
     field_closure.validate(snapshot)

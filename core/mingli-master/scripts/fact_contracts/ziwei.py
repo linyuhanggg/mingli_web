@@ -17,10 +17,12 @@ from reading_engine import evidence_rules
 from reading_engine.contracts import FactRef
 
 from fact_contracts.common import (
+    COMMON_CANONICAL_OBJECT_FIELDS,
     CanonicalFactsError,
     CanonicalFactsFieldClosure,
     EngineProvenance,
     FactContract,
+    canonical_object_fields,
     canonical_json_snapshot,
 )
 from fact_contracts.common import finding as _finding
@@ -72,6 +74,214 @@ _ZIWEI_CANONICAL_FIELDS = CanonicalFactsFieldClosure(
             "time_range",
             "transformation_layers",
         }
+    ),
+    nested_object_fields=(
+        COMMON_CANONICAL_OBJECT_FIELDS
+        + canonical_object_fields(
+            (
+                "adapter",
+                "dependency engine_contract generated_at license_status name "
+                "rule_profile runtime version",
+            ),
+            ("adapter/dependency", "name provenance version"),
+            (
+                "adapter/engine_contract",
+                "artifact_sha256 config fix_leap license license_sha256 name "
+                "source_dependency_ids version",
+            ),
+            (
+                "adapter/engine_contract/config",
+                "ageDivide algorithm dayDivide horoscopeDivide yearDivide",
+            ),
+            ("input", "missing_or_ambiguous normalized_input raw_user_input"),
+            (
+                "input/normalized_input",
+                "civil_datetime coordinate_source effective_datetime gender "
+                "hour_branch_policy latitude location longitude time_basis_policy "
+                "timezone zi_hour_policy ziwei_engine_input",
+            ),
+            (
+                "input/normalized_input/ziwei_engine_input",
+                "day_divide fix_leap solar_date time_index",
+            ),
+            (
+                "input/raw_user_input",
+                "civil_datetime coordinate_source gender latitude location longitude "
+                "time_basis_policy timezone zi_hour_policy",
+            ),
+            (
+                "output/chart_convention",
+                "age_divide algorithm day_divide engine fix_leap horoscope_divide "
+                "major_limit_direction_rule source_dependency_ids time_index year_divide",
+            ),
+            ("output/chart_convention/engine", "name version"),
+            ("output/fact_layer_separation", "calculation interpretation"),
+            (
+                "output/interpretive_candidates",
+                "boundary evaluated_rules hard_verdict life_palace matched_rules "
+                "requires_classical_adjudication san_fang_si_zheng schema_version "
+                "source_dependency_ids source_rules status transformation_facts",
+            ),
+            (
+                "output/interpretive_candidates/evaluated_rules/*",
+                "details hard_verdict id matched name predicate source_anchor "
+                "source_dependency_id source_pack status verification_status",
+            ),
+            (
+                "output/interpretive_candidates/evaluated_rules/*/details",
+                "assistant_stars emperor_stars matched matched_palaces matched_stars "
+                "palace required_stars scope triad_palaces",
+            ),
+            (
+                "output/interpretive_candidates/life_palace",
+                "adjective_stars branch brightness index major_stars minor_stars "
+                "palace role",
+            ),
+            (
+                "output/interpretive_candidates/life_palace/brightness/*",
+                "brightness star",
+            ),
+            (
+                "output/interpretive_candidates/matched_rules/*",
+                "details hard_verdict id matched name predicate source_anchor "
+                "source_dependency_id source_pack status verification_status",
+            ),
+            (
+                "output/interpretive_candidates/matched_rules/*/details",
+                "assistant_stars emperor_stars matched matched_palaces matched_stars "
+                "palace required_stars scope triad_palaces",
+            ),
+            (
+                "output/interpretive_candidates/san_fang_si_zheng/*",
+                "adjective_stars branch brightness index major_stars minor_stars "
+                "palace role",
+            ),
+            (
+                "output/interpretive_candidates/san_fang_si_zheng/*/brightness/*",
+                "brightness star",
+            ),
+            (
+                "output/interpretive_candidates/source_rules/*",
+                "pack procedure_id role rule_ids verification_status",
+            ),
+            (
+                "output/interpretive_candidates/transformation_facts/*",
+                "palace palace_branch scope source_dependency_id star transformation",
+            ),
+            (
+                "output/major_limit_direction",
+                "direction gender source_dependency_id year_polarity year_stem",
+            ),
+            (
+                "output/major_limit_sequence/*",
+                "age_end age_start direction earthlyBranch heavenlyStem palace "
+                "palace_branch palace_index range sequence source_dependency_id",
+            ),
+            (
+                "output/major_limits/*",
+                "age_end age_start direction earthlyBranch heavenlyStem palace "
+                "palace_branch palace_index range sequence source_dependency_id",
+            ),
+            ("output/ming_shen", "body_star ming_branch shen_branch soul_star"),
+            (
+                "output/natal_transformation_facts/*",
+                "palace palace_branch scope source_dependency_id star transformation",
+            ),
+            (
+                "output/palace_facts/*",
+                "adjectiveStars ages boshi12 changsheng12 decadal earthlyBranch "
+                "heavenlyStem index isBodyPalace isOriginalPalace jiangqian12 "
+                "majorStars minorStars name suiqian12",
+            ),
+            (
+                "output/palace_facts/*/adjectiveStars/*",
+                "brightness mutagen name scope type",
+            ),
+            (
+                "output/palace_facts/*/decadal",
+                "earthlyBranch heavenlyStem range",
+            ),
+            (
+                "output/palace_facts/*/majorStars/*",
+                "brightness mutagen name scope type",
+            ),
+            (
+                "output/palace_facts/*/minorStars/*",
+                "brightness mutagen name scope type",
+            ),
+            (
+                "output/palaces/*",
+                "adjectiveStars ages boshi12 changsheng12 decadal earthlyBranch "
+                "heavenlyStem index isBodyPalace isOriginalPalace jiangqian12 "
+                "majorStars minorStars name suiqian12",
+            ),
+            (
+                "output/palaces/*/adjectiveStars/*",
+                "brightness mutagen name scope type",
+            ),
+            ("output/palaces/*/decadal", "earthlyBranch heavenlyStem range"),
+            (
+                "output/palaces/*/majorStars/*",
+                "brightness mutagen name scope type",
+            ),
+            (
+                "output/palaces/*/minorStars/*",
+                "brightness mutagen name scope type",
+            ),
+            ("output/sihua/*", "mutagen palace star"),
+            (
+                "output/source_conditioned_patterns/*",
+                "fact_paths local_rule_id predicate_audit rule_id source_anchor "
+                "source_dependency_id source_pack status title",
+            ),
+            (
+                "output/source_lineage",
+                "calculation commentary_only interpretation",
+            ),
+            (
+                "output/source_lineage/calculation/*",
+                "pack role source_dependency_ids",
+            ),
+            (
+                "output/source_lineage/commentary_only/*",
+                "calculation_authority pack role",
+            ),
+            (
+                "output/source_lineage/interpretation/*",
+                "calculation_authority pack role",
+            ),
+            (
+                "output/source_roles",
+                "calculation_primary classical_adjudication "
+                "late_observational_commentary",
+            ),
+            (
+                "output/star_facts/*",
+                "brightness mutagen name palace palace_branch palace_index scope type",
+            ),
+            (
+                "output/stars/*",
+                "brightness mutagen name palace palace_branch palace_index scope type",
+            ),
+            ("output/transformation_layers", "natal"),
+            (
+                "output/transformation_layers/natal/*",
+                "palace palace_branch scope source_dependency_id star transformation",
+            ),
+            ("source_lineage", "calculation commentary_only interpretation"),
+            (
+                "source_lineage/calculation/*",
+                "pack role source_dependency_ids",
+            ),
+            (
+                "source_lineage/commentary_only/*",
+                "calculation_authority pack role",
+            ),
+            (
+                "source_lineage/interpretation/*",
+                "calculation_authority pack role",
+            ),
+        )
     ),
 )
 
