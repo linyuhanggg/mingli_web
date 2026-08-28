@@ -1,16 +1,52 @@
-import { act, cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import {
+  act,
+  cleanup,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { ZiweiPalaceBoard } from "@/components/readings/ziwei-palace-board";
-import type { ZiweiChartViewModel, ZiweiCoreFacts } from "@/view-models/registry";
+import type {
+  ZiweiChartViewModel,
+  ZiweiCoreFacts,
+} from "@/view-models/registry";
 
 afterEach(cleanup);
 
-const BRANCHES = ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"] as const;
-const VISUAL_BRANCHES = ["巳", "午", "未", "申", "辰", "酉", "卯", "戌", "寅", "丑", "子", "亥"] as const;
+const BRANCHES = [
+  "子",
+  "丑",
+  "寅",
+  "卯",
+  "辰",
+  "巳",
+  "午",
+  "未",
+  "申",
+  "酉",
+  "戌",
+  "亥",
+] as const;
+const VISUAL_BRANCHES = [
+  "巳",
+  "午",
+  "未",
+  "申",
+  "辰",
+  "酉",
+  "卯",
+  "戌",
+  "寅",
+  "丑",
+  "子",
+  "亥",
+] as const;
 
 type Palace = ZiweiChartViewModel["palaces"][number];
 
@@ -48,8 +84,20 @@ function facts(overrides: Partial<ZiweiCoreFacts> = {}): ZiweiCoreFacts {
     major_limit_sequence: null,
     major_limits: null,
     transformations: [
-      { star: "紫微", transformation: "禄", palace: "命宫", palace_branch: "寅", scope: "natal" },
-      { star: "天机", transformation: "权", palace: "官禄", palace_branch: "子", scope: "natal" },
+      {
+        star: "紫微",
+        transformation: "禄",
+        palace: "命宫",
+        palace_branch: "寅",
+        scope: "natal",
+      },
+      {
+        star: "天机",
+        transformation: "权",
+        palace: "官禄",
+        palace_branch: "子",
+        scope: "natal",
+      },
     ],
     star_facts: [
       {
@@ -75,16 +123,32 @@ function facts(overrides: Partial<ZiweiCoreFacts> = {}): ZiweiCoreFacts {
   };
 }
 
-function chart(overrides: Partial<ZiweiChartViewModel> = {}): ZiweiChartViewModel {
+function chart(
+  overrides: Partial<ZiweiChartViewModel> = {},
+): ZiweiChartViewModel {
   const byBranch: Record<string, Partial<Palace>> = {
     寅: {
       palace_id: "life",
       label: "命宫",
       heavenly_stem: "壬",
       major_stars: ["紫微", "天府"],
-      minor_stars: [{ name: "文昌", star_type: "minor", scope: "natal", brightness: "得" }],
-      adjective_stars: [{ name: "天刑", star_type: "adjective", scope: "natal", brightness: null }],
-      decadal: { age_start: 3, age_end: 12, heavenly_stem: "壬", earthly_branch: "寅" },
+      minor_stars: [
+        { name: "文昌", star_type: "minor", scope: "natal", brightness: "得" },
+      ],
+      adjective_stars: [
+        {
+          name: "天刑",
+          star_type: "adjective",
+          scope: "natal",
+          brightness: null,
+        },
+      ],
+      decadal: {
+        age_start: 3,
+        age_end: 12,
+        heavenly_stem: "壬",
+        earthly_branch: "寅",
+      },
     },
     午: {
       palace_id: "body",
@@ -107,7 +171,20 @@ function chart(overrides: Partial<ZiweiChartViewModel> = {}): ZiweiChartViewMode
   };
 
   // 故意打乱数组下标，迫使环盘按地支落格。
-  const scrambled = ["酉", "子", "戌", "寅", "亥", "卯", "申", "辰", "未", "巳", "丑", "午"] as const;
+  const scrambled = [
+    "酉",
+    "子",
+    "戌",
+    "寅",
+    "亥",
+    "卯",
+    "申",
+    "辰",
+    "未",
+    "巳",
+    "丑",
+    "午",
+  ] as const;
   return {
     schema_version: "ziwei-chart/v1",
     subject_ref: "profile-version:fixture",
@@ -121,7 +198,13 @@ function chart(overrides: Partial<ZiweiChartViewModel> = {}): ZiweiChartViewMode
 }
 
 function boardCss() {
-  return readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.module.css"), "utf8");
+  return readFileSync(
+    resolve(
+      process.cwd(),
+      "src/components/readings/ziwei-palace-board.module.css",
+    ),
+    "utf8",
+  );
 }
 
 function ring() {
@@ -137,9 +220,15 @@ describe("紫微 S3 十二宫环盘", () => {
     render(<ZiweiPalaceBoard view={chart()} />);
 
     const cells = [...ring().querySelectorAll("[data-branch]")];
-    expect(cells.map((node) => node.getAttribute("data-branch"))).toEqual([...VISUAL_BRANCHES]);
-    expect(chart().palaces.map((item) => item.earthly_branch)).not.toEqual([...VISUAL_BRANCHES]);
-    expect(chart().palaces.map((item) => item.earthly_branch)).not.toEqual([...BRANCHES]);
+    expect(cells.map((node) => node.getAttribute("data-branch"))).toEqual([
+      ...VISUAL_BRANCHES,
+    ]);
+    expect(chart().palaces.map((item) => item.earthly_branch)).not.toEqual([
+      ...VISUAL_BRANCHES,
+    ]);
+    expect(chart().palaces.map((item) => item.earthly_branch)).not.toEqual([
+      ...BRANCHES,
+    ]);
   });
 
   it("renders palace facts, life and body marks, and drops missing fields", () => {
@@ -163,6 +252,7 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(wu).queryByText("命")).not.toBeInTheDocument();
 
     const you = palaceButton("酉");
+    expect(within(you).getByText("无主星")).toBeVisible();
     expect(within(you).queryByText("文昌")).not.toBeInTheDocument();
     expect(within(you).queryByText("3–12")).not.toBeInTheDocument();
     expect(you.textContent).not.toMatch(/undefined|null/);
@@ -229,7 +319,9 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(screen.queryByText("水二局")).not.toBeInTheDocument();
     expect(screen.queryByText("贪狼")).not.toBeInTheDocument();
     expect(screen.queryByText(/大吉|大凶|吉凶/)).not.toBeInTheDocument();
-    expect(screen.getByRole("group", { name: "中宫" })).toHaveTextContent("命盘");
+    expect(screen.getByRole("group", { name: "中宫" })).toHaveTextContent(
+      "命盘",
+    );
   });
 
   it("locks a palace and its three harmonies without writing relation prose", async () => {
@@ -296,7 +388,9 @@ describe("紫微 S3 十二宫环盘", () => {
     await user.keyboard("{Enter}");
     expect(screen.getByRole("dialog", { name: "宫位详情" })).toBeVisible();
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
     expect(palaceButton("午")).toHaveFocus();
     expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
 
@@ -328,14 +422,63 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("寅")).toHaveAttribute("data-life", "true");
   });
 
+  it("keeps one roving locator tab and links it to the selected palace", async () => {
+    const user = userEvent.setup();
+    render(<ZiweiPalaceBoard view={chart()} />);
+
+    const locator = screen.getByRole("navigation", { name: "十二宫定位" });
+    const tabs = within(locator).getAllByRole("tab");
+    expect(tabs).toHaveLength(12);
+    expect(tabs.filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
+    expect(
+      within(locator).getByRole("tab", { name: /寅 命宫/ }),
+    ).toHaveAttribute("aria-selected", "true");
+
+    const noon = within(locator).getByRole("tab", { name: /午 官禄/ });
+    await user.click(noon);
+    expect(noon).toHaveAttribute("aria-controls", "ziwei-ring-午");
+    expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
+
+    noon.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(within(locator).getByRole("tab", { name: /未 未宫/ })).toHaveFocus();
+    expect(palaceButton("未")).toHaveAttribute("data-highlight", "primary");
+  });
+
+  it("omits the locator when twelve palaces are not uniquely addressable", () => {
+    render(
+      <ZiweiPalaceBoard
+        view={chart({
+          palaces: Array.from({ length: 12 }, (_, index) =>
+            palace("子", { palace_id: String(index), label: `宫${index}` }),
+          ),
+        })}
+      />,
+    );
+
+    expect(
+      screen.queryByRole("navigation", { name: "十二宫定位" }),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
+    expect(within(palaceButton("巳")).getByText("巳宫 · 未返回")).toBeVisible();
+  });
+
   it("exposes a semantic table of palace, stars, stems and decade", () => {
     render(<ZiweiPalaceBoard view={chart()} />);
 
     const table = screen.getByRole("table", { name: "十二宫星曜" });
-    expect(within(table).getByRole("columnheader", { name: "宫" })).toBeTruthy();
-    expect(within(table).getByRole("columnheader", { name: "星曜" })).toBeTruthy();
-    expect(within(table).getByRole("columnheader", { name: "干支" })).toBeTruthy();
-    expect(within(table).getByRole("columnheader", { name: "大限" })).toBeTruthy();
+    expect(
+      within(table).getByRole("columnheader", { name: "宫" }),
+    ).toBeTruthy();
+    expect(
+      within(table).getByRole("columnheader", { name: "星曜" }),
+    ).toBeTruthy();
+    expect(
+      within(table).getByRole("columnheader", { name: "干支" }),
+    ).toBeTruthy();
+    expect(
+      within(table).getByRole("columnheader", { name: "大限" }),
+    ).toBeTruthy();
     expect(within(table).getByText("命宫")).toBeTruthy();
     expect(within(table).getByText("紫微 天府")).toBeTruthy();
     expect(within(table).getByText("壬寅")).toBeTruthy();
@@ -346,7 +489,9 @@ describe("紫微 S3 十二宫环盘", () => {
   it("renders the list layout from the life palace when layout is list", () => {
     render(<ZiweiPalaceBoard view={chart()} layout="list" />);
 
-    expect(screen.queryByRole("grid", { name: "十二宫环盘" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("grid", { name: "十二宫环盘" }),
+    ).not.toBeInTheDocument();
     const thumbs = screen.getByRole("navigation", { name: "宫位缩略" });
     expect(thumbs.querySelectorAll("[data-branch]")).toHaveLength(12);
     expect(thumbs).toHaveAttribute("data-columns", "3");
@@ -355,7 +500,9 @@ describe("紫微 S3 十二宫环盘", () => {
     const items = within(cards).getAllByRole("listitem");
     expect(items[0]).toHaveAttribute("data-slot", "center");
     expect(items[0]).toHaveTextContent("贪狼");
-    expect(items.slice(1).map((item) => item.getAttribute("data-branch"))).toEqual([
+    expect(
+      items.slice(1).map((item) => item.getAttribute("data-branch")),
+    ).toEqual([
       "寅",
       "卯",
       "辰",
@@ -375,12 +522,19 @@ describe("紫微 S3 十二宫环盘", () => {
 
   it("keeps loading and silhouette modes free of sample stars", () => {
     const { rerender } = render(<ZiweiPalaceBoard mode="silhouette" />);
-    expect(screen.getByRole("grid", { name: "十二宫环盘" }).querySelectorAll("[data-branch]")).toHaveLength(12);
+    expect(
+      screen
+        .getByRole("grid", { name: "十二宫环盘" })
+        .querySelectorAll("[data-branch]"),
+    ).toHaveLength(12);
     expect(screen.queryByText("天机")).not.toBeInTheDocument();
     expect(screen.queryByText("甲子")).not.toBeInTheDocument();
 
     rerender(<ZiweiPalaceBoard mode="loading" />);
-    expect(screen.getByRole("grid", { name: "十二宫环盘" })).toHaveAttribute("aria-busy", "true");
+    expect(screen.getByRole("grid", { name: "十二宫环盘" })).toHaveAttribute(
+      "aria-busy",
+      "true",
+    );
     expect(screen.queryByText("紫微")).not.toBeInTheDocument();
     expect(screen.queryByText("水二局")).not.toBeInTheDocument();
   });
@@ -391,10 +545,34 @@ describe("紫微 S3 十二宫环盘", () => {
         view={chart({
           core_facts: facts({
             transformations: [
-              { star: "紫微", transformation: "禄", palace: "命宫", palace_branch: "寅", scope: "natal" },
-              { star: "天机", transformation: "权", palace: "官禄", palace_branch: "子", scope: "natal" },
-              { star: "太阳", transformation: "科", palace: "官禄", palace_branch: "午", scope: "decade" },
-              { star: "太阴", transformation: "忌", palace: "田宅", palace_branch: "子", scope: "decade" },
+              {
+                star: "紫微",
+                transformation: "禄",
+                palace: "命宫",
+                palace_branch: "寅",
+                scope: "natal",
+              },
+              {
+                star: "天机",
+                transformation: "权",
+                palace: "官禄",
+                palace_branch: "子",
+                scope: "natal",
+              },
+              {
+                star: "太阳",
+                transformation: "科",
+                palace: "官禄",
+                palace_branch: "午",
+                scope: "decade",
+              },
+              {
+                star: "太阴",
+                transformation: "忌",
+                palace: "田宅",
+                palace_branch: "子",
+                scope: "decade",
+              },
             ],
           }),
         })}
@@ -402,9 +580,15 @@ describe("紫微 S3 十二宫环盘", () => {
     );
 
     const panel = screen.getByRole("region", { name: "四化" });
-    expect(within(panel).getAllByRole("columnheader", { name: "星" }).length).toBeGreaterThan(0);
-    expect(within(panel).getAllByRole("columnheader", { name: "化" }).length).toBeGreaterThan(0);
-    expect(within(panel).getAllByRole("columnheader", { name: "所在宫" }).length).toBeGreaterThan(0);
+    expect(
+      within(panel).getAllByRole("columnheader", { name: "星" }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(panel).getAllByRole("columnheader", { name: "化" }).length,
+    ).toBeGreaterThan(0);
+    expect(
+      within(panel).getAllByRole("columnheader", { name: "所在宫" }).length,
+    ).toBeGreaterThan(0);
 
     const natal = within(panel).getByRole("group", { name: "natal" });
     expect(within(natal).getByRole("button", { name: "紫微" })).toBeVisible();
@@ -427,12 +611,26 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(panel).queryByText(/吉凶|大吉|大凶/)).not.toBeInTheDocument();
     expect(within(panel).queryByText(/GAP-ZW/)).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart({ core_facts: facts({ transformations: null }) })} />);
-    expect(screen.queryByRole("region", { name: "四化" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("group", { name: "natal" })).not.toBeInTheDocument();
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ transformations: null }) })}
+      />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "四化" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: "natal" }),
+    ).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart({ core_facts: facts({ transformations: [] }) })} />);
-    expect(screen.queryByRole("region", { name: "四化" })).not.toBeInTheDocument();
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ transformations: [] }) })}
+      />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "四化" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("禄")).not.toBeInTheDocument();
   });
 
@@ -637,7 +835,11 @@ describe("紫微 S3 十二宫环盘", () => {
       />,
     );
 
-    await user.click(within(screen.getByRole("region", { name: "大限" })).getByRole("button", { name: /官禄/ }));
+    await user.click(
+      within(screen.getByRole("region", { name: "大限" })).getByRole("button", {
+        name: /官禄/,
+      }),
+    );
 
     expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
     expect(palaceButton("寅")).toHaveAttribute("data-highlight", "related");
@@ -650,12 +852,20 @@ describe("紫微 S3 十二宫环盘", () => {
 
   it("omits the track when both major_limits and sequence are missing", () => {
     const { rerender } = render(<ZiweiPalaceBoard view={chart()} />);
-    expect(screen.queryByRole("region", { name: "大限" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "大限" }),
+    ).not.toBeInTheDocument();
 
     rerender(
-      <ZiweiPalaceBoard view={chart({ core_facts: facts({ major_limits: [], major_limit_sequence: [] }) })} />,
+      <ZiweiPalaceBoard
+        view={chart({
+          core_facts: facts({ major_limits: [], major_limit_sequence: [] }),
+        })}
+      />,
     );
-    expect(screen.queryByRole("region", { name: "大限" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "大限" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("13–22")).not.toBeInTheDocument();
   });
 
@@ -664,7 +874,11 @@ describe("紫微 S3 十二宫环盘", () => {
       <ZiweiPalaceBoard
         view={chart({
           core_facts: facts({
-            active_major_limit: { sequence: 1, palace: "命宫", palace_branch: "寅" },
+            active_major_limit: {
+              sequence: 1,
+              palace: "命宫",
+              palace_branch: "寅",
+            },
             major_limits: [
               {
                 palace: "命宫",
@@ -703,13 +917,25 @@ describe("紫微 S3 十二宫环盘", () => {
   });
 
   it("keeps the transformation table off shared pages", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
-    const table = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-transformation-table.tsx"),
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const table = readFileSync(
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-transformation-table.tsx",
+      ),
+      "utf8",
+    );
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-transformation-table");
     expect(table).not.toMatch(/runtime-chart|product-task-experience|GAP-ZW/);
     expect(runtime).not.toContain("ziwei-transformation-table");
@@ -717,15 +943,29 @@ describe("紫微 S3 十二宫环盘", () => {
   });
 
   it("keeps the major-limit track off shared pages", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
-    const track = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-major-limit-track.tsx"),
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const track = readFileSync(
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-major-limit-track.tsx",
+      ),
+      "utf8",
+    );
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-major-limit-track");
-    expect(track).not.toMatch(/runtime-chart|product-task-experience|GAP-ZW|active_major_limit|当前/);
+    expect(track).not.toMatch(
+      /runtime-chart|product-task-experience|GAP-ZW|active_major_limit|当前/,
+    );
     expect(runtime).not.toContain("ziwei-major-limit-track");
     expect(experience).not.toContain("ziwei-major-limit-track");
   });
@@ -795,20 +1035,39 @@ describe("紫微 S3 十二宫环盘", () => {
     const groups = within(panel)
       .getAllByRole("group")
       .filter((group) => group.getAttribute("aria-label"));
-    expect(groups.map((group) => group.getAttribute("aria-label"))).toEqual(["田宅", "命宫", "官禄", "父母"]);
-    expect(within(groups[0]).getByRole("button", { name: "太阴" })).toBeVisible();
-    expect(within(groups[1]).getByRole("button", { name: "紫微" })).toBeVisible();
-    expect(within(groups[1]).getByRole("button", { name: "文昌" })).toBeVisible();
-    expect(within(groups[2]).getByRole("button", { name: "太阳" })).toBeVisible();
-    expect(within(groups[3]).getByRole("button", { name: "天梁" })).toBeVisible();
+    expect(groups.map((group) => group.getAttribute("aria-label"))).toEqual([
+      "田宅",
+      "命宫",
+      "官禄",
+      "父母",
+    ]);
+    expect(
+      within(groups[0]).getByRole("button", { name: "太阴" }),
+    ).toBeVisible();
+    expect(
+      within(groups[1]).getByRole("button", { name: "紫微" }),
+    ).toBeVisible();
+    expect(
+      within(groups[1]).getByRole("button", { name: "文昌" }),
+    ).toBeVisible();
+    expect(
+      within(groups[2]).getByRole("button", { name: "太阳" }),
+    ).toBeVisible();
+    expect(
+      within(groups[3]).getByRole("button", { name: "天梁" }),
+    ).toBeVisible();
 
-    const ziweiRow = within(groups[1]).getByRole("button", { name: "紫微" }).closest("tr");
+    const ziweiRow = within(groups[1])
+      .getByRole("button", { name: "紫微" })
+      .closest("tr");
     expect(ziweiRow).toHaveTextContent("major");
     expect(ziweiRow).toHaveTextContent("natal");
     expect(ziweiRow).toHaveTextContent("庙");
     expect(ziweiRow).toHaveTextContent("命宫寅");
 
-    const wenchangRow = within(groups[1]).getByRole("button", { name: "文昌" }).closest("tr");
+    const wenchangRow = within(groups[1])
+      .getByRole("button", { name: "文昌" })
+      .closest("tr");
     expect(wenchangRow).toHaveTextContent("minor");
     expect(wenchangRow?.textContent).not.toMatch(/庙|旺|得|利|平|不|陷/);
 
@@ -818,7 +1077,9 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(panel).queryByText("本命")).not.toBeInTheDocument();
     expect(within(panel).queryByText("大限")).not.toBeInTheDocument();
     expect(within(panel).queryByText("天府")).not.toBeInTheDocument();
-    expect(within(panel).queryByText(/吉凶|大吉|大凶|GAP-ZW/)).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByText(/吉凶|大吉|大凶|GAP-ZW/),
+    ).not.toBeInTheDocument();
   });
 
   it("filters star facts by text and keeps the filter when nothing matches", async () => {
@@ -831,12 +1092,18 @@ describe("紫微 S3 十二宫环盘", () => {
 
     expect(within(panel).getByRole("button", { name: "太阳" })).toBeVisible();
     expect(within(panel).getByText("官禄")).toBeVisible();
-    expect(within(panel).queryByRole("button", { name: "紫微" })).not.toBeInTheDocument();
-    expect(within(panel).queryByRole("group", { name: "命宫" })).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("button", { name: "紫微" }),
+    ).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("group", { name: "命宫" }),
+    ).not.toBeInTheDocument();
 
     await user.clear(filter);
     await user.type(filter, "没有这颗星");
-    expect(within(panel).queryByRole("button", { name: "太阳" })).not.toBeInTheDocument();
+    expect(
+      within(panel).queryByRole("button", { name: "太阳" }),
+    ).not.toBeInTheDocument();
     expect(
       within(panel)
         .queryAllByRole("group")
@@ -857,11 +1124,12 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("午")).toHaveAttribute("data-highlight", "related");
     expect(palaceButton("戌")).toHaveAttribute("data-highlight", "related");
     expect(palaceButton("申")).toHaveAttribute("data-highlight", "related");
-    expect(within(panel).getByRole("button", { name: "紫微" }).closest("tr")).toHaveAttribute(
-      "data-highlight",
-      "true",
-    );
-    expect(within(panel).getByRole("button", { name: "太阳" }).closest("tr")).not.toHaveAttribute("data-highlight");
+    expect(
+      within(panel).getByRole("button", { name: "紫微" }).closest("tr"),
+    ).toHaveAttribute("data-highlight", "true");
+    expect(
+      within(panel).getByRole("button", { name: "太阳" }).closest("tr"),
+    ).not.toHaveAttribute("data-highlight");
   });
 
   it("highlights matching star-fact rows when a palace is selected", async () => {
@@ -871,37 +1139,70 @@ describe("紫微 S3 十二宫环盘", () => {
     await user.click(palaceButton("午"));
 
     const panel = screen.getByRole("region", { name: "星曜明细" });
-    expect(within(panel).getByRole("button", { name: "太阳" }).closest("tr")).toHaveAttribute(
-      "data-highlight",
-      "true",
-    );
-    expect(within(panel).getByRole("button", { name: "紫微" }).closest("tr")).not.toHaveAttribute("data-highlight");
+    expect(
+      within(panel).getByRole("button", { name: "太阳" }).closest("tr"),
+    ).toHaveAttribute("data-highlight", "true");
+    expect(
+      within(panel).getByRole("button", { name: "紫微" }).closest("tr"),
+    ).not.toHaveAttribute("data-highlight");
   });
 
   it("omits the star-fact list when star_facts is missing or empty", () => {
     const { rerender } = render(
-      <ZiweiPalaceBoard view={chart({ core_facts: facts({ star_facts: null }) })} />,
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ star_facts: null }) })}
+      />,
     );
-    expect(screen.queryByRole("region", { name: "星曜明细" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "星曜明细" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("星曜明细")).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart({ core_facts: facts({ star_facts: [] }) })} />);
-    expect(screen.queryByRole("region", { name: "星曜明细" })).not.toBeInTheDocument();
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ star_facts: [] }) })}
+      />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "星曜明细" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByLabelText("过滤星曜")).not.toBeInTheDocument();
   });
 
   it("keeps the star-fact list off shared pages", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
-    const list = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-star-fact-list.tsx"), "utf8");
-    const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-star-fact-list.module.css"),
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const list = readFileSync(
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-star-fact-list.tsx",
+      ),
+      "utf8",
+    );
+    const css = readFileSync(
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-star-fact-list.module.css",
+      ),
+      "utf8",
+    );
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-star-fact-list");
-    expect(list).not.toMatch(/runtime-chart|product-task-experience|GAP-ZW|主星|吉星|本命/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
+    expect(list).not.toMatch(
+      /runtime-chart|product-task-experience|GAP-ZW|主星|吉星|本命/,
+    );
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
     expect(runtime).not.toContain("ziwei-star-fact-list");
     expect(experience).not.toContain("ziwei-star-fact-list");
   });
@@ -921,7 +1222,10 @@ describe("紫微 S3 十二宫环盘", () => {
                 source_anchor: "rules.md#L9-L16",
                 status: "predicate_matched_not_verdict",
                 fact_paths: ["fact:/chart_facts/output/palaces/0/name"],
-                predicate_audit: ["/output/palaces:descendant_eq:命宫", "命宫可见"],
+                predicate_audit: [
+                  "/output/palaces:descendant_eq:命宫",
+                  "命宫可见",
+                ],
               },
               {
                 rule_id: "ziwei/unknown-pack#U-02",
@@ -945,9 +1249,17 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(fold).not.toHaveAttribute("open");
     expect(within(block).getByText("命中古法 2 条 · 可核验")).toBeVisible();
     expect(within(block).queryByText("至玄至微")).not.toBeVisible();
-    expect(screen.queryByText("source_conditioned_patterns")).not.toBeInTheDocument();
-    expect(within(block).queryByText(/fact_paths|chart_facts|palaces\/0|predicate_matched/)).not.toBeInTheDocument();
-    expect(within(block).queryByText(/吉凶|大吉|大凶|GAP-ZW/)).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("source_conditioned_patterns"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(block).queryByText(
+        /fact_paths|chart_facts|palaces\/0|predicate_matched/,
+      ),
+    ).not.toBeInTheDocument();
+    expect(
+      within(block).queryByText(/吉凶|大吉|大凶|GAP-ZW/),
+    ).not.toBeInTheDocument();
 
     await user.click(within(block).getByText("命中古法 2 条 · 可核验"));
     expect(fold).toHaveAttribute("open");
@@ -959,11 +1271,15 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(block).getAllByText("条件命中，非断语")).toHaveLength(2);
     expect(within(block).getByText("rules.md#L9-L16")).toBeVisible();
     expect(within(block).getByText("notes.md#L2")).toBeVisible();
-    expect(within(block).getByText("/output/palaces:descendant_eq:命宫")).toBeVisible();
+    expect(
+      within(block).getByText("/output/palaces:descendant_eq:命宫"),
+    ).toBeVisible();
     expect(within(block).getByText("命宫可见")).toBeVisible();
     expect(within(block).getByText("紫微坐命")).toBeVisible();
     expect(within(block).queryByText("服务端已记录")).not.toBeInTheDocument();
-    expect(within(block).queryByText(/fact_paths|chart_facts|palaces\/0/)).not.toBeInTheDocument();
+    expect(
+      within(block).queryByText(/fact_paths|chart_facts|palaces\/0/),
+    ).not.toBeInTheDocument();
 
     await user.click(within(block).getByRole("button", { name: "至玄至微" }));
     expect(chart().palaces[0]?.earthly_branch).toBe("酉");
@@ -971,23 +1287,30 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("卯")).toHaveAttribute("data-highlight", "related");
     expect(palaceButton("丑")).toHaveAttribute("data-highlight", "related");
     expect(palaceButton("巳")).toHaveAttribute("data-highlight", "related");
-    expect(within(block).getByText("至玄至微").closest("li")).toHaveAttribute("data-highlight", "true");
-    expect(within(block).getByText("先看命身").closest("li")).not.toHaveAttribute("data-highlight");
+    expect(within(block).getByText("至玄至微").closest("li")).toHaveAttribute(
+      "data-highlight",
+      "true",
+    );
+    expect(
+      within(block).getByText("先看命身").closest("li"),
+    ).not.toHaveAttribute("data-highlight");
   });
 
   it("removes candidate, summary and deep-read sections when interpretation is gated", () => {
     const gatedView = chart({
       core_facts: facts({
-        source_conditioned_patterns: [{
-          rule_id: "ziwei/taiwei-fu#TR-01",
-          local_rule_id: "TR-01",
-          title: "至玄至微",
-          source_pack: "ziwei/taiwei-fu",
-          source_anchor: "rules.md#L9-L16",
-          status: "predicate_matched_not_verdict",
-          fact_paths: ["fact:/chart_facts/output/palaces/0/name"],
-          predicate_audit: ["/output/palaces:descendant_eq:命宫"],
-        }],
+        source_conditioned_patterns: [
+          {
+            rule_id: "ziwei/taiwei-fu#TR-01",
+            local_rule_id: "TR-01",
+            title: "至玄至微",
+            source_pack: "ziwei/taiwei-fu",
+            source_anchor: "rules.md#L9-L16",
+            status: "predicate_matched_not_verdict",
+            fact_paths: ["fact:/chart_facts/output/palaces/0/name"],
+            predicate_audit: ["/output/palaces:descendant_eq:命宫"],
+          },
+        ],
       }),
     });
     const { rerender } = render(
@@ -995,9 +1318,15 @@ describe("紫微 S3 十二宫环盘", () => {
     );
 
     expect(ring()).toBeVisible();
-    expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "古法命中" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "基础摘要" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "深读" }),
+    ).not.toBeInTheDocument();
 
     rerender(<ZiweiPalaceBoard showInterpretiveSections view={gatedView} />);
     expect(screen.getByRole("region", { name: "古法命中" })).toBeVisible();
@@ -1019,7 +1348,10 @@ describe("紫微 S3 十二宫环盘", () => {
                 source_pack: "ziwei/taiwei-fu",
                 source_anchor: "rules.md#L20",
                 status: "predicate_matched_not_verdict",
-                fact_paths: ["fact:/chart_facts/output/palaces/12/name", "fact:/chart_facts/output/ming_shen"],
+                fact_paths: [
+                  "fact:/chart_facts/output/palaces/12/name",
+                  "fact:/chart_facts/output/ming_shen",
+                ],
                 predicate_audit: ["命身已返回"],
               },
             ],
@@ -1031,7 +1363,9 @@ describe("紫微 S3 十二宫环盘", () => {
     const block = screen.getByRole("region", { name: "古法命中" });
     await user.click(within(block).getByText("命中古法 1 条 · 可核验"));
     expect(within(block).getByText("先看命身")).toBeVisible();
-    expect(within(block).queryByRole("button", { name: "先看命身" })).not.toBeInTheDocument();
+    expect(
+      within(block).queryByRole("button", { name: "先看命身" }),
+    ).not.toBeInTheDocument();
     expect(palaceButton("子")).not.toHaveAttribute("data-highlight");
   });
 
@@ -1063,16 +1397,23 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(block).getByText("紫微斗数全书")).toBeVisible();
     await user.click(within(block).getByRole("button", { name: "紫微坐命" }));
     expect(palaceButton("寅")).toHaveAttribute("data-highlight", "primary");
-    expect(within(block).getByText("紫微坐命").closest("li")).toHaveAttribute("data-highlight", "true");
+    expect(within(block).getByText("紫微坐命").closest("li")).toHaveAttribute(
+      "data-highlight",
+      "true",
+    );
 
     await user.click(palaceButton("午"));
     expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
-    expect(within(block).getByText("紫微坐命").closest("li")).not.toHaveAttribute("data-highlight");
+    expect(
+      within(block).getByText("紫微坐命").closest("li"),
+    ).not.toHaveAttribute("data-highlight");
   });
 
   it("drops the whole drawer when patterns are missing, empty, malformed, or not a match", () => {
     const { rerender } = render(<ZiweiPalaceBoard view={chart()} />);
-    expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "古法命中" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("命中古法")).not.toBeInTheDocument();
 
     rerender(
@@ -1084,7 +1425,9 @@ describe("紫微 S3 十二宫环盘", () => {
         })}
       />,
     );
-    expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "古法命中" }),
+    ).not.toBeInTheDocument();
 
     rerender(
       <ZiweiPalaceBoard
@@ -1100,7 +1443,9 @@ describe("紫微 S3 十二宫环盘", () => {
         })}
       />,
     );
-    expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "古法命中" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("至玄至微")).not.toBeInTheDocument();
 
     rerender(
@@ -1123,36 +1468,60 @@ describe("紫微 S3 十二宫环盘", () => {
         })}
       />,
     );
-    expect(screen.queryByRole("region", { name: "古法命中" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "古法命中" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("至玄至微")).not.toBeInTheDocument();
     expect(screen.queryByText(/GAP-ZW/)).not.toBeInTheDocument();
   });
 
   it("keeps the source-pattern drawer off shared pages", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
+      "utf8",
+    );
     const drawer = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-source-pattern-drawer.tsx"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-source-pattern-drawer.tsx",
+      ),
       "utf8",
     );
     const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-source-pattern-drawer.module.css"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-source-pattern-drawer.module.css",
+      ),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-source-pattern-drawer");
-    expect(drawer).not.toMatch(/runtime-chart|product-task-experience|GAP-ZW|bazi-chart|evidence\[\]|服务端已记录/);
+    expect(drawer).not.toMatch(
+      /runtime-chart|product-task-experience|GAP-ZW|bazi-chart|evidence\[\]|服务端已记录/,
+    );
     expect(css).toMatch(/--color-evidence/);
     expect(css).toMatch(/--color-evidence-line/);
     expect(css).toMatch(/min-height:\s*var\(--target-min\)/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
     expect(runtime).not.toContain("ziwei-source-pattern-drawer");
     expect(experience).not.toContain("ziwei-source-pattern-drawer");
   });
 
-  it("uses paper-ink tokens and keeps a 360 list fallback in CSS", () => {
+  it("uses Xuan Order hairlines and keeps a 360 list fallback", () => {
     const css = boardCss();
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
+      "utf8",
+    );
     expect(css).toMatch(/\.ring\s*\{[^}]*grid-template-columns:\s*repeat\(4,/s);
     expect(css).toMatch(/\[data-branch="巳"\]\s*\{[^}]*grid-column:\s*1/s);
     expect(css).toMatch(/\[data-branch="午"\]\s*\{[^}]*grid-column:\s*2/s);
@@ -1160,11 +1529,17 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(css).toMatch(/\[data-life="true"\]\s*\{[^}]*1px/s);
     expect(css).toMatch(/font-family:\s*var\(--font-domain\)/);
     expect(css).toMatch(/--color-evidence/);
-    expect(css).toMatch(/--color-accent/);
-    expect(css).toMatch(/--color-text/);
+    expect(css).toMatch(/--ds-accent-soft/);
+    expect(css).toMatch(/--ds-line-strong/);
+    expect(css).toMatch(/--ds-focus/);
+    expect(css).toMatch(/min-height:\s*var\(--ds-touch-min\)/);
     expect(board).toMatch(/max-width:\s*22\.5rem/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
-    expect(css).not.toMatch(/linear-gradient|radial-gradient|text-shadow|box-shadow:\s*0 0/);
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
+    expect(css).not.toMatch(
+      /linear-gradient|radial-gradient|text-shadow|box-shadow:\s*0 0/,
+    );
     expect(css).not.toMatch(/星曙/);
   });
 
@@ -1236,7 +1611,9 @@ describe("紫微 S3 M8 免费基础摘要 + 深读入口", () => {
     return {
       ...view,
       palaces: view.palaces.map((item) =>
-        item.palace_id === view.life_palace_id ? { ...item, major_stars: [] } : item,
+        item.palace_id === view.life_palace_id
+          ? { ...item, major_stars: [] }
+          : item,
       ),
     };
   }
@@ -1312,7 +1689,9 @@ describe("紫微 S3 M8 免费基础摘要 + 深读入口", () => {
       />,
     );
 
-    expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "基础摘要" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("命宫主星")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "深读" })).toBeVisible();
   });
@@ -1348,18 +1727,21 @@ describe("紫微 S3 M8 免费基础摘要 + 深读入口", () => {
     render(<ZiweiPalaceBoard view={chart()} />);
 
     expect(screen.getByRole("heading", { name: "深读" })).toBeVisible();
-    expect(screen.getByRole("status", { name: "测试期未开放" })).toHaveAttribute(
-      "data-state",
-      "unavailable",
-    );
-    const deep = screen.getByRole("heading", { name: "深读" }).closest("section");
+    expect(
+      screen.getByRole("status", { name: "测试期未开放" }),
+    ).toHaveAttribute("data-state", "unavailable");
+    const deep = screen
+      .getByRole("heading", { name: "深读" })
+      .closest("section");
     expect(deep).toHaveTextContent("命宫");
     expect(deep).toHaveTextContent("紫微");
     expect(deep).toHaveTextContent("禄");
     expect(deep).not.toHaveTextContent(/吉凶|大吉|大凶|旺衰/);
     expect(deep).not.toHaveTextContent(/GAP-ZW/);
     expect(screen.queryByText(/¥|￥|\d+\s*元/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /结账|购买|支付/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /结账|购买|支付/ }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("reading_version_id")).not.toBeInTheDocument();
     expect(screen.queryByText("offer_id")).not.toBeInTheDocument();
   });
@@ -1379,25 +1761,38 @@ describe("紫微 S3 M8 免费基础摘要 + 深读入口", () => {
       />,
     );
 
-    const deep = screen.getByRole("heading", { name: "深读" }).closest("section");
+    const deep = screen
+      .getByRole("heading", { name: "深读" })
+      .closest("section");
     expect(deep).not.toHaveTextContent("紫微");
     expect(deep).not.toHaveTextContent("禄");
     expect(deep).not.toHaveTextContent("化禄");
   });
 
   it("renders a passed offer card without inventing checkout, and confirming only says 确认中", () => {
-    const { rerender } = render(<ZiweiPalaceBoard view={chart()} offer={OFFER} />);
+    const { rerender } = render(
+      <ZiweiPalaceBoard view={chart()} offer={OFFER} />,
+    );
 
     expect(screen.getByText("紫微宫位深读")).toBeVisible();
     expect(screen.getByText("当前这张已排出命盘的宫位与四化")).toBeVisible();
     expect(screen.getByText("由服务端标价")).toBeVisible();
     expect(screen.getByText("未交付可退")).toBeVisible();
     expect(screen.getByText("绑定当前这张已排出的命盘")).toBeVisible();
-    expect(screen.getByRole("link", { name: "登录后继续" })).toHaveAttribute("href", "/auth/login");
-    expect(screen.queryByRole("status", { name: "测试期未开放" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /结账|购买/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "登录后继续" })).toHaveAttribute(
+      "href",
+      "/auth/login",
+    );
+    expect(
+      screen.queryByRole("status", { name: "测试期未开放" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /结账|购买/ }),
+    ).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart()} offer={OFFER} s4Phase="confirming" />);
+    rerender(
+      <ZiweiPalaceBoard view={chart()} offer={OFFER} s4Phase="confirming" />,
+    );
 
     expect(screen.getByRole("status", { name: "确认中" })).toBeVisible();
     expect(screen.queryByText("由服务端标价")).not.toBeInTheDocument();
@@ -1405,53 +1800,96 @@ describe("紫微 S3 M8 免费基础摘要 + 深读入口", () => {
   });
 
   it("uses locked and fake-gateway copy without treating them as paid", () => {
-    const { rerender } = render(<ZiweiPalaceBoard view={chart()} s4Phase="locked" />);
-
-    expect(screen.getByRole("status", { name: "已锁定" })).toHaveAttribute("data-state", "locked");
-    expect(screen.queryByRole("status", { name: "测试期未开放" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /结账|购买/ })).not.toBeInTheDocument();
-
-    rerender(<ZiweiPalaceBoard view={chart()} offer={OFFER} s4Phase="gateway_unavailable" />);
-
-    expect(screen.getByRole("status", { name: "支付暂时不可用" })).toHaveAttribute(
-      "data-state",
-      "unavailable",
+    const { rerender } = render(
+      <ZiweiPalaceBoard view={chart()} s4Phase="locked" />,
     );
+
+    expect(
+      screen.getByRole("status", { name: "深读暂未解锁" }),
+    ).toHaveAttribute("data-state", "locked");
+    expect(
+      screen.queryByRole("status", { name: "测试期未开放" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /结账|购买/ }),
+    ).not.toBeInTheDocument();
+
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart()}
+        offer={OFFER}
+        s4Phase="gateway_unavailable"
+      />,
+    );
+
+    expect(
+      screen.getByRole("status", { name: "支付暂时不可用" }),
+    ).toHaveAttribute("data-state", "unavailable");
     expect(screen.queryByText("由服务端标价")).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /结账|购买|支付/ })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: /结账|购买|支付/ }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/订单号/)).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "登录后继续" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("link", { name: "登录后继续" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps silhouette and loading free of summary and deep-read copy", () => {
     const { rerender } = render(<ZiweiPalaceBoard mode="silhouette" />);
-    expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "基础摘要" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "深读" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("测试期未开放")).not.toBeInTheDocument();
 
     rerender(<ZiweiPalaceBoard mode="loading" />);
-    expect(screen.queryByRole("region", { name: "基础摘要" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "深读" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "基础摘要" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "深读" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps the free-summary module off shared pages and off other arts", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
+      "utf8",
+    );
     const summarySource = readFileSync(
       resolve(process.cwd(), "src/components/readings/ziwei-free-summary.tsx"),
       "utf8",
     );
     const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-free-summary.module.css"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-free-summary.module.css",
+      ),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-free-summary");
-    expect(summarySource).not.toMatch(/bazi-chart|liuyao-line-tower|runtime-chart|product-task-experience|GAP-ZW/);
+    expect(summarySource).not.toMatch(
+      /bazi-chart|liuyao-line-tower|runtime-chart|product-task-experience|GAP-ZW/,
+    );
     expect(css).toMatch(/--color-text/);
     expect(css).toMatch(/min-height:\s*var\(--target-min\)/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
-    expect(css).not.toMatch(/linear-gradient|radial-gradient|box-shadow:\s*0 0/);
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
+    expect(css).not.toMatch(
+      /linear-gradient|radial-gradient|box-shadow:\s*0 0/,
+    );
     expect(runtime).not.toContain("ziwei-free-summary");
     expect(experience).not.toContain("ziwei-free-summary");
   });
@@ -1484,47 +1922,97 @@ describe("紫微 S3 M1 口径条", () => {
 
   it("hides the whole bar when chinese_date is missing or blank", () => {
     const { rerender } = render(<ZiweiPalaceBoard view={chart()} />);
-    expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "口径" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("农历")).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart({ core_facts: facts({ chinese_date: "" }) })} />);
-    expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ chinese_date: "" }) })}
+      />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "口径" }),
+    ).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart({ core_facts: facts({ chinese_date: "   " }) })} />);
-    expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ chinese_date: "   " }) })}
+      />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "口径" }),
+    ).not.toBeInTheDocument();
 
-    rerender(<ZiweiPalaceBoard view={chart({ core_facts: facts({ chinese_date: null }) })} />);
-    expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
+    rerender(
+      <ZiweiPalaceBoard
+        view={chart({ core_facts: facts({ chinese_date: null }) })}
+      />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "口径" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps silhouette and loading free of the caliber bar", () => {
-    const view = chart({ core_facts: facts({ chinese_date: "农历甲戌年三月二十 卯时" }) });
-    const { rerender } = render(<ZiweiPalaceBoard mode="silhouette" view={view} />);
-    expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
-    expect(screen.queryByText("农历甲戌年三月二十 卯时")).not.toBeInTheDocument();
+    const view = chart({
+      core_facts: facts({ chinese_date: "农历甲戌年三月二十 卯时" }),
+    });
+    const { rerender } = render(
+      <ZiweiPalaceBoard mode="silhouette" view={view} />,
+    );
+    expect(
+      screen.queryByRole("region", { name: "口径" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("农历甲戌年三月二十 卯时"),
+    ).not.toBeInTheDocument();
 
     rerender(<ZiweiPalaceBoard mode="loading" view={view} />);
-    expect(screen.queryByRole("region", { name: "口径" })).not.toBeInTheDocument();
-    expect(screen.queryByText("农历甲戌年三月二十 卯时")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "口径" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByText("农历甲戌年三月二十 卯时"),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps the caliber module off shared pages", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
+      "utf8",
+    );
     const caliberSource = readFileSync(
       resolve(process.cwd(), "src/components/readings/ziwei-caliber-bar.tsx"),
       "utf8",
     );
     const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-caliber-bar.module.css"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-caliber-bar.module.css",
+      ),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-caliber-bar");
-    expect(caliberSource).not.toMatch(/bazi-chart|daliuren-board|runtime-chart|product-task-experience|GAP-ZW/);
+    expect(caliberSource).not.toMatch(
+      /bazi-chart|daliuren-board|runtime-chart|product-task-experience|GAP-ZW/,
+    );
     expect(css).toMatch(/--color-text/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
-    expect(css).not.toMatch(/linear-gradient|radial-gradient|box-shadow:\s*0 0/);
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
+    expect(css).not.toMatch(
+      /linear-gradient|radial-gradient|box-shadow:\s*0 0/,
+    );
     expect(runtime).not.toContain("ziwei-caliber-bar");
     expect(experience).not.toContain("ziwei-caliber-bar");
   });
@@ -1604,11 +2092,18 @@ describe("紫微 S3 360 环转列表", () => {
 
   it("keeps list-thumb styles at 44px without luck colors", () => {
     const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.module.css"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-palace-board.module.css",
+      ),
       "utf8",
     );
-    expect(css).toMatch(/\.thumb[^{]*\{[\s\S]*min-height:\s*var\(--target-min\)/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
+    expect(css).toMatch(
+      /\.thumb[^{]*\{[\s\S]*min-height:\s*var\(--target-min\)/,
+    );
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
     expect(css).not.toMatch(/GAP-ZW/);
   });
 });
@@ -1638,45 +2133,71 @@ describe("紫微 S3 360 默认窄屏真渲 list", () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard view={chart()} />);
 
-    await waitFor(() => expect(screen.queryByRole("grid", { name: "十二宫环盘" })).not.toBeInTheDocument());
+    await waitFor(() =>
+      expect(
+        screen.queryByRole("grid", { name: "十二宫环盘" }),
+      ).not.toBeInTheDocument(),
+    );
     expect(screen.getByRole("navigation", { name: "宫位缩略" })).toBeVisible();
     expect(screen.getByRole("list", { name: "十二宫列表" })).toBeVisible();
-    expect(screen.getByRole("navigation", { name: "宫位缩略" }).querySelectorAll("button[data-branch]")).toHaveLength(12);
+    expect(
+      screen
+        .getByRole("navigation", { name: "宫位缩略" })
+        .querySelectorAll("button[data-branch]"),
+    ).toHaveLength(12);
 
-    await user.click(within(screen.getByRole("navigation", { name: "宫位缩略" })).getByRole("button", { name: /午/ }));
-    expect(screen.getByRole("navigation", { name: "宫位缩略" }).querySelector('[data-branch="午"]')).toHaveAttribute(
-      "data-highlight",
-      "primary",
+    await user.click(
+      within(screen.getByRole("navigation", { name: "宫位缩略" })).getByRole(
+        "button",
+        { name: /午/ },
+      ),
     );
-    expect(screen.getByRole("list", { name: "十二宫列表" }).querySelector('[data-branch="午"]')).toHaveAttribute(
-      "data-highlight",
-      "primary",
-    );
+    expect(
+      screen
+        .getByRole("navigation", { name: "宫位缩略" })
+        .querySelector('[data-branch="午"]'),
+    ).toHaveAttribute("data-highlight", "primary");
+    expect(
+      screen
+        .getByRole("list", { name: "十二宫列表" })
+        .querySelector('[data-branch="午"]'),
+    ).toHaveAttribute("data-highlight", "primary");
   });
 
   it("keeps the ring when the query does not match, and honors an explicit layout", () => {
     mockNarrow(false);
     const { rerender } = render(<ZiweiPalaceBoard view={chart()} />);
     expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
-    expect(screen.queryByRole("navigation", { name: "宫位缩略" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "宫位缩略" }),
+    ).not.toBeInTheDocument();
 
     mockNarrow(true);
     rerender(<ZiweiPalaceBoard layout="ring" view={chart()} />);
     expect(screen.getByRole("grid", { name: "十二宫环盘" })).toBeVisible();
-    expect(screen.queryByRole("navigation", { name: "宫位缩略" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("navigation", { name: "宫位缩略" }),
+    ).not.toBeInTheDocument();
 
     mockNarrow(false);
     rerender(<ZiweiPalaceBoard layout="list" view={chart()} />);
-    expect(screen.queryByRole("grid", { name: "十二宫环盘" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("grid", { name: "十二宫环盘" }),
+    ).not.toBeInTheDocument();
     expect(screen.getByRole("navigation", { name: "宫位缩略" })).toBeVisible();
   });
 
   it("does not hide an explicit ring with a 22.5rem display:none rule", () => {
     const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.module.css"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-palace-board.module.css",
+      ),
       "utf8",
     );
-    expect(css).not.toMatch(/max-width:\s*22\.5rem[\s\S]*\.ring\s*\{[\s\S]*display:\s*none/);
+    expect(css).not.toMatch(
+      /max-width:\s*22\.5rem[\s\S]*\.ring\s*\{[\s\S]*display:\s*none/,
+    );
     expect(css).not.toMatch(/GAP-ZW/);
   });
 });
@@ -1695,7 +2216,13 @@ describe("紫微 S3 M2 十二神足注", () => {
           };
         }
         if (item.earthly_branch === "午") {
-          return { ...item, changsheng12: "  ", boshi12: "力士", jiangqian12: null, suiqian12: "晦气" };
+          return {
+            ...item,
+            changsheng12: "  ",
+            boshi12: "力士",
+            jiangqian12: null,
+            suiqian12: "晦气",
+          };
         }
         return item;
       }),
@@ -1707,48 +2234,88 @@ describe("紫微 S3 M2 十二神足注", () => {
     render(<ZiweiPalaceBoard view={godsView()} />);
 
     const density = screen.getByRole("group", { name: "十二神密度" });
-    expect(within(density).getByRole("button", { name: "精简" })).toHaveAttribute("aria-pressed", "true");
+    expect(
+      within(density).getByRole("button", { name: "精简" }),
+    ).toHaveAttribute("aria-pressed", "true");
     expect(within(palaceButton("寅")).getByText("长生")).toBeVisible();
-    expect(within(palaceButton("寅")).queryByText("博士")).not.toBeInTheDocument();
-    expect(within(palaceButton("寅")).queryByText("将星")).not.toBeInTheDocument();
-    expect(within(palaceButton("寅")).queryByText("岁建")).not.toBeInTheDocument();
-    expect(within(palaceButton("午")).queryByText("力士")).not.toBeInTheDocument();
-    expect(within(palaceButton("午")).queryByText("晦气")).not.toBeInTheDocument();
-    expect(within(palaceButton("午")).queryByLabelText("十二神")).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("寅")).queryByText("博士"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("寅")).queryByText("将星"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("寅")).queryByText("岁建"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("午")).queryByText("力士"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("午")).queryByText("晦气"),
+    ).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("午")).queryByLabelText("十二神"),
+    ).not.toBeInTheDocument();
 
     await user.click(within(density).getByRole("button", { name: "完整" }));
-    const lifeGods = [...within(palaceButton("寅")).getByLabelText("十二神").querySelectorAll("[data-god]")].map(
-      (node) => node.textContent,
-    );
+    const lifeGods = [
+      ...within(palaceButton("寅"))
+        .getByLabelText("十二神")
+        .querySelectorAll("[data-god]"),
+    ].map((node) => node.textContent);
     expect(lifeGods).toEqual(["长生", "博士", "将星", "岁建"]);
-    const noonGods = [...within(palaceButton("午")).getByLabelText("十二神").querySelectorAll("[data-god]")].map(
-      (node) => node.getAttribute("data-god"),
-    );
+    const noonGods = [
+      ...within(palaceButton("午"))
+        .getByLabelText("十二神")
+        .querySelectorAll("[data-god]"),
+    ].map((node) => node.getAttribute("data-god"));
     expect(noonGods).toEqual(["boshi12", "suiqian12"]);
     expect(within(palaceButton("午")).getByText("力士")).toBeVisible();
     expect(within(palaceButton("午")).getByText("晦气")).toBeVisible();
-    expect(within(palaceButton("午")).queryByText("长生")).not.toBeInTheDocument();
+    expect(
+      within(palaceButton("午")).queryByText("长生"),
+    ).not.toBeInTheDocument();
   });
 
   it("applies the same density switch to the 360 list and hides the switch when no gods exist", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<ZiweiPalaceBoard layout="list" view={godsView()} />);
+    const { rerender } = render(
+      <ZiweiPalaceBoard layout="list" view={godsView()} />,
+    );
     const list = screen.getByRole("list", { name: "十二宫列表" });
-    expect(within(list.querySelector('[data-branch="寅"]') as HTMLElement).getByText("长生")).toBeVisible();
-    expect(within(list.querySelector('[data-branch="寅"]') as HTMLElement).queryByText("博士")).not.toBeInTheDocument();
+    expect(
+      within(list.querySelector('[data-branch="寅"]') as HTMLElement).getByText(
+        "长生",
+      ),
+    ).toBeVisible();
+    expect(
+      within(
+        list.querySelector('[data-branch="寅"]') as HTMLElement,
+      ).queryByText("博士"),
+    ).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "完整" }));
-    expect(within(list.querySelector('[data-branch="寅"]') as HTMLElement).getByText("博士")).toBeVisible();
+    expect(
+      within(list.querySelector('[data-branch="寅"]') as HTMLElement).getByText(
+        "博士",
+      ),
+    ).toBeVisible();
 
     rerender(<ZiweiPalaceBoard view={chart()} />);
-    expect(screen.queryByRole("group", { name: "十二神密度" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("group", { name: "十二神密度" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("长生")).not.toBeInTheDocument();
     expect(screen.queryByText("博士")).not.toBeInTheDocument();
   });
 
   it("does not invent twelve gods in silhouette or loading", () => {
-    const { rerender } = render(<ZiweiPalaceBoard mode="silhouette" view={godsView()} />);
-    expect(screen.queryByRole("group", { name: "十二神密度" })).not.toBeInTheDocument();
+    const { rerender } = render(
+      <ZiweiPalaceBoard mode="silhouette" view={godsView()} />,
+    );
+    expect(
+      screen.queryByRole("group", { name: "十二神密度" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText("长生")).not.toBeInTheDocument();
     expect(screen.queryByText("博士")).not.toBeInTheDocument();
     rerender(<ZiweiPalaceBoard mode="loading" view={godsView()} />);
@@ -1758,8 +2325,12 @@ describe("紫微 S3 M2 十二神足注", () => {
 
   it("keeps twelve-god footnotes in paper-ink tokens", () => {
     const css = boardCss();
-    expect(css).toMatch(/\.gods[^{]*\{[\s\S]*font-size:\s*var\(--font-size-meta\)/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
+    expect(css).toMatch(
+      /\.gods[^{]*\{[\s\S]*font-size:\s*var\(--font-size-meta\)/,
+    );
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
     expect(css).not.toMatch(/GAP-ZW/);
   });
 });
@@ -1792,10 +2363,14 @@ describe("紫微 S3 M2 宫位详情抽屉", () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard view={drawerView()} />);
 
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
     await user.click(palaceButton("寅"));
     expect(palaceButton("寅")).toHaveAttribute("data-highlight", "primary");
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
 
     palaceButton("寅").focus();
     await user.keyboard("{Enter}");
@@ -1826,16 +2401,18 @@ describe("紫微 S3 M2 宫位详情抽屉", () => {
     expect(within(detail()).queryByText("4、16、28")).not.toBeInTheDocument();
 
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
     expect(palaceButton("午")).toHaveFocus();
   });
 
   it("traps forward and reverse Tab inside the modal drawer before restoring its trigger", async () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard layout="list" view={drawerView()} />);
-    const lifeCard = screen.getByRole("list", { name: "十二宫列表" }).querySelector(
-      '[data-branch="寅"]',
-    ) as HTMLElement;
+    const lifeCard = screen
+      .getByRole("list", { name: "十二宫列表" })
+      .querySelector('[data-branch="寅"]') as HTMLElement;
     const trigger = within(lifeCard).getByRole("button", { name: "详情" });
 
     await user.click(trigger);
@@ -1848,44 +2425,75 @@ describe("紫微 S3 M2 宫位详情抽屉", () => {
     expect(close).toHaveFocus();
 
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
     expect(trigger).toHaveFocus();
   });
 
   it("opens from the list 详情 control and stays closed in silhouette or loading", async () => {
     const user = userEvent.setup();
-    const { rerender } = render(<ZiweiPalaceBoard layout="list" view={drawerView()} />);
+    const { rerender } = render(
+      <ZiweiPalaceBoard layout="list" view={drawerView()} />,
+    );
     const list = screen.getByRole("list", { name: "十二宫列表" });
     const lifeCard = list.querySelector('[data-branch="寅"]') as HTMLElement;
     await user.click(within(lifeCard).getByRole("button", { name: "详情" }));
     expect(within(detail()).getByText("紫微")).toBeVisible();
 
     await user.click(within(detail()).getByRole("button", { name: "关闭" }));
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
 
     rerender(<ZiweiPalaceBoard mode="silhouette" view={drawerView()} />);
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", { name: "详情" }),
+    ).not.toBeInTheDocument();
     rerender(<ZiweiPalaceBoard mode="loading" view={drawerView()} />);
-    expect(screen.queryByRole("dialog", { name: "宫位详情" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("dialog", { name: "宫位详情" }),
+    ).not.toBeInTheDocument();
   });
 
   it("keeps the palace drawer off shared pages and off the source-pattern drawer", () => {
-    const board = readFileSync(resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"), "utf8");
+    const board = readFileSync(
+      resolve(process.cwd(), "src/components/readings/ziwei-palace-board.tsx"),
+      "utf8",
+    );
     const drawer = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-palace-detail-drawer.tsx"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-palace-detail-drawer.tsx",
+      ),
       "utf8",
     );
     const css = readFileSync(
-      resolve(process.cwd(), "src/components/readings/ziwei-palace-detail-drawer.module.css"),
+      resolve(
+        process.cwd(),
+        "src/components/readings/ziwei-palace-detail-drawer.module.css",
+      ),
       "utf8",
     );
-    const runtime = readFileSync(resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"), "utf8");
-    const experience = readFileSync(resolve(process.cwd(), "src/components/task/product-task-experience.tsx"), "utf8");
+    const runtime = readFileSync(
+      resolve(process.cwd(), "src/components/readings/runtime-chart.tsx"),
+      "utf8",
+    );
+    const experience = readFileSync(
+      resolve(process.cwd(), "src/components/task/product-task-experience.tsx"),
+      "utf8",
+    );
     expect(board).toContain("ziwei-palace-detail-drawer");
-    expect(drawer).not.toMatch(/ziwei-source-pattern-drawer|runtime-chart|product-task-experience|GAP-ZW/);
+    expect(drawer).not.toMatch(
+      /ziwei-source-pattern-drawer|runtime-chart|product-task-experience|GAP-ZW/,
+    );
     expect(css).toMatch(/--color-text/);
-    expect(css).not.toMatch(/color-success|color-danger|surface-success|surface-danger/);
+    expect(css).not.toMatch(
+      /color-success|color-danger|surface-success|surface-danger/,
+    );
     expect(runtime).not.toContain("ziwei-palace-detail-drawer");
     expect(experience).not.toContain("ziwei-palace-detail-drawer");
   });
