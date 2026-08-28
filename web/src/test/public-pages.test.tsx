@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { render, screen, within } from "@testing-library/react";
 import { afterEach, beforeEach, vi } from "vitest";
 
@@ -9,10 +12,12 @@ import PrivacyPage from "@/app/privacy/page";
 import SupportPage from "@/app/support/page";
 import TermsPage from "@/app/terms/page";
 import { PrivateShell } from "@/components/private-shell";
+import { PublicPageShell } from "@/components/public-page-shell";
 
+const { usePathnameMock } = vi.hoisted(() => ({ usePathnameMock: vi.fn() }));
 
 vi.mock("next/navigation", () => ({
-  usePathname: () => "/",
+  usePathname: usePathnameMock,
   useRouter: () => ({
     replace: vi.fn(),
     push: vi.fn(),
@@ -32,6 +37,8 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 beforeEach(() => {
+  usePathnameMock.mockReset();
+  usePathnameMock.mockReturnValue("/");
   vi.stubGlobal(
     "fetch",
     vi.fn<typeof fetch>(async (input) => {
@@ -53,6 +60,66 @@ afterEach(() => {
 
 
 describe("public contract pages", () => {
+  it("keeps /bazi/hepan breadcrumb semantics and 44px link targets", () => {
+    usePathnameMock.mockReturnValue("/bazi/hepan");
+    render(
+      <PublicPageShell>
+        <main id="main-content">八字合盘</main>
+      </PublicPageShell>,
+    );
+
+    const breadcrumb = screen.getByRole("navigation", { name: "面包屑" });
+    expect(within(breadcrumb).getByRole("link", { name: "首页" })).toHaveAttribute("href", "/");
+    expect(within(breadcrumb).getByRole("link", { name: "八字" })).toHaveAttribute("href", "/bazi");
+    expect(within(breadcrumb).getByText("八字合盘")).toHaveAttribute("aria-current", "page");
+
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/public-page-shell.module.css"),
+      "utf8",
+    );
+    const tokens = readFileSync(resolve(process.cwd(), "../ui/tokens.css"), "utf8");
+    expect(css).toMatch(
+      /\.breadcrumb a\s*\{[^}]*display:\s*inline-flex[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/s,
+    );
+    expect(tokens).toMatch(/--ds-touch-min:\s*44px/);
+  });
+
+  it.each([
+    ["/auth/login", "登录", "auth"],
+    ["/invite/private-code", "邀请有礼", "private-code"],
+    ["/share/private-share-id", "分享结果", "private-share-id"],
+    ["/workbench/private-handle", "结果工作台", "private-handle"],
+  ] as const)(
+    "keeps %s breadcrumbs free of fictional parent links and opaque parameters",
+    (pathname, currentLabel, privateValue) => {
+      usePathnameMock.mockReturnValue(pathname);
+      render(
+        <PublicPageShell>
+          <main id="main-content">受治理路由</main>
+        </PublicPageShell>,
+      );
+
+      const breadcrumb = screen.getByRole("navigation", { name: "面包屑" });
+      expect(within(breadcrumb).getAllByRole("link")).toHaveLength(1);
+      expect(within(breadcrumb).getByRole("link", { name: "首页" })).toHaveAttribute("href", "/");
+      expect(within(breadcrumb).getByText(currentLabel)).toHaveAttribute("aria-current", "page");
+      expect(breadcrumb).not.toHaveTextContent(privateValue);
+      expect(within(breadcrumb).queryByRole("link", { name: currentLabel })).not.toBeInTheDocument();
+    },
+  );
+
+  it("fails closed instead of deriving breadcrumbs for an unmanaged route", () => {
+    usePathnameMock.mockReturnValue("/unmanaged/private-value");
+    render(
+      <PublicPageShell>
+        <main id="main-content">未知路由</main>
+      </PublicPageShell>,
+    );
+
+    expect(screen.queryByRole("navigation", { name: "面包屑" })).not.toBeInTheDocument();
+    expect(screen.queryByText("private-value")).not.toBeInTheDocument();
+  });
+
   it("does not expose internal prebuilt-page wording on the about route", () => {
     render(<AboutPage />);
     const main = screen.getByRole("main");

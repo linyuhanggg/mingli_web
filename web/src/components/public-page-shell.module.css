@@ -1,17 +1,70 @@
 .shell {
   min-height: 100vh;
   overflow-x: hidden;
-  background: var(--color-canvas);
-  color: var(--color-text);
+  background: var(--ds-canvas);
+  color: var(--ds-ink);
 }
 
-.shell[data-home-chrome="true"] {
-  background: var(--paper-canvas);
-  color: var(--paper-text);
+.breadcrumbBar {
+  min-height: 46px;
+  border-bottom: 1px solid var(--ds-line);
+  background: var(--ds-surface-subtle);
 }
 
-@media (max-width: 47.999rem) {
+.breadcrumb {
+  color: var(--ds-muted);
+  font-size: var(--ds-text-14);
+}
+
+.breadcrumbList {
+  display: flex;
+  min-height: 46px;
+  align-items: center;
+  gap: var(--ds-space-2);
+  margin: 0;
+  padding: 0;
+  overflow-x: auto;
+  list-style: none;
+  white-space: nowrap;
+  scrollbar-width: none;
+}
+
+.breadcrumbList::-webkit-scrollbar {
+  display: none;
+}
+
+.breadcrumb a {
+  display: inline-flex;
+  min-width: var(--ds-touch-min);
+  min-height: var(--ds-touch-min);
+  align-items: center;
+  justify-content: center;
+  color: var(--ds-ink-soft);
+  text-decoration: none;
+}
+
+.breadcrumb a:hover {
+  color: var(--ds-accent);
+}
+
+.breadcrumbItem {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ds-space-2);
+}
+
+.breadcrumbSeparator {
+  color: var(--ds-line-ink);
+}
+
+.breadcrumb [aria-current="page"] {
+  color: var(--ds-ink);
+  font-weight: 500;
+}
+
+@media (max-width: 839px) {
   .shell {
     padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
+    scroll-padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
   }
 }

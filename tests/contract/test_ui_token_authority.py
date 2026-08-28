@@ -7,48 +7,81 @@ ROOT = Path(__file__).resolve().parents[2]
 TOKENS_CSS = ROOT / "ui" / "tokens.css"
 WEB_GLOBALS = ROOT / "web" / "src" / "app" / "globals.css"
 ADMIN_GLOBALS = ROOT / "admin" / "src" / "app" / "globals.css"
+WEB_LAYOUT = ROOT / "web" / "src" / "app" / "layout.tsx"
+ADMIN_LAYOUT = ROOT / "admin" / "src" / "app" / "layout.tsx"
 APP_CSS_ROOTS = (ROOT / "web" / "src", ROOT / "admin" / "src")
 
 DESIGN_TOKEN_VALUES = {
-    "--color-canvas": "#fafafa",
-    "--color-surface": "#ffffff",
-    "--color-surface-subtle": "#f5f5f5",
-    "--color-surface-muted": "#eeeeee",
-    "--color-surface-inverse": "#0a0a0a",
-    "--color-text": "#0a0a0a",
-    "--color-text-secondary": "#525252",
-    "--color-text-muted": "#8a8a8a",
-    "--color-text-inverse": "#ffffff",
-    "--color-border": "#e5e5e5",
-    "--color-border-strong": "#d4d4d4",
-    "--color-overlay": "rgb(0 0 0 / 42%)",
-    "--color-action": "#0a0a0a",
-    "--color-action-hover": "#262626",
-    "--color-on-action": "#ffffff",
-    "--color-focus": "#2563eb",
-    "--color-accent": "#2563eb",
-    "--color-accent-hover": "#1d4ed8",
-    "--color-on-accent": "#ffffff",
-    "--color-info": "#2563eb",
-    "--color-success": "#137a45",
-    "--color-warning": "#946200",
-    "--color-danger": "#c62828",
-    "--surface-info": "#eef5ff",
-    "--surface-success": "#ecf8f1",
-    "--surface-warning": "#fff7df",
-    "--surface-danger": "#fff0ef",
-    "--radius-control": "8px",
-    "--radius-card": "8px",
-    "--radius-panel": "12px",
-    "--radius-pill": "999px",
-    "--shadow-float": "0 4px 16px rgb(0 0 0 / 8%)",
-    "--shadow-overlay": "0 16px 48px rgb(0 0 0 / 14%)",
-    "--target-min": "44px",
-    "--target-submit": "48px",
+    "--ds-canvas": "#f4f4ef",
+    "--ds-surface": "#fffefa",
+    "--ds-surface-subtle": "#f8f8f3",
+    "--ds-ink": "#191a17",
+    "--ds-ink-soft": "#454842",
+    "--ds-muted": "#6c7068",
+    "--ds-quiet": "#8a8e85",
+    "--ds-line": "#d7d9d2",
+    "--ds-line-strong": "#b8bbb2",
+    "--ds-line-ink": "#777b72",
+    "--ds-scrim": "rgb(24 25 22 / 52%)",
+    "--ds-accent": "#a63c31",
+    "--ds-accent-hover": "#8f3028",
+    "--ds-accent-active": "#77271f",
+    "--ds-accent-soft": "#f3e7e3",
+    "--ds-accent-ink": "#7d2a23",
+    "--ds-focus": "#315f76",
+    "--ds-control-sm": "32px",
+    "--ds-control-md": "40px",
+    "--ds-control-lg": "48px",
+    "--ds-touch-min": "44px",
+    "--ds-content": "76rem",
+    "--ds-reading": "42rem",
+    "--ds-duration-fast": "120ms",
+    "--ds-duration-base": "220ms",
+    "--ds-duration-slow": "420ms",
+    "--color-canvas": "var(--ds-canvas)",
+    "--color-surface": "var(--ds-surface)",
+    "--color-text": "var(--ds-ink)",
+    "--color-action": "var(--ds-ink)",
+    "--color-focus": "var(--ds-focus)",
+    "--color-accent": "var(--ds-accent)",
+    "--color-evidence": "var(--ds-accent)",
+    "--color-evidence-line": "var(--ds-accent)",
+    "--color-evidence-wash": "var(--ds-accent-soft)",
+    "--radius-control": "var(--ds-radius-2)",
+    "--radius-card": "var(--ds-radius-2)",
+    "--radius-panel": "var(--ds-radius-3)",
+    "--radius-pill": "var(--ds-radius-pill)",
+    "--shadow-float": "var(--ds-shadow-float)",
+    "--shadow-overlay": "var(--ds-shadow-float)",
+    "--target-min": "var(--ds-touch-min)",
+    "--target-submit": "var(--ds-control-lg)",
+}
+
+DARK_TOKEN_VALUES = {
+    "--ds-canvas": "#151613",
+    "--ds-surface": "#1c1e1a",
+    "--ds-ink": "#f1f0e9",
+    "--ds-accent": "#df7061",
+    "--ds-focus": "#85b9d2",
+    "--ds-scrim": "rgb(0 0 0 / 68%)",
+}
+
+ELEMENT_TOKEN_VALUES = {
+    "--element-wood": ("#4d7a3c", "#a3c07e"),
+    "--element-wood-wash": ("rgb(77 122 60 / 10%)", "rgb(163 192 126 / 16%)"),
+    "--element-fire": ("#b0512a", "#de8a52"),
+    "--element-fire-wash": ("rgb(176 81 42 / 10%)", "rgb(222 138 82 / 16%)"),
+    "--element-earth": ("#8f5f2b", "#c99a66"),
+    "--element-earth-wash": ("rgb(143 95 43 / 10%)", "rgb(201 154 102 / 16%)"),
+    "--element-metal": ("#5e6a72", "#a9afaa"),
+    "--element-metal-wash": ("rgb(94 106 114 / 10%)", "rgb(169 175 170 / 16%)"),
+    "--element-water": ("#24557e", "#74a4dc"),
+    "--element-water-wash": ("rgb(36 85 126 / 10%)", "rgb(116 164 220 / 16%)"),
 }
 
 BANNED_TOKEN_RE = re.compile(
     r"--(?:ink|ivory|gold|terracotta|moss|amber)-\w+"
+    r"|--paper-[a-zA-Z0-9-]+"
     r"|--font-serif\b"
     r"|--shadow-hero-orbit\b"
     r"|--shadow-action\b"
@@ -62,7 +95,7 @@ SERIF_FAMILY_RE = re.compile(
     r"Songti SC|STSong|Noto Serif SC|Noto Serif CJK SC",
     re.IGNORECASE,
 )
-FONT_DOMAIN_USE_RE = re.compile(r"var\(\s*--font-domain")
+FONT_DOMAIN_USE_RE = re.compile(r"var\(\s*--(?:ds-)?font-domain")
 GRADIENT_RE = re.compile(r"(?:linear|radial|conic)-gradient\s*\(")
 GLASS_SURFACE_RE = re.compile(
     r"backdrop-filter\s*:"
@@ -100,12 +133,20 @@ OLD_BRAND_COLOR_RE = re.compile(
     re.IGNORECASE,
 )
 DOMAIN_FONT_ALLOWLIST = {
+    "web/src/app/home.module.css",
     "web/src/components/readings/bazi-chart.module.css",
     "web/src/components/readings/liuyao-hexagram.module.css",
     "web/src/components/readings/daliuren-board.module.css",
     "web/src/components/readings/ziwei-palace-board.module.css",
 }
 DOMAIN_FONT_ALLOWED_SELECTORS = {
+    ".hero h1",
+    ".quickStartHead h2",
+    ".sectionHead h2",
+    ".observation h2",
+    ".closing h2",
+    ".leadCardBody > strong",
+    ".cardName",
     ".pillarStem",
     ".pillarBranch",
     ".names dd",
@@ -132,20 +173,8 @@ WEB_START_SCRIPT = ROOT / "web" / "scripts" / "start-standalone.mjs"
 ADMIN_START_SCRIPT = ROOT / "admin" / "scripts" / "start-standalone.mjs"
 WEB_NEXT_CONFIG = ROOT / "web" / "next.config.ts"
 ADMIN_NEXT_CONFIG = ROOT / "admin" / "next.config.ts"
-HOME_CSS_REL = "web/src/app/home.module.css"
-HOME_GRADIENT_SELECTORS = {
-    ".spotlight",
-    ".heroPrimary::before",
-    ".quickStartEntry::after",
-    ".card::after",
-    ".crossCard::after",
-    ".leadCard::after",
-}
-HOME_GLASS_SELECTORS = {
-    ".heroSecondary",
-    ".crossCard",
-    ".auxGrid",
-    ".hero",
+GLASS_SURFACE_ALLOWLIST = {
+    ("web/src/components/site-chrome.module.css", ".header"),
 }
 
 
@@ -168,6 +197,14 @@ def _declared_tokens(source: str) -> dict[str, str]:
     for match in re.finditer(r"(--[a-zA-Z0-9-]+)\s*:\s*([^;]+);", source):
         declared[match.group(1)] = match.group(2).strip()
     return declared
+
+
+def _selector_tokens(source: str, expected_selector: str) -> dict[str, str]:
+    bodies = [
+        body for selector, body in _iter_rule_blocks(source) if selector == expected_selector
+    ]
+    assert bodies, f"expected {expected_selector} token scope"
+    return _declared_tokens(bodies[0])
 
 
 # Status colors (success/danger/warning and their surfaces) are reserved for
@@ -277,7 +314,7 @@ def test_web_and_admin_do_not_redeclare_shared_tokens() -> None:
 
 def test_design_token_values_are_declared_exactly() -> None:
     source = TOKENS_CSS.read_text(encoding="utf-8")
-    declared = _declared_tokens(source)
+    declared = _selector_tokens(source, ":root")
     missing = [name for name in DESIGN_TOKEN_VALUES if name not in declared]
     mismatched = [
         f"{name}: {declared[name]!r} != {expected!r}"
@@ -287,6 +324,77 @@ def test_design_token_values_are_declared_exactly() -> None:
     ]
     assert missing == []
     assert mismatched == []
+
+
+def test_dark_theme_values_are_declared_exactly() -> None:
+    source = TOKENS_CSS.read_text(encoding="utf-8")
+    declared = _selector_tokens(source, '[data-theme="dark"]')
+    mismatched = [
+        f"{name}: {declared.get(name)!r} != {expected!r}"
+        for name, expected in DARK_TOKEN_VALUES.items()
+        if _normalize_css_value(declared.get(name, "")) != _normalize_css_value(expected)
+    ]
+    assert mismatched == []
+
+
+def test_dark_theme_is_reachable_from_web_system_preference_only() -> None:
+    source = TOKENS_CSS.read_text(encoding="utf-8")
+    dark = _selector_tokens(source, '[data-theme="dark"]')
+    fallback_bodies = [
+        body
+        for selector, body in _iter_rule_blocks(source)
+        if selector == ':root[data-theme-system="auto"]:not([data-theme])'
+    ]
+    web_layout = WEB_LAYOUT.read_text(encoding="utf-8")
+    admin_layout = ADMIN_LAYOUT.read_text(encoding="utf-8")
+
+    assert len(fallback_bodies) == 1
+    assert re.search(r"\bcolor-scheme\s*:\s*dark\s*;", fallback_bodies[0])
+    assert _declared_tokens(fallback_bodies[0]) == dark
+    assert 'data-theme-system="auto"' in web_layout
+    assert 'data-theme-system="auto"' not in admin_layout
+    assert _rule_bodies("ui/tokens.css", ":root:not([data-theme])") == []
+
+
+def test_five_element_tokens_are_exact_and_chart_fact_only() -> None:
+    source = TOKENS_CSS.read_text(encoding="utf-8")
+    light = _selector_tokens(source, ":root")
+    dark = _selector_tokens(source, '[data-theme="dark"]')
+    mismatched = [
+        f"{name}: light={light.get(name)!r}, dark={dark.get(name)!r}"
+        for name, (light_value, dark_value) in ELEMENT_TOKEN_VALUES.items()
+        if _normalize_css_value(light.get(name, "")) != _normalize_css_value(light_value)
+        or _normalize_css_value(dark.get(name, "")) != _normalize_css_value(dark_value)
+    ]
+    assert mismatched == []
+
+    forbidden_context = re.compile(
+        r"button|link|nav|status|focus|hover|active|current|selected|success|warning|danger|info",
+        re.IGNORECASE,
+    )
+    violations = [
+        f"{rel}: {selector}"
+        for rel, selector, body in _all_rule_blocks()
+        if "--element-" in body
+        and ("/readings/" not in rel or forbidden_context.search(selector))
+    ]
+    assert violations == []
+
+
+def test_theme_color_and_motion_tokens_match_xuan_order() -> None:
+    layout = (ROOT / "web/src/app/layout.tsx").read_text(encoding="utf-8")
+    tokens = TOKENS_CSS.read_text(encoding="utf-8")
+    base = (ROOT / "ui/base.css").read_text(encoding="utf-8")
+
+    assert '#f4f4ef' in layout
+    assert '#151613' in layout
+    assert 'colorScheme: "light dark"' in layout
+    assert "--ds-duration-fast: 120ms" in tokens
+    assert "--ds-duration-base: 220ms" in tokens
+    assert "--ds-duration-slow: 420ms" in tokens
+    assert "prefers-reduced-motion" in tokens
+    assert tokens.count("1ms") >= 3
+    assert "prefers-reduced-motion" in base
 
 
 def test_css_does_not_reference_or_declare_retired_brand_tokens() -> None:
@@ -320,10 +428,12 @@ def test_static_css_vars_point_at_declared_tokens() -> None:
 def test_ui_uses_noto_sans_sc_and_limits_serif_to_domain_token() -> None:
     tokens = TOKENS_CSS.read_text(encoding="utf-8")
     assert "Noto Sans SC" in tokens
+    assert "--ds-font-ui" in tokens
+    assert "--ds-font-domain" in tokens
     assert "--font-sans" in tokens
     assert "--font-domain" in tokens
     assert "Songti SC" in tokens
-    domain_decl = _declared_tokens(tokens)["--font-domain"]
+    domain_decl = _declared_tokens(tokens)["--ds-font-domain"]
     assert "Songti SC" in domain_decl
 
     for path in (WEB_GLOBALS, ADMIN_GLOBALS):
@@ -342,9 +452,10 @@ def test_ui_uses_noto_sans_sc_and_limits_serif_to_domain_token() -> None:
                 serif_leaks.append(f"{path.relative_to(ROOT)}:{line_no}:{line.strip()}")
     assert serif_leaks == []
 
-    for match in SERIF_FAMILY_RE.finditer(tokens):
-        around = tokens[max(0, match.start() - 80) : match.end() + 20]
-        assert "--font-domain" in around
+    tokens_without_domain_stack = re.sub(
+        r"--ds-font-domain\s*:[^;]+;", "", tokens, flags=re.DOTALL
+    )
+    assert SERIF_FAMILY_RE.search(tokens_without_domain_stack) is None
 
 
 def test_retired_brand_rgb_is_absent_from_app_css() -> None:
@@ -375,26 +486,13 @@ def test_gradients_and_glass_effects_are_banned() -> None:
     for path in _iter_app_css():
         rel = str(path.relative_to(ROOT))
         source = path.read_text(encoding="utf-8")
-        if rel == HOME_CSS_REL:
-            for selector, body in _iter_rule_blocks(source):
-                has_gradient = GRADIENT_RE.search(body) is not None
-                has_glass = GLASS_SURFACE_RE.search(body) is not None
-                if not has_gradient and not has_glass:
-                    continue
-                if has_gradient:
-                    violations.extend(
-                        f"{rel}: {part}: homepage gradient is not approved"
-                        for part in sorted(_selector_parts(selector) - HOME_GRADIENT_SELECTORS)
-                    )
-                if has_glass:
-                    violations.extend(
-                        f"{rel}: {part}: homepage glass is not approved"
-                        for part in sorted(_selector_parts(selector) - HOME_GLASS_SELECTORS)
-                    )
-            continue
-        for line_no, line in enumerate(source.splitlines(), start=1):
-            if GRADIENT_RE.search(line) or GLASS_SURFACE_RE.search(line):
-                violations.append(f"{rel}:{line_no}:{line.strip()}")
+        for selector, body in _iter_rule_blocks(source):
+            if GRADIENT_RE.search(body):
+                violations.append(f"{rel}: {selector}: gradients are not approved")
+            if GLASS_SURFACE_RE.search(body):
+                for part in _selector_parts(selector):
+                    if (rel, part) not in GLASS_SURFACE_ALLOWLIST:
+                        violations.append(f"{rel}: {part}: glass is not approved")
 
     for path in (TOKENS_CSS, ROOT / "ui" / "base.css"):
         if not path.is_file():
@@ -639,6 +737,14 @@ def test_spinner_animations_disable_under_prefers_reduced_motion() -> None:
         assert "@keyframes" in source, rel
         assert "prefers-reduced-motion" in source, rel
         assert "animation: none" in source, rel
+
+
+def test_web_status_busy_animation_targets_the_loader_glyph() -> None:
+    source = (ROOT / "web/src/components/ui/status.module.css").read_text(encoding="utf-8")
+
+    for state in ("loading", "processing"):
+        assert f".{state} .icon svg" in source
+        assert not re.search(rf"\.{state}\s+\.icon\s*(?:,|\{{)", source)
 
 
 def test_standalone_start_uses_a_single_root_server_path() -> None:
