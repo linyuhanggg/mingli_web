@@ -86,6 +86,11 @@ class EngineAdapterBase(
         else:
             engine_failed = False
 
+        # Invocation is the final consumer of the private engine request.  Drop
+        # the local on both paths before any normalized or later-stage error
+        # can expose this frame through its traceback.
+        del engine_request
+
         # Raise only after leaving the ``except`` suite.  This deliberately
         # discards exception chaining as well as the original message/type, so
         # private engine payloads cannot remain reachable through __cause__ or
@@ -120,6 +125,11 @@ class EngineAdapterBase(
                 self.art_id or "unknown",
                 "canonical_projection_failed",
             )
+
+        # Canonical facts are detached from the private engine output.  End
+        # that private lifetime before result construction performs provenance
+        # binding checks that may raise through this frame.
+        del engine_output
 
         return EngineAdapterResult(
             canonical_facts=canonical_facts,

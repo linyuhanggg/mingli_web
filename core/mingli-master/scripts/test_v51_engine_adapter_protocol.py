@@ -48,20 +48,33 @@ class _FakeCanonicalFacts:
     value: str
 
 
+@dataclass(frozen=True)
+class _PrivateEngineRequest:
+    normalized: str
+
+
 class _RawThirdPartyValue:
     pass
 
 
 class _HappyFakeAdapter(
-    EngineAdapterBase[str, dict[str, str], _RawThirdPartyValue, _FakeCanonicalFacts]
+    EngineAdapterBase[
+        str,
+        _PrivateEngineRequest,
+        _RawThirdPartyValue,
+        _FakeCanonicalFacts,
+    ]
 ):
     art_id = "fixture"
 
-    def _build_engine_request(self, request: str) -> dict[str, str]:
-        return {"owned": request}
+    def _build_engine_request(self, request: str) -> _PrivateEngineRequest:
+        return _PrivateEngineRequest(normalized=request)
 
-    def _invoke_engine(self, request: dict[str, str]) -> _RawThirdPartyValue:
-        if request != {"owned": "normalized"}:
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
+        if request != _PrivateEngineRequest(normalized="normalized"):
             raise AssertionError("owned request changed")
         return _RawThirdPartyValue()
 
@@ -87,13 +100,19 @@ class _HappyFakeAdapter(
 
 
 class _FailingFakeAdapter(_HappyFakeAdapter):
-    def _invoke_engine(self, request: dict[str, str]) -> _RawThirdPartyValue:
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
         del request
         raise RuntimeError("third-party raw exception detail")
 
 
 class _ValueErrorFailingFakeAdapter(_HappyFakeAdapter):
-    def _invoke_engine(self, request: dict[str, str]) -> _RawThirdPartyValue:
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
         del request
         raise ValueError("third-party-secret-detail")
 
@@ -102,13 +121,30 @@ class _OwnedPolicyFailingFakeAdapter(_HappyFakeAdapter):
     def __init__(self) -> None:
         self.engine_invoked = False
 
-    def _invoke_engine(self, request: dict[str, str]) -> _RawThirdPartyValue:
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
         self.engine_invoked = True
         return super()._invoke_engine(request)
 
     def _provenance(self, request: str) -> EngineProvenance:
         del request
         raise ValueError("owned policy validation failed")
+
+
+class _InvocationFailure(Exception):
+    def __init__(self, private_request: _PrivateEngineRequest) -> None:
+        super().__init__("invocation retained private request")
+        self.private_request = private_request
+
+
+class _InvocationTracebackFailingFakeAdapter(_HappyFakeAdapter):
+    def _invoke_engine(
+        self,
+        request: _PrivateEngineRequest,
+    ) -> _RawThirdPartyValue:
+        raise _InvocationFailure(request)
 
 
 class _ProjectionFailure(Exception):
@@ -128,8 +164,27 @@ class _ProjectionFailingFakeAdapter(_HappyFakeAdapter):
         raise _ProjectionFailure(output)
 
 
-def _reachable_projection_private_state(value: object) -> str | None:
-    """Name private projection state reachable from one frame-local value."""
+class _ProvenanceMismatchFakeAdapter(_HappyFakeAdapter):
+    def _project_engine_output(
+        self,
+        request: str,
+        output: _RawThirdPartyValue,
+        provenance: EngineProvenance,
+    ) -> _FakeCanonicalFacts:
+        del request, output, provenance
+        return _FakeCanonicalFacts(
+            provenance=EngineProvenance(
+                engine_id="mismatched-engine",
+                engine_version="9.9",
+                policy_profile="mismatched-policy",
+                time_basis="true_solar",
+            ),
+            value="projected-with-mismatched-provenance",
+        )
+
+
+def _reachable_private_adapter_state(value: object) -> str | None:
+    """Name private adapter state reachable from one frame-local value."""
 
     pending = [value]
     seen: set[int] = set()
@@ -139,15 +194,25 @@ def _reachable_projection_private_state(value: object) -> str | None:
             continue
         seen.add(id(current))
 
+        if current is _PrivateEngineRequest:
+            return "private request type"
         if current is _RawThirdPartyValue:
             return "private output type"
+        if current is _InvocationFailure:
+            return "original invocation exception type"
         if current is _ProjectionFailure:
-            return "original exception type"
+            return "original projection exception type"
+        if isinstance(current, _PrivateEngineRequest):
+            return "private engine request"
         if isinstance(current, _RawThirdPartyValue):
             return "private engine output"
+        if isinstance(current, _InvocationFailure):
+            return "original invocation exception"
         if isinstance(current, _ProjectionFailure):
             return "original projection exception"
         if isinstance(current, str):
+            if "invocation retained private request" in current:
+                return "original invocation exception message"
             if "projection retained private output" in current:
                 return "original exception message"
             continue
@@ -169,6 +234,45 @@ def _reachable_projection_private_state(value: object) -> str | None:
 
 
 class EngineAdapterProtocolTests(unittest.TestCase):
+    def assert_normalized_error_isolated(
+        self,
+        error: EngineAdapterError,
+        *,
+        art_id: str,
+        code: str,
+    ) -> None:
+        self.assertEqual(error.code, code)
+        self.assertEqual(
+            error.args,
+            (f"{art_id} engine adapter failed ({code})",),
+        )
+        self.assertEqual(
+            vars(error),
+            {
+                "art_id": art_id,
+                "code": code,
+            },
+        )
+        self.assertIsNone(error.__cause__)
+        self.assertIsNone(error.__context__)
+
+        frame_names: list[str] = []
+        traceback = error.__traceback__
+        while traceback is not None:
+            frame = traceback.tb_frame
+            frame_names.append(frame.f_code.co_name)
+            for local_name, local_value in dict(frame.f_locals).items():
+                self.assertIsNone(
+                    _reachable_private_adapter_state(local_value),
+                    msg=(
+                        "private adapter state remains reachable from "
+                        f"{frame.f_code.co_name}.{local_name}"
+                    ),
+                )
+            traceback = traceback.tb_next
+
+        self.assertIn("adapt", frame_names)
+
     def test_protocol_exposes_only_normalized_request_and_canonical_result(self) -> None:
         adapter = _HappyFakeAdapter()
 
@@ -211,6 +315,20 @@ class EngineAdapterProtocolTests(unittest.TestCase):
 
         self.assertFalse(adapter.engine_invoked)
 
+    def test_invocation_traceback_cannot_reach_private_state(self) -> None:
+        try:
+            _InvocationTracebackFailingFakeAdapter().adapt("normalized")
+        except EngineAdapterError as caught:
+            error = caught
+        else:
+            self.fail("invocation failure was not normalized")
+
+        self.assert_normalized_error_isolated(
+            error,
+            art_id="fixture",
+            code="engine_execution_failed",
+        )
+
     def test_projection_exception_cannot_retain_private_output(self) -> None:
         with self.assertRaises(EngineAdapterError) as raised:
             _ProjectionFailingFakeAdapter().adapt("normalized")
@@ -239,37 +357,27 @@ class EngineAdapterProtocolTests(unittest.TestCase):
         else:
             self.fail("projection failure was not normalized")
 
-        self.assertEqual(error.code, "canonical_projection_failed")
-        self.assertEqual(
-            error.args,
-            ("fixture engine adapter failed (canonical_projection_failed)",),
+        self.assert_normalized_error_isolated(
+            error,
+            art_id="fixture",
+            code="canonical_projection_failed",
         )
-        self.assertEqual(
-            vars(error),
-            {
-                "art_id": "fixture",
-                "code": "canonical_projection_failed",
-            },
+
+    def test_result_construction_traceback_cannot_reach_private_state(
+        self,
+    ) -> None:
+        try:
+            _ProvenanceMismatchFakeAdapter().adapt("normalized")
+        except EngineAdapterError as caught:
+            error = caught
+        else:
+            self.fail("provenance mismatch did not fail closed")
+
+        self.assert_normalized_error_isolated(
+            error,
+            art_id="unknown",
+            code="provenance_binding_mismatch",
         )
-        self.assertIsNone(error.__cause__)
-        self.assertIsNone(error.__context__)
-
-        frame_names: list[str] = []
-        traceback = error.__traceback__
-        while traceback is not None:
-            frame = traceback.tb_frame
-            frame_names.append(frame.f_code.co_name)
-            for local_name, local_value in dict(frame.f_locals).items():
-                self.assertIsNone(
-                    _reachable_projection_private_state(local_value),
-                    msg=(
-                        "private projection state remains reachable from "
-                        f"{frame.f_code.co_name}.{local_name}"
-                    ),
-                )
-            traceback = traceback.tb_next
-
-        self.assertIn("adapt", frame_names)
 
     def test_bazi_and_ziwei_adapters_satisfy_the_same_minimal_protocol(self) -> None:
         self.assertIsInstance(bazi_fact_adapter.BaziEngineAdapter(), EngineAdapter)
