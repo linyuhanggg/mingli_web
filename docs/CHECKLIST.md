@@ -284,9 +284,9 @@ share-created / share-expired / share-revoked / share-not-found
 
 ### 5.1 导航
 
-- 767px 及以下：56px 顶栏 + 固定五项底栏（主页、术数、工具、每日、我的）+ 全屏术数抽屉；
-- 768px 及以上：64px 完整顶栏 + 分组 Mega Menu；
-- 桌面入口：术数、合参、工具、每日、知识内容、账户；合参下只有命盘合参与问事合参；
+- 839px 及以下：56px 顶栏 + 固定五项底栏（主页、术数、工具、每日、我的）+ 全屏术数抽屉；768px 仍使用移动 Shell；
+- 840px 及以上：64px 完整顶栏 + 分组 Mega Menu；
+- 桌面入口：工具枢纽、合参、每日、知识内容、账户；十三术数从工具枢纽页与面包屑进入，不设独立“术数”顶栏入口；合参下只有命盘合参与问事合参；
 - Mega Menu 分命（八字/紫微/七政）、卦（六爻/奇门/大六壬）、相（见相）；跨术产品在独立的合参入口中呈现；
 - 导航不能出现 13 Provider。
 
@@ -585,7 +585,7 @@ P0 出口：权威文件互不冲突、两份实站审计在仓库与原路径�
 |---|---|---|---|---|
 | P1-001 | 建中性语义 Token、字体与全局基础 | `ui/tokens.css` 是共享源；两端 `globals.css` 只 import 并增加应用层规则 | 两 app build；无旧品牌 token；两端不复制 Token | `VERIFIED` |
 | P1-002 | 建 Button/Field/Segmented/Tabs/Dialog/Drawer/Status/Table primitives | `web/src/components/ui/**`、`admin/src/components/ui/**` | 键盘、焦点、44px、reduced-motion 测试 | `VERIFIED` |
-| P1-003 | 重建公共 Header、Mega Menu、手机底栏/抽屉、Footer 与私有路由缓存边界 | `web/src/components/shell/**`、metadata、Service Worker | 767/768 导航切换 E2E；私有路由 noindex/no-store 且不进 SW cache；Web `site-shell`/metadata/route-matrix/accessibility 合同 | `VERIFIED` |
+| P1-003 | 重建公共 Header、Mega Menu、手机底栏/抽屉、Footer 与私有路由缓存边界 | `web/src/components/shell/**`、metadata、Service Worker | 839/840 导航切换 E2E，768 保持移动 Shell；私有路由 noindex/no-store 且不进 SW cache；Web `site-shell`/metadata/route-matrix/accessibility 合同 | `VERIFIED` |
 | P1-004 | 建产品输入壳、工作台壳、报告壳、任务状态壳 | `web/src/components/task/**`、`workbench/**`、`reading/**` | Web 产品路由合同、P2 交互合同、UI Lab 26 tests、四视口 product-journeys/route-matrix | `VERIFIED` |
 | P1-005 | 建 Admin 顶栏、侧栏/抽屉、列表/详情/写操作壳 | `admin/src/components/shell/**`、`admin/src/components/admin/**` | Admin route/catalog/RBAC/UI Lab contracts；四视口 route-matrix/accessibility/admin-contracts | `VERIFIED` |
 | P1-006 | 建版本化 UI ViewModel 类型与 Fixture 注册表 | `web/src/view-models/**`、`web/src/fixtures/**` | 禁止未知 JSON/raw fallback 测试 | `VERIFIED` |
@@ -643,7 +643,7 @@ P3 出口：六组全部页面、四角色、完整业务明文/系统秘密隐�
 | ID | 任务 | 证据 | 状态 |
 |---|---|---|---|
 | P4-001 | 360 全路由旅程、截图、无横溢 | `docs/releases/evidence/2026-08-14-route-acceptance-working-tree/README.md`、当前 Web/Admin smoke | `BROWSER_VERIFIED` |
-| P4-002 | 768 全路由旅程、导航切换、工作台单列 | `docs/releases/evidence/2026-08-14-route-acceptance-working-tree/README.md`、工作台断点合同 | `BROWSER_VERIFIED` |
+| P4-002 | 768 全路由旅程、移动 Shell、工作台单列 | `docs/releases/evidence/2026-08-14-route-acceptance-working-tree/README.md`、工作台断点合同 | `BROWSER_VERIFIED` |
 | P4-003 | 1024 全路由旅程、工作台双栏与 Admin | `docs/releases/evidence/2026-08-14-route-acceptance-working-tree/README.md`、工作台断点合同 | `BROWSER_VERIFIED` |
 | P4-004 | 1440 全路由旅程、最大宽和复杂合参 | `docs/releases/evidence/2026-08-14-route-acceptance-working-tree/README.md`、当前 Web/Admin smoke | `BROWSER_VERIFIED` |
 | P4-005 | 键盘、焦点、读屏语义、200/400% zoom、reduced-motion | `docs/releases/evidence/2026-08-13-accessibility/**`、当前工作树 accessibility 合同 | `BROWSER_VERIFIED` |
