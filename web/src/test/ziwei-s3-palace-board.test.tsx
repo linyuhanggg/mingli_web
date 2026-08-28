@@ -310,6 +310,10 @@ function temporalPalaceFacts(
   base: ZiweiChartViewModel,
   lifeBranch: (typeof BRANCHES)[number],
   scope: "yearly" | "monthly",
+  overrides: {
+    stars?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+    transformations?: ReadonlyArray<Readonly<Record<string, unknown>>>;
+  } = {},
 ) {
   const palaceByBranch = new Map(
     base.palaces.map((item) => [item.earthly_branch, item]),
@@ -325,13 +329,13 @@ function temporalPalaceFacts(
         temporal_palace: branch === lifeBranch ? "命宫" : `${prefix}${branch}宫`,
         dynamic_stars:
           branch === lifeBranch
-            ? [
+            ? (overrides.stars ?? [
                 {
                   name: `${prefix}标记星`,
                   type: "soft",
                   scope,
                 },
-              ]
+              ])
             : [],
         chart_palace: {
           name: natalPalace?.label ?? `${branch}宫`,
@@ -339,6 +343,7 @@ function temporalPalaceFacts(
         },
       };
     }),
+    transformation_facts: overrides.transformations ?? [],
   };
 }
 
@@ -804,6 +809,276 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("寅")).toHaveAccessibleName(/^寅 命宫 命/);
     expect(within(board).queryByText("流年标记星")).not.toBeInTheDocument();
     expect(within(board).queryByText("流月标记星")).not.toBeInTheDocument();
+  });
+
+  it("uses temporal star metadata and transformations without inheriting natal badges", () => {
+    const natal = chart();
+    const annualFacts = temporalPalaceFacts(natal, "寅", "yearly", {
+      stars: [
+        {
+          name: "流年主星",
+          type: "major",
+          scope: "yearly",
+          brightness: "庙",
+        },
+        {
+          name: "紫微",
+          star_type: "major",
+          scope: "yearly",
+        },
+        {
+          name: "流年辅星",
+          type: "soft",
+          scope: "yearly",
+          brightness: "得",
+        },
+        {
+          name: "文昌",
+          star_type: "soft",
+          scope: "yearly",
+        },
+      ],
+      transformations: [
+        {
+          star: "流年主星",
+          transformation: "化科",
+          palace: "命宫",
+          palace_branch: "寅",
+          scope: "yearly",
+        },
+      ],
+    });
+    render(
+      <ZiweiWorkspace
+        view={chart({
+          time_layers: [
+            {
+              layer_id: "year",
+              label: "流年",
+              available: true,
+              unavailable_reason: null,
+            },
+          ],
+          core_facts: facts({
+            annual_layers: [
+              {
+                year: 2026,
+                coverage_start: "2026-02-17",
+                coverage_end_exclusive: "2027-02-06",
+                liu_nian: annualFacts,
+                segments: [{ segment: "annual" }],
+                representative_scope: "annual",
+              },
+            ],
+          }),
+        })}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /流年/ }));
+    const temporalLife = palaceButton("寅");
+    expect(within(temporalLife).getByText("流年主星")).toHaveTextContent(
+      "流年主星庙科",
+    );
+    for (const star of within(temporalLife).getAllByText("紫微")) {
+      expect(star).toHaveTextContent(/^紫微$/);
+    }
+    expect(within(temporalLife).getByText("流年辅星")).toHaveTextContent(
+      "流年辅星得",
+    );
+    expect(within(temporalLife).getByText("文昌")).toHaveTextContent(/^文昌$/);
+    expect(within(temporalLife).queryByText("禄")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("tab", { name: /原局/ }));
+    const natalLife = palaceButton("寅");
+    expect(within(natalLife).getByText("紫微")).toHaveTextContent("紫微庙禄");
+    expect(within(natalLife).queryByText("流年主星")).not.toBeInTheDocument();
+  });
+
+  it("keeps multi-year and multi-month Runtime ranges ready and selectable", () => {
+    const natal = chart();
+    const annual2026 = temporalPalaceFacts(natal, "午", "yearly");
+    const annual2027 = temporalPalaceFacts(natal, "未", "yearly", {
+      stars: [
+        { name: "次年标记星", type: "major", scope: "yearly", brightness: "旺" },
+      ],
+    });
+    const monthlyAugust = temporalPalaceFacts(natal, "申", "monthly");
+    const monthlySeptember = temporalPalaceFacts(natal, "酉", "monthly");
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "year",
+          label: "流年",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "month",
+          label: "流月",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        annual_layers: [
+          {
+            year: 2026,
+            coverage_start: "2026-02-17",
+            coverage_end_exclusive: "2027-02-06",
+            liu_nian: annual2026,
+            segments: [{ segment: "annual-2026" }],
+            representative_scope: "annual",
+          },
+          {
+            year: 2027,
+            coverage_start: "2027-02-06",
+            coverage_end_exclusive: "2028-01-26",
+            liu_nian: annual2027,
+            segments: [{ segment: "annual-2027" }],
+            representative_scope: "annual",
+          },
+        ],
+        monthly_layers: [
+          {
+            year: 2026,
+            month: 8,
+            liu_yue: monthlyAugust,
+            segments: [{ segment: "monthly-08" }],
+            representative_scope: "monthly",
+          },
+          {
+            year: 2026,
+            month: 9,
+            liu_yue: monthlySeptember,
+            segments: [{ segment: "monthly-09" }],
+            representative_scope: "monthly",
+          },
+        ],
+      }),
+    });
+
+    render(<ZiweiWorkspace timeLayerEntitlement={ziweiEntitlement()} view={view} />);
+    const board = ring();
+    const selectedPalace = palaceButton("午");
+    fireEvent.click(selectedPalace);
+    act(() => selectedPalace.focus());
+
+    fireEvent.click(screen.getByRole("tab", { name: /流年/ }));
+    const yearSelect = screen.getByRole("combobox", { name: "流年年份" });
+    expect(yearSelect).toHaveValue("2026");
+    expect(palaceButton("午")).toHaveAttribute("data-life", "true");
+    fireEvent.change(yearSelect, { target: { value: "2027" } });
+    expect(ring()).toBe(board);
+    expect(selectedPalace).toHaveFocus();
+    expect(selectedPalace).toHaveAttribute("data-highlight", "primary");
+    expect(palaceButton("未")).toHaveAttribute("data-life", "true");
+    expect(within(palaceButton("未")).getByText("次年标记星")).toHaveTextContent(
+      "次年标记星旺",
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /流月/ }));
+    const monthSelect = screen.getByRole("combobox", { name: "流月月份" });
+    expect(monthSelect).toHaveValue("2026-08");
+    fireEvent.change(monthSelect, { target: { value: "2026-09" } });
+    expect(ring()).toBe(board);
+    expect(palaceButton("酉")).toHaveAttribute("data-life", "true");
+    expect(boardCss()).toMatch(
+      /\.temporalSelector select\s*\{[^}]*min-height:\s*var\(--ds-touch-min\)[^}]*\}/s,
+    );
+    expect(boardCss()).toMatch(
+      /\.temporalSelector select:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ds-focus\)[^}]*\}/s,
+    );
+  });
+
+  it("honors an explicit temporal target and fails closed on duplicate or malformed ranges", () => {
+    const natal = chart();
+    const annual2026 = temporalPalaceFacts(natal, "午", "yearly");
+    const annual2027 = temporalPalaceFacts(natal, "未", "yearly");
+    const targeted = chart({
+      time_layers: [
+        {
+          layer_id: "year",
+          label: "流年",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        chart_convention: { target_year: 2027 },
+        annual_layers: [
+          {
+            year: 2026,
+            coverage_start: "2026-02-17",
+            coverage_end_exclusive: "2027-02-06",
+            liu_nian: annual2026,
+            segments: [{ segment: "annual-2026" }],
+            representative_scope: "annual",
+          },
+          {
+            year: 2027,
+            coverage_start: "2027-02-06",
+            coverage_end_exclusive: "2028-01-26",
+            liu_nian: annual2027,
+            segments: [{ segment: "annual-2027" }],
+            representative_scope: "annual",
+          },
+        ],
+      }),
+    });
+    const { rerender } = render(<ZiweiWorkspace view={targeted} />);
+
+    fireEvent.click(screen.getByRole("tab", { name: /流年/ }));
+    expect(screen.getByRole("combobox", { name: "流年年份" })).toHaveValue(
+      "2027",
+    );
+    expect(palaceButton("未")).toHaveAttribute("data-life", "true");
+
+    rerender(
+      <ZiweiWorkspace
+        view={chart({
+          time_layers: targeted.time_layers,
+          core_facts: facts({
+            annual_layers: [
+              targeted.core_facts!.annual_layers![0],
+              targeted.core_facts!.annual_layers![0],
+            ],
+          }),
+        })}
+      />,
+    );
+    expect(screen.getByRole("tab", { name: /流年/ })).toHaveAttribute(
+      "data-status",
+      "empty",
+    );
+
+    const malformed = temporalPalaceFacts(natal, "午", "yearly", {
+      stars: [{ name: "坏类型星", type: 7, scope: "yearly" }],
+    });
+    rerender(
+      <ZiweiWorkspace
+        view={chart({
+          time_layers: targeted.time_layers,
+          core_facts: facts({
+            annual_layers: [
+              {
+                year: 2026,
+                coverage_start: "2026-02-17",
+                coverage_end_exclusive: "2027-02-06",
+                liu_nian: malformed,
+                segments: [{ segment: "annual" }],
+                representative_scope: "annual",
+              },
+            ],
+          }),
+        })}
+      />,
+    );
+    expect(screen.getByRole("tab", { name: /流年/ })).toHaveAttribute(
+      "data-status",
+      "empty",
+    );
+    expect(screen.queryByText("坏类型星")).not.toBeInTheDocument();
   });
 
   it("ignores malformed or locked temporal palace facts without inventing markers", () => {
