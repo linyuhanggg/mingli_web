@@ -1637,9 +1637,7 @@ function majorLimitTargetFromTemporalSelection(
   };
 }
 
-function majorLimitTargetFromCalendarCoverage(
-  value: unknown,
-): ZiweiMajorLimitTarget {
+function dateTargetFromCalendarCoverage(value: unknown): ZiweiTemporalTarget {
   if (
     !isRecord(value) ||
     !hasExactKeys(value, [
@@ -1654,7 +1652,7 @@ function majorLimitTargetFromCalendarCoverage(
     return { status: "invalid" };
   }
   if (value.requested_target_date === null) {
-    return { status: "valid-unselected" };
+    return { status: "none" };
   }
   if (
     !isIsoCivilDate(value.requested_target_date) ||
@@ -1663,10 +1661,19 @@ function majorLimitTargetFromCalendarCoverage(
   ) {
     return { status: "invalid" };
   }
+  return { status: "valid", id: value.requested_target_date };
+}
+
+function majorLimitTargetFromCalendarCoverage(
+  value: unknown,
+): ZiweiMajorLimitTarget {
+  const target = dateTargetFromCalendarCoverage(value);
+  if (target.status === "invalid") return target;
+  if (target.status === "none") return { status: "valid-unselected" };
   return {
     status: "valid",
-    startInclusive: value.requested_target_date,
-    endExclusive: nextCivilDate(value.requested_target_date),
+    startInclusive: target.id,
+    endExclusive: nextCivilDate(target.id),
   };
 }
 
@@ -1847,6 +1854,17 @@ function temporalSelectionForLayer(
 ): ZiweiTemporalSelection | null {
   const options: ZiweiTemporalOption[] = [];
   const identities = new Set<string>();
+  const hasCalendarCoverage = Boolean(
+    view.core_facts &&
+      Object.prototype.hasOwnProperty.call(
+        view.core_facts,
+        "calendar_coverage",
+      ),
+  );
+  const calendarCoverageTarget = hasCalendarCoverage
+    ? dateTargetFromCalendarCoverage(view.core_facts?.calendar_coverage)
+    : null;
+  if (calendarCoverageTarget?.status === "invalid") return null;
   const targetRecords: unknown[] = [view.core_facts?.chart_convention];
   if (layerId === "yearly") {
     const layers = view.core_facts?.annual_layers;
@@ -1931,11 +1949,16 @@ function temporalSelectionForLayer(
     const target = targetFromRecord(record, layerId);
     if (target.status === "invalid") return null;
     if (target.status === "valid") explicitTargets.add(target.id);
-    const exactDateTarget = dateTargetFromRecord(record);
-    if (exactDateTarget.status === "invalid") return null;
-    if (exactDateTarget.status === "valid") {
-      exactDateTargets.add(exactDateTarget.id);
+    if (!hasCalendarCoverage) {
+      const exactDateTarget = dateTargetFromRecord(record);
+      if (exactDateTarget.status === "invalid") return null;
+      if (exactDateTarget.status === "valid") {
+        exactDateTargets.add(exactDateTarget.id);
+      }
     }
+  }
+  if (calendarCoverageTarget?.status === "valid") {
+    exactDateTargets.add(calendarCoverageTarget.id);
   }
   if (explicitTargets.size > 1 || exactDateTargets.size > 1) return null;
   const explicitTarget = [...explicitTargets][0];
