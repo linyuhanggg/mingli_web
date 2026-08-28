@@ -14,16 +14,60 @@ export type WorkspaceLayerId =
   | "decadal"
   | "yearly"
   | "monthly"
-  | "daily";
-export type WorkspaceLayerStatus = "ready" | "unavailable" | "empty";
+  | "daily"
+  | "hourly";
+export type WorkspaceLayerStatus =
+  | "ready"
+  | "locked-paywall"
+  | "locked-unavailable"
+  | "fail-closed-unknown"
+  | "empty";
 export type WorkspaceCellKind = "pillar" | "palace" | "meta";
 export type WorkspaceHighlightTone = "neutral" | "emphasis" | "caution";
+
+export type TimeLayerEntitlementResolution =
+  | "granted"
+  | "denied"
+  | "unknown"
+  | "unauthenticated"
+  | "request_failed";
+export type TimeLayerEntitlementAccess =
+  | "readable"
+  | "locked_paywall"
+  | "fail_closed_unknown"
+  | "unavailable";
+export type TimeLayerEntitlementLayerId =
+  | "life"
+  | "luck_cycles"
+  | "major_limits"
+  | "year"
+  | "month"
+  | "day"
+  | "hour";
+
+export interface TimeLayerEntitlementLayer {
+  layerId: TimeLayerEntitlementLayerId;
+  tier: "free" | "paid";
+  access: TimeLayerEntitlementAccess;
+  upgradeCta: "professional_info" | null;
+}
+
+export interface TimeLayerEntitlement {
+  schemaVersion: "time-layer-entitlement/v1";
+  capabilityId: "bazi";
+  resolution: TimeLayerEntitlementResolution;
+  freeBoundaryLayerId: "year";
+  paidLayerIds: readonly ["month", "day", "hour"];
+  freeYearSet: number[];
+  layers: TimeLayerEntitlementLayer[];
+}
 
 export interface WorkspaceLayer {
   id: WorkspaceLayerId;
   label: string;
   status: WorkspaceLayerStatus;
   summary?: string | null;
+  upgradeCta?: "professional_info" | null;
 }
 
 export interface WorkspaceCell {
@@ -97,7 +141,117 @@ export interface BaziWorkspaceFacts {
   monthlySummary?: string | null;
   dailyReady?: boolean;
   dailySummary?: string | null;
+  hourlyReady?: boolean;
+  hourlySummary?: string | null;
+  entitlement?: TimeLayerEntitlement | null;
   highlights?: BaziWorkspaceHighlightFacts[] | null;
+}
+
+const ENTITLEMENT_LAYER_IDS = new Set<TimeLayerEntitlementLayerId>([
+  "life",
+  "luck_cycles",
+  "major_limits",
+  "year",
+  "month",
+  "day",
+  "hour",
+]);
+const ENTITLEMENT_RESOLUTIONS = new Set<TimeLayerEntitlementResolution>([
+  "granted",
+  "denied",
+  "unknown",
+  "unauthenticated",
+  "request_failed",
+]);
+const ENTITLEMENT_ACCESS = new Set<TimeLayerEntitlementAccess>([
+  "readable",
+  "locked_paywall",
+  "fail_closed_unknown",
+  "unavailable",
+]);
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+/**
+ * Parse only the frozen backend sibling contract. Unknown, partial, parallel,
+ * or contradictory payloads deliberately collapse to null so paid layers stay
+ * fail-closed; free chart facts never depend on this parser.
+ */
+export function parseTimeLayerEntitlement(value: unknown): TimeLayerEntitlement | null {
+  if (!isRecord(value)) return null;
+  if (
+    value.schema_version !== "time-layer-entitlement/v1" ||
+    value.capability_id !== "bazi" ||
+    !ENTITLEMENT_RESOLUTIONS.has(value.resolution as TimeLayerEntitlementResolution) ||
+    value.free_boundary_layer_id !== "year" ||
+    !Array.isArray(value.paid_layer_ids) ||
+    value.paid_layer_ids.length !== 3 ||
+    value.paid_layer_ids[0] !== "month" ||
+    value.paid_layer_ids[1] !== "day" ||
+    value.paid_layer_ids[2] !== "hour" ||
+    !Array.isArray(value.free_year_set) ||
+    !value.free_year_set.every((year) => Number.isInteger(year)) ||
+    !Array.isArray(value.layers)
+  ) {
+    return null;
+  }
+
+  const resolution = value.resolution as TimeLayerEntitlementResolution;
+  const layers: TimeLayerEntitlementLayer[] = [];
+  const seen = new Set<TimeLayerEntitlementLayerId>();
+  for (const item of value.layers) {
+    if (!isRecord(item)) return null;
+    const layerId = item.layer_id as TimeLayerEntitlementLayerId;
+    const tier = item.tier;
+    const access = item.access as TimeLayerEntitlementAccess;
+    const upgradeCta = item.upgrade_cta;
+    if (
+      !ENTITLEMENT_LAYER_IDS.has(layerId) ||
+      seen.has(layerId) ||
+      (tier !== "free" && tier !== "paid") ||
+      !ENTITLEMENT_ACCESS.has(access) ||
+      (upgradeCta !== null && upgradeCta !== "professional_info")
+    ) {
+      return null;
+    }
+    if (tier === "free" && (upgradeCta !== null || !["readable", "unavailable"].includes(access))) {
+      return null;
+    }
+    if (tier === "paid") {
+      const allowed = resolution === "granted"
+        ? new Set<TimeLayerEntitlementAccess>(["readable", "unavailable"])
+        : resolution === "denied"
+          ? new Set<TimeLayerEntitlementAccess>(["locked_paywall", "unavailable"])
+          : new Set<TimeLayerEntitlementAccess>(["fail_closed_unknown", "unavailable"]);
+      if (!allowed.has(access)) return null;
+      if (access === "unavailable" && upgradeCta !== null) return null;
+    }
+    seen.add(layerId);
+    layers.push({
+      layerId,
+      tier,
+      access,
+      upgradeCta: upgradeCta as "professional_info" | null,
+    });
+  }
+
+  if (!["life", "luck_cycles", "year", "month", "day", "hour"].every(
+    (layerId) => seen.has(layerId as TimeLayerEntitlementLayerId),
+  )) {
+    return null;
+  }
+
+  return {
+    schemaVersion: "time-layer-entitlement/v1",
+    capabilityId: "bazi",
+    resolution,
+    freeBoundaryLayerId: "year",
+    paidLayerIds: ["month", "day", "hour"],
+    freeYearSet: [...value.free_year_set] as number[],
+    layers,
+  };
 }
 
 const PILLAR_ORDER = [
@@ -162,22 +316,61 @@ function hasAnyFact(facts: BaziWorkspaceFacts): boolean {
   });
 }
 
+function unavailableLayer(
+  id: WorkspaceLayerId,
+  label: string,
+  summary = "待接入",
+): WorkspaceLayer {
+  return { id, label, status: "locked-unavailable", summary, upgradeCta: null };
+}
+
+function paidLayer(
+  id: Extract<WorkspaceLayerId, "monthly" | "daily" | "hourly">,
+  label: string,
+  factsReady: boolean,
+  readySummary: string | null | undefined,
+  entitlement: TimeLayerEntitlement | null | undefined,
+): WorkspaceLayer {
+  if (!factsReady) return unavailableLayer(id, label);
+  const entitlementId = id === "monthly" ? "month" : id === "daily" ? "day" : "hour";
+  const entry = entitlement?.layers.find((item) => item.layerId === entitlementId);
+  if (!entry) {
+    return {
+      id,
+      label,
+      status: "fail-closed-unknown",
+      summary: "权益状态未确认",
+      upgradeCta: "professional_info",
+    };
+  }
+  if (entry.access === "readable" && entitlement?.resolution === "granted") {
+    return { id, label, status: "ready", summary: readySummary ?? null, upgradeCta: null };
+  }
+  if (entry.access === "unavailable") return unavailableLayer(id, label);
+  if (entry.access === "locked_paywall") {
+    return {
+      id,
+      label,
+      status: "locked-paywall",
+      summary: "专业版时间层",
+      upgradeCta: entry.upgradeCta,
+    };
+  }
+  return {
+    id,
+    label,
+    status: "fail-closed-unknown",
+    summary: "权益状态未确认",
+    upgradeCta: entry.upgradeCta,
+  };
+}
+
 function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
   const natalStatus: WorkspaceLayerStatus = hasAnyPillarValue(facts.pillars)
     ? "ready"
     : "empty";
-  const decadalStatus: WorkspaceLayerStatus = facts.decadalReady || hasText(facts.activeLuck)
-    ? "ready"
-    : "unavailable";
-  const yearlyStatus: WorkspaceLayerStatus = facts.yearlyReady
-    ? "ready"
-    : "unavailable";
-  const monthlyStatus: WorkspaceLayerStatus = facts.monthlyReady
-    ? "ready"
-    : "unavailable";
-  const dailyStatus: WorkspaceLayerStatus = facts.dailyReady
-    ? "ready"
-    : "unavailable";
+  const decadalReady = Boolean(facts.decadalReady || hasText(facts.activeLuck));
+  const yearlyReady = Boolean(facts.yearlyReady);
 
   return [
     {
@@ -192,29 +385,22 @@ function buildLayers(facts: BaziWorkspaceFacts): WorkspaceLayer[] {
     {
       id: "decadal",
       label: "大运",
-      status: decadalStatus,
+      status: decadalReady ? "ready" : "locked-unavailable",
       summary:
         facts.decadalSummary ??
-        (hasText(facts.activeLuck) ? `当前大运 ${facts.activeLuck}` : "尚未返回大运"),
+        (hasText(facts.activeLuck) ? `当前大运 ${facts.activeLuck}` : "待接入"),
+      upgradeCta: null,
     },
     {
       id: "yearly",
       label: "流年",
-      status: yearlyStatus,
-      summary: facts.yearlySummary ?? "需指定目标时间",
+      status: yearlyReady ? "ready" : "locked-unavailable",
+      summary: yearlyReady ? facts.yearlySummary ?? null : "待接入",
+      upgradeCta: null,
     },
-    {
-      id: "monthly",
-      label: "流月",
-      status: monthlyStatus,
-      summary: facts.monthlySummary ?? "需指定目标时间",
-    },
-    {
-      id: "daily",
-      label: "流日",
-      status: dailyStatus,
-      summary: facts.dailySummary ?? "需指定目标时间",
-    },
+    paidLayer("monthly", "流月", Boolean(facts.monthlyReady), facts.monthlySummary, facts.entitlement),
+    paidLayer("daily", "流日", Boolean(facts.dailyReady), facts.dailySummary, facts.entitlement),
+    paidLayer("hourly", "流时", Boolean(facts.hourlyReady), facts.hourlySummary, facts.entitlement),
   ];
 }
 
@@ -325,6 +511,7 @@ export function resolveBaziFocusDetail(
  */
 export function baziWorkspaceFactsFromChart(
   chart: BaziChartView,
+  entitlement?: TimeLayerEntitlement | null,
 ): BaziWorkspaceFacts {
   const luckStatusLabels: Readonly<Record<string, string>> = {
     calculated: "已计算",
@@ -390,6 +577,9 @@ export function baziWorkspaceFactsFromChart(
           .map((item) => `${item.period}（${item.ganzhi_segments.length} 个日界分段）`)
           .join("；")
       : null,
+    hourlyReady: false,
+    hourlySummary: null,
+    entitlement,
     highlights: chart.highlights.map((highlight) => ({
       label: highlight.label,
       text: highlight.text,

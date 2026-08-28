@@ -26,3 +26,66 @@
   background: var(--color-action);
   color: var(--color-on-action);
 }
+
+.loadingStack,
+.lockedStack {
+  display: grid;
+  gap: var(--space-md);
+  min-width: 0;
+}
+
+.chartSkeleton {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(12rem, 0.8fr);
+  gap: var(--space-md);
+  min-height: 20rem;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+  opacity: 0.72;
+  animation: bazi-skeleton-breathe 1.8s ease-in-out infinite alternate;
+}
+
+.skeletonTabs,
+.skeletonPillars,
+.skeletonReading {
+  display: block;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.skeletonTabs {
+  grid-column: 1 / -1;
+  min-height: 3.5rem;
+}
+
+.skeletonPillars {
+  min-height: 14rem;
+}
+
+.skeletonReading {
+  min-height: 14rem;
+}
+
+@keyframes bazi-skeleton-breathe {
+  from { opacity: 0.52; }
+  to { opacity: 0.78; }
+}
+
+@media (max-width: 73.75rem) {
+  .chartSkeleton {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .skeletonTabs {
+    grid-column: auto;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chartSkeleton {
+    animation: none;
+    opacity: 0.68;
+  }
+}

@@ -337,8 +337,9 @@ describe("BaziChart evidence-first slice", () => {
     expect(screen.getByText("候选事实")).toBeVisible();
     expect(screen.getByText("支持性事实")).toBeVisible();
     expect(screen.getByText("中性盘面事实")).toBeVisible();
-    expect(screen.getByText(/全局身强身弱与唯一用神仍未裁定/)).toBeVisible();
-    expect(screen.getByText("全局强弱证据（未裁定）")).toBeVisible();
+    expect(screen.getByText(/全局身强身弱与唯一用神仍待核定/)).toBeVisible();
+    expect(screen.getByText("全局结论：未裁定")).toBeVisible();
+    expect(document.body.textContent?.match(/未裁定/gu)).toHaveLength(1);
     expect(screen.getByText("证据边界")).toBeVisible();
     expect(
       screen.getByText(

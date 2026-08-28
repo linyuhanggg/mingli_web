@@ -1,71 +1,23 @@
 "use client";
 
+import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
-import { Status, type StatusState } from "@/components/ui/status";
+import {
+  CORE_STATUS_STATES,
+  Status,
+  type CoreStatusState,
+} from "@/components/ui/status";
 
 import styles from "./bazi-result-six-states.module.css";
 
-const SIX_STATES = [
-  "loading",
-  "empty",
-  "error",
-  "processing",
-  "unavailable",
-  "unauthorized",
-] as const satisfies readonly StatusState[];
-
-const COPY: Record<(typeof SIX_STATES)[number], { title: string; description: string; action: string }> = {
-  loading: {
-    title: "正在读取结果…",
-    description: "页面只展示服务端公开摘要；状态与正文分开保存。",
-    action: "",
-  },
-  empty: {
-    title: "还没有可展示的盘面",
-    description: "服务端尚未返回可展示的公开摘要，不会用演示数据填满结果。",
-    action: "重试",
-  },
-  error: {
-    title: "读取失败，请重试",
-    description: "读取结果失败，请稍后重试。",
-    action: "重试",
-  },
-  processing: {
-    title: "正在处理…",
-    description: "事实已就绪，正在准备解读。不会提前展示未确认正文。",
-    action: "",
-  },
-  unavailable: {
-    title: "结果服务暂时不可用，不会展示未确认内容",
-    description: "当前结果服务暂不可用，不会展示未确认内容。",
-    action: "重试",
-  },
-  unauthorized: {
-    title: "需要登录才能看这份结果",
-    description: "登录后才能查看这份结果；不会重复提交出生资料。",
-    action: "登录后继续",
-  },
-};
-
-type BaziLabState = "ready" | (typeof SIX_STATES)[number];
-
 export function BaziResultSixStates({ children }: { readonly children: ReactNode }) {
-  const [state, setState] = useState<BaziLabState>("ready");
-  const details = state === "ready" ? null : COPY[state];
+  const [state, setState] = useState<CoreStatusState>("ready");
 
   return (
     <div className={styles.wrap}>
       <nav aria-label="结果页六态" className={styles.nav}>
-        <button
-          aria-pressed={state === "ready"}
-          className={styles.tab}
-          onClick={() => setState("ready")}
-          type="button"
-        >
-          已返回事实
-        </button>
-        {SIX_STATES.map((item) => (
+        {CORE_STATUS_STATES.map((item) => (
           <button
             aria-pressed={state === item}
             className={styles.tab}
@@ -77,20 +29,67 @@ export function BaziResultSixStates({ children }: { readonly children: ReactNode
           </button>
         ))}
       </nav>
-      {state === "ready" || !details ? (
-        children
-      ) : (
+
+      {state === "ready" ? children : null}
+
+      {state === "loading" ? (
+        <div className={styles.loadingStack}>
+          <div className={styles.chartSkeleton} aria-hidden="true">
+            <span className={styles.skeletonTabs} />
+            <span className={styles.skeletonPillars} />
+            <span className={styles.skeletonReading} />
+          </div>
+          <Status
+            description="正在准备定位、时间层与四柱事实；完成后直接进入盘面。"
+            state="loading"
+            title="正在同步出盘"
+          />
+        </div>
+      ) : null}
+
+      {state === "empty" ? (
         <Status
-          actions={
-            details.action ? (
-              <button type="button">{details.action}</button>
-            ) : null
-          }
-          description={details.description}
-          state={state}
-          title={details.title}
+          actions={<Link href="/bazi">开始录入</Link>}
+          description="服务端尚未返回盘面事实，不会用演示值补齐。"
+          state="empty"
+          title="还没有盘面"
         />
-      )}
+      ) : null}
+
+      {state === "locked" ? (
+        <div className={styles.lockedStack}>
+          {children}
+          <Status
+            actions={<Link href="/pricing">了解专业版</Link>}
+            description="本命、大运与流年事实仍可查看；锁定只作用于专业时间层和深读。"
+            state="locked"
+            title="专业时间层与深读已锁定"
+          />
+        </div>
+      ) : null}
+
+      {state === "need-input" ? (
+        <Status
+          actions={(
+            <>
+              <button type="button">返回补充资料</button>
+              <button data-variant="secondary" type="button">沿用当前口径</button>
+            </>
+          )}
+          description="出生时刻处在口径边界，请确认资料后再同步出盘。"
+          state="need-input"
+          title="需要确认边界口径"
+        />
+      ) : null}
+
+      {state === "error" ? (
+        <Status
+          actions={<button type="button">重试</button>}
+          description="这次同步没有成功；不会展示猜测盘面。"
+          state="error"
+          title="同步出盘失败"
+        />
+      ) : null}
     </div>
   );
 }
