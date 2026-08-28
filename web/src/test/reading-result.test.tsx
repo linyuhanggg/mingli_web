@@ -112,6 +112,102 @@ const baziTimeLayerEntitlement = {
   ],
 } satisfies NonNullable<ReadingResultResponse["time_layer_entitlement"]>;
 
+const ziweiTimeLayerEntitlement = {
+  schema_version: "time-layer-entitlement/v1",
+  capability_id: "ziwei",
+  resolution: "granted",
+  free_boundary_layer_id: "year",
+  paid_layer_ids: ["month", "day", "hour"],
+  free_year_set: [2026],
+  capability: {
+    time_layers: [
+      { layer_id: "life", label: "原局", available: true, unavailable_reason: null },
+      { layer_id: "year", label: "流年", available: true, unavailable_reason: null },
+      { layer_id: "month", label: "流月", available: true, unavailable_reason: null },
+      { layer_id: "day", label: "流日", available: false, unavailable_reason: "本次结果未返回逐日盘面。" },
+      { layer_id: "hour", label: "流时", available: false, unavailable_reason: "本次结果未返回逐时盘面。" },
+    ],
+  },
+  layers: [
+    { layer_id: "life", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "major_limits", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "year", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "month", tier: "paid", access: "readable", upgrade_cta: null },
+    { layer_id: "day", tier: "paid", access: "unavailable", upgrade_cta: null },
+    { layer_id: "hour", tier: "paid", access: "unavailable", upgrade_cta: null },
+  ],
+} satisfies NonNullable<ReadingResultResponse["time_layer_entitlement"]>;
+
+const ziweiMonthViewModel = {
+  schema_version: "ziwei-chart/v1",
+  subject_ref: "profile-version:ziwei-entitlement-fixture",
+  life_palace_id: "0",
+  body_palace_id: "6",
+  palaces: ["子", "丑", "寅", "卯", "辰", "巳", "午", "未", "申", "酉", "戌", "亥"].map(
+    (branch, index) => ({
+      palace_id: String(index),
+      label: index === 0 ? "命宫" : index === 6 ? "官禄" : `宫${index}`,
+      heavenly_stem: "甲",
+      earthly_branch: branch,
+      major_stars: index === 0 ? ["紫微"] : [],
+    }),
+  ),
+  time_layers: [
+    { layer_id: "month", label: "流月", available: true, unavailable_reason: null },
+  ],
+  core_facts: {
+    five_elements_class: "水二局",
+    source_conditioned_patterns: [],
+    ming_shen: null,
+    major_limit_direction: null,
+    major_limit_starting_age: null,
+    major_limit_sequence: null,
+    major_limits: null,
+    transformations: null,
+    star_facts: null,
+    monthly_layers: [
+      {
+        year: 2026,
+        month: 8,
+        liu_yue: { life_palace: "申" },
+        segments: [
+          {
+            start_inclusive: "2026-08-01",
+            end_exclusive: "2026-09-01",
+            liu_yue: {
+              palace_assignments: [
+                "子", "丑", "寅", "卯", "辰", "巳",
+                "午", "未", "申", "酉", "戌", "亥",
+              ].map((branch, index) => ({
+                index,
+                natal_branch: branch,
+                natal_palace:
+                  index === 0 ? "命宫" : index === 6 ? "官禄" : `宫${index}`,
+                temporal_palace:
+                  branch === "申"
+                    ? "命宫"
+                    : index === 0
+                      ? "迁移"
+                      : index === 6
+                        ? "官禄"
+                        : `宫${index}`,
+                dynamic_stars: [],
+                chart_palace: {
+                  branch,
+                  name:
+                    index === 0 ? "命宫" : index === 6 ? "官禄" : `宫${index}`,
+                },
+              })),
+              transformation_facts: [],
+            },
+          },
+        ],
+        representative_scope: "monthly",
+      },
+    ],
+  },
+} as const;
+
 const meihuaCapabilityB = {
   capability_id: "meihua",
   label: "梅花易数",
@@ -1604,6 +1700,57 @@ describe("bazi chart workspace", () => {
     expect(within(monthly).getByText(/2026-08/)).toBeVisible();
     await user.click(monthly);
     expect(screen.getByRole("table", { name: "流月总览" })).toBeVisible();
+  });
+
+  it("carries the typed Ziwei entitlement sibling through to readable month facts", async () => {
+    const user = userEvent.setup();
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            capability: {
+              capability_id: "ziwei",
+              label: "紫微",
+              tier: "B",
+              source_system: "ziwei",
+              runtime_active_rule_count: 2,
+              judgment_rule_count: 0,
+              source_status: "available",
+            },
+            view_model: ziweiMonthViewModel,
+            time_layer_entitlement: ziweiTimeLayerEntitlement,
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "ziwei",
+          product_id: "ziwei",
+          object_id: "natal",
+          dimension_ids: [],
+          horizon: { kind_id: "life", start: null, end: null },
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const timeLayerLocator = await screen.findByRole("navigation", {
+      name: "时间层定位",
+    });
+    const monthly = within(timeLayerLocator).getByRole("button", {
+      name: /流月/,
+    });
+    const controlledPanelId = monthly.getAttribute("aria-controls");
+    expect(controlledPanelId).toBeTruthy();
+    expect(document.getElementById(controlledPanelId!)).toBeInTheDocument();
+    await user.click(monthly);
+    expect(monthly).toHaveAttribute("aria-current", "true");
+    expect(document.getElementById(controlledPanelId!)).toBeInTheDocument();
+    expect(screen.getByRole("table", { name: "流月盘面事实" })).toHaveTextContent(
+      "2026-08",
+    );
   });
 
   it("presents a Bazi preview as a Chinese chart instead of internal metadata or fake interpretation", async () => {

@@ -557,10 +557,24 @@ export type FiveElementsFactsViewModel = {
   readonly limitations: ReadonlyArray<string>;
 };
 
+export type ZiweiCalendarCoverage = {
+  readonly start_inclusive: string;
+  readonly end_exclusive: string;
+  readonly requested_target_date: string | null;
+};
+
+export type ZiweiMajorLimitSegment = {
+  readonly start_inclusive: string;
+  readonly end_exclusive: string;
+  readonly major_limit: Readonly<Record<string, unknown>>;
+};
+
 export type ZiweiCoreFacts = {
   readonly chart_convention?: Readonly<Record<string, unknown>> | null;
   readonly chinese_date?: string | null;
   readonly active_major_limit?: Readonly<Record<string, unknown>> | null;
+  readonly active_major_limit_segments?: ReadonlyArray<ZiweiMajorLimitSegment>;
+  readonly calendar_coverage?: ZiweiCalendarCoverage;
   readonly five_elements_class: string | null;
   readonly interpretive_candidates?: Readonly<Record<string, unknown>> | null;
   readonly source_conditioned_patterns: ReadonlyArray<SourceConditionedPattern>;

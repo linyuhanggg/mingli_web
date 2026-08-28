@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
 from app.charts.contracts import (
     CanwenViewV1,
     DaliurenChartV1,
@@ -389,6 +390,456 @@ def test_ziwei_projector_exposes_calculated_core_facts_without_input_material() 
     assert view_model.core_facts.transformations[0].transformation == "禄"
     assert view_model.core_facts.star_facts is not None
     assert view_model.core_facts.star_facts[0].brightness == "庙"
+
+
+def test_ziwei_projector_preserves_ordered_active_major_limit_segments() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    segments = [
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-01-29",
+            "major_limit": {
+                "index": 1,
+                "palace_assignments": [{"temporal_palace": "福德"}],
+                "star_facts": [{"name": "武曲", "brightness": "庙"}],
+                "transformation_facts": [
+                    {"star": "武曲", "transformation": "禄"}
+                ],
+            },
+        },
+        {
+            "start_inclusive": "2025-01-29",
+            "end_exclusive": "2026-01-01",
+            "major_limit": {
+                "index": 2,
+                "palace_assignments": [{"temporal_palace": "田宅"}],
+                "star_facts": [{"name": "太阳", "brightness": "旺"}],
+                "transformation_facts": [
+                    {"star": "太阳", "transformation": "禄"}
+                ],
+            },
+        },
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": segments[0]["major_limit"],
+                "active_major_limit_segments": segments,
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.active_major_limit_segments is not None
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert serialized["active_major_limit_segments"] == segments
+    round_trip = ZiweiChartV1.model_validate(view_model.model_dump(mode="json"))
+    assert round_trip.model_dump(mode="json")["core_facts"] == serialized
+
+
+def test_ziwei_projector_preserves_calendar_coverage_across_segment_boundary() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    segments = [
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-01-29",
+            "major_limit": {"index": 1},
+        },
+        {
+            "start_inclusive": "2025-01-29",
+            "end_exclusive": "2025-02-01",
+            "major_limit": {"index": 2},
+        },
+    ]
+    runtime_calendar_coverage = {
+        "start_inclusive": "2025-01-01",
+        "end_exclusive": "2025-02-01",
+        "requested_target_date": "2025-01-29",
+        "status": "exact_daily_boundary_detection",
+        "horoscope_divide": "normal/lunar-new-year",
+        "age_divide": "normal/nominal-age",
+    }
+    expected_calendar_coverage = {
+        key: runtime_calendar_coverage[key]
+        for key in ("start_inclusive", "end_exclusive", "requested_target_date")
+    }
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": segments[0]["major_limit"],
+                "active_major_limit_segments": segments,
+                "calendar_coverage": runtime_calendar_coverage,
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert serialized["calendar_coverage"] == expected_calendar_coverage
+    round_trip = ZiweiChartV1.model_validate_json(view_model.model_dump_json())
+    assert round_trip.model_dump(mode="json")["core_facts"] == serialized
+
+
+def test_ziwei_projector_normalizes_year_coverage_without_exact_day_target() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    active_major_limit = {"index": 1, "palace": "命宫"}
+    annual_layers = {
+        "2025": {
+            "year": 2025,
+            "coverage_start": "2025-01-29",
+            "coverage_end_exclusive": "2026-02-17",
+            "liu_nian": {"year": 2025},
+            "segments": [{"start_inclusive": "2025-01-29"}],
+            "representative_scope": "year:2025",
+        }
+    }
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": active_major_limit,
+                "annual_layers": annual_layers,
+                "calendar_coverage": {
+                    "start_inclusive": "2025-01-01",
+                    "end_exclusive": "2026-01-01",
+                    "requested_target_date": "",
+                    "status": "exact_daily_boundary_detection",
+                    "horoscope_divide": "normal/lunar-new-year",
+                    "age_divide": "normal/nominal-age",
+                },
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.calendar_coverage is not None
+    assert view_model.core_facts.calendar_coverage.requested_target_date is None
+    assert view_model.core_facts.active_major_limit == active_major_limit
+    assert view_model.core_facts.annual_layers is not None
+    assert [layer.year for layer in view_model.core_facts.annual_layers] == [2025]
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert serialized["calendar_coverage"] == {
+        "start_inclusive": "2025-01-01",
+        "end_exclusive": "2026-01-01",
+        "requested_target_date": None,
+    }
+    round_trip = ZiweiChartV1.model_validate_json(view_model.model_dump_json())
+    assert round_trip.model_dump(mode="json")["core_facts"] == serialized
+
+
+def test_ziwei_projector_omits_calendar_coverage_when_runtime_fact_is_absent() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief("ziwei", {"palaces": palaces, "active_major_limit": {"index": 1}})
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert "calendar_coverage" not in serialized
+    round_trip = ZiweiChartV1.model_validate_json(view_model.model_dump_json())
+    assert "calendar_coverage" not in round_trip.model_dump(mode="json")["core_facts"]
+
+
+@pytest.mark.parametrize(
+    "calendar_coverage",
+    [
+        None,
+        "not-an-object",
+        {},
+        {
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-01-29",
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "requested_target_date": "2025-01-29",
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+        },
+        {
+            "start_inclusive": "2025-02-30",
+            "end_exclusive": "2025-03-01",
+            "requested_target_date": "2025-02-28",
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": None,
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-01-29",
+            "unknown_runtime_field": True,
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-02-30",
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "20250129",
+        },
+        {
+            "start_inclusive": "20250101",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-01-29",
+        },
+        {
+            "start_inclusive": "2025-02-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-02-01",
+        },
+        {
+            "start_inclusive": "2025-02-02",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-02-01",
+        },
+        {
+            "start_inclusive": "2025-01-02",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-01-01",
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-02-01",
+        },
+    ],
+    ids=(
+        "null",
+        "non-object",
+        "missing-all-fields",
+        "missing-start",
+        "missing-end",
+        "missing-target",
+        "invalid-start",
+        "raw-null-target",
+        "unknown-runtime-field",
+        "invalid-target",
+        "non-canonical-target",
+        "non-canonical-start",
+        "empty-range",
+        "reverse-range",
+        "target-before-start",
+        "target-at-exclusive-end",
+    ),
+)
+def test_ziwei_projector_rejects_invalid_calendar_coverage(
+    calendar_coverage: object,
+) -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": {"index": 1},
+                "calendar_coverage": calendar_coverage,
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is None
+
+
+def test_ziwei_projector_omits_segments_only_when_runtime_fact_is_absent() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": {"index": 1},
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.active_major_limit == {"index": 1}
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert "active_major_limit_segments" not in serialized
+    round_trip = ZiweiChartV1.model_validate(view_model.model_dump(mode="json"))
+    assert "active_major_limit_segments" not in round_trip.model_dump(mode="json")[
+        "core_facts"
+    ]
+
+
+@pytest.mark.parametrize(
+    "segments",
+    [
+        None,
+        [],
+        [{}],
+        [
+            {
+                "end_exclusive": "2025-01-29",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-01",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-29",
+                "end_exclusive": "2025-01-29",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-30",
+                "end_exclusive": "2025-01-29",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-02-30",
+                "end_exclusive": "2025-03-01",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-01",
+                "end_exclusive": "2025-01-29",
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-01",
+                "end_exclusive": "2025-01-29",
+                "major_limit": {},
+            }
+        ],
+    ],
+    ids=(
+        "null-list",
+        "empty-list",
+        "empty-segment",
+        "missing-start",
+        "missing-end",
+        "empty-range",
+        "reverse-range",
+        "invalid-date",
+        "missing-major-limit",
+        "empty-major-limit",
+    ),
+)
+def test_ziwei_projector_rejects_invalid_active_major_limit_segments(
+    segments: object,
+) -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": {"index": 1},
+                "active_major_limit_segments": segments,
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is None
 
 
 def test_qizheng_projector_derives_only_display_coordinates_from_runtime_longitudes() -> None:
