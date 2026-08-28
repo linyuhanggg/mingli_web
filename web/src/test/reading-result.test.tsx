@@ -170,7 +170,38 @@ const ziweiMonthViewModel = {
         year: 2026,
         month: 8,
         liu_yue: { life_palace: "申" },
-        segments: [{ segment: "monthly" }],
+        segments: [
+          {
+            start_inclusive: "2026-08-01",
+            end_exclusive: "2026-09-01",
+            liu_yue: {
+              palace_assignments: [
+                "子", "丑", "寅", "卯", "辰", "巳",
+                "午", "未", "申", "酉", "戌", "亥",
+              ].map((branch, index) => ({
+                index,
+                natal_branch: branch,
+                natal_palace:
+                  index === 0 ? "命宫" : index === 6 ? "官禄" : `宫${index}`,
+                temporal_palace:
+                  branch === "申"
+                    ? "命宫"
+                    : index === 0
+                      ? "迁移"
+                      : index === 6
+                        ? "官禄"
+                        : `宫${index}`,
+                dynamic_stars: [],
+                chart_palace: {
+                  branch,
+                  name:
+                    index === 0 ? "命宫" : index === 6 ? "官禄" : `宫${index}`,
+                },
+              })),
+              transformation_facts: [],
+            },
+          },
+        ],
         representative_scope: "monthly",
       },
     ],
@@ -1705,8 +1736,18 @@ describe("bazi chart workspace", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const monthly = await screen.findByRole("tab", { name: /流月/ });
+    const timeLayerLocator = await screen.findByRole("navigation", {
+      name: "时间层定位",
+    });
+    const monthly = within(timeLayerLocator).getByRole("button", {
+      name: /流月/,
+    });
+    const controlledPanelId = monthly.getAttribute("aria-controls");
+    expect(controlledPanelId).toBeTruthy();
+    expect(document.getElementById(controlledPanelId!)).toBeInTheDocument();
     await user.click(monthly);
+    expect(monthly).toHaveAttribute("aria-current", "true");
+    expect(document.getElementById(controlledPanelId!)).toBeInTheDocument();
     expect(screen.getByRole("table", { name: "流月盘面事实" })).toHaveTextContent(
       "2026-08",
     );

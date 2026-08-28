@@ -31,7 +31,6 @@ import styles from "./ziwei-palace-board.module.css";
 import { ZiweiMajorLimitTrack } from "./ziwei-major-limit-track";
 import { ZiweiSourcePatternDrawer } from "./ziwei-source-pattern-drawer";
 import { ZiweiStarFactList } from "./ziwei-star-fact-list";
-import { TimeLayerTabs } from "./time-layer-tabs";
 import { ZiweiTransformationTable } from "./ziwei-transformation-table";
 
 const BRANCHES = [
@@ -1141,6 +1140,7 @@ type ZiweiCapabilityLayer =
 type ParsedZiweiEntitlement = {
   layers: ReadonlyMap<string, ZiweiEntitlementLayer>;
   capability: ReadonlyMap<string, ZiweiCapabilityLayer>;
+  freeYears: ReadonlySet<number>;
 };
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -1186,16 +1186,28 @@ type ZiweiTemporalTransformation = {
 
 type ZiweiTemporalLayerId = "yearly" | "monthly";
 
+type ZiweiTemporalSegmentOption = {
+  id: string;
+  label: string;
+  startInclusive: string;
+  endExclusive: string;
+  view: ZiweiChartViewModel;
+};
+
 type ZiweiTemporalOption = {
   id: string;
   label: string;
-  view: ZiweiChartViewModel;
+  rangeLabel: string;
+  segments: readonly ZiweiTemporalSegmentOption[];
+  initialSegmentId: string;
 };
 
 type ZiweiTemporalSelection = {
   options: readonly ZiweiTemporalOption[];
   initialId: string;
 };
+
+const EMPTY_FREE_YEAR_SET: ReadonlySet<number> = new Set();
 
 function isEarthlyBranch(value: unknown): value is (typeof BRANCHES)[number] {
   return (
@@ -1239,10 +1251,15 @@ function parseTemporalPalaces(
   value: Readonly<Record<string, unknown>>,
 ): readonly ZiweiTemporalPalace[] | null {
   const rawAssignments = value.palace_assignments;
-  if (!Array.isArray(rawAssignments) || rawAssignments.length !== BRANCHES.length) {
+  if (
+    !Array.isArray(rawAssignments) ||
+    rawAssignments.length !== BRANCHES.length
+  ) {
     return null;
   }
-  const baseBranches = new Set(view.palaces.map((palace) => palace.earthly_branch));
+  const baseBranches = new Set(
+    view.palaces.map((palace) => palace.earthly_branch),
+  );
   if (
     view.palaces.length !== BRANCHES.length ||
     baseBranches.size !== BRANCHES.length ||
@@ -1342,9 +1359,15 @@ function projectTemporalPalaceView(
   view: ZiweiChartViewModel,
   value: Readonly<Record<string, unknown>>,
 ): ZiweiChartViewModel | null {
+  const declaresAssignments = Object.prototype.hasOwnProperty.call(
+    value,
+    "palace_assignments",
+  );
   const assignments = parseTemporalPalaces(view, value);
   const transformations = parseTemporalTransformations(value);
-  if (transformations === null) return null;
+  if (transformations === null || (declaresAssignments && !assignments)) {
+    return null;
+  }
   if (assignments) {
     const byBranch = new Map(
       assignments.map((assignment) => [assignment.branch, assignment]),
@@ -1441,10 +1464,37 @@ function projectTemporalPalaceView(
     : null;
 }
 
+function activeMajorLimitPalaceView(
+  view: ZiweiChartViewModel,
+): ZiweiChartViewModel | null {
+  const activeMajorLimit = view.core_facts?.active_major_limit;
+  if (
+    !isRecord(activeMajorLimit) ||
+    !Array.isArray(activeMajorLimit.palace_assignments)
+  ) {
+    return null;
+  }
+  return projectTemporalPalaceView(view, activeMajorLimit);
+}
+
 type ZiweiTemporalTarget =
-  | { status: "none" }
-  | { status: "valid"; id: string }
-  | { status: "invalid" };
+  { status: "none" } | { status: "valid"; id: string } | { status: "invalid" };
+
+function isIsoCivilDate(value: unknown): value is string {
+  if (
+    typeof value !== "string" ||
+    !/^(18|19|20|21)\d{2}-(0[1-9]|1[0-2])-(0[1-9]|[12]\d|3[01])$/.test(value)
+  ) {
+    return false;
+  }
+  const [year, month, day] = value.split("-").map(Number);
+  const parsed = new Date(Date.UTC(year, month - 1, day));
+  return (
+    parsed.getUTCFullYear() === year &&
+    parsed.getUTCMonth() === month - 1 &&
+    parsed.getUTCDate() === day
+  );
+}
 
 function targetFromRecord(
   value: unknown,
@@ -1489,9 +1539,61 @@ function targetFromRecord(
   return { status: "invalid" };
 }
 
+function dateTargetFromRecord(value: unknown): ZiweiTemporalTarget {
+  if (!isRecord(value)) return { status: "none" };
+  const dates = new Set<string>();
+  for (const key of ["target_date", "requested_target_date"] as const) {
+    if (!Object.prototype.hasOwnProperty.call(value, key)) continue;
+    if (!isIsoCivilDate(value[key])) return { status: "invalid" };
+    dates.add(value[key]);
+  }
+  if (dates.size > 1) return { status: "invalid" };
+  const date = [...dates][0];
+  return date ? { status: "valid", id: date } : { status: "none" };
+}
+
+function temporalSegmentsForRange(
+  view: ZiweiChartViewModel,
+  rangeId: string,
+  rawSegments: readonly Readonly<Record<string, unknown>>[],
+  outputKey: "liu_nian" | "liu_yue",
+): ZiweiTemporalSegmentOption[] | null {
+  if (!rawSegments.length) return null;
+  const identities = new Set<string>();
+  const segments: ZiweiTemporalSegmentOption[] = [];
+  let previousEnd: string | null = null;
+  for (const raw of rawSegments) {
+    if (
+      !isRecord(raw) ||
+      !isIsoCivilDate(raw.start_inclusive) ||
+      !isIsoCivilDate(raw.end_exclusive) ||
+      raw.start_inclusive >= raw.end_exclusive ||
+      (previousEnd !== null && raw.start_inclusive !== previousEnd) ||
+      !isRecord(raw[outputKey]) ||
+      !Array.isArray(raw[outputKey].palace_assignments)
+    ) {
+      return null;
+    }
+    const id = `${rangeId}:${raw.start_inclusive}/${raw.end_exclusive}`;
+    const temporalView = projectTemporalPalaceView(view, raw[outputKey]);
+    if (identities.has(id) || !temporalView) return null;
+    identities.add(id);
+    previousEnd = raw.end_exclusive;
+    segments.push({
+      id,
+      label: `${raw.start_inclusive}—${raw.end_exclusive}`,
+      startInclusive: raw.start_inclusive,
+      endExclusive: raw.end_exclusive,
+      view: temporalView,
+    });
+  }
+  return segments;
+}
+
 function temporalSelectionForLayer(
   view: ZiweiChartViewModel,
   layerId: ZiweiTemporalLayerId,
+  freeYears: ReadonlySet<number> = EMPTY_FREE_YEAR_SET,
 ): ZiweiTemporalSelection | null {
   const options: ZiweiTemporalOption[] = [];
   const identities = new Set<string>();
@@ -1503,20 +1605,36 @@ function temporalSelectionForLayer(
       if (
         !Number.isInteger(layer.year) ||
         layer.year < 1800 ||
-        layer.year > 2199 ||
-        !isNonEmptyText(layer.coverage_start) ||
-        !isNonEmptyText(layer.coverage_end_exclusive) ||
-        !Array.isArray(layer.segments) ||
-        !layer.segments.length ||
-        !isRecord(layer.liu_nian)
+        layer.year > 2199
       ) {
         return null;
       }
+      if (!freeYears.has(layer.year)) continue;
       const id = String(layer.year);
-      const temporalView = projectTemporalPalaceView(view, layer.liu_nian);
-      if (identities.has(id) || !temporalView) return null;
+      const segments = temporalSegmentsForRange(
+        view,
+        id,
+        layer.segments,
+        "liu_nian",
+      );
+      if (
+        identities.has(id) ||
+        !isIsoCivilDate(layer.coverage_start) ||
+        !isIsoCivilDate(layer.coverage_end_exclusive) ||
+        !segments ||
+        segments[0].startInclusive !== layer.coverage_start ||
+        segments.at(-1)?.endExclusive !== layer.coverage_end_exclusive
+      ) {
+        return null;
+      }
       identities.add(id);
-      options.push({ id, label: id, view: temporalView });
+      options.push({
+        id,
+        label: id,
+        rangeLabel: `${layer.coverage_start}—${layer.coverage_end_exclusive}`,
+        segments,
+        initialSegmentId: segments[0].id,
+      });
       targetRecords.push(layer.liu_nian);
     }
   } else {
@@ -1531,49 +1649,129 @@ function temporalSelectionForLayer(
         layer.month < 1 ||
         layer.month > 12 ||
         !Array.isArray(layer.segments) ||
-        !layer.segments.length ||
-        !isRecord(layer.liu_yue)
+        !layer.segments.length
       ) {
         return null;
       }
       const id = `${layer.year}-${String(layer.month).padStart(2, "0")}`;
-      const temporalView = projectTemporalPalaceView(view, layer.liu_yue);
-      if (identities.has(id) || !temporalView) return null;
+      const segments = temporalSegmentsForRange(
+        view,
+        id,
+        layer.segments,
+        "liu_yue",
+      );
+      if (identities.has(id) || !segments) return null;
       identities.add(id);
-      options.push({ id, label: id, view: temporalView });
+      options.push({
+        id,
+        label: id,
+        rangeLabel: `${segments[0].startInclusive}—${segments.at(-1)?.endExclusive}`,
+        segments,
+        initialSegmentId: segments[0].id,
+      });
       targetRecords.push(layer.liu_yue);
     }
   }
 
+  if (!options.length) return null;
+
   const explicitTargets = new Set<string>();
+  const exactDateTargets = new Set<string>();
   for (const record of targetRecords) {
     const target = targetFromRecord(record, layerId);
     if (target.status === "invalid") return null;
     if (target.status === "valid") explicitTargets.add(target.id);
+    const exactDateTarget = dateTargetFromRecord(record);
+    if (exactDateTarget.status === "invalid") return null;
+    if (exactDateTarget.status === "valid") {
+      exactDateTargets.add(exactDateTarget.id);
+    }
   }
-  if (explicitTargets.size > 1) return null;
+  if (explicitTargets.size > 1 || exactDateTargets.size > 1) return null;
   const explicitTarget = [...explicitTargets][0];
-  if (explicitTarget && !identities.has(explicitTarget)) return null;
+  let initialId = options[0].id;
+  if (explicitTarget && identities.has(explicitTarget)) {
+    initialId = explicitTarget;
+  } else if (
+    explicitTarget &&
+    !(
+      layerId === "yearly" &&
+      Number.isInteger(Number(explicitTarget)) &&
+      !freeYears.has(Number(explicitTarget))
+    )
+  ) {
+    return null;
+  }
+
+  const exactDateTarget = [...exactDateTargets][0];
+  if (exactDateTarget) {
+    const matching = options.flatMap((option) =>
+      option.segments
+        .filter((segment) => {
+          return (
+            segment.startInclusive <= exactDateTarget &&
+            exactDateTarget < segment.endExclusive
+          );
+        })
+        .map((segment) => ({ option, segment })),
+    );
+    if (matching.length === 1) {
+      const match = matching[0];
+      if (
+        explicitTarget &&
+        identities.has(explicitTarget) &&
+        match.option.id !== explicitTarget
+      ) {
+        return null;
+      }
+      match.option.initialSegmentId = match.segment.id;
+      if (!explicitTarget || !identities.has(explicitTarget)) {
+        initialId = match.option.id;
+      }
+    } else if (!(
+      layerId === "yearly" &&
+      isIsoCivilDate(exactDateTarget) &&
+      !freeYears.has(Number(exactDateTarget.slice(0, 4)))
+    )) {
+      return null;
+    }
+  }
   return {
     options,
-    initialId: explicitTarget ?? options[0].id,
+    initialId,
   };
 }
 
-function temporalPalaceViewForLayer(
-  view: ZiweiChartViewModel,
-  layerId: ZiweiTemporalLayerId,
+function temporalPalaceViewForSelection(
+  selection: ZiweiTemporalSelection,
   selectedId?: string | null,
+  selectedSegmentId?: string | null,
 ): ZiweiChartViewModel | null {
-  const selection = temporalSelectionForLayer(view, layerId);
-  if (!selection) return null;
   const resolvedId =
     selectedId && selection.options.some((option) => option.id === selectedId)
       ? selectedId
       : selection.initialId;
+  const option = selection.options.find((item) => item.id === resolvedId);
+  if (!option) return null;
+  const resolvedSegmentId =
+    selectedSegmentId &&
+    option.segments.some((segment) => segment.id === selectedSegmentId)
+      ? selectedSegmentId
+      : option.initialSegmentId;
   return (
-    selection.options.find((option) => option.id === resolvedId)?.view ?? null
+    option.segments.find((segment) => segment.id === resolvedSegmentId)?.view ??
+    null
   );
+}
+
+function resolvedTemporalSegmentId(
+  option: ZiweiTemporalOption,
+  selectedSegmentId?: string | null,
+): string {
+  return selectedSegmentId &&
+    option.segments.some((segment) => segment.id === selectedSegmentId)
+    ? selectedSegmentId
+    : option.initialSegmentId;
 }
 
 function parseZiweiEntitlement(value: unknown): ParsedZiweiEntitlement | null {
@@ -1669,22 +1867,29 @@ function parseZiweiEntitlement(value: unknown): ParsedZiweiEntitlement | null {
     }
   }
 
-  return { capability, layers };
+  return { capability, freeYears: seenYears, layers };
 }
 
 function layerHasFacts(
   view: ZiweiChartViewModel,
   layerId: WorkspaceLayerId,
+  entitlement: ParsedZiweiEntitlement | null,
 ): boolean {
   if (layerId === "natal") return true;
   if (layerId === "decadal") {
-    return Boolean(
-      view.core_facts?.major_limits?.length ||
-      view.core_facts?.major_limit_sequence?.length,
+    return activeMajorLimitPalaceView(view) !== null;
+  }
+  if (layerId === "yearly") {
+    return (
+      temporalSelectionForLayer(
+        view,
+        layerId,
+        entitlement?.freeYears ?? EMPTY_FREE_YEAR_SET,
+      ) !== null
     );
   }
-  if (layerId === "yearly" || layerId === "monthly") {
-    return temporalPalaceViewForLayer(view, layerId) !== null;
+  if (layerId === "monthly") {
+    return temporalSelectionForLayer(view, layerId) !== null;
   }
   return false;
 }
@@ -1704,7 +1909,7 @@ export function projectZiweiWorkspace(
     if (layerId && layerId !== "natal" && !declared.has(layerId))
       declared.set(layerId, layer);
   }
-  if (!declared.has("decadal") && layerHasFacts(view, "decadal")) {
+  if (!declared.has("decadal") && layerHasFacts(view, "decadal", entitlement)) {
     declared.set("decadal", {
       layer_id: "major_limits",
       label: "大限",
@@ -1712,7 +1917,7 @@ export function projectZiweiWorkspace(
       unavailable_reason: null,
     });
   }
-  if (!declared.has("yearly") && layerHasFacts(view, "yearly")) {
+  if (!declared.has("yearly") && layerHasFacts(view, "yearly", entitlement)) {
     declared.set("yearly", {
       layer_id: "year",
       label: "流年",
@@ -1720,7 +1925,7 @@ export function projectZiweiWorkspace(
       unavailable_reason: null,
     });
   }
-  if (!declared.has("monthly") && layerHasFacts(view, "monthly")) {
+  if (!declared.has("monthly") && layerHasFacts(view, "monthly", entitlement)) {
     declared.set("monthly", {
       layer_id: "month",
       label: "流月",
@@ -1748,7 +1953,7 @@ export function projectZiweiWorkspace(
     "hourly",
   ] as const) {
     const capability = declared.get(layerId);
-    const hasFacts = layerHasFacts(view, layerId);
+    const hasFacts = layerHasFacts(view, layerId, entitlement);
     const meta = WORKSPACE_LAYER_META[layerId];
     const entitlementLayerId =
       layerId === "decadal"
@@ -1861,6 +2066,98 @@ function palaceFocusDetail(
   };
 }
 
+function ZiweiTimeLayerLocator({
+  activeLayerId,
+  idPrefix,
+  layers,
+  onSelect,
+  panelId,
+}: Readonly<{
+  activeLayerId: WorkspaceLayerId;
+  idPrefix: string;
+  layers: readonly WorkspaceLayer[];
+  onSelect: (layerId: WorkspaceLayerId) => void;
+  panelId: string;
+}>) {
+  const buttonRefs = useRef<
+    Partial<Record<WorkspaceLayerId, HTMLButtonElement | null>>
+  >({});
+
+  function handleKeyDown(
+    event: KeyboardEvent<HTMLButtonElement>,
+    currentLayerId: WorkspaceLayerId,
+  ) {
+    const interactiveLayers = layers.filter(
+      (layer) => layer.status !== "locked-unavailable",
+    );
+    const currentIndex = interactiveLayers.findIndex(
+      (layer) => layer.id === currentLayerId,
+    );
+    if (currentIndex < 0 || !interactiveLayers.length) return;
+    let targetIndex: number | null = null;
+    if (event.key === "ArrowRight") {
+      targetIndex = (currentIndex + 1) % interactiveLayers.length;
+    } else if (event.key === "ArrowLeft") {
+      targetIndex =
+        (currentIndex - 1 + interactiveLayers.length) %
+        interactiveLayers.length;
+    } else if (event.key === "Home") {
+      targetIndex = 0;
+    } else if (event.key === "End") {
+      targetIndex = interactiveLayers.length - 1;
+    }
+    if (targetIndex === null) return;
+    event.preventDefault();
+    const targetLayer = interactiveLayers[targetIndex];
+    buttonRefs.current[targetLayer.id]?.focus();
+    onSelect(targetLayer.id);
+  }
+
+  return (
+    <nav aria-label="时间层定位" className={styles.timeLayerLocator}>
+      <div className={styles.timeLayerTrack}>
+        {layers.map((layer) => {
+          const active = layer.id === activeLayerId;
+          const unavailable = layer.status === "locked-unavailable";
+          const status =
+            layer.status === "ready"
+              ? (layer.summary ?? "可查看")
+              : layer.status === "empty"
+                ? "暂无结构"
+                : layer.status === "locked-paywall"
+                  ? "PRO · 已锁定"
+                  : layer.status === "fail-closed-unknown"
+                    ? "权益未确认"
+                    : (layer.summary ?? "暂不可用");
+          return (
+            <button
+              key={layer.id}
+              aria-controls={panelId}
+              aria-current={active ? "true" : undefined}
+              aria-disabled={unavailable}
+              className={styles.timeLayerButton}
+              data-active={active}
+              data-status={layer.status}
+              disabled={unavailable}
+              id={`${idPrefix}-layer-${layer.id}`}
+              onClick={unavailable ? undefined : () => onSelect(layer.id)}
+              onKeyDown={(event) => handleKeyDown(event, layer.id)}
+              ref={(element) => {
+                buttonRefs.current[layer.id] = element;
+              }}
+              tabIndex={!unavailable && active ? 0 : -1}
+              type="button"
+            >
+              <span className={styles.timeLayerLabel}>{layer.label}</span>
+              <span className={styles.timeLayerStatus}>{status}</span>
+            </button>
+          );
+        })}
+      </div>
+    </nav>
+  );
+}
+
 function TemporalLayerSelector({
   label,
   onSelect,
@@ -1869,7 +2166,7 @@ function TemporalLayerSelector({
 }: Readonly<{
   label: string;
   onSelect: (id: string) => void;
-  options: readonly ZiweiTemporalOption[];
+  options: readonly { id: string; label: string }[];
   selectedId: string;
 }>) {
   if (options.length < 2) return null;
@@ -1891,25 +2188,34 @@ function TemporalLayerSelector({
 }
 
 function ZiweiYearLayer({
-  onSelect,
+  onSelectRange,
+  onSelectSegment,
   selectedId,
+  selectedSegmentId,
   selection,
-  view,
 }: Readonly<{
-  onSelect: (id: string) => void;
+  onSelectRange: (id: string) => void;
+  onSelectSegment: (id: string) => void;
   selectedId: string;
+  selectedSegmentId: string;
   selection: ZiweiTemporalSelection;
-  view: ZiweiChartViewModel;
 }>) {
-  const annualLayers = view.core_facts?.annual_layers ?? [];
-  if (!annualLayers.length) return null;
+  const selected =
+    selection.options.find((option) => option.id === selectedId) ??
+    selection.options[0];
   return (
     <div className={styles.layerFacts}>
       <TemporalLayerSelector
         label="流年年份"
-        onSelect={onSelect}
+        onSelect={onSelectRange}
         options={selection.options}
         selectedId={selectedId}
+      />
+      <TemporalLayerSelector
+        label="流年分段"
+        onSelect={onSelectSegment}
+        options={selected.segments}
+        selectedId={selectedSegmentId}
       />
       <table className={styles.layerTable}>
         <caption>流年盘面事实</caption>
@@ -1921,11 +2227,11 @@ function ZiweiYearLayer({
           </tr>
         </thead>
         <tbody>
-          {annualLayers.map((item) => (
-            <tr key={`${item.year}-${item.coverage_start}`}>
-              <td>{item.year}</td>
-              <td>{`${item.coverage_start}—${item.coverage_end_exclusive}`}</td>
-              <td>{item.segments.length}</td>
+          {selection.options.map((option) => (
+            <tr key={option.id}>
+              <td>{option.label}</td>
+              <td>{option.rangeLabel}</td>
+              <td>{option.segments.length}</td>
             </tr>
           ))}
         </tbody>
@@ -1938,39 +2244,50 @@ function ZiweiYearLayer({
 }
 
 function ZiweiMonthLayer({
-  onSelect,
+  onSelectRange,
+  onSelectSegment,
   selectedId,
+  selectedSegmentId,
   selection,
-  view,
 }: Readonly<{
-  onSelect: (id: string) => void;
+  onSelectRange: (id: string) => void;
+  onSelectSegment: (id: string) => void;
   selectedId: string;
+  selectedSegmentId: string;
   selection: ZiweiTemporalSelection;
-  view: ZiweiChartViewModel;
 }>) {
-  const monthlyLayers = view.core_facts?.monthly_layers ?? [];
-  if (!monthlyLayers.length) return null;
+  const selected =
+    selection.options.find((option) => option.id === selectedId) ??
+    selection.options[0];
   return (
     <div className={styles.layerFacts}>
       <TemporalLayerSelector
         label="流月月份"
-        onSelect={onSelect}
+        onSelect={onSelectRange}
         options={selection.options}
         selectedId={selectedId}
+      />
+      <TemporalLayerSelector
+        label="流月分段"
+        onSelect={onSelectSegment}
+        options={selected.segments}
+        selectedId={selectedSegmentId}
       />
       <table className={styles.layerTable}>
         <caption>流月盘面事实</caption>
         <thead>
           <tr>
             <th scope="col">月份</th>
+            <th scope="col">覆盖区间</th>
             <th scope="col">分段</th>
           </tr>
         </thead>
         <tbody>
-          {monthlyLayers.map((item) => (
-            <tr key={`${item.year}-${item.month}`}>
-              <td>{`${item.year}-${String(item.month).padStart(2, "0")}`}</td>
-              <td>{item.segments.length}</td>
+          {selection.options.map((option) => (
+            <tr key={option.id}>
+              <td>{option.label}</td>
+              <td>{option.rangeLabel}</td>
+              <td>{option.segments.length}</td>
             </tr>
           ))}
         </tbody>
@@ -2099,16 +2416,24 @@ export function ZiweiWorkspace({
     lifeBranch,
   );
   const [activeBranch, setActiveBranch] = useState<string | null>(lifeBranch);
+  const parsedEntitlement = useMemo(
+    () => parseZiweiEntitlement(timeLayerEntitlement),
+    [timeLayerEntitlement],
+  );
   const workspace = useMemo(
     () => projectZiweiWorkspace(view, timeLayerEntitlement),
     [timeLayerEntitlement, view],
   );
   const temporalSelections = useMemo(
     () => ({
-      yearly: temporalSelectionForLayer(view, "yearly"),
+      yearly: temporalSelectionForLayer(
+        view,
+        "yearly",
+        parsedEntitlement?.freeYears ?? EMPTY_FREE_YEAR_SET,
+      ),
       monthly: temporalSelectionForLayer(view, "monthly"),
     }),
-    [view],
+    [parsedEntitlement, view],
   );
   const temporalSelectionKey = [
     view.subject_ref,
@@ -2116,7 +2441,12 @@ export function ZiweiWorkspace({
       const selection = temporalSelections[layerId];
       return selection
         ? `${layerId}:${selection.initialId}:${selection.options
-            .map((option) => option.id)
+            .map(
+              (option) =>
+                `${option.id}[${option.initialSegmentId}:${option.segments
+                  .map((segment) => segment.id)
+                  .join(",")}]`,
+            )
             .join(",")}`
         : `${layerId}:none`;
     }),
@@ -2124,10 +2454,15 @@ export function ZiweiWorkspace({
   const [temporalSelectionState, setTemporalSelectionState] = useState<{
     key: string;
     ids: Partial<Record<ZiweiTemporalLayerId, string>>;
-  }>({ key: temporalSelectionKey, ids: {} });
+    segmentIds: Partial<Record<ZiweiTemporalLayerId, string>>;
+  }>({ key: temporalSelectionKey, ids: {}, segmentIds: {} });
   const selectedTemporalIds =
     temporalSelectionState.key === temporalSelectionKey
       ? temporalSelectionState.ids
+      : {};
+  const selectedTemporalSegmentIds =
+    temporalSelectionState.key === temporalSelectionKey
+      ? temporalSelectionState.segmentIds
       : {};
   const unavailableLayerReasons = workspace.layers.flatMap((layer) => {
     const reason =
@@ -2137,7 +2472,8 @@ export function ZiweiWorkspace({
   const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
     workspace.activeLayerId,
   );
-  const tabIdPrefix = useId();
+  const locatorIdPrefix = useId();
+  const workspacePanelId = `${locatorIdPrefix}-workspace-panel`;
   const activeLayer =
     workspace.layers.find((layer) => layer.id === activeLayerId) ??
     workspace.layers[0];
@@ -2149,17 +2485,43 @@ export function ZiweiWorkspace({
     ? (selectedTemporalIds[activeLayer.id as ZiweiTemporalLayerId] ??
       activeTemporalSelection.initialId)
     : null;
+  const activeTemporalOption = activeTemporalSelection
+    ? (activeTemporalSelection.options.find(
+        (option) => option.id === activeTemporalId,
+      ) ?? activeTemporalSelection.options[0])
+    : null;
+  const activeTemporalSegmentId = activeTemporalOption
+    ? resolvedTemporalSegmentId(
+        activeTemporalOption,
+        selectedTemporalSegmentIds[activeLayer.id as ZiweiTemporalLayerId],
+      )
+    : null;
   const activePalaceView = useMemo(() => {
-    if (
-      activeLayer.status !== "ready" ||
-      (activeLayer.id !== "yearly" && activeLayer.id !== "monthly")
-    ) {
-      return view;
+    if (activeLayer.status !== "ready") return view;
+    if (activeLayer.id === "decadal") {
+      return activeMajorLimitPalaceView(view) ?? view;
     }
-    return (
-      temporalPalaceViewForLayer(view, activeLayer.id, activeTemporalId) ?? view
-    );
-  }, [activeLayer.id, activeLayer.status, activeTemporalId, view]);
+    if (
+      (activeLayer.id === "yearly" || activeLayer.id === "monthly") &&
+      activeTemporalSelection
+    ) {
+      return (
+        temporalPalaceViewForSelection(
+          activeTemporalSelection,
+          activeTemporalId,
+          activeTemporalSegmentId,
+        ) ?? view
+      );
+    }
+    return view;
+  }, [
+    activeLayer.id,
+    activeLayer.status,
+    activeTemporalId,
+    activeTemporalSegmentId,
+    activeTemporalSelection,
+    view,
+  ]);
   const detail = useMemo(
     () => palaceFocusDetail(activePalaceView, activeBranch),
     [activeBranch, activePalaceView],
@@ -2183,6 +2545,23 @@ export function ZiweiWorkspace({
         ...(current.key === temporalSelectionKey ? current.ids : {}),
         [layerId]: id,
       },
+      segmentIds:
+        current.key === temporalSelectionKey ? current.segmentIds : {},
+    }));
+  }
+
+  function selectTemporalSegment(layerId: ZiweiTemporalLayerId, id: string) {
+    const selection = temporalSelections[layerId];
+    const selectedId = selectedTemporalIds[layerId] ?? selection?.initialId;
+    const option = selection?.options.find((item) => item.id === selectedId);
+    if (!option?.segments.some((segment) => segment.id === id)) return;
+    setTemporalSelectionState((current) => ({
+      key: temporalSelectionKey,
+      ids: current.key === temporalSelectionKey ? current.ids : {},
+      segmentIds: {
+        ...(current.key === temporalSelectionKey ? current.segmentIds : {}),
+        [layerId]: id,
+      },
     }));
   }
 
@@ -2199,26 +2578,42 @@ export function ZiweiWorkspace({
       );
     }
     if (layer.id === "yearly" && temporalSelections.yearly) {
+      const selectedId =
+        selectedTemporalIds.yearly ?? temporalSelections.yearly.initialId;
+      const selectedOption =
+        temporalSelections.yearly.options.find(
+          (option) => option.id === selectedId,
+        ) ?? temporalSelections.yearly.options[0];
       return (
         <ZiweiYearLayer
-          onSelect={(id) => selectTemporalLayer("yearly", id)}
-          selectedId={
-            selectedTemporalIds.yearly ?? temporalSelections.yearly.initialId
-          }
+          onSelectRange={(id) => selectTemporalLayer("yearly", id)}
+          onSelectSegment={(id) => selectTemporalSegment("yearly", id)}
+          selectedId={selectedId}
+          selectedSegmentId={resolvedTemporalSegmentId(
+            selectedOption,
+            selectedTemporalSegmentIds.yearly,
+          )}
           selection={temporalSelections.yearly}
-          view={view}
         />
       );
     }
     if (layer.id === "monthly" && temporalSelections.monthly) {
+      const selectedId =
+        selectedTemporalIds.monthly ?? temporalSelections.monthly.initialId;
+      const selectedOption =
+        temporalSelections.monthly.options.find(
+          (option) => option.id === selectedId,
+        ) ?? temporalSelections.monthly.options[0];
       return (
         <ZiweiMonthLayer
-          onSelect={(id) => selectTemporalLayer("monthly", id)}
-          selectedId={
-            selectedTemporalIds.monthly ?? temporalSelections.monthly.initialId
-          }
+          onSelectRange={(id) => selectTemporalLayer("monthly", id)}
+          onSelectSegment={(id) => selectTemporalSegment("monthly", id)}
+          selectedId={selectedId}
+          selectedSegmentId={resolvedTemporalSegmentId(
+            selectedOption,
+            selectedTemporalSegmentIds.monthly,
+          )}
           selection={temporalSelections.monthly}
-          view={view}
         />
       );
     }
@@ -2254,21 +2649,22 @@ export function ZiweiWorkspace({
           </div>
           {workspace.subtitle ? <p>{workspace.subtitle}</p> : null}
         </header>
-        <TimeLayerTabs
+        <ZiweiTimeLayerLocator
           activeLayerId={activeLayer.id}
-          idPrefix={tabIdPrefix}
+          idPrefix={locatorIdPrefix}
           layers={workspace.layers}
           onSelect={selectLayer}
+          panelId={workspacePanelId}
         />
         {unavailableLayerReasons.length ? (
           <section
-            aria-labelledby={`${tabIdPrefix}-unavailable-layer-title`}
+            aria-labelledby={`${locatorIdPrefix}-unavailable-layer-title`}
             className={styles.unavailableLayerNotes}
           >
-            <p id={`${tabIdPrefix}-unavailable-layer-title`}>
+            <p id={`${locatorIdPrefix}-unavailable-layer-title`}>
               不可用时间层说明
             </p>
-            <ul aria-labelledby={`${tabIdPrefix}-unavailable-layer-title`}>
+            <ul aria-labelledby={`${locatorIdPrefix}-unavailable-layer-title`}>
               {unavailableLayerReasons.map((layer) => (
                 <li key={layer.id}>
                   <strong>{layer.label}：</strong>
@@ -2280,10 +2676,10 @@ export function ZiweiWorkspace({
         ) : null}
         <div className={styles.workspaceBody}>
           <div
-            aria-labelledby={`${tabIdPrefix}-tab-${activeLayer.id}`}
+            aria-labelledby={`${locatorIdPrefix}-layer-${activeLayer.id}`}
             className={styles.workspaceBoard}
-            id={`${tabIdPrefix}-panel-${activeLayer.id}`}
-            role="tabpanel"
+            id={workspacePanelId}
+            role="region"
             tabIndex={0}
           >
             <ZiweiPalaceBoard
