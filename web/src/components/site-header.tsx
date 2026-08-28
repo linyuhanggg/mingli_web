@@ -392,12 +392,70 @@ function MobileMenu({ pathname }: { pathname: string }) {
 }
 
 export function MobileNavigation({ pathname }: { pathname: string }) {
+  const [open, setOpen] = useState(false);
+  const drawerTrigger = (
+    <button
+      aria-current={isDivinationActive(pathname) ? "page" : undefined}
+      aria-expanded={open}
+      aria-haspopup="dialog"
+      aria-label="打开术数菜单"
+      className={styles.mobileNavItem}
+      type="button"
+    >
+      <LayoutGrid aria-hidden="true" size={19} strokeWidth={1.8} />
+      <span>术数</span>
+    </button>
+  );
+
   return (
     <nav aria-label="移动底栏" className={styles.mobileBottomBar}>
-      {mobileLinks.map(({ href, label, icon: Icon }) => (
+      {mobileLinks.slice(0, 1).map(({ href, label, icon: Icon }) => (
+        <Link
+          aria-current={isRouteActive(pathname, href) ? "page" : undefined}
+          className={styles.mobileNavItem}
+          href={href}
+          key={href}
+        >
+          <Icon aria-hidden="true" size={19} strokeWidth={1.8} />
+          <span>{label}</span>
+        </Link>
+      ))}
+      <Drawer
+        contentClassName={styles.mobileDrawer}
+        description="按命、卦、相选择入口。"
+        open={open}
+        side="right"
+        title="术数导航"
+        trigger={drawerTrigger}
+        onOpenChange={setOpen}
+      >
+        <div className={styles.mobileDrawerGroups}>
+          {divinationGroups.map((group) => (
+            <section className={styles.mobileDrawerGroup} key={group.label}>
+              <h2>{group.label}</h2>
+              <div className={styles.mobileDrawerLinks}>
+                {group.items.map((item) => (
+                  <Link
+                    aria-current={isRouteActive(pathname, item.href) ? "page" : undefined}
+                    className={styles.mobileDrawerLink}
+                    href={item.href}
+                    key={item.href}
+                    onClick={() => setOpen(false)}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      </Drawer>
+      {mobileLinks.slice(1).map(({ href, label, icon: Icon }) => (
         <Link
           aria-current={
-            (href === "/tools" ? isToolActive(pathname) : isRouteActive(pathname, href))
+            (href === "/tools"
+              ? isRouteActive(pathname, "/tools") || isRouteActive(pathname, "/arts")
+              : isRouteActive(pathname, href))
               ? "page"
               : undefined
           }

@@ -139,6 +139,19 @@ describe("public shell navigation", () => {
     ).toHaveAttribute("aria-current", "page");
   });
 
+  it("keeps divination routes on an independent mobile navigation item", () => {
+    usePathnameMock.mockReturnValue("/bazi/hepan");
+    render(<SiteHeader />);
+
+    const bottomBar = screen.getByLabelText("移动底栏");
+    expect(
+      within(bottomBar).getByRole("button", { name: "打开术数菜单", hidden: true }),
+    ).toHaveAttribute("aria-current", "page");
+    expect(
+      within(bottomBar).getByRole("link", { name: "工具", hidden: true }),
+    ).not.toHaveAttribute("aria-current");
+  });
+
   it("closes the desktop menu with Escape and returns focus to its trigger", async () => {
     const user = userEvent.setup();
     render(<SiteHeader />);
@@ -187,7 +200,7 @@ describe("public shell navigation", () => {
     expect(items[2]).toHaveFocus();
   });
 
-  it("provides a four-item document-flow bottom bar and topbar navigation drawer", async () => {
+  it("provides the governed five-item mobile bottom bar and full-screen divination drawer", async () => {
     const user = userEvent.setup();
     render(<SiteHeader />);
 
@@ -204,14 +217,17 @@ describe("public shell navigation", () => {
         href,
       );
     }
-    expect(within(bottomBar).queryByRole("button", { hidden: true })).not.toBeInTheDocument();
+    const trigger = within(bottomBar).getByRole("button", {
+      name: "打开术数菜单",
+      hidden: true,
+    });
+    expect(trigger).toHaveTextContent("术数");
 
-    const trigger = screen.getByLabelText("打开导航菜单", { selector: "button" });
     await user.click(trigger);
-    expect(screen.getByRole("dialog", { name: "导航菜单" })).toBeVisible();
+    expect(screen.getByRole("dialog", { name: "术数导航" })).toBeVisible();
 
     await user.keyboard("{Escape}");
-    expect(screen.queryByRole("dialog", { name: "导航菜单" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("dialog", { name: "术数导航" })).not.toBeInTheDocument();
     await waitFor(() => expect(trigger).toHaveFocus());
   });
 
@@ -219,12 +235,15 @@ describe("public shell navigation", () => {
     const user = userEvent.setup();
     render(<SiteHeader />);
 
-    await user.click(screen.getByLabelText("打开导航菜单", { selector: "button" }));
-    const drawer = screen.getByRole("dialog", { name: "导航菜单" });
+    const bottomBar = screen.getByLabelText("移动底栏");
+    await user.click(
+      within(bottomBar).getByRole("button", { name: "打开术数菜单", hidden: true }),
+    );
+    const drawer = screen.getByRole("dialog", { name: "术数导航" });
     await user.click(within(drawer).getByRole("link", { name: "八字" }));
 
     await waitFor(() => {
-      expect(screen.queryByRole("dialog", { name: "导航菜单" })).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { name: "术数导航" })).not.toBeInTheDocument();
       expect(window.location.pathname).toBe("/bazi");
     });
 
@@ -288,11 +307,11 @@ describe("public shell responsive and cache contracts", () => {
       expect(css).toMatch(/@media \(max-width:\s*839px\)[\s\S]*\.header,[\s\S]*min-height:\s*var\(--header-mobile\)/);
       expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*position:\s*fixed/);
       expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*bottom:\s*0/);
-      expect(css).toMatch(/\.mobileBottomBar[\s\S]*grid-template-columns:\s*repeat\(4,/);
+      expect(css).toMatch(/\.mobileBottomBar[\s\S]*grid-template-columns:\s*repeat\(5,/);
       expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*min-height:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/);
       expect(css).toMatch(/env\(safe-area-inset-bottom\)/);
       expect(css).toMatch(/overflow-x:\s*clip/);
-      expect(css).toMatch(/\.mobileDrawer[\s\S]*width:\s*min\(28rem,\s*100vw\)/);
+      expect(css).toMatch(/\.mobileDrawer\.mobileDrawer\s*\{[^}]*width:\s*100vw/);
       expect(shellCss).toMatch(
         /@media \(max-width:\s*839px\)[\s\S]*\.shell\s*\{[^}]*padding-bottom:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/,
       );
