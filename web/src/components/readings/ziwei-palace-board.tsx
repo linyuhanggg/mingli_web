@@ -1163,6 +1163,174 @@ function isNonEmptyText(value: unknown): value is string {
   return typeof value === "string" && value.trim().length > 0;
 }
 
+type ZiweiTemporalStar = {
+  name: string;
+  starType: string | null;
+  scope: string | null;
+  brightness: string | null;
+};
+
+type ZiweiTemporalPalace = {
+  branch: string;
+  label: string;
+  stars: readonly ZiweiTemporalStar[];
+};
+
+function isEarthlyBranch(value: unknown): value is (typeof BRANCHES)[number] {
+  return (
+    typeof value === "string" &&
+    BRANCHES.includes(value as (typeof BRANCHES)[number])
+  );
+}
+
+function optionalText(value: unknown): string | null | undefined {
+  if (value === undefined || value === null) return null;
+  return isNonEmptyText(value) ? value.trim() : undefined;
+}
+
+function parseTemporalStar(value: unknown): ZiweiTemporalStar | null {
+  if (!isRecord(value) || !isNonEmptyText(value.name)) return null;
+  const starType = optionalText(value.star_type ?? value.type);
+  const scope = optionalText(value.scope);
+  const brightness = optionalText(value.brightness);
+  if (starType === undefined || scope === undefined || brightness === undefined) {
+    return null;
+  }
+  return {
+    name: value.name.trim(),
+    starType,
+    scope,
+    brightness,
+  };
+}
+
+function parseTemporalPalaces(
+  view: ZiweiChartViewModel,
+  value: Readonly<Record<string, unknown>>,
+): readonly ZiweiTemporalPalace[] | null {
+  const rawAssignments = value.palace_assignments;
+  if (!Array.isArray(rawAssignments) || rawAssignments.length !== BRANCHES.length) {
+    return null;
+  }
+  const baseBranches = new Set(view.palaces.map((palace) => palace.earthly_branch));
+  if (
+    view.palaces.length !== BRANCHES.length ||
+    baseBranches.size !== BRANCHES.length ||
+    !BRANCHES.every((branch) => baseBranches.has(branch))
+  ) {
+    return null;
+  }
+
+  const indexes = new Set<number>();
+  const branches = new Set<string>();
+  const assignments: ZiweiTemporalPalace[] = [];
+  for (const raw of rawAssignments) {
+    if (
+      !isRecord(raw) ||
+      typeof raw.index !== "number" ||
+      !Number.isInteger(raw.index) ||
+      raw.index < 0 ||
+      raw.index >= BRANCHES.length ||
+      indexes.has(raw.index) ||
+      !isEarthlyBranch(raw.natal_branch) ||
+      branches.has(raw.natal_branch) ||
+      !isNonEmptyText(raw.natal_palace) ||
+      !isNonEmptyText(raw.temporal_palace) ||
+      !Array.isArray(raw.dynamic_stars) ||
+      !isRecord(raw.chart_palace) ||
+      raw.chart_palace.branch !== raw.natal_branch ||
+      raw.chart_palace.name !== raw.natal_palace
+    ) {
+      return null;
+    }
+    const stars = raw.dynamic_stars.map(parseTemporalStar);
+    if (stars.some((star) => star === null)) return null;
+    indexes.add(raw.index);
+    branches.add(raw.natal_branch);
+    assignments.push({
+      branch: raw.natal_branch,
+      label: raw.temporal_palace.trim(),
+      stars: stars as ZiweiTemporalStar[],
+    });
+  }
+  if (!BRANCHES.every((branch) => branches.has(branch))) return null;
+  return assignments;
+}
+
+function projectTemporalPalaceView(
+  view: ZiweiChartViewModel,
+  value: Readonly<Record<string, unknown>>,
+): ZiweiChartViewModel | null {
+  const assignments = parseTemporalPalaces(view, value);
+  if (assignments) {
+    const byBranch = new Map(
+      assignments.map((assignment) => [assignment.branch, assignment]),
+    );
+    const lifeAssignments = assignments.filter(
+      (assignment) => assignment.label === "命宫",
+    );
+    if (lifeAssignments.length !== 1) return null;
+    const lifePalace = view.palaces.find(
+      (palace) => palace.earthly_branch === lifeAssignments[0].branch,
+    );
+    if (!lifePalace) return null;
+
+    return {
+      ...view,
+      life_palace_id: lifePalace.palace_id,
+      palaces: view.palaces.map((palace) => {
+        const assignment = byBranch.get(palace.earthly_branch);
+        if (!assignment) return palace;
+        const temporalMajorStars = assignment.stars
+          .filter((star) => star.starType === "major")
+          .map((star) => star.name);
+        const temporalMinorStars = assignment.stars
+          .filter((star) => star.starType !== "major")
+          .map((star) => ({
+            name: star.name,
+            star_type: star.starType,
+            scope: star.scope,
+            brightness: star.brightness,
+          }));
+        return {
+          ...palace,
+          label: assignment.label,
+          major_stars: [...palace.major_stars, ...temporalMajorStars],
+          minor_stars: [
+            ...(palace.minor_stars ?? []),
+            ...temporalMinorStars,
+          ],
+        };
+      }),
+    };
+  }
+
+  if (!isEarthlyBranch(value.life_palace)) return null;
+  const lifePalace = view.palaces.find(
+    (palace) => palace.earthly_branch === value.life_palace,
+  );
+  return lifePalace ? { ...view, life_palace_id: lifePalace.palace_id } : null;
+}
+
+function temporalPalaceViewForLayer(
+  view: ZiweiChartViewModel,
+  layerId: WorkspaceLayerId,
+): ZiweiChartViewModel | null {
+  if (layerId === "yearly") {
+    const layers = view.core_facts?.annual_layers;
+    return layers?.length === 1
+      ? projectTemporalPalaceView(view, layers[0].liu_nian)
+      : null;
+  }
+  if (layerId === "monthly") {
+    const layers = view.core_facts?.monthly_layers;
+    return layers?.length === 1
+      ? projectTemporalPalaceView(view, layers[0].liu_yue)
+      : null;
+  }
+  return null;
+}
+
 function parseZiweiEntitlement(value: unknown): ParsedZiweiEntitlement | null {
   if (!isRecord(value) || !hasExactKeys(value, ZIWEI_ENTITLEMENT_KEYS)) {
     return null;
@@ -1270,10 +1438,9 @@ function layerHasFacts(
       view.core_facts?.major_limit_sequence?.length,
     );
   }
-  if (layerId === "yearly")
-    return Boolean(view.core_facts?.annual_layers?.length);
-  if (layerId === "monthly")
-    return Boolean(view.core_facts?.monthly_layers?.length);
+  if (layerId === "yearly" || layerId === "monthly") {
+    return temporalPalaceViewForLayer(view, layerId) !== null;
+  }
   return false;
 }
 
@@ -1642,9 +1809,18 @@ export function ZiweiWorkspace({
   const activeLayer =
     workspace.layers.find((layer) => layer.id === activeLayerId) ??
     workspace.layers[0];
+  const activePalaceView = useMemo(() => {
+    if (
+      activeLayer.status !== "ready" ||
+      (activeLayer.id !== "yearly" && activeLayer.id !== "monthly")
+    ) {
+      return view;
+    }
+    return temporalPalaceViewForLayer(view, activeLayer.id) ?? view;
+  }, [activeLayer.id, activeLayer.status, view]);
   const detail = useMemo(
-    () => palaceFocusDetail(view, activeBranch),
-    [activeBranch, view],
+    () => palaceFocusDetail(activePalaceView, activeBranch),
+    [activeBranch, activePalaceView],
   );
 
   function selectBranch(branch: string | null) {
@@ -1692,7 +1868,7 @@ export function ZiweiWorkspace({
       <ZiweiPalaceLocator
         onSelect={selectBranch}
         selectedBranch={selectedBranch}
-        view={view}
+        view={activePalaceView}
       />
       <section aria-label="排盘工作台" className={styles.workspace}>
         <header className={styles.workspaceHeader}>
@@ -1742,7 +1918,7 @@ export function ZiweiWorkspace({
               showInterpretiveSections={showInterpretiveSections}
               showLocator={false}
               showSupportingSections={activeLayer.id === "natal"}
-              view={view}
+              view={activePalaceView}
             />
             {activeLayer.id !== "natal" ? (
               <div
