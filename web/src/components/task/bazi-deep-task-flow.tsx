@@ -647,7 +647,10 @@ export function BaziDeepTaskFlow({
             <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
           </div>
           <div className={styles.result}>
-            <ReadingResult readingId={previewReadingId} />
+            <ReadingResult
+              baziDeepFulfilled={accessState === "succeeded"}
+              readingId={previewReadingId}
+            />
           </div>
         </section>
       ) : null}

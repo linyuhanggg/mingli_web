@@ -120,6 +120,12 @@
   font-size: var(--font-size-meta);
 }
 
+@media (min-width: 64rem) and (max-width: 79.999rem) {
+  .result :global([data-bazi-chart-host="true"]) {
+    margin-inline: -3.2rem;
+  }
+}
+
 @media (max-width: 47.999rem) {
   .toolbar,
   .section {

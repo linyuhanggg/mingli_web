@@ -42,8 +42,19 @@ vi.mock("@/components/account-session-context", () => ({
 }));
 
 vi.mock("@/components/readings/reading-result", () => ({
-  ReadingResult: ({ readingId }: { readingId: string }) => (
-    <div data-testid={`reading-result-${readingId}`}>服务端结果 renderer</div>
+  ReadingResult: ({
+    readingId,
+    baziDeepFulfilled = false,
+  }: {
+    readingId: string;
+    baziDeepFulfilled?: boolean;
+  }) => (
+    <div
+      data-bazi-deep-fulfilled={String(baziDeepFulfilled)}
+      data-testid={`reading-result-${readingId}`}
+    >
+      服务端结果 renderer
+    </div>
   ),
 }));
 
@@ -269,6 +280,8 @@ describe("Bazi deep task state contract", () => {
 
     expect(await screen.findByText("尚未确认付费")).toBeVisible();
     expect(screen.getByText(/不会创建 mock 订单/)).toBeVisible();
+    expect(screen.getByTestId("reading-result-preview-1"))
+      .toHaveAttribute("data-bazi-deep-fulfilled", "false");
     expect(mockStartBaziDeepReading).not.toHaveBeenCalled();
     expect(mockBindReadingFulfillment).not.toHaveBeenCalled();
   });
@@ -341,6 +354,8 @@ describe("Bazi deep task state contract", () => {
     releaseBinding?.({ status: "running" });
     await waitFor(() => expect(screen.getByText("已进入深读队列")).toBeVisible());
     await waitFor(() => expect(screen.getByText("深读已交付")).toBeVisible());
+    expect(screen.getByTestId("reading-result-preview-1"))
+      .toHaveAttribute("data-bazi-deep-fulfilled", "true");
     expect(screen.getByTestId("reading-result-deep-1")).toBeVisible();
   });
 
