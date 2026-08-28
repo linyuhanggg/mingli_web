@@ -150,6 +150,7 @@ from app.charts.contracts import (
     ViewModel,
     WenshiViewV1,
     ZiweiAnnualLayer,
+    ZiweiCalendarCoverage,
     ZiweiChartV1,
     ZiweiCoreFacts,
     ZiweiDecadal,
@@ -2734,6 +2735,19 @@ def _ziwei_major_limit_segments(
     return tuple(result)
 
 
+def _ziwei_calendar_coverage(value: object) -> ZiweiCalendarCoverage | None:
+    if not isinstance(value, Mapping):
+        return None
+    try:
+        return ZiweiCalendarCoverage(
+            start_inclusive=value.get("start_inclusive"),
+            end_exclusive=value.get("end_exclusive"),
+            requested_target_date=value.get("requested_target_date"),
+        )
+    except ValidationError:
+        return None
+
+
 def _ziwei_annual_layers(value: object) -> tuple[ZiweiAnnualLayer, ...] | None:
     if not isinstance(value, Mapping) or not value:
         return None
@@ -2825,6 +2839,7 @@ def _ziwei_core_facts(facts: object) -> ZiweiCoreFacts | None:
             "chinese_date",
             "active_major_limit",
             "active_major_limit_segments",
+            "calendar_coverage",
             "five_elements_class",
             "interpretive_candidates",
             "source_conditioned_patterns",
@@ -2844,6 +2859,12 @@ def _ziwei_core_facts(facts: object) -> ZiweiCoreFacts | None:
         _calculated_value(values, "active_major_limit_segments")
     )
     if segments_fact is not None and active_major_limit_segments is None:
+        return None
+    coverage_fact = values["calendar_coverage"]
+    calendar_coverage = _ziwei_calendar_coverage(
+        _calculated_value(values, "calendar_coverage")
+    )
+    if coverage_fact is not None and calendar_coverage is None:
         return None
     core_values: dict[str, object] = {
         "chart_convention": _mapping_copy(
@@ -2888,6 +2909,8 @@ def _ziwei_core_facts(facts: object) -> ZiweiCoreFacts | None:
     }
     if segments_fact is not None:
         core_values["active_major_limit_segments"] = active_major_limit_segments
+    if coverage_fact is not None:
+        core_values["calendar_coverage"] = calendar_coverage
     core = ZiweiCoreFacts.model_validate(core_values)
     return core if any(value is not None for value in core.model_dump().values()) else None
 
