@@ -587,6 +587,27 @@ it("keeps free Ziwei year facts navigable and honors explicit readable month acc
     "戌",
     "亥",
   ] as const;
+  const temporalFacts = (
+    lifeBranch: (typeof branches)[number],
+    scope: "yearly" | "monthly",
+  ) => ({
+    palace_assignments: branches.map((branch, index) => ({
+      index,
+      natal_branch: branch,
+      natal_palace: index === 0 ? "命宫" : `宫${index}`,
+      temporal_palace:
+        branch === lifeBranch ? "命宫" : index === 0 ? "迁移" : `宫${index}`,
+      dynamic_stars: [],
+      chart_palace: {
+        branch,
+        name: index === 0 ? "命宫" : `宫${index}`,
+      },
+    })),
+    transformation_facts: [],
+    scope,
+  });
+  const yearlyFacts = temporalFacts("午", "yearly");
+  const monthlyFacts = temporalFacts("申", "monthly");
   render(
     <RuntimeChart
       capability={{
@@ -638,8 +659,14 @@ it("keeps free Ziwei year facts navigable and honors explicit readable month acc
               year: 2026,
               coverage_start: "2026-02-17",
               coverage_end_exclusive: "2027-02-06",
-              liu_nian: { life_palace: "午" },
-              segments: [{ segment: "annual" }],
+              liu_nian: yearlyFacts,
+              segments: [
+                {
+                  start_inclusive: "2026-02-17",
+                  end_exclusive: "2027-02-06",
+                  liu_nian: yearlyFacts,
+                },
+              ],
               representative_scope: "annual",
             },
           ],
@@ -647,8 +674,14 @@ it("keeps free Ziwei year facts navigable and honors explicit readable month acc
             {
               year: 2026,
               month: 8,
-              liu_yue: { life_palace: "申" },
-              segments: [{ segment: "monthly" }, { segment: "daily" }],
+              liu_yue: monthlyFacts,
+              segments: [
+                {
+                  start_inclusive: "2026-08-01",
+                  end_exclusive: "2026-09-01",
+                  liu_yue: monthlyFacts,
+                },
+              ],
               representative_scope: "monthly",
             },
           ],
@@ -668,11 +701,31 @@ it("keeps free Ziwei year facts navigable and honors explicit readable month acc
       "宫6 · 午",
     ),
   ).toBeVisible();
-  fireEvent.click(screen.getByRole("tab", { name: /流年/ }));
+  const timeLayerLocator = screen.getByRole("navigation", {
+    name: "时间层定位",
+  });
+  const timeLayerButtons = within(timeLayerLocator).getAllByRole("button");
+  expect(timeLayerButtons).toHaveLength(6);
+  expect(
+    new Set(
+      timeLayerButtons.map((button) => button.getAttribute("aria-controls")),
+    ).size,
+  ).toBe(1);
+  const controlledPanelId = timeLayerButtons[0].getAttribute("aria-controls");
+  expect(controlledPanelId).toBeTruthy();
+  expect(document.getElementById(controlledPanelId!)).toBeInTheDocument();
+  const yearly = within(timeLayerLocator).getByRole("button", { name: /流年/ });
+  fireEvent.click(yearly);
+  expect(yearly).toHaveAttribute("aria-current", "true");
   expect(screen.getByRole("table", { name: "流年盘面事实" })).toHaveTextContent(
     "2026-02-17—2027-02-06",
   );
-  fireEvent.click(screen.getByRole("tab", { name: /流月/ }));
+  const monthly = within(timeLayerLocator).getByRole("button", {
+    name: /流月/,
+  });
+  fireEvent.click(monthly);
+  expect(monthly).toHaveAttribute("aria-current", "true");
+  expect(document.getElementById(controlledPanelId!)).toBeInTheDocument();
   expect(screen.getByRole("table", { name: "流月盘面事实" })).toHaveTextContent(
     "2026-08",
   );
