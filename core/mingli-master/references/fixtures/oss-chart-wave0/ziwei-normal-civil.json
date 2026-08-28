@@ -1,7 +1,6 @@
 {
   "case_id": "ziwei-normal-civil",
   "category": "normal",
-  "content_sha256": "8d7f34bb2f17c78b66073cc0ac811ed2ec9654d980dbdda94f3e1659caf22142",
   "expected_canonical_facts": {
     "adapter": {
       "dependency": {

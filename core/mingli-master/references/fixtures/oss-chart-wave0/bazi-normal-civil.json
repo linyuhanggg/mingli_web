@@ -1,7 +1,6 @@
 {
   "case_id": "bazi-normal-civil",
   "category": "normal",
-  "content_sha256": "f438548a5763d0d57ae4c93647479aa9cc76b4d49c4e83eddf515b10c57d4a2f",
   "expected_canonical_facts": {
     "adapter": {
       "license_status": "verified_local_dependency",

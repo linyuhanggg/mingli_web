@@ -1,7 +1,6 @@
 {
   "case_id": "bazi-late-zi-midnight",
   "category": "zi_hour_boundary",
-  "content_sha256": "5eee8248330d27d976e642f24b2ab3fe6ff81edcf2d21cead0bca4a23a88691b",
   "expected_canonical_facts": {
     "adapter": {
       "license_status": "verified_local_dependency",

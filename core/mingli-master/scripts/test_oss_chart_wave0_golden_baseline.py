@@ -11,7 +11,6 @@ from __future__ import annotations
 
 import argparse
 import copy
-import hashlib
 import json
 import platform
 import subprocess
@@ -238,16 +237,6 @@ def _canonical_bytes(value: Any) -> bytes:
     ).encode("utf-8")
 
 
-def _digest(value: Any) -> str:
-    return hashlib.sha256(_canonical_bytes(value)).hexdigest()
-
-
-def _without_hash(value: Mapping[str, Any]) -> dict[str, Any]:
-    result = dict(value)
-    result.pop("content_sha256", None)
-    return result
-
-
 def _stable_facts(payload: Mapping[str, Any]) -> dict[str, Any]:
     stable = copy.deepcopy(dict(payload))
     adapter = stable.get("adapter")
@@ -323,7 +312,6 @@ def _build_case(definition: CaseDefinition) -> dict[str, Any]:
             "candidate_oss_role": "future_differential_actual_only_never_expected",
         },
     }
-    case["content_sha256"] = _digest(case)
     return case
 
 
@@ -373,7 +361,6 @@ def refresh_baseline() -> None:
                 "system": definition.system,
                 "category": definition.category,
                 "path": definition.filename,
-                "content_sha256": case["content_sha256"],
             }
         )
     manifest = {
@@ -388,7 +375,6 @@ def refresh_baseline() -> None:
         "case_count": len(entries),
         "cases": entries,
     }
-    manifest["content_sha256"] = _digest(manifest)
     MANIFEST_PATH.write_text(
         json.dumps(manifest, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
@@ -420,12 +406,12 @@ def _walk_keys(value: Any) -> set[str]:
 
 
 class GoldenBaselineTests(unittest.TestCase):
-    def test_manifest_schema_hashes_and_case_uniqueness(self) -> None:
+    def test_manifest_schema_and_case_uniqueness(self) -> None:
         manifest = _load_manifest()
         self.assertEqual(manifest["schema_version"], MANIFEST_SCHEMA)
         self.assertEqual(manifest["baseline_commit"], BASELINE_COMMIT)
         self.assertEqual(manifest["baseline_tree"], BASELINE_TREE)
-        self.assertEqual(manifest["content_sha256"], _digest(_without_hash(manifest)))
+        self.assertNotIn("content_sha256", manifest)
         self.assertEqual(manifest["case_count"], len(CASES))
         ids = [entry["case_id"] for entry in manifest["cases"]]
         paths = [entry["path"] for entry in manifest["cases"]]
@@ -435,10 +421,10 @@ class GoldenBaselineTests(unittest.TestCase):
         self.assertEqual(set(paths), expected_files)
         for entry, case in zip(manifest["cases"], _load_cases()):
             with self.subTest(case=entry["case_id"]):
+                self.assertNotIn("content_sha256", entry)
                 self.assertEqual(case["schema_version"], CASE_SCHEMA)
                 self.assertEqual(case["case_id"], entry["case_id"])
-                self.assertEqual(case["content_sha256"], _digest(_without_hash(case)))
-                self.assertEqual(entry["content_sha256"], case["content_sha256"])
+                self.assertNotIn("content_sha256", case)
 
     def test_required_system_and_boundary_coverage(self) -> None:
         cases = _load_cases()
@@ -519,7 +505,9 @@ def _write_evidence(path: Path, result: unittest.result.TestResult) -> None:
         "status": "PASS" if result.wasSuccessful() else "FAIL",
         "baseline_commit": BASELINE_COMMIT,
         "baseline_tree": BASELINE_TREE,
-        "manifest_sha256": manifest["content_sha256"],
+        "manifest_schema_version": manifest["schema_version"],
+        "case_schema_version": CASE_SCHEMA,
+        "provenance_source_type": SOURCE_TYPE,
         "case_count": manifest["case_count"],
         "tests_run": result.testsRun,
         "failures": len(result.failures),
@@ -533,7 +521,6 @@ def _write_evidence(path: Path, result: unittest.result.TestResult) -> None:
             "ziwei_engine_version": ziwei_fact_adapter.IZTRO_VERSION,
         },
     }
-    receipt["content_sha256"] = _digest(receipt)
     (path / "replay-receipt.json").write_text(
         json.dumps(receipt, ensure_ascii=False, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",

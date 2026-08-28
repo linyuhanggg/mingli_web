@@ -1,7 +1,6 @@
 {
   "case_id": "ziwei-leap-month-first-day",
   "category": "lunar_leap_month",
-  "content_sha256": "69b5491bfc7da067438e459280581cd4c28874fbca4574a1b3c73af8c1800a7f",
   "expected_canonical_facts": {
     "adapter": {
       "dependency": {

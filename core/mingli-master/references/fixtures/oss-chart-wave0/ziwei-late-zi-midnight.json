@@ -1,7 +1,6 @@
 {
   "case_id": "ziwei-late-zi-midnight",
   "category": "zi_hour_boundary",
-  "content_sha256": "5f9349951dda17681e95929c0f1e6e67c5a5d33460288b7f15eba83cd379ec3f",
   "expected_canonical_facts": {
     "adapter": {
       "dependency": {

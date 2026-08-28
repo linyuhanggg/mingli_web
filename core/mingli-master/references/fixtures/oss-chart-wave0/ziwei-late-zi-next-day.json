@@ -1,7 +1,6 @@
 {
   "case_id": "ziwei-late-zi-next-day",
   "category": "zi_hour_boundary",
-  "content_sha256": "d72330ccec24b0f78ca6baadc064eb8e4ac07415e1ab4e7300256cf8a55bf1a3",
   "expected_canonical_facts": {
     "adapter": {
       "dependency": {

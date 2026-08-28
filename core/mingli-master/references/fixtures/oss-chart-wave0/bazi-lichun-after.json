@@ -1,7 +1,6 @@
 {
   "case_id": "bazi-lichun-after",
   "category": "solar_term_boundary",
-  "content_sha256": "3e1a7edbd89ae25b7fe34116530d03a647858a47b96dd3c1b442f69bce0ce1db",
   "expected_canonical_facts": {
     "adapter": {
       "license_status": "verified_local_dependency",

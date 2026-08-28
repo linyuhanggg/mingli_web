@@ -1,7 +1,6 @@
 {
   "case_id": "bazi-apparent-solar-hour-cross",
   "category": "true_solar_time",
-  "content_sha256": "de6df7859b6dbd6a1ebc47f2a680b090951d6f852f793996d03eadb0e2138276",
   "expected_canonical_facts": {
     "adapter": {
       "license_status": "verified_local_dependency",

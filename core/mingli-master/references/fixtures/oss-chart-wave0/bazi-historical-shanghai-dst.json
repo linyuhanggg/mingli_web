@@ -1,7 +1,6 @@
 {
   "case_id": "bazi-historical-shanghai-dst",
   "category": "historical_dst",
-  "content_sha256": "96e0ae157dd9548c33c7e84d7dcadafdc0579bb0ecb7735247de09ab39ffe4d8",
   "expected_canonical_facts": {
     "adapter": {
       "license_status": "verified_local_dependency",
