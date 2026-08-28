@@ -104,7 +104,14 @@ describe("versioned ViewModel registry", () => {
       "requested_target_date",
     ]);
 
-    // @ts-expect-error Runtime calendar coverage always includes the request date.
+    const annualCoverage: ZiweiCalendarCoverage = {
+      start_inclusive: "2199-01-01",
+      end_exclusive: "2200-01-01",
+      requested_target_date: null,
+    };
+    expect(annualCoverage.requested_target_date).toBeNull();
+
+    // @ts-expect-error Runtime calendar coverage always includes the target key.
     const missingTarget: ZiweiCalendarCoverage = {
       start_inclusive: "2025-01-01",
       end_exclusive: "2025-02-01",

@@ -1430,8 +1430,60 @@ describe("紫微 S3 十二宫环盘", () => {
         }}
       />,
     );
-    expect(timeLayerButton(/大限/)).toHaveAttribute("data-status", "empty");
+    expect(timeLayerButton(/大限/)).toHaveAttribute("data-status", "ready");
     expect(within(ring()).queryByText("大限主星")).not.toBeInTheDocument();
+  });
+
+  it("keeps returned major-limit tracks readable without inventing a palace overlay", () => {
+    const limit = {
+      palace: "命宫",
+      palace_index: 2,
+      palace_branch: "寅",
+      age_start: 3,
+      age_end: 12,
+      sequence: 1,
+      heavenly_stem: "壬",
+      earthly_branch: "寅",
+      direction: "reverse",
+    };
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "major_limits",
+          label: "大限",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({ major_limits: [limit] }),
+    });
+
+    const workspace = projectZiweiWorkspace(view);
+    expect(workspace.layers.find((layer) => layer.id === "decadal")?.status).toBe(
+      "ready",
+    );
+
+    render(<ZiweiWorkspace view={view} />);
+    const board = ring();
+    fireEvent.click(timeLayerButton(/大限/));
+
+    expect(ring()).toBe(board);
+    expect(palaceButton("寅")).toHaveAttribute("data-life", "true");
+    expect(screen.queryByRole("combobox", { name: "大限分段" })).toBeNull();
+    expect(screen.getByRole("region", { name: "大限" })).toBeVisible();
+
+    const sequenceOnly = chart({
+      time_layers: view.time_layers,
+      core_facts: facts({
+        major_limits: null,
+        major_limit_sequence: [limit],
+      }),
+    });
+    expect(
+      projectZiweiWorkspace(sequenceOnly).layers.find(
+        (layer) => layer.id === "decadal",
+      )?.status,
+    ).toBe("ready");
   });
 
   it("selects the exact dated major-limit segment and can cross the boundary", () => {
@@ -1604,6 +1656,230 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("辰")).toHaveAttribute("data-life", "true");
   });
 
+  it("keeps nullable annual coverage valid and waits for a manual segment choice", () => {
+    const natal = chart();
+    const firstMajorLimit = temporalPalaceFacts(natal, "辰", "decadal", {
+      stars: [
+        {
+          name: "年度前段星",
+          type: "major",
+          scope: "decadal",
+          brightness: "得",
+        },
+      ],
+    });
+    const secondMajorLimit = temporalPalaceFacts(natal, "未", "decadal", {
+      stars: [
+        {
+          name: "年度后段星",
+          type: "major",
+          scope: "decadal",
+          brightness: "旺",
+        },
+      ],
+    });
+    const view = chart({
+      time_layers: [
+        {
+          layer_id: "major_limits",
+          label: "大限",
+          available: true,
+          unavailable_reason: null,
+        },
+      ],
+      core_facts: facts({
+        major_limits: [
+          {
+            palace: "命宫",
+            palace_index: 2,
+            palace_branch: "寅",
+            age_start: 3,
+            age_end: 12,
+            sequence: 1,
+            heavenly_stem: "壬",
+            earthly_branch: "寅",
+            direction: "reverse",
+          },
+        ],
+        active_major_limit_segments: [
+          {
+            start_inclusive: "2199-01-01",
+            end_exclusive: "2199-07-01",
+            major_limit: firstMajorLimit,
+          },
+          {
+            start_inclusive: "2199-07-01",
+            end_exclusive: "2200-01-01",
+            major_limit: secondMajorLimit,
+          },
+        ],
+        calendar_coverage: {
+          start_inclusive: "2199-01-01",
+          end_exclusive: "2200-01-01",
+          requested_target_date: null,
+        },
+      } as unknown as Partial<ZiweiCoreFacts>),
+    });
+
+    render(<ZiweiWorkspace view={view} />);
+    const board = ring();
+    const decadal = timeLayerButton(/大限/);
+    expect(decadal).toHaveAttribute("data-status", "ready");
+
+    fireEvent.click(decadal);
+    expect(ring()).toBe(board);
+    expect(palaceButton("寅")).toHaveAttribute("data-life", "true");
+    expect(within(board).queryByText("年度前段星")).not.toBeInTheDocument();
+    expect(within(board).queryByText("年度后段星")).not.toBeInTheDocument();
+
+    const segment = screen.getByRole("combobox", { name: "大限分段" });
+    const options = within(segment).getAllByRole("option");
+    expect(options).toHaveLength(3);
+    expect(segment).toHaveValue("");
+
+    fireEvent.change(segment, {
+      target: { value: options[2].getAttribute("value") },
+    });
+    expect(palaceButton("未")).toHaveAttribute("data-life", "true");
+    expect(within(palaceButton("未")).getByText("年度后段星")).toBeVisible();
+  });
+
+  it("accepts 2200-01-01 only as the exclusive boundary for 2199 layers", () => {
+    const natal = chart();
+    const decadalFacts = temporalPalaceFacts(natal, "辰", "decadal", {
+      stars: [
+        {
+          name: "上界大限星",
+          type: "major",
+          scope: "decadal",
+          brightness: "旺",
+        },
+      ],
+    });
+    const annualFacts = temporalPalaceFacts(natal, "午", "yearly");
+    const monthlyFacts = temporalPalaceFacts(natal, "申", "monthly");
+    const entitlement = ziweiEntitlement({ free_year_set: [2199] });
+
+    function boundaryView(endExclusive: string) {
+      return chart({
+        time_layers: [
+          {
+            layer_id: "major_limits",
+            label: "大限",
+            available: true,
+            unavailable_reason: null,
+          },
+          {
+            layer_id: "year",
+            label: "流年",
+            available: true,
+            unavailable_reason: null,
+          },
+          {
+            layer_id: "month",
+            label: "流月",
+            available: true,
+            unavailable_reason: null,
+          },
+        ],
+        core_facts: facts({
+          major_limits: [
+            {
+              palace: "命宫",
+              palace_index: 2,
+              palace_branch: "寅",
+              age_start: 3,
+              age_end: 12,
+              sequence: 1,
+              heavenly_stem: "壬",
+              earthly_branch: "寅",
+              direction: "reverse",
+            },
+          ],
+          active_major_limit_segments: [
+            {
+              start_inclusive: "2199-01-01",
+              end_exclusive: endExclusive,
+              major_limit: decadalFacts,
+            },
+          ],
+          calendar_coverage: {
+            start_inclusive: "2199-01-01",
+            end_exclusive: endExclusive,
+            requested_target_date: "2199-12-31",
+          },
+          annual_layers: [
+            {
+              year: 2199,
+              coverage_start: "2199-01-01",
+              coverage_end_exclusive: endExclusive,
+              liu_nian: annualFacts,
+              segments: [
+                {
+                  start_inclusive: "2199-01-01",
+                  end_exclusive: endExclusive,
+                  liu_nian: annualFacts,
+                },
+              ],
+              representative_scope: "must not be consumed",
+            },
+          ],
+          monthly_layers: [
+            {
+              year: 2199,
+              month: 12,
+              liu_yue: monthlyFacts,
+              segments: [
+                {
+                  start_inclusive: "2199-12-01",
+                  end_exclusive: endExclusive,
+                  liu_yue: monthlyFacts,
+                },
+              ],
+              representative_scope: "must not be consumed",
+            },
+          ],
+        }),
+      });
+    }
+
+    const accepted = boundaryView("2200-01-01");
+    const acceptedWorkspace = projectZiweiWorkspace(accepted, entitlement);
+    expect(
+      acceptedWorkspace.layers.find((layer) => layer.id === "decadal")?.status,
+    ).toBe("ready");
+    expect(
+      acceptedWorkspace.layers.find((layer) => layer.id === "yearly")?.status,
+    ).toBe("ready");
+    expect(
+      acceptedWorkspace.layers.find((layer) => layer.id === "monthly")?.status,
+    ).toBe("ready");
+
+    render(<ZiweiWorkspace timeLayerEntitlement={entitlement} view={accepted} />);
+    fireEvent.click(timeLayerButton(/大限/));
+    expect(palaceButton("辰")).toHaveAttribute("data-life", "true");
+    expect(within(palaceButton("辰")).getByText("上界大限星")).toBeVisible();
+    cleanup();
+
+    const rejected = boundaryView("2200-02-01");
+    const rejectedWorkspace = projectZiweiWorkspace(rejected, entitlement);
+    expect(
+      rejectedWorkspace.layers.find((layer) => layer.id === "decadal")?.status,
+    ).toBe("ready");
+    expect(
+      rejectedWorkspace.layers.find((layer) => layer.id === "yearly")?.status,
+    ).toBe("empty");
+    expect(
+      rejectedWorkspace.layers.find((layer) => layer.id === "monthly")?.status,
+    ).toBe("locked-unavailable");
+
+    render(<ZiweiWorkspace timeLayerEntitlement={entitlement} view={rejected} />);
+    fireEvent.click(timeLayerButton(/大限/));
+    expect(palaceButton("寅")).toHaveAttribute("data-life", "true");
+    expect(within(ring()).queryByText("上界大限星")).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "大限分段" })).toBeNull();
+  });
+
   it("fails closed when present calendar coverage is invalid instead of using legacy targets", () => {
     const natal = chart();
     const firstMajorLimit = temporalPalaceFacts(natal, "辰", "decadal", {
@@ -1669,6 +1945,14 @@ describe("紫微 S3 十二宫环盘", () => {
           start_inclusive: "2025-01-01",
           end_exclusive: "2025-01-15",
           requested_target_date: "2025-01-20",
+        },
+      },
+      {
+        label: "exclusive boundary used as target",
+        coverage: {
+          start_inclusive: "2199-12-01",
+          end_exclusive: "2200-01-01",
+          requested_target_date: "2200-01-01",
         },
       },
     ];

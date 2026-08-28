@@ -1214,6 +1214,7 @@ type ZiweiMajorLimitSelection = {
 
 type ZiweiMajorLimitTarget =
   | { status: "none" }
+  | { status: "valid-unselected" }
   | {
       status: "valid";
       startInclusive: string;
@@ -1495,6 +1496,10 @@ function isIsoCivilDate(value: unknown): value is string {
   );
 }
 
+function isIsoExclusiveEndDate(value: unknown): value is string {
+  return value === "2200-01-01" || isIsoCivilDate(value);
+}
+
 function targetFromRecord(
   value: unknown,
   layerId: ZiweiTemporalLayerId,
@@ -1643,9 +1648,16 @@ function majorLimitTargetFromCalendarCoverage(
       "requested_target_date",
     ]) ||
     !isIsoCivilDate(value.start_inclusive) ||
-    !isIsoCivilDate(value.end_exclusive) ||
+    !isIsoExclusiveEndDate(value.end_exclusive) ||
+    value.start_inclusive >= value.end_exclusive
+  ) {
+    return { status: "invalid" };
+  }
+  if (value.requested_target_date === null) {
+    return { status: "valid-unselected" };
+  }
+  if (
     !isIsoCivilDate(value.requested_target_date) ||
-    value.start_inclusive >= value.end_exclusive ||
     value.requested_target_date < value.start_inclusive ||
     value.requested_target_date >= value.end_exclusive
   ) {
@@ -1732,7 +1744,7 @@ function activeMajorLimitSelection(
         "major_limit",
       ]) ||
       !isIsoCivilDate(raw.start_inclusive) ||
-      !isIsoCivilDate(raw.end_exclusive) ||
+      !isIsoExclusiveEndDate(raw.end_exclusive) ||
       raw.start_inclusive >= raw.end_exclusive ||
       (previousEnd !== null && raw.start_inclusive !== previousEnd) ||
       !isRecord(raw.major_limit) ||
@@ -1756,6 +1768,9 @@ function activeMajorLimitSelection(
   }
 
   const target = activeMajorLimitTarget(view);
+  if (target.status === "valid-unselected") {
+    return { segments, initialSegmentId: null };
+  }
   if (target.status !== "valid") return null;
   if (
     segments[0].startInclusive > target.startInclusive ||
@@ -1801,7 +1816,7 @@ function temporalSegmentsForRange(
     if (
       !isRecord(raw) ||
       !isIsoCivilDate(raw.start_inclusive) ||
-      !isIsoCivilDate(raw.end_exclusive) ||
+      !isIsoExclusiveEndDate(raw.end_exclusive) ||
       raw.start_inclusive >= raw.end_exclusive ||
       (previousEnd !== null && raw.start_inclusive !== previousEnd) ||
       !isRecord(raw[outputKey]) ||
@@ -1855,7 +1870,7 @@ function temporalSelectionForLayer(
       if (
         identities.has(id) ||
         !isIsoCivilDate(layer.coverage_start) ||
-        !isIsoCivilDate(layer.coverage_end_exclusive) ||
+        !isIsoExclusiveEndDate(layer.coverage_end_exclusive) ||
         !segments ||
         segments[0].startInclusive !== layer.coverage_start ||
         segments.at(-1)?.endExclusive !== layer.coverage_end_exclusive
@@ -2114,7 +2129,12 @@ function layerHasFacts(
 ): boolean {
   if (layerId === "natal") return true;
   if (layerId === "decadal") {
-    return activeMajorLimitSelection(view) !== null;
+    const coreFacts = view.core_facts;
+    return (
+      Boolean(coreFacts?.major_limits?.length) ||
+      Boolean(coreFacts?.major_limit_sequence?.length) ||
+      activeMajorLimitSelection(view) !== null
+    );
   }
   if (layerId === "yearly") {
     return (
