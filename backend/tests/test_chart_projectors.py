@@ -508,6 +508,66 @@ def test_ziwei_projector_preserves_calendar_coverage_across_segment_boundary() -
     assert round_trip.model_dump(mode="json")["core_facts"] == serialized
 
 
+def test_ziwei_projector_normalizes_year_coverage_without_exact_day_target() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    active_major_limit = {"index": 1, "palace": "命宫"}
+    annual_layers = {
+        "2025": {
+            "year": 2025,
+            "coverage_start": "2025-01-29",
+            "coverage_end_exclusive": "2026-02-17",
+            "liu_nian": {"year": 2025},
+            "segments": [{"start_inclusive": "2025-01-29"}],
+            "representative_scope": "year:2025",
+        }
+    }
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": active_major_limit,
+                "annual_layers": annual_layers,
+                "calendar_coverage": {
+                    "start_inclusive": "2025-01-01",
+                    "end_exclusive": "2026-01-01",
+                    "requested_target_date": "",
+                    "status": "exact_daily_boundary_detection",
+                    "horoscope_divide": "normal/lunar-new-year",
+                    "age_divide": "normal/nominal-age",
+                },
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.calendar_coverage is not None
+    assert view_model.core_facts.calendar_coverage.requested_target_date is None
+    assert view_model.core_facts.active_major_limit == active_major_limit
+    assert view_model.core_facts.annual_layers is not None
+    assert [layer.year for layer in view_model.core_facts.annual_layers] == [2025]
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert serialized["calendar_coverage"] == {
+        "start_inclusive": "2025-01-01",
+        "end_exclusive": "2026-01-01",
+        "requested_target_date": None,
+    }
+    round_trip = ZiweiChartV1.model_validate_json(view_model.model_dump_json())
+    assert round_trip.model_dump(mode="json")["core_facts"] == serialized
+
+
 def test_ziwei_projector_omits_calendar_coverage_when_runtime_fact_is_absent() -> None:
     palaces = [
         {
@@ -559,7 +619,23 @@ def test_ziwei_projector_omits_calendar_coverage_when_runtime_fact_is_absent() -
         {
             "start_inclusive": "2025-01-01",
             "end_exclusive": "2025-02-01",
+            "requested_target_date": None,
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "2025-01-29",
+            "unknown_runtime_field": True,
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
             "requested_target_date": "2025-02-30",
+        },
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-02-01",
+            "requested_target_date": "20250129",
         },
         {
             "start_inclusive": "20250101",
@@ -595,7 +671,10 @@ def test_ziwei_projector_omits_calendar_coverage_when_runtime_fact_is_absent() -
         "missing-end",
         "missing-target",
         "invalid-start",
+        "raw-null-target",
+        "unknown-runtime-field",
         "invalid-target",
+        "non-canonical-target",
         "non-canonical-start",
         "empty-range",
         "reverse-range",

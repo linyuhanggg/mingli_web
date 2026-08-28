@@ -377,12 +377,22 @@ async def test_real_runtime_projects_ziwei_and_qizheng_year_layers() -> None:
         )
     )
     assert isinstance(ziwei, Prepared)
-    ziwei_view = project_ziwei_view_model(ziwei.to_dict()["brief"])
+    ziwei_brief = ziwei.to_dict()["brief"]
+    raw_calendar_coverage = next(
+        item["value"]
+        for item in ziwei_brief["facts"]
+        if isinstance(item, dict)
+        and str(item.get("ref", "")).endswith("/calendar_coverage")
+    )
+    assert raw_calendar_coverage["requested_target_date"] == ""
+    ziwei_view = project_ziwei_view_model(ziwei_brief)
     assert isinstance(ziwei_view, ZiweiChartV1)
     assert ziwei_view.time_layers[1].available is True
     assert ziwei_view.core_facts is not None
     assert ziwei_view.core_facts.chart_convention is not None
     assert ziwei_view.core_facts.active_major_limit is not None
+    assert ziwei_view.core_facts.calendar_coverage is not None
+    assert ziwei_view.core_facts.calendar_coverage.requested_target_date is None
     assert ziwei_view.core_facts.annual_layers is not None
     assert [item.year for item in ziwei_view.core_facts.annual_layers] == [2026]
     assert ziwei_view.core_facts.source_conditioned_patterns
