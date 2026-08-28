@@ -156,6 +156,12 @@ describe("ChartWorkspaceShell", () => {
     const view = buildBaziWorkspaceView({
       pillars: FOUR_PILLARS,
       activeLuck: "丙午大运",
+      yearlyReady: true,
+      yearlySummary: "2026 丙午",
+      monthlyReady: true,
+      monthlySummary: "2026-08 丙午",
+      dailyReady: true,
+      dailySummary: "2026-08-15 丙午",
     });
     render(<WorkspaceFixture view={view} />);
 
@@ -185,26 +191,40 @@ describe("ChartWorkspaceShell", () => {
     expect(natal).toHaveAttribute("aria-selected", "true");
 
     await user.keyboard("{End}");
-    const hourly = screen.getByRole("tab", { name: /流时/ });
-    expect(hourly).toHaveFocus();
-    expect(hourly).toHaveAttribute("aria-selected", "true");
+    const daily = screen.getByRole("tab", { name: /流日/ });
+    expect(daily).toHaveFocus();
+    expect(daily).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: /流时/ })).toBeDisabled();
   });
 
-  it("keeps unavailable layers inspectable, honest, and free of upgrade actions", async () => {
+  it("keeps unavailable layers visible, disabled, and free of upgrade actions", async () => {
     const user = userEvent.setup();
     const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
     render(<WorkspaceFixture view={view} />);
 
+    const natal = screen.getByRole("tab", { name: /^本命/ });
     const yearly = screen.getByRole("tab", { name: /流年/ });
     expect(yearly).toBeVisible();
-    expect(yearly).not.toBeDisabled();
+    expect(yearly).toBeDisabled();
+    expect(yearly).toHaveAttribute("aria-disabled", "true");
+    expect(yearly).toHaveAttribute("tabindex", "-1");
     expect(yearly).not.toHaveAttribute("aria-selected", "true");
     expect(within(yearly).getByText("待接入")).toBeVisible();
 
     await user.click(yearly);
-    const panel = screen.getByRole("tabpanel", { name: /流年/ });
-    expect(within(panel).getByText("流年待接入")).toBeVisible();
-    expect(within(panel).queryByRole("link", { name: "了解专业版" })).not.toBeInTheDocument();
+    expect(natal).toHaveAttribute("aria-selected", "true");
+
+    natal.focus();
+    await user.keyboard("{ArrowRight}");
+    expect(natal).toHaveFocus();
+    expect(natal).toHaveAttribute("aria-selected", "true");
+
+    const panel = document.getElementById(yearly.getAttribute("aria-controls") ?? "");
+    expect(panel).toHaveTextContent("流年待接入");
+    expect(panel).toHaveAttribute("aria-hidden", "true");
+    expect(
+      within(panel as HTMLElement).queryByRole("link", { name: "了解专业版" }),
+    ).not.toBeInTheDocument();
   });
 
   it("locks returned paid facts when entitlement is unknown without leaking their values", async () => {

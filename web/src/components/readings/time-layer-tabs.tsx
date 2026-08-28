@@ -18,8 +18,10 @@ import styles from "./time-layer-tabs.module.css";
 
 /**
  * Time layer switcher built strictly from the workspace view model.
- * Every layer remains inspectable. Its icon, label, and status copy distinguish
- * readable facts from unavailable capability and fail-closed entitlement.
+ * Every layer remains visible. Its icon, label, and status copy distinguish
+ * readable facts from unavailable capability and fail-closed entitlement;
+ * capability-unavailable layers are disabled while entitlement locks remain
+ * inspectable.
  */
 export function TimeLayerTabs({
   layers,
@@ -40,26 +42,29 @@ export function TimeLayerTabs({
     event: KeyboardEvent<HTMLButtonElement>,
     currentLayerId: WorkspaceLayerId,
   ) {
-    const currentIndex = layers.findIndex(
+    const interactiveLayers = layers.filter(
+      (layer) => layer.status !== "locked-unavailable",
+    );
+    const currentIndex = interactiveLayers.findIndex(
       (layer) => layer.id === currentLayerId,
     );
-    if (currentIndex < 0 || layers.length === 0) return;
+    if (currentIndex < 0 || interactiveLayers.length === 0) return;
 
     let targetIndex: number | null = null;
     if (event.key === "ArrowRight") {
-      targetIndex = (currentIndex + 1) % layers.length;
+      targetIndex = (currentIndex + 1) % interactiveLayers.length;
     } else if (event.key === "ArrowLeft") {
       targetIndex =
-        (currentIndex - 1 + layers.length) % layers.length;
+        (currentIndex - 1 + interactiveLayers.length) % interactiveLayers.length;
     } else if (event.key === "Home") {
       targetIndex = 0;
     } else if (event.key === "End") {
-      targetIndex = layers.length - 1;
+      targetIndex = interactiveLayers.length - 1;
     }
 
     if (targetIndex === null) return;
     event.preventDefault();
-    const targetLayer = layers[targetIndex];
+    const targetLayer = interactiveLayers[targetIndex];
     tabRefs.current[targetLayer.id]?.focus();
     onSelect(targetLayer.id);
   }
@@ -68,6 +73,7 @@ export function TimeLayerTabs({
     <div className={styles.tabs} role="tablist" aria-label="时间层">
       {layers.map((layer) => {
         const active = activeLayerId === layer.id;
+        const unavailable = layer.status === "locked-unavailable";
         const statusDefinition: Record<
           WorkspaceLayer["status"],
           { label: string; icon: LucideIcon }
@@ -91,11 +97,13 @@ export function TimeLayerTabs({
             id={`${idPrefix}-tab-${layer.id}`}
             aria-controls={`${idPrefix}-panel-${layer.id}`}
             aria-selected={active}
-            tabIndex={active ? 0 : -1}
+            aria-disabled={unavailable}
+            disabled={unavailable}
+            tabIndex={!unavailable && active ? 0 : -1}
             className={styles.tab}
             data-active={active}
             data-status={layer.status}
-            onClick={() => onSelect(layer.id)}
+            onClick={unavailable ? undefined : () => onSelect(layer.id)}
             onKeyDown={(event) => handleKeyDown(event, layer.id)}
           >
             <span className={styles.tabLabel}>{layer.label}</span>

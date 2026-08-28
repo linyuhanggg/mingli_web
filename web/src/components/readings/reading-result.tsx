@@ -442,10 +442,7 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
           : buildBaziChartView(publicFacts)
         : null;
     const timeLayerEntitlement = isBazi
-      ? parseTimeLayerEntitlement(
-          (result as ReadingResultResponse & { time_layer_entitlement?: unknown })
-            .time_layer_entitlement,
-        )
+      ? parseTimeLayerEntitlement(result.time_layer_entitlement)
       : null;
     const fortuneMarkers = isFortune
       ? extractFortunePeriodMarkers(publicFacts)

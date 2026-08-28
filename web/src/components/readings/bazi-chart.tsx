@@ -27,6 +27,7 @@ import type {
 import {
   baziWorkspaceFactsFromChart,
   buildBaziWorkspaceView,
+  filterBaziYearLayersByEntitlement,
   resolveBaziFocusDetail,
   type TimeLayerEntitlement,
   type WorkspaceCell,
@@ -1329,7 +1330,6 @@ function BaziCandidateSection({
       <div className={styles.candidateGroups}>
         <div>
           <h5>支持性事实</h5>
-          <p className={styles.candidateFactLabel}>全局结论：未裁定</p>
           <ul>
             <li>同类 {strength.same_element_occurrences} 项；生扶 {ELEMENT_LABELS[strength.resource_element] ?? strength.resource_element} {strength.resource_occurrences} 项</li>
           </ul>
@@ -1357,7 +1357,7 @@ function BaziCandidateSection({
       <dl className={styles.candidateBoundary}>
         <div>
           <dt>证据边界</dt>
-          <dd>{strength.boundary.replaceAll("未裁定", "待核定")}</dd>
+          <dd>{strength.boundary}</dd>
         </div>
       </dl>
     </section>
@@ -2024,8 +2024,15 @@ export function BaziChart({
   const [transientCellId, setTransientCellId] = useState<string | null>(null);
   const [evidenceDrawerOpen, setEvidenceDrawerOpen] = useState(false);
   const [evidenceFocusPillar, setEvidenceFocusPillar] = useState<PillarId | null>(null);
-  const [displayMode, setDisplayMode] = useState<"basic" | "professional" | "notes">(
+  const [displayMode, setDisplayMode] = useState<"basic" | "professional">(
     "professional",
+  );
+  const readableYearLayers = useMemo(
+    () => filterBaziYearLayersByEntitlement(
+      chart.coreFacts?.year_layers,
+      timeLayerEntitlement,
+    ),
+    [chart.coreFacts?.year_layers, timeLayerEntitlement],
   );
   const firstScreenCitation = useMemo(
     () => pickFirstVerifiedExactCitation(evidence),
@@ -2086,8 +2093,8 @@ export function BaziChart({
       );
     }
     if (layer.id === "yearly") {
-      return chart.coreFacts?.year_layers?.length ? (
-        <YearLayerBoard layers={chart.coreFacts.year_layers} selection={selection} />
+      return readableYearLayers.length ? (
+        <YearLayerBoard layers={readableYearLayers} selection={selection} />
       ) : (
         <LayerNote layer={layer} />
       );
@@ -2123,7 +2130,6 @@ export function BaziChart({
           {([
             ["basic", "基本排盘"],
             ["professional", "专业细盘"],
-            ["notes", "解读笔记"],
           ] as const).map(([mode, label]) => (
             <button
               key={mode}
@@ -2134,6 +2140,15 @@ export function BaziChart({
               {label}
             </button>
           ))}
+          <button
+            type="button"
+            aria-pressed="false"
+            aria-disabled="true"
+            disabled
+            title="解读笔记尚未接入"
+          >
+            解读笔记（待接入）
+          </button>
         </div>
 
         <PillarGrid
@@ -2156,7 +2171,7 @@ export function BaziChart({
           sourceCounts={pillarSourceCounts}
         />
 
-        <BaziFactMatrix chart={chart} />
+        {displayMode === "professional" ? <BaziFactMatrix chart={chart} /> : null}
 
         {firstScreenPublicSource ? (
           <figure
@@ -2187,7 +2202,7 @@ export function BaziChart({
           </div>
         ) : null}
 
-        {displayMode !== "basic" ? (
+        {displayMode === "professional" ? (
           <BaziCoreFactSummary
             facts={chart.coreFacts}
             pillars={chart.pillars}
