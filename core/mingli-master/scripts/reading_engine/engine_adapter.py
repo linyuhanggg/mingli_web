@@ -102,17 +102,25 @@ class EngineAdapterBase(
                 engine_output,
                 provenance,
             )
-            return EngineAdapterResult(
-                canonical_facts=canonical_facts,
-                provenance=provenance,
-            )
-        except EngineAdapterError:
-            raise
-        except Exception as exc:
+        except Exception:
+            projection_failed = True
+        else:
+            projection_failed = False
+
+        # Projection failures can retain the private engine output on custom
+        # exception attributes.  Normalize only after leaving the ``except``
+        # suite, exactly like invocation failures, so neither implicit nor
+        # explicit exception chaining can expose that object.
+        if projection_failed:
             raise EngineAdapterError(
                 self.art_id or "unknown",
                 "canonical_projection_failed",
-            ) from exc
+            )
+
+        return EngineAdapterResult(
+            canonical_facts=canonical_facts,
+            provenance=provenance,
+        )
 
     def _build_engine_request(
         self,

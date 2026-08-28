@@ -111,6 +111,23 @@ class _OwnedPolicyFailingFakeAdapter(_HappyFakeAdapter):
         raise ValueError("owned policy validation failed")
 
 
+class _ProjectionFailure(Exception):
+    def __init__(self, private_output: _RawThirdPartyValue) -> None:
+        super().__init__("projection retained private output")
+        self.private_output = private_output
+
+
+class _ProjectionFailingFakeAdapter(_HappyFakeAdapter):
+    def _project_engine_output(
+        self,
+        request: str,
+        output: _RawThirdPartyValue,
+        provenance: EngineProvenance,
+    ) -> _FakeCanonicalFacts:
+        del request, provenance
+        raise _ProjectionFailure(output)
+
+
 class EngineAdapterProtocolTests(unittest.TestCase):
     def test_protocol_exposes_only_normalized_request_and_canonical_result(self) -> None:
         adapter = _HappyFakeAdapter()
@@ -153,6 +170,26 @@ class EngineAdapterProtocolTests(unittest.TestCase):
             adapter.adapt("normalized")
 
         self.assertFalse(adapter.engine_invoked)
+
+    def test_projection_exception_cannot_retain_private_output(self) -> None:
+        with self.assertRaises(EngineAdapterError) as raised:
+            _ProjectionFailingFakeAdapter().adapt("normalized")
+
+        error = raised.exception
+        self.assertEqual(error.code, "canonical_projection_failed")
+        self.assertEqual(
+            error.args,
+            ("fixture engine adapter failed (canonical_projection_failed)",),
+        )
+        self.assertEqual(
+            vars(error),
+            {
+                "art_id": "fixture",
+                "code": "canonical_projection_failed",
+            },
+        )
+        self.assertIsNone(error.__cause__)
+        self.assertIsNone(error.__context__)
 
     def test_bazi_and_ziwei_adapters_satisfy_the_same_minimal_protocol(self) -> None:
         self.assertIsInstance(bazi_fact_adapter.BaziEngineAdapter(), EngineAdapter)
@@ -250,6 +287,35 @@ class ArtSpecificCanonicalFactsTests(unittest.TestCase):
                 with self.subTest(case=case_id, target=target):
                     with self.assertRaises(CanonicalFactsError):
                         contract.bind_canonical_facts(hostile, provenance)
+
+    def test_nested_canonical_fact_objects_are_recursively_closed(self) -> None:
+        ziwei_case = _fixture("ziwei-normal-civil")
+        ziwei_provenance = _provenance(ziwei_case)
+        for path in ("palace", "nested_star"):
+            hostile = copy.deepcopy(ziwei_case["expected_canonical_facts"])
+            palace = hostile["output"]["palaces"][0]
+            target = palace if path == "palace" else palace["majorStars"][0]
+            target["third_party_payload"] = {
+                "private_engine_output": "must-not-cross-provider",
+            }
+
+            with self.subTest(art="ziwei", path=path):
+                with self.assertRaises(CanonicalFactsError):
+                    ZiweiFactContract().bind_canonical_facts(
+                        hostile,
+                        ziwei_provenance,
+                    )
+
+        bazi_case = _fixture("bazi-normal-civil")
+        bazi_hostile = copy.deepcopy(bazi_case["expected_canonical_facts"])
+        bazi_hostile["output"]["day_master"]["third_party_payload"] = {
+            "private_engine_output": "must-not-cross-provider",
+        }
+        with self.assertRaises(CanonicalFactsError):
+            BaziFactContract().bind_canonical_facts(
+                bazi_hostile,
+                _provenance(bazi_case),
+            )
 
     def test_canonical_fact_snapshots_are_detached_from_mutable_input(self) -> None:
         case = _fixture("bazi-normal-civil")
