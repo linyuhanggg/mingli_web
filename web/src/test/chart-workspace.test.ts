@@ -34,6 +34,24 @@ const GRANTED_ENTITLEMENT: TimeLayerEntitlement = {
   ],
 };
 
+function entitlementWithPaidAccess(
+  resolution: TimeLayerEntitlement["resolution"],
+  access: TimeLayerEntitlement["layers"][number]["access"],
+): TimeLayerEntitlement {
+  const upgradeCta =
+    access === "locked_paywall" || access === "fail_closed_unknown"
+      ? "professional_info"
+      : null;
+
+  return {
+    ...GRANTED_ENTITLEMENT,
+    resolution,
+    layers: GRANTED_ENTITLEMENT.layers.map((layer) =>
+      layer.tier === "paid" ? { ...layer, access, upgradeCta } : layer,
+    ),
+  };
+}
+
 function grantedEntitlementPayload() {
   return {
     schema_version: "time-layer-entitlement/v1",
@@ -223,6 +241,59 @@ describe("buildBaziWorkspaceView", () => {
     expect(view.layers.find((layer) => layer.id === "daily")?.summary).toContain(
       "2026-08-15",
     );
+  });
+
+  it.each([
+    ["denied", "locked_paywall", "locked-paywall", "专业版时间层"],
+    [
+      "unknown",
+      "fail_closed_unknown",
+      "fail-closed-unknown",
+      "权益状态未确认",
+    ],
+  ] as const)(
+    "preserves the %s entitlement lock when paid facts are absent",
+    (resolution, access, expectedStatus, expectedSummary) => {
+      const view = buildBaziWorkspaceView({
+        pillars: FOUR_PILLARS,
+        entitlement: entitlementWithPaidAccess(resolution, access),
+      });
+      const monthly = view.layers.find((layer) => layer.id === "monthly");
+
+      expect(monthly).toMatchObject({
+        status: expectedStatus,
+        summary: expectedSummary,
+        upgradeCta: "professional_info",
+      });
+    },
+  );
+
+  it("keeps granted paid layers unavailable until their fact rows arrive", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      entitlement: entitlementWithPaidAccess("granted", "readable"),
+    });
+
+    expect(view.layers.find((layer) => layer.id === "monthly")).toMatchObject({
+      status: "locked-unavailable",
+      summary: "待接入",
+      upgradeCta: null,
+    });
+  });
+
+  it("keeps explicit capability unavailability even when a fact row is returned", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      monthlyReady: true,
+      monthlySummary: "不得泄露的流月事实",
+      entitlement: entitlementWithPaidAccess("granted", "unavailable"),
+    });
+
+    expect(view.layers.find((layer) => layer.id === "monthly")).toMatchObject({
+      status: "locked-unavailable",
+      summary: "待接入",
+      upgradeCta: null,
+    });
   });
 
   it("never lets denied, guest, or failed entitlement lock the free boundary", () => {

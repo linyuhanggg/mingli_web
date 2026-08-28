@@ -444,9 +444,27 @@ function paidLayer(
   readySummary: string | null | undefined,
   entitlement: TimeLayerEntitlement | null | undefined,
 ): WorkspaceLayer {
-  if (!factsReady) return unavailableLayer(id, label);
   const entitlementId = id === "monthly" ? "month" : id === "daily" ? "day" : "hour";
   const entry = entitlement?.layers.find((item) => item.layerId === entitlementId);
+  if (entry?.access === "locked_paywall") {
+    return {
+      id,
+      label,
+      status: "locked-paywall",
+      summary: "专业版时间层",
+      upgradeCta: entry.upgradeCta,
+    };
+  }
+  if (entry?.access === "fail_closed_unknown") {
+    return {
+      id,
+      label,
+      status: "fail-closed-unknown",
+      summary: "权益状态未确认",
+      upgradeCta: entry.upgradeCta,
+    };
+  }
+  if (!factsReady) return unavailableLayer(id, label);
   if (!entry) {
     return {
       id,
@@ -460,15 +478,6 @@ function paidLayer(
     return { id, label, status: "ready", summary: readySummary ?? null, upgradeCta: null };
   }
   if (entry.access === "unavailable") return unavailableLayer(id, label);
-  if (entry.access === "locked_paywall") {
-    return {
-      id,
-      label,
-      status: "locked-paywall",
-      summary: "专业版时间层",
-      upgradeCta: entry.upgradeCta,
-    };
-  }
   return {
     id,
     label,
