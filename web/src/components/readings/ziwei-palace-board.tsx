@@ -116,6 +116,7 @@ export type ZiweiPalaceBoardProps = {
   onSelectedBranchChange?: (branch: string | null) => void;
   onActiveBranchChange?: (branch: string | null) => void;
   showLocator?: boolean;
+  showSupportingSections?: boolean;
 };
 
 function GridOwnedCell({ children }: Readonly<{ children: ReactNode }>) {
@@ -563,6 +564,7 @@ export function ZiweiPalaceBoard({
   onSelectedBranchChange,
   onActiveBranchChange,
   showLocator = true,
+  showSupportingSections = true,
 }: ZiweiPalaceBoardProps) {
   const resolvedLayout = useResolvedLayout(layout);
   const structural = mode !== "ready" || !view;
@@ -850,7 +852,7 @@ export function ZiweiPalaceBoard({
           })}
         </ul>
         {view && !structural ? <SemanticTable view={view} /> : null}
-        {!structural ? (
+        {!structural && showSupportingSections ? (
           <ZiweiMajorLimitTrack
             limits={view?.core_facts?.major_limits ?? null}
             onSelectLimit={(branch) =>
@@ -860,7 +862,7 @@ export function ZiweiPalaceBoard({
             sequence={view?.core_facts?.major_limit_sequence ?? null}
           />
         ) : null}
-        {!structural ? (
+        {!structural && showSupportingSections ? (
           <ZiweiTransformationTable
             items={view?.core_facts?.transformations ?? null}
             onSelectStar={(branch) =>
@@ -869,7 +871,7 @@ export function ZiweiPalaceBoard({
             selectedBranch={highlightedBranch}
           />
         ) : null}
-        {!structural ? (
+        {!structural && showSupportingSections ? (
           <ZiweiStarFactList
             items={view?.core_facts?.star_facts ?? null}
             onSelectStar={(branch) =>
@@ -878,7 +880,7 @@ export function ZiweiPalaceBoard({
             selectedBranch={highlightedBranch}
           />
         ) : null}
-        {!structural && showInterpretiveSections ? (
+        {!structural && showSupportingSections && showInterpretiveSections ? (
           <ZiweiSourcePatternDrawer
             items={view?.core_facts?.source_conditioned_patterns}
             onSelectPattern={(branch) =>
@@ -888,7 +890,10 @@ export function ZiweiPalaceBoard({
             selectedBranch={highlightedBranch}
           />
         ) : null}
-        {view && !structural && showInterpretiveSections ? (
+        {view &&
+        !structural &&
+        showSupportingSections &&
+        showInterpretiveSections ? (
           <ZiweiFreeSummary offer={offer} s4Phase={s4Phase} view={view} />
         ) : null}
         {detailDrawer}
@@ -994,7 +999,7 @@ export function ZiweiPalaceBoard({
         </GridOwnedCell>
       </div>
       {view && !structural ? <SemanticTable view={view} /> : null}
-      {!structural ? (
+      {!structural && showSupportingSections ? (
         <ZiweiMajorLimitTrack
           limits={view?.core_facts?.major_limits ?? null}
           onSelectLimit={(branch) =>
@@ -1004,7 +1009,7 @@ export function ZiweiPalaceBoard({
           sequence={view?.core_facts?.major_limit_sequence ?? null}
         />
       ) : null}
-      {!structural ? (
+      {!structural && showSupportingSections ? (
         <ZiweiTransformationTable
           items={view?.core_facts?.transformations ?? null}
           onSelectStar={(branch) =>
@@ -1013,7 +1018,7 @@ export function ZiweiPalaceBoard({
           selectedBranch={highlightedBranch}
         />
       ) : null}
-      {!structural ? (
+      {!structural && showSupportingSections ? (
         <ZiweiStarFactList
           items={view?.core_facts?.star_facts ?? null}
           onSelectStar={(branch) =>
@@ -1022,7 +1027,7 @@ export function ZiweiPalaceBoard({
           selectedBranch={highlightedBranch}
         />
       ) : null}
-      {!structural && showInterpretiveSections ? (
+      {!structural && showSupportingSections && showInterpretiveSections ? (
         <ZiweiSourcePatternDrawer
           items={view?.core_facts?.source_conditioned_patterns}
           onSelectPattern={(branch) =>
@@ -1032,7 +1037,10 @@ export function ZiweiPalaceBoard({
           selectedBranch={highlightedBranch}
         />
       ) : null}
-      {view && !structural && showInterpretiveSections ? (
+      {view &&
+      !structural &&
+      showSupportingSections &&
+      showInterpretiveSections ? (
         <ZiweiFreeSummary offer={offer} s4Phase={s4Phase} view={view} />
       ) : null}
       {detailDrawer}
@@ -1392,23 +1400,10 @@ export function ZiweiWorkspace({
 
   function selectLayer(layerId: WorkspaceLayerId) {
     setActiveLayerId(layerId);
-    selectBranch(null);
   }
 
   function renderReadyLayer(layer: WorkspaceLayer) {
-    if (layer.id === "natal") {
-      return (
-        <ZiweiPalaceBoard
-          layout={layout}
-          onActiveBranchChange={setActiveBranch}
-          onSelectedBranchChange={setSelectedBranch}
-          selectedBranch={selectedBranch}
-          showInterpretiveSections={showInterpretiveSections}
-          showLocator={false}
-          view={view}
-        />
-      );
-    }
+    if (layer.id === "natal") return null;
     if (layer.id === "decadal") {
       return (
         <ZiweiMajorLimitTrack
@@ -1467,11 +1462,29 @@ export function ZiweiWorkspace({
             role="tabpanel"
             tabIndex={0}
           >
-            {activeLayer.status === "ready" ? (
-              renderReadyLayer(activeLayer)
-            ) : (
-              <ZiweiWorkspaceState layer={activeLayer} />
-            )}
+            <ZiweiPalaceBoard
+              layout={layout}
+              onActiveBranchChange={setActiveBranch}
+              onSelectedBranchChange={setSelectedBranch}
+              selectedBranch={selectedBranch}
+              showInterpretiveSections={showInterpretiveSections}
+              showLocator={false}
+              showSupportingSections={activeLayer.id === "natal"}
+              view={view}
+            />
+            {activeLayer.id !== "natal" ? (
+              <div
+                aria-live="polite"
+                className={styles.layerContext}
+                data-layer={activeLayer.id}
+              >
+                {activeLayer.status === "ready" ? (
+                  renderReadyLayer(activeLayer)
+                ) : (
+                  <ZiweiWorkspaceState layer={activeLayer} />
+                )}
+              </div>
+            ) : null}
           </div>
           <ZiweiReadingPane
             detail={detail}
