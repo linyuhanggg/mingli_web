@@ -1,19 +1,61 @@
 # Third-Party Notices
 
 Audit date: 2026-08-28
-Audit issue: MING-66
-Audited source: `origin/main@fdfbee2ead72145e1c67daad6eba7f63cf4b60e6`
+Audit issue: MING-66 and release-closure follow-up
+Closure source parent: `origin/main@fc88198956f9d8a911e81a43a733b1b6e2dd78e0`
 
 This notice covers the application-owned Mingli Runtime surface selected by
 `requirements-runtime.lock` and `release/runtime-closure-v1.json`. It is an
 engineering compliance record, not legal advice.
 
-Release status is **HOLD**. The admitted notices below are complete for their
-named artifacts, but the current dependency set also contains the unresolved
-items listed under "Current distribution blockers". This file is not a release
-approval, and `release/runtime-closure-v1.json` does not yet include it.
+Release status is **HOLD**. PyYAML and sxtwl now have complete local,
+release-selected license evidence. The remaining blocker is the project-level
+distribution-license compatibility decision for the GPLv2+-declared zhconv
+package. `release/runtime-closure-v1.json` selects this notice, every local
+license named below, and the zhconv source-compliance procedure. This file is
+an engineering record, not release approval or legal advice.
 
 ## Admitted current Runtime components
+
+### PyYAML 6.0.3
+
+- Use: YAML support for Runtime manifests and contracts.
+- Distribution: unmodified exact-version wheels selected by
+  `requirements-runtime.lock`.
+- Upstream:
+  <https://github.com/yaml/pyyaml/tree/49790e73684bebad1df05ef8d828fa12f685bffb>
+- License: MIT.
+- Distributed license: `vendor/pyyaml-6.0.3/LICENSE`.
+- Copyright notices: Copyright (c) 2017-2021 Ingy döt Net; Copyright (c)
+  2006-2016 Kirill Simonov.
+- Obligation: retain the copyright notices, MIT permission notice, and
+  disclaimer in copies or substantial portions. No source offer is required.
+
+The local license is the complete text carried by the reviewed upstream commit
+and by the exact-version wheel license members. It is selected by the Runtime
+release closure.
+
+### sxtwl 2.0.7 — KEEP/WRAP
+
+- Use: solar terms, sexagenary calendar, and lunar conversion behind the
+  Runtime Provider.
+- Distribution: compiled locally without source patches from the exact PyPI
+  source archive `sxtwl-2.0.7.tar.gz`.
+- Official release: <https://pypi.org/project/sxtwl/2.0.7/>
+- Version-bound upstream commit:
+  <https://github.com/yuangu/sxtwl_cpp/tree/98b731a66bfdb1b98de2209b01fc6609351e6a4d>
+- License: BSD-3-Clause.
+- Distributed license: `vendor/sxtwl-2.0.7/LICENSE`.
+- Copyright notice: Copyright (c) 2017-2022, 元谷.
+- Obligation: source copies retain the copyright, conditions, and disclaimer;
+  binary distribution materials reproduce them; neither the copyright holder
+  nor contributors may be used for endorsement. No source offer is required.
+
+All 17 authored/package source members in the exact PyPI source archive
+directly byte-match the named official upstream commit. Generated package
+metadata was not used for that comparison. The same commit carries the full
+BSD-3-Clause text stored locally and selected by the release closure. This
+closes the version-binding gap without changing the KEEP/WRAP architecture.
 
 ### Astronomy Engine 2.1.19
 
@@ -88,41 +130,27 @@ audit-only use, and unmodified status.
 
 ## Current distribution blockers
 
-These components are named by the current Runtime lock but are not admitted by
-this notice. A release containing them remains on HOLD.
-
-### PyYAML 6.0.3 — HOLD
-
-The three exact-version wheels each contain
-`pyyaml-6.0.3.dist-info/licenses/LICENSE`; direct review shows the MIT
-permission and warranty-disclaimer text. The repository has no local copy of
-that license, so the MING-66 local-license traceability gate is not closed.
-Vendor the complete reviewed license under an approved path, add it to the
-release closure, and retain its copyright and MIT notice before changing this
-result to ALLOW.
-
-### sxtwl 2.0.7 — HOLD / KEEP-WRAP
-
-The exact `sxtwl-2.0.7.tar.gz` PyPI sdist declares only the generic label
-`BSD`, contains no LICENSE/COPYING/NOTICE file, and has no upstream `2.0.7` tag
-that binds it to a complete BSD-3-Clause license text. The current upstream
-repository carries a BSD-3-Clause text, but a current-branch document cannot
-substitute for release-bound evidence. Keep the existing engine architecture;
-do not replace it merely because this legal evidence is incomplete. Before the
-next distribution, bind the sdist to an exact upstream commit or
-maintainer-authenticated source, vendor the corresponding complete license,
-retain the BSD copyright/conditions/disclaimer, and add it to the release
-closure.
+The current Runtime lock has one unresolved compatibility decision. A release
+containing this dependency remains on HOLD.
 
 ### zhconv 1.4.3 — HOLD
 
-The exact `zhconv-1.4.3.tar.gz` sdist declares GPLv2+. Direct review of its
-`LICENSE` member shows the MIT code notice, while `LICENSE.data` carries the
-MediaWiki-derived GPLv2+-related data terms. The repository has neither local
-license file, a corresponding-source/source-offer procedure, nor a recorded
-product compatibility decision for this copyleft payload. Resolve those
-obligations or replace the dependency through a separately reviewed task before
-distribution.
+The exact `zhconv-1.4.3.tar.gz` source distribution declares GPLv2+. Direct
+review of its `LICENSE` member shows the MIT code notice, while `LICENSE.data`
+carries the MediaWiki-derived GPLv2+-related data terms. Both complete texts
+are stored under `vendor/zhconv-1.4.3/` and selected by the release closure.
+
+PyPI publishes only that source archive for version 1.4.3, and the current
+provisioner obtains it without source patches. The source archive contains the
+licenses, Python sources, and `zhcdict.json` data; the current source-delivery
+procedure is recorded in `vendor/zhconv-1.4.3/SOURCE_COMPLIANCE.md` and selected
+by the release closure.
+
+The remaining HOLD is narrower: no current project-wide distribution-license
+decision establishes compatibility for importing this GPLv2+-declared package
+in process. Engineering evidence cannot silently choose the product's license
+terms. Record an accountable compatibility decision, or replace the dependency
+through a separately reviewed task, before Runtime distribution.
 
 ## Scope boundaries
 

@@ -2,6 +2,7 @@
   "schema_version": "mingli-runtime-closure-v1",
   "files": [
     "SKILL.md",
+    "THIRD_PARTY_NOTICES.md",
     "release/runtime-closure-v1.json",
     "release/version.json",
     "requirements-runtime.lock",
@@ -58,7 +59,12 @@
     "vendor/cnlunar-0.2.4/PROVENANCE.json",
     "vendor/iztro-2.5.8/LICENSE",
     "vendor/iztro-2.5.8/PROVENANCE.json",
-    "vendor/iztro-2.5.8/iztro.min.js"
+    "vendor/iztro-2.5.8/iztro.min.js",
+    "vendor/pyyaml-6.0.3/LICENSE",
+    "vendor/sxtwl-2.0.7/LICENSE",
+    "vendor/zhconv-1.4.3/LICENSE",
+    "vendor/zhconv-1.4.3/LICENSE.data",
+    "vendor/zhconv-1.4.3/SOURCE_COMPLIANCE.md"
   ],
   "patterns": [
     "resources/runtime/*.json",

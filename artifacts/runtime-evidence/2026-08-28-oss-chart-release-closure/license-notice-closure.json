@@ -1,0 +1,67 @@
+{
+  "schema_version": "mingli-oss-chart-release-closure-v1",
+  "review_date": "2026-08-28",
+  "issue": "MING-66 follow-up / Raft task #2",
+  "source_parent": {
+    "ref": "origin/main",
+    "commit": "fc88198956f9d8a911e81a43a733b1b6e2dd78e0"
+  },
+  "summary": {
+    "overall_decision": "HOLD",
+    "clear_count": 3,
+    "hold_count": 1,
+    "remaining_blockers": [
+      "zhconv-1.4.3-project-license-compatibility"
+    ]
+  },
+  "items": [
+    {
+      "id": "pyyaml-6.0.3",
+      "decision": "CLEAR",
+      "evidence": [
+        "vendor/pyyaml-6.0.3/LICENSE contains the complete reviewed MIT text from upstream commit 49790e73684bebad1df05ef8d828fa12f685bffb",
+        "release/runtime-closure-v1.json selects the local license",
+        "THIRD_PARTY_NOTICES.md records the artifact, attribution, and obligation"
+      ]
+    },
+    {
+      "id": "sxtwl-2.0.7",
+      "decision": "CLEAR",
+      "evidence": [
+        "PyPI identifies sxtwl-2.0.7.tar.gz as the exact source distribution and the upstream project as yuangu/sxtwl_cpp",
+        "all 17 authored/package source members in the source distribution directly byte-match upstream commit 98b731a66bfdb1b98de2209b01fc6609351e6a4d; generated package metadata was not used for the comparison",
+        "that official upstream commit carries the complete BSD-3-Clause LICENSE now stored at vendor/sxtwl-2.0.7/LICENSE",
+        "release/runtime-closure-v1.json selects the local license and THIRD_PARTY_NOTICES.md records the binary-distribution obligations"
+      ],
+      "architecture_policy": "KEEP/WRAP"
+    },
+    {
+      "id": "zhconv-1.4.3",
+      "decision": "HOLD",
+      "cleared": [
+        "repository-local MIT code license",
+        "repository-local MediaWiki/GPLv2+ data license",
+        "current provision-from-source procedure and exact official source access",
+        "release-closure selection and notice text"
+      ],
+      "remaining_blocker": "No current project-wide distribution-license decision establishes compatibility for importing the GPLv2+-declared package in process. Engineering evidence cannot invent that product/legal decision.",
+      "required_next_action": "Record an accountable compatibility decision for the project's distribution terms, or replace zhconv in a separately scoped dependency task."
+    },
+    {
+      "id": "third-party-notices-release-closure",
+      "decision": "CLEAR",
+      "evidence": [
+        "release/runtime-closure-v1.json selects THIRD_PARTY_NOTICES.md",
+        "the closure selects every repository-local license and the zhconv source-compliance procedure referenced by the notice",
+        "scripts/test_license_notice_closure.py enforces direct lock, notice, evidence, and closure parity without adding a license checksum"
+      ]
+    }
+  ],
+  "scope": {
+    "dependency_versions_changed": false,
+    "provider_or_canonical_facts_changed": false,
+    "business_code_changed": false,
+    "deployment_performed": false,
+    "license_hash_or_checksum_added": false
+  }
+}
