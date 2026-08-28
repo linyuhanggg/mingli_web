@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+import pytest
 from app.charts.contracts import (
     CanwenViewV1,
     DaliurenChartV1,
@@ -389,6 +390,195 @@ def test_ziwei_projector_exposes_calculated_core_facts_without_input_material() 
     assert view_model.core_facts.transformations[0].transformation == "禄"
     assert view_model.core_facts.star_facts is not None
     assert view_model.core_facts.star_facts[0].brightness == "庙"
+
+
+def test_ziwei_projector_preserves_ordered_active_major_limit_segments() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    segments = [
+        {
+            "start_inclusive": "2025-01-01",
+            "end_exclusive": "2025-01-29",
+            "major_limit": {
+                "index": 1,
+                "palace_assignments": [{"temporal_palace": "福德"}],
+                "star_facts": [{"name": "武曲", "brightness": "庙"}],
+                "transformation_facts": [
+                    {"star": "武曲", "transformation": "禄"}
+                ],
+            },
+        },
+        {
+            "start_inclusive": "2025-01-29",
+            "end_exclusive": "2026-01-01",
+            "major_limit": {
+                "index": 2,
+                "palace_assignments": [{"temporal_palace": "田宅"}],
+                "star_facts": [{"name": "太阳", "brightness": "旺"}],
+                "transformation_facts": [
+                    {"star": "太阳", "transformation": "禄"}
+                ],
+            },
+        },
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": segments[0]["major_limit"],
+                "active_major_limit_segments": segments,
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.active_major_limit_segments is not None
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert serialized["active_major_limit_segments"] == segments
+    round_trip = ZiweiChartV1.model_validate(view_model.model_dump(mode="json"))
+    assert round_trip.model_dump(mode="json")["core_facts"] == serialized
+
+
+def test_ziwei_projector_omits_segments_only_when_runtime_fact_is_absent() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": {"index": 1},
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is not None
+    assert view_model.core_facts.active_major_limit == {"index": 1}
+    serialized = view_model.model_dump(mode="json")["core_facts"]
+    assert "active_major_limit_segments" not in serialized
+    round_trip = ZiweiChartV1.model_validate(view_model.model_dump(mode="json"))
+    assert "active_major_limit_segments" not in round_trip.model_dump(mode="json")[
+        "core_facts"
+    ]
+
+
+@pytest.mark.parametrize(
+    "segments",
+    [
+        None,
+        [],
+        [{}],
+        [
+            {
+                "end_exclusive": "2025-01-29",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-01",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-29",
+                "end_exclusive": "2025-01-29",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-30",
+                "end_exclusive": "2025-01-29",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-02-30",
+                "end_exclusive": "2025-03-01",
+                "major_limit": {"index": 1},
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-01",
+                "end_exclusive": "2025-01-29",
+            }
+        ],
+        [
+            {
+                "start_inclusive": "2025-01-01",
+                "end_exclusive": "2025-01-29",
+                "major_limit": {},
+            }
+        ],
+    ],
+    ids=(
+        "null-list",
+        "empty-list",
+        "empty-segment",
+        "missing-start",
+        "missing-end",
+        "empty-range",
+        "reverse-range",
+        "invalid-date",
+        "missing-major-limit",
+        "empty-major-limit",
+    ),
+)
+def test_ziwei_projector_rejects_invalid_active_major_limit_segments(
+    segments: object,
+) -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+
+    view_model = project_ziwei_view_model(
+        brief(
+            "ziwei",
+            {
+                "palaces": palaces,
+                "active_major_limit": {"index": 1},
+                "active_major_limit_segments": segments,
+            },
+        )
+    )
+
+    assert isinstance(view_model, ZiweiChartV1)
+    assert view_model.core_facts is None
 
 
 def test_qizheng_projector_derives_only_display_coordinates_from_runtime_longitudes() -> None:

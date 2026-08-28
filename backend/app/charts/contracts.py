@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
+from datetime import date
 from typing import Annotated, Literal
 
 from pydantic import (
@@ -918,6 +919,37 @@ class ZiweiTransformation(ContractModel):
     scope: str = Field(min_length=1)
 
 
+class ZiweiMajorLimitSegment(ContractModel):
+    """One exact Runtime-owned major-limit interval and its placement facts."""
+
+    start_inclusive: str = Field(min_length=1)
+    end_exclusive: str = Field(min_length=1)
+    major_limit: dict[str, object] = Field(min_length=1)
+
+    @field_validator("start_inclusive", "end_exclusive", mode="before")
+    @classmethod
+    def _requires_canonical_iso_date(cls, value: object) -> object:
+        if not isinstance(value, str):
+            raise ValueError("major-limit segment boundaries must be ISO dates")
+        try:
+            parsed = date.fromisoformat(value)
+        except ValueError as error:
+            raise ValueError(
+                "major-limit segment boundaries must be ISO dates"
+            ) from error
+        if parsed.isoformat() != value:
+            raise ValueError("major-limit segment boundaries must be canonical ISO dates")
+        return value
+
+    @model_validator(mode="after")
+    def _requires_forward_interval(self) -> ZiweiMajorLimitSegment:
+        if date.fromisoformat(self.start_inclusive) >= date.fromisoformat(
+            self.end_exclusive
+        ):
+            raise ValueError("major-limit segment start must precede end")
+        return self
+
+
 class ZiweiAnnualLayer(ContractModel):
     """Runtime-owned Ziwei annual placement facts."""
 
@@ -960,6 +992,10 @@ class ZiweiCoreFacts(ContractModel):
     chart_convention: dict[str, object] | None = None
     chinese_date: str | None = Field(default=None, min_length=1)
     active_major_limit: dict[str, object] | None = None
+    active_major_limit_segments: tuple[ZiweiMajorLimitSegment, ...] | None = Field(
+        default=None,
+        min_length=1,
+    )
     five_elements_class: str | None = Field(default=None, min_length=1)
     interpretive_candidates: dict[str, object] | None = None
     source_conditioned_patterns: tuple[ZiweiSourcePattern, ...] = ()
@@ -972,6 +1008,29 @@ class ZiweiCoreFacts(ContractModel):
     star_facts: tuple[ZiweiStarFact, ...] | None = None
     annual_layers: tuple[ZiweiAnnualLayer, ...] | None = None
     monthly_layers: tuple[ZiweiMonthlyLayer, ...] | None = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def _segments_must_be_absent_or_non_null(cls, value: object) -> object:
+        if (
+            isinstance(value, Mapping)
+            and "active_major_limit_segments" in value
+            and value["active_major_limit_segments"] is None
+        ):
+            raise ValueError("major-limit segments must be omitted or non-null")
+        return value
+
+    @model_serializer(mode="wrap")
+    def _omit_absent_major_limit_segments(
+        self,
+        handler: SerializerFunctionWrapHandler,
+    ) -> dict[str, object]:
+        """Keep old singular payloads distinguishable from invalid segment lists."""
+
+        serialized: dict[str, object] = handler(self)
+        if "active_major_limit_segments" not in self.model_fields_set:
+            serialized.pop("active_major_limit_segments", None)
+        return serialized
 
 
 class ZiweiChartV1(ContractModel):
