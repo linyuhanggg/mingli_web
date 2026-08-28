@@ -1587,6 +1587,71 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(within(board).queryByText("上半月星")).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["missing", undefined],
+    [
+      "strictly invalid",
+      {
+        ...ziweiEntitlement(),
+        capability_id: "not-ziwei",
+      } as unknown as TimeLayerEntitlementResponse,
+    ],
+  ])(
+    "keeps valid annual Runtime facts when the optional entitlement is %s",
+    (_, entitlement) => {
+      const natal = chart();
+      const annual2026 = temporalPalaceFacts(natal, "午", "yearly");
+      const annual2027 = temporalPalaceFacts(natal, "未", "yearly");
+      const annualLayer = (
+        year: number,
+        temporal: ReturnType<typeof temporalPalaceFacts>,
+      ) => ({
+        year,
+        coverage_start: `${year}-01-01`,
+        coverage_end_exclusive: `${year + 1}-01-01`,
+        liu_nian: temporal,
+        segments: [
+          {
+            start_inclusive: `${year}-01-01`,
+            end_exclusive: `${year + 1}-01-01`,
+            liu_nian: temporal,
+          },
+        ],
+        representative_scope: "must not be consumed",
+      });
+      const view = chart({
+        time_layers: [
+          {
+            layer_id: "year",
+            label: "流年",
+            available: true,
+            unavailable_reason: null,
+          },
+        ],
+        core_facts: facts({
+          chart_convention: { target_year: 2027 },
+          annual_layers: [
+            annualLayer(2026, annual2026),
+            annualLayer(2027, annual2027),
+          ],
+        }),
+      });
+
+      render(
+        <ZiweiWorkspace timeLayerEntitlement={entitlement} view={view} />,
+      );
+      fireEvent.click(timeLayerButton(/流年/));
+
+      const yearSelect = screen.getByRole("combobox", { name: "流年年份" });
+      expect(yearSelect).toHaveValue("2027");
+      expect(within(yearSelect).getAllByRole("option")).toHaveLength(2);
+      const table = screen.getByRole("table", { name: "流年盘面事实" });
+      expect(within(table).getByRole("cell", { name: "2026" })).toBeVisible();
+      expect(within(table).getByRole("cell", { name: "2027" })).toBeVisible();
+      expect(palaceButton("未")).toHaveAttribute("data-life", "true");
+    },
+  );
+
   it("uses free_year_set as the only yearly allow-list and fails closed when it is empty", () => {
     const natal = chart();
     const annual2026 = temporalPalaceFacts(natal, "午", "yearly");
