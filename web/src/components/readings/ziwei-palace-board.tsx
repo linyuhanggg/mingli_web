@@ -1207,8 +1207,6 @@ type ZiweiTemporalSelection = {
   initialId: string;
 };
 
-const EMPTY_FREE_YEAR_SET: ReadonlySet<number> = new Set();
-
 function isEarthlyBranch(value: unknown): value is (typeof BRANCHES)[number] {
   return (
     typeof value === "string" &&
@@ -1593,7 +1591,7 @@ function temporalSegmentsForRange(
 function temporalSelectionForLayer(
   view: ZiweiChartViewModel,
   layerId: ZiweiTemporalLayerId,
-  freeYears: ReadonlySet<number> = EMPTY_FREE_YEAR_SET,
+  freeYears: ReadonlySet<number> | null = null,
 ): ZiweiTemporalSelection | null {
   const options: ZiweiTemporalOption[] = [];
   const identities = new Set<string>();
@@ -1609,7 +1607,7 @@ function temporalSelectionForLayer(
       ) {
         return null;
       }
-      if (!freeYears.has(layer.year)) continue;
+      if (freeYears !== null && !freeYears.has(layer.year)) continue;
       const id = String(layer.year);
       const segments = temporalSegmentsForRange(
         view,
@@ -1696,6 +1694,7 @@ function temporalSelectionForLayer(
     explicitTarget &&
     !(
       layerId === "yearly" &&
+      freeYears !== null &&
       Number.isInteger(Number(explicitTarget)) &&
       !freeYears.has(Number(explicitTarget))
     )
@@ -1730,6 +1729,7 @@ function temporalSelectionForLayer(
       }
     } else if (!(
       layerId === "yearly" &&
+      freeYears !== null &&
       isIsoCivilDate(exactDateTarget) &&
       !freeYears.has(Number(exactDateTarget.slice(0, 4)))
     )) {
@@ -1884,7 +1884,7 @@ function layerHasFacts(
       temporalSelectionForLayer(
         view,
         layerId,
-        entitlement?.freeYears ?? EMPTY_FREE_YEAR_SET,
+        entitlement?.freeYears ?? null,
       ) !== null
     );
   }
@@ -2429,7 +2429,7 @@ export function ZiweiWorkspace({
       yearly: temporalSelectionForLayer(
         view,
         "yearly",
-        parsedEntitlement?.freeYears ?? EMPTY_FREE_YEAR_SET,
+        parsedEntitlement?.freeYears ?? null,
       ),
       monthly: temporalSelectionForLayer(view, "monthly"),
     }),
