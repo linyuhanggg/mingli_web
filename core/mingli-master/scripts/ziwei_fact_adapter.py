@@ -9,13 +9,21 @@ import hashlib
 import json
 import subprocess
 import sys
+from dataclasses import dataclass
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any, Iterator, Mapping
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
+from fact_contracts.common import EngineProvenance
+from fact_contracts.ziwei import ZiweiCanonicalFacts, ZiweiFactContract
 from reading_engine import calendar_core, evidence_rules
 from reading_engine.contracts import FactRef
+from reading_engine.engine_adapter import (
+    EngineAdapterBase,
+    EngineAdapterError,
+    EngineAdapterResult,
+)
 
 
 ADAPTER_NAME = "mingli-master.ziwei_fact_adapter"
@@ -1125,7 +1133,7 @@ def _ziwei_time_warning(time_basis_policy: str) -> str:
     )
 
 
-def build_from_birth(
+def _build_from_birth_payload(
     civil_datetime: str,
     *,
     timezone_name: str,
@@ -1380,6 +1388,147 @@ def build_from_birth(
     )
     payload["natal_fact_digest"] = natal_fact_digest(payload)
     return payload
+
+
+@dataclass(frozen=True)
+class ZiweiNormalizedEngineRequest:
+    """Owned normalized input for the vendored iztro adapter."""
+
+    civil_datetime: str
+    timezone_name: str
+    location: str
+    gender: str
+    longitude: float | None = None
+    latitude: float | None = None
+    coordinate_source: str | None = None
+    coordinate_accuracy_meters: float | None = None
+    zi_hour_policy: str = "midnight"
+    time_basis_policy: str = "civil"
+
+
+@dataclass(frozen=True)
+class _ZiweiPrivateEngineRequest:
+    normalized: ZiweiNormalizedEngineRequest
+
+
+@dataclass(frozen=True)
+class _ZiweiPrivateEngineOutput:
+    payload: dict[str, Any]
+
+
+class ZiweiEngineAdapter(
+    EngineAdapterBase[
+        ZiweiNormalizedEngineRequest,
+        _ZiweiPrivateEngineRequest,
+        _ZiweiPrivateEngineOutput,
+        ZiweiCanonicalFacts,
+    ]
+):
+    """Wrap vendored iztro and project only typed Ziwei Canonical Facts."""
+
+    art_id = "ziwei"
+
+    def _build_engine_request(
+        self,
+        request: ZiweiNormalizedEngineRequest,
+    ) -> _ZiweiPrivateEngineRequest:
+        if not isinstance(request, ZiweiNormalizedEngineRequest):
+            raise ValueError("unsupported Ziwei normalized engine request")
+        return _ZiweiPrivateEngineRequest(normalized=request)
+
+    def _invoke_engine(
+        self,
+        request: _ZiweiPrivateEngineRequest,
+    ) -> _ZiweiPrivateEngineOutput:
+        normalized = request.normalized
+        try:
+            payload = _build_from_birth_payload(
+                normalized.civil_datetime,
+                timezone_name=normalized.timezone_name,
+                location=normalized.location,
+                gender=normalized.gender,
+                longitude=normalized.longitude,
+                latitude=normalized.latitude,
+                coordinate_source=normalized.coordinate_source,
+                coordinate_accuracy_meters=normalized.coordinate_accuracy_meters,
+                zi_hour_policy=normalized.zi_hour_policy,
+                time_basis_policy=normalized.time_basis_policy,
+            )
+        except json.JSONDecodeError as exc:
+            raise EngineAdapterError(
+                self.art_id,
+                "engine_output_invalid",
+            ) from exc
+        return _ZiweiPrivateEngineOutput(payload=payload)
+
+    def _project_engine_output(
+        self,
+        request: ZiweiNormalizedEngineRequest,
+        output: _ZiweiPrivateEngineOutput,
+        provenance: EngineProvenance,
+    ) -> ZiweiCanonicalFacts:
+        del request
+        return ZiweiFactContract().bind_canonical_facts(
+            output.payload,
+            provenance,
+        )
+
+    def _provenance(
+        self,
+        request: ZiweiNormalizedEngineRequest,
+    ) -> EngineProvenance:
+        return EngineProvenance(
+            engine_id="iztro",
+            engine_version=IZTRO_VERSION,
+            policy_profile="iztro-default-v2.5.8/fix-leap/zh-CN",
+            time_basis=request.time_basis_policy,
+        )
+
+    def bind_canonical_facts(
+        self,
+        request: ZiweiNormalizedEngineRequest,
+        payload: dict[str, Any],
+    ) -> EngineAdapterResult[ZiweiCanonicalFacts]:
+        """Bind a previously projected payload without retaining raw output."""
+
+        provenance = self._provenance(request)
+        facts = ZiweiFactContract().bind_canonical_facts(payload, provenance)
+        return EngineAdapterResult(
+            canonical_facts=facts,
+            provenance=provenance,
+        )
+
+
+def build_from_birth(
+    civil_datetime: str,
+    *,
+    timezone_name: str,
+    location: str,
+    gender: str,
+    longitude: float | None = None,
+    latitude: float | None = None,
+    coordinate_source: str | None = None,
+    coordinate_accuracy_meters: float | None = None,
+    zi_hour_policy: str = "midnight",
+    time_basis_policy: str = "civil",
+) -> dict[str, Any]:
+    """Compatibility facade returning the unchanged Ziwei fact JSON shape."""
+
+    result = ZiweiEngineAdapter().adapt(
+        ZiweiNormalizedEngineRequest(
+            civil_datetime=civil_datetime,
+            timezone_name=timezone_name,
+            location=location,
+            gender=gender,
+            longitude=longitude,
+            latitude=latitude,
+            coordinate_source=coordinate_source,
+            coordinate_accuracy_meters=coordinate_accuracy_meters,
+            zi_hour_policy=zi_hour_policy,
+            time_basis_policy=time_basis_policy,
+        )
+    )
+    return result.canonical_facts.to_payload()
 
 
 def main() -> int:
