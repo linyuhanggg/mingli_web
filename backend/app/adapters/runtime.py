@@ -11,7 +11,7 @@ from collections.abc import Mapping
 from contextlib import suppress
 from dataclasses import dataclass, field
 from pathlib import Path, PurePosixPath
-from typing import Any, Protocol, runtime_checkable
+from typing import Any, Literal, Protocol, runtime_checkable
 
 from app.config import _RUNTIME_RELEASE_PROFILES, Settings
 from app.readings.capability_policy import (
@@ -31,6 +31,8 @@ from app.readings.runtime_contracts import (
     ReadingBrief,
     RuntimeFailure,
     Stopped,
+    TimeLayerEntitlementResolution,
+    resolve_time_layer_entitlement_resolution,
     result_from_dict,
 )
 
@@ -809,6 +811,31 @@ def failure_for_transport_fault(fault: str) -> RuntimeFailure:
             retryable=True,
         )
     return RuntimeFailure.internal_error()
+
+
+def time_layer_entitlement_resolution_for_transport_fault(
+    fault: str,
+) -> TimeLayerEntitlementResolution:
+    """Host transport faults lock paid layers only; they are not capability signals."""
+
+    del fault
+    return resolve_time_layer_entitlement_resolution(
+        owner_kind=None,
+        request_failed=True,
+    )
+
+
+def time_layer_entitlement_resolution_for_session(
+    *,
+    owner_kind: Literal["user", "guest"] | None,
+    paid_grant: bool | None = None,
+) -> TimeLayerEntitlementResolution:
+    """Session/grant mapping stays off time_layers[].available/unavailable_reason."""
+
+    return resolve_time_layer_entitlement_resolution(
+        owner_kind=owner_kind,
+        paid_grant=paid_grant,
+    )
 
 
 def generic_runtime_stopped(*, failure: RuntimeFailure | None = None) -> Stopped:

@@ -17,7 +17,14 @@ from app.readings.models import (
     RuntimeRelease,
 )
 from app.readings.request_compiler import compile_liuyao_prepare
-from app.readings.runtime_contracts import Accepted, Prepared, ReadingBrief, Stopped
+from app.readings.runtime_contracts import (
+    TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
+    Accepted,
+    Prepared,
+    ReadingBrief,
+    Stopped,
+    TimeLayerEntitlementV1,
+)
 from app.readings.service import ReadingService
 from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
@@ -296,6 +303,177 @@ async def start_preview(
     )
     assert response.status_code in {200, 201}, response.text
     return response.json()
+
+
+def _bazi_chart_brief(
+    subject_ref: str,
+    *,
+    include_year: bool = False,
+    include_month: bool = False,
+) -> ReadingBrief:
+    facts: list[dict[str, Any]] = [
+        {
+            "ref": f"fact:{subject_ref}/calculated/bazi/four_pillars",
+            "subject_ref": subject_ref,
+            "kind_id": "kind.fact",
+            "value": {
+                "year": "甲戌",
+                "month": "戊辰",
+                "day": "丙戌",
+                "hour": "辛卯",
+            },
+            "display_text": "四柱已由 Runtime 计算。",
+        },
+        {
+            "ref": f"fact:{subject_ref}/calculated/bazi/element_inventory",
+            "subject_ref": subject_ref,
+            "kind_id": "kind.fact",
+            "value": {
+                "visible_stem_branch_counts": {
+                    "木": 2,
+                    "火": 1,
+                    "土": 4,
+                    "金": 1,
+                }
+            },
+            "display_text": "五行可见干支计数已由 Runtime 计算。",
+        },
+    ]
+    if include_year:
+        from test_bazi_view_model_projector import _year_layer
+
+        facts.append(
+            {
+                "ref": f"fact:{subject_ref}/calculated/bazi/year_layers",
+                "subject_ref": subject_ref,
+                "kind_id": "kind.fact",
+                "value": _year_layer(),
+                "display_text": "流年层已由 Runtime 计算。",
+            }
+        )
+    if include_month:
+        facts.append(
+            {
+                "ref": f"fact:{subject_ref}/calculated/bazi/month_layers",
+                "subject_ref": subject_ref,
+                "kind_id": "kind.fact",
+                "value": {
+                    "2026-08": {
+                        "year": 2026,
+                        "month": 8,
+                        "ganzhi_segments": [{"ganzhi": "甲申"}],
+                        "structural_changes": {"status": "fixture"},
+                        "seasonal_tiaohou_delta": {"status": "fixture"},
+                        "shensha_auxiliary": {"status": "fixture"},
+                        "active_luck_cycle": {"status": "fixture"},
+                        "calendar_normalization": {"status": "fixture"},
+                        "rule_trace": [{"rule_id": "bazi.test.month"}],
+                    }
+                },
+                "display_text": "流月层已由 Runtime 计算。",
+            }
+        )
+    return ReadingBrief.from_dict(
+        {
+            "question": "查看本命四柱结构",
+            "vocabulary": [],
+            "facts": facts,
+            "evidence": [],
+            "findings": [],
+            "claim_scopes": [],
+            "limits": [],
+            "prior_answer": None,
+            "request_view": {
+                "subject_refs": [subject_ref],
+                "capability_ids": ["bazi"],
+                "object_id": "natal",
+                "dimension_ids": ["overview"],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+            },
+        }
+    )
+
+
+def _ziwei_chart_brief(subject_ref: str) -> ReadingBrief:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    return ReadingBrief.from_dict(
+        {
+            "question": "查看本命紫微盘",
+            "vocabulary": [],
+            "facts": [
+                {
+                    "ref": f"fact:{subject_ref}/calculated/ziwei/palaces",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.structure",
+                    "value": palaces,
+                    "display_text": "十二宫盘面事实",
+                }
+            ],
+            "evidence": [],
+            "findings": [],
+            "claim_scopes": [],
+            "limits": [],
+            "prior_answer": None,
+            "request_view": {
+                "subject_refs": [subject_ref],
+                "capability_ids": ["ziwei"],
+                "object_id": "natal",
+                "dimension_ids": ["career"],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+            },
+        }
+    )
+
+
+async def replace_prepared_brief(
+    database: Any,
+    settings: Any,
+    *,
+    version_id: str,
+    brief: ReadingBrief,
+) -> None:
+    readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
+    cipher = EnvelopeCipher.from_settings(settings)
+    async with database.sessions() as session:
+        repository = readings.SqlReadingRepository(session, cipher)
+        version = await session.get(ReadingVersion, UUID(version_id))
+        assert version is not None
+        job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version.id,
+            )
+        )
+        assert job is not None
+        existing_brief = await session.scalar(
+            select(FactBrief).where(FactBrief.reading_version_id == version.id)
+        )
+        if existing_brief is not None:
+            await session.delete(existing_brief)
+            await session.flush()
+        state_token = await repository.load_state_token(version.id)
+        await repository.record_prepared(
+            str(job.id),
+            Prepared(
+                state_token=state_token or "api-test-token",
+                brief=brief,
+            ),
+            datetime.now(UTC),
+        )
+        await session.commit()
+
+
+def _entitlement_by_id(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    return {item["layer_id"]: item for item in payload["layers"]}
 
 
 async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
@@ -2615,3 +2793,188 @@ async def test_guest_can_start_each_remaining_core_product(
     assert body["horizon"]["kind_id"] == expected_horizon
     assert body["status"] == "input_ready"
     assert_private_headers(started)
+
+
+async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_year(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="entitlement-guest-bazi",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=_bazi_chart_brief(subject_ref, include_year=True, include_month=True),
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+
+    assert result.status_code == 200
+    body = result.json()
+    entitlement = body["time_layer_entitlement"]
+    restored = TimeLayerEntitlementV1.from_dict(entitlement)
+    layers = _entitlement_by_id(entitlement)
+    view_layers = body["view_model"]["time_layers"]
+    month_capability = next(item for item in view_layers if item["layer_id"] == "month")
+    assert entitlement["schema_version"] == TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
+    assert restored.capability_id == "bazi"
+    assert entitlement["resolution"] == "unauthenticated"
+    assert entitlement["free_year_set"] == [2026]
+    assert layers["life"]["access"] == "readable"
+    assert layers["year"]["access"] == "readable"
+    assert layers["year"]["upgrade_cta"] is None
+    assert layers["month"]["access"] == "fail_closed_unknown"
+    assert layers["month"]["upgrade_cta"] == "professional_info"
+    assert layers["hour"]["access"] == "unavailable"
+    assert layers["hour"]["upgrade_cta"] is None
+    assert month_capability["available"] is True
+    assert "tier" not in month_capability
+    assert "access" not in month_capability
+    assert_private_headers(result)
+
+
+async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    guest_headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, guest_headers)
+    await seed_runtime_release(database, test_settings)
+    logged_in = await login_current_guest(client, guest_headers)
+    user_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    bazi_started = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="entitlement-user-bazi",
+    )
+    ziwei_started = await client.post(
+        "/api/v1/readings/ziwei",
+        headers={**user_headers, "Idempotency-Key": "entitlement-user-ziwei"},
+        json={
+            "profile_version_id": confirmed["profile_version_id"],
+            "dimension_ids": ["career"],
+        },
+    )
+    assert ziwei_started.status_code == 201, ziwei_started.text
+    bazi_subject = f"profile-version:{confirmed['profile_version_id']}"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=bazi_started["reading_version_id"],
+        brief=_bazi_chart_brief(bazi_subject, include_year=True, include_month=True),
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=ziwei_started.json()["reading_version_id"],
+        brief=_ziwei_chart_brief(bazi_subject),
+    )
+
+    bazi_result = await client.get(
+        f"/api/v1/readings/{bazi_started['reading_version_id']}/result"
+    )
+    ziwei_result = await client.get(
+        f"/api/v1/readings/{ziwei_started.json()['reading_version_id']}/result"
+    )
+
+    assert bazi_result.status_code == 200
+    assert ziwei_result.status_code == 200
+    bazi_entitlement = bazi_result.json()["time_layer_entitlement"]
+    ziwei_entitlement = ziwei_result.json()["time_layer_entitlement"]
+    TimeLayerEntitlementV1.from_dict(bazi_entitlement)
+    TimeLayerEntitlementV1.from_dict(ziwei_entitlement)
+    bazi_layers = _entitlement_by_id(bazi_entitlement)
+    ziwei_layers = _entitlement_by_id(ziwei_entitlement)
+    assert bazi_entitlement["resolution"] == "unknown"
+    assert ziwei_entitlement["resolution"] == "unknown"
+    assert ziwei_entitlement["capability_id"] == "ziwei"
+    assert bazi_layers["month"]["access"] == "fail_closed_unknown"
+    assert ziwei_layers["life"]["access"] == "readable"
+    assert ziwei_layers["year"]["access"] == "unavailable"
+    assert ziwei_layers["year"]["upgrade_cta"] is None
+    assert ziwei_layers["month"]["access"] == "unavailable"
+
+
+async def test_result_without_session_is_401_and_omits_entitlement(
+    client: AsyncClient,
+) -> None:
+    response = await client.get(f"/api/v1/readings/{uuid4()}/result")
+
+    assert response.status_code == 401
+    assert "time_layer_entitlement" not in response.json()
+
+
+async def test_request_failed_result_locks_only_paid_bazi_layers(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="entitlement-request-failed",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=_bazi_chart_brief(subject_ref, include_year=True, include_month=True),
+    )
+    async with database.sessions() as session:
+        version = await session.get(ReadingVersion, UUID(version_id))
+        assert version is not None
+        version.status = "terminal_stopped"
+        await session.commit()
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+
+    assert result.status_code == 200
+    entitlement = result.json()["time_layer_entitlement"]
+    layers = _entitlement_by_id(entitlement)
+    TimeLayerEntitlementV1.from_dict(entitlement)
+    assert entitlement["resolution"] == "request_failed"
+    assert layers["year"]["access"] == "readable"
+    assert layers["month"]["access"] == "fail_closed_unknown"
+    assert layers["hour"]["access"] == "unavailable"
+
+
+async def test_liuyao_result_does_not_invent_time_layer_entitlement(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    version_id = await start_waiting_liuyao(
+        client,
+        database,
+        test_settings,
+        headers,
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+
+    assert result.status_code == 200
+    body = result.json()
+    assert body["time_layer_entitlement"] is None
+    assert body.get("view_model") is None or body["view_model"]["schema_version"] != (
+        "bazi-chart/v1"
+    )

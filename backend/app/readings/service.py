@@ -26,6 +26,8 @@ from app.adapters.runtime import (
     append_runtime_turn_audit,
     failure_for_transport_fault,
     runtime_command_digest,
+    time_layer_entitlement_resolution_for_session,
+    time_layer_entitlement_resolution_for_transport_fault,
 )
 from app.charts.projectors import project_runtime_view_model
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
@@ -47,6 +49,7 @@ from app.readings.api_schemas import (
     ReadingStartResponse,
     ReadingVerificationSummary,
     ReadingVersionSummary,
+    TimeLayerEntitlementResponse,
 )
 from app.readings.capability_policy import (
     project_capability,
@@ -95,7 +98,14 @@ from app.readings.request_compiler import (
     compile_ziwei_prepare,
     compile_ziwei_year_prepare,
 )
-from app.readings.runtime_contracts import MingliResult, Prepare, Prepared, Stopped
+from app.readings.runtime_contracts import (
+    MingliResult,
+    Prepare,
+    Prepared,
+    Stopped,
+    TimeLayerEntitlementV1,
+    project_time_layer_entitlement,
+)
 from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 
@@ -2176,6 +2186,12 @@ class ReadingService:
             view_model,
             job_status=job_status,
         )
+        time_layer_entitlement = self.project_time_layer_entitlement(
+            view_model,
+            owner,
+            request_failed=status
+            in {ReadingStatus.TERMINAL_STOPPED, ReadingStatus.RUNTIME_UNKNOWN},
+        )
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=status,
@@ -2204,6 +2220,9 @@ class ReadingService:
             result_available=result_available,
             poll_required=poll_required,
             poll_after_seconds=poll_after_seconds,
+            time_layer_entitlement=TimeLayerEntitlementResponse.from_contract(
+                time_layer_entitlement
+            ),
         )
 
     async def submit_verification(
@@ -2866,6 +2885,25 @@ class ReadingService:
             )
         except LookupError as error:
             raise ReadingNotFoundError("Reading Version not found") from error
+
+    @staticmethod
+    def project_time_layer_entitlement(
+        view_model: object,
+        owner: OwnerProtocol,
+        *,
+        request_failed: bool = False,
+        paid_grant: bool | None = None,
+    ) -> TimeLayerEntitlementV1 | None:
+        if request_failed:
+            resolution = time_layer_entitlement_resolution_for_transport_fault(
+                "request"
+            )
+        else:
+            resolution = time_layer_entitlement_resolution_for_session(
+                owner_kind=owner.kind,
+                paid_grant=paid_grant,
+            )
+        return project_time_layer_entitlement(view_model, resolution=resolution)
 
     @staticmethod
     def _poll_fields(
