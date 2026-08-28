@@ -15,7 +15,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   ZiweiPalaceBoard,
   ZiweiWorkspace,
+  projectZiweiWorkspace,
 } from "@/components/readings/ziwei-palace-board";
+import type { TimeLayerEntitlementResponse } from "@/lib/api/contracts";
 import type {
   ZiweiChartViewModel,
   ZiweiCoreFacts,
@@ -201,6 +203,109 @@ function chart(
   };
 }
 
+function ziweiEntitlement(
+  overrides: Partial<TimeLayerEntitlementResponse> = {},
+): TimeLayerEntitlementResponse {
+  return {
+    schema_version: "time-layer-entitlement/v1",
+    capability_id: "ziwei",
+    resolution: "granted",
+    free_boundary_layer_id: "year",
+    paid_layer_ids: ["month", "day", "hour"],
+    free_year_set: [2026],
+    capability: {
+      time_layers: [
+        {
+          layer_id: "life",
+          label: "原局",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "year",
+          label: "流年",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "month",
+          label: "流月",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "day",
+          label: "流日",
+          available: false,
+          unavailable_reason: "本次结果未返回逐日盘面。",
+        },
+        {
+          layer_id: "hour",
+          label: "流时",
+          available: false,
+          unavailable_reason: "本次结果未返回逐时盘面。",
+        },
+      ],
+    },
+    layers: [
+      { layer_id: "life", tier: "free", access: "readable", upgrade_cta: null },
+      {
+        layer_id: "major_limits",
+        tier: "free",
+        access: "readable",
+        upgrade_cta: null,
+      },
+      { layer_id: "year", tier: "free", access: "readable", upgrade_cta: null },
+      {
+        layer_id: "month",
+        tier: "paid",
+        access: "readable",
+        upgrade_cta: null,
+      },
+      {
+        layer_id: "day",
+        tier: "paid",
+        access: "unavailable",
+        upgrade_cta: null,
+      },
+      {
+        layer_id: "hour",
+        tier: "paid",
+        access: "unavailable",
+        upgrade_cta: null,
+      },
+    ],
+    ...overrides,
+  };
+}
+
+function ziweiMonthView(
+  overrides: Partial<ZiweiChartViewModel> = {},
+): ZiweiChartViewModel {
+  return chart({
+    time_layers: [
+      {
+        layer_id: "month",
+        label: "流月",
+        available: true,
+        unavailable_reason: null,
+      },
+    ],
+    core_facts: facts({
+      monthly_layers: [
+        {
+          year: 2026,
+          month: 8,
+          liu_yue: { life_palace: "申" },
+          segments: [{ segment: "monthly" }],
+          representative_scope: "monthly",
+        },
+      ],
+    }),
+    ...overrides,
+  });
+}
+
 function boardCss() {
   return readFileSync(
     resolve(
@@ -220,6 +325,122 @@ function palaceButton(branch: string) {
 }
 
 describe("紫微 S3 十二宫环盘", () => {
+  it("uses only a valid explicit Ziwei entitlement to unlock paid facts", () => {
+    const view = ziweiMonthView();
+    const granted = projectZiweiWorkspace(view, ziweiEntitlement());
+    expect(granted.layers.find((layer) => layer.id === "monthly")?.status).toBe(
+      "ready",
+    );
+
+    const denied = projectZiweiWorkspace(
+      view,
+      ziweiEntitlement({
+        resolution: "denied",
+        layers: ziweiEntitlement().layers.map((layer) =>
+          layer.tier === "paid" && layer.access !== "unavailable"
+            ? {
+                ...layer,
+                access: "locked_paywall" as const,
+                upgrade_cta: "professional_info" as const,
+              }
+            : layer,
+        ),
+      }),
+    );
+    expect(denied.layers.find((layer) => layer.id === "monthly")?.status).toBe(
+      "locked-paywall",
+    );
+
+    const unknown = projectZiweiWorkspace(
+      view,
+      ziweiEntitlement({
+        resolution: "unknown",
+        layers: ziweiEntitlement().layers.map((layer) =>
+          layer.tier === "paid" && layer.access !== "unavailable"
+            ? {
+                ...layer,
+                access: "fail_closed_unknown" as const,
+                upgrade_cta: "professional_info" as const,
+              }
+            : layer,
+        ),
+      }),
+    );
+    expect(unknown.layers.find((layer) => layer.id === "monthly")?.status).toBe(
+      "fail-closed-unknown",
+    );
+    expect(
+      projectZiweiWorkspace(view, null).layers.find(
+        (layer) => layer.id === "monthly",
+      )?.status,
+    ).toBe("fail-closed-unknown");
+    expect(
+      projectZiweiWorkspace(view, {
+        ...ziweiEntitlement(),
+        capability_id: "bazi",
+      }).layers.find((layer) => layer.id === "monthly")?.status,
+    ).toBe("fail-closed-unknown");
+
+    const contradictory = ziweiEntitlement({ resolution: "denied" });
+    expect(
+      projectZiweiWorkspace(view, contradictory).layers.find(
+        (layer) => layer.id === "monthly",
+      )?.status,
+    ).toBe("fail-closed-unknown");
+    expect(
+      projectZiweiWorkspace(
+        ziweiMonthView({ core_facts: facts({ monthly_layers: [] }) }),
+        ziweiEntitlement(),
+      ).layers.find((layer) => layer.id === "monthly")?.status,
+    ).toBe("locked-unavailable");
+    expect(
+      projectZiweiWorkspace(
+        ziweiMonthView({
+          time_layers: [
+            {
+              layer_id: "month",
+              label: "流月",
+              available: false,
+              unavailable_reason: "本次结果未返回逐月盘面。",
+            },
+          ],
+        }),
+        ziweiEntitlement(),
+      ).layers.find((layer) => layer.id === "monthly")?.status,
+    ).toBe("locked-unavailable");
+  });
+
+  it("renders granted month facts but keeps denied month facts at zero", () => {
+    const view = ziweiMonthView();
+    const { rerender } = render(
+      <ZiweiWorkspace timeLayerEntitlement={ziweiEntitlement()} view={view} />,
+    );
+
+    fireEvent.click(screen.getByRole("tab", { name: /流月/ }));
+    expect(
+      screen.getByRole("table", { name: "流月盘面事实" }),
+    ).toHaveTextContent("2026-08");
+
+    const denied = ziweiEntitlement({
+      resolution: "denied",
+      layers: ziweiEntitlement().layers.map((layer) =>
+        layer.tier === "paid" && layer.access !== "unavailable"
+          ? {
+              ...layer,
+              access: "locked_paywall" as const,
+              upgrade_cta: "professional_info" as const,
+            }
+          : layer,
+      ),
+    });
+    rerender(<ZiweiWorkspace timeLayerEntitlement={denied} view={view} />);
+    expect(screen.getByText("流月已锁定")).toBeVisible();
+    expect(screen.queryByText("权益状态未确认")).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("table", { name: "流月盘面事实" }),
+    ).not.toBeInTheDocument();
+  });
+
   it("keeps the base palace board and its focus mounted across ready and locked layers", () => {
     render(
       <ZiweiWorkspace
@@ -264,7 +485,7 @@ describe("紫微 S3 十二宫环盘", () => {
     );
 
     const locator = screen.getByRole("navigation", { name: "十二宫定位" });
-    fireEvent.click(within(locator).getByRole("tab", { name: /午 官禄/ }));
+    fireEvent.click(within(locator).getByRole("button", { name: /午 官禄/ }));
     const board = screen.getByRole("grid", { name: "十二宫环盘" });
     const selectedPalace = within(board).getByRole("button", { name: /^午/ });
     act(() => selectedPalace.focus());
@@ -297,9 +518,8 @@ describe("紫微 S3 十二宫环盘", () => {
       /@container\s+ziwei-workspace\s*\(min-width:\s*45\.5rem\)[\s\S]*\.workspaceBody\s*\{[\s\S]*grid-template-columns:\s*minmax\(22\.5rem,\s*1\.25fr\)\s+minmax\(22\.5rem,\s*1fr\)[\s\S]*gap:\s*var\(--ds-space-2\)/,
     );
     const viewportDesktopRules =
-      css.match(
-        /@media\s*\(min-width:\s*64rem\)\s*\{([\s\S]*?)\n\}/,
-      )?.[1] ?? "";
+      css.match(/@media\s*\(min-width:\s*64rem\)\s*\{([\s\S]*?)\n\}/)?.[1] ??
+      "";
     expect(viewportDesktopRules).not.toContain(".workspaceBody");
   });
 
@@ -509,26 +729,32 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(palaceButton("寅")).toHaveAttribute("data-life", "true");
   });
 
-  it("keeps one roving locator tab and links it to the selected palace", async () => {
+  it("keeps one roving locator button without tab or panel semantics", async () => {
     const user = userEvent.setup();
     render(<ZiweiPalaceBoard view={chart()} />);
 
     const locator = screen.getByRole("navigation", { name: "十二宫定位" });
-    const tabs = within(locator).getAllByRole("tab");
-    expect(tabs).toHaveLength(12);
-    expect(tabs.filter((tab) => tab.tabIndex === 0)).toHaveLength(1);
+    expect(within(locator).queryByRole("tablist")).not.toBeInTheDocument();
+    expect(within(locator).queryByRole("tab")).not.toBeInTheDocument();
+    const buttons = within(locator).getAllByRole("button");
+    expect(buttons).toHaveLength(12);
+    expect(buttons.filter((button) => button.tabIndex === 0)).toHaveLength(1);
     expect(
-      within(locator).getByRole("tab", { name: /寅 命宫/ }),
-    ).toHaveAttribute("aria-selected", "true");
+      within(locator).getByRole("button", { name: /寅 命宫/ }),
+    ).toHaveAttribute("aria-current", "true");
 
-    const noon = within(locator).getByRole("tab", { name: /午 官禄/ });
+    const noon = within(locator).getByRole("button", { name: /午 官禄/ });
     await user.click(noon);
-    expect(noon).toHaveAttribute("aria-controls", "ziwei-ring-午");
+    expect(noon).toHaveAttribute("aria-current", "true");
+    expect(noon).not.toHaveAttribute("aria-controls");
+    expect(noon).not.toHaveAttribute("aria-selected");
     expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
 
     noon.focus();
     await user.keyboard("{ArrowRight}");
-    expect(within(locator).getByRole("tab", { name: /未 未宫/ })).toHaveFocus();
+    expect(
+      within(locator).getByRole("button", { name: /未 未宫/ }),
+    ).toHaveFocus();
     expect(palaceButton("未")).toHaveAttribute("data-highlight", "primary");
   });
 

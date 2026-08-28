@@ -2,6 +2,56 @@ import { fireEvent, render, screen, within } from "@testing-library/react";
 import { expect, it } from "vitest";
 
 import { RuntimeChart } from "@/components/readings/runtime-chart";
+import type { ReadingResultResponse } from "@/lib/api/contracts";
+
+const ziweiReadableMonthEntitlement = {
+  schema_version: "time-layer-entitlement/v1",
+  capability_id: "ziwei",
+  resolution: "granted",
+  free_boundary_layer_id: "year",
+  paid_layer_ids: ["month", "day", "hour"],
+  free_year_set: [2026],
+  capability: {
+    time_layers: [
+      {
+        layer_id: "life",
+        label: "原局",
+        available: true,
+        unavailable_reason: null,
+      },
+      {
+        layer_id: "year",
+        label: "流年",
+        available: true,
+        unavailable_reason: null,
+      },
+      {
+        layer_id: "month",
+        label: "流月",
+        available: true,
+        unavailable_reason: null,
+      },
+    ],
+  },
+  layers: [
+    { layer_id: "life", tier: "free", access: "readable", upgrade_cta: null },
+    {
+      layer_id: "major_limits",
+      tier: "free",
+      access: "readable",
+      upgrade_cta: null,
+    },
+    { layer_id: "year", tier: "free", access: "readable", upgrade_cta: null },
+    { layer_id: "month", tier: "paid", access: "readable", upgrade_cta: null },
+    { layer_id: "day", tier: "paid", access: "unavailable", upgrade_cta: null },
+    {
+      layer_id: "hour",
+      tier: "paid",
+      access: "unavailable",
+      upgrade_cta: null,
+    },
+  ],
+} satisfies NonNullable<ReadingResultResponse["time_layer_entitlement"]>;
 
 it("renders Fortune Runtime facts without adding a daily verdict", () => {
   render(
@@ -522,7 +572,7 @@ it("renders Runtime Ziwei core facts without adding browser-side judgments", () 
   expect(screen.queryByText(/吉凶|大吉|大凶/)).not.toBeInTheDocument();
 });
 
-it("keeps free Ziwei year facts navigable and fail-closes paid month facts", () => {
+it("keeps free Ziwei year facts navigable and honors explicit readable month access", () => {
   const branches = [
     "子",
     "丑",
@@ -548,6 +598,7 @@ it("keeps free Ziwei year facts navigable and fail-closes paid month facts", () 
         judgment_rule_count: 0,
         source_status: "available",
       }}
+      timeLayerEntitlement={ziweiReadableMonthEntitlement}
       viewModel={{
         schema_version: "ziwei-chart/v1",
         subject_ref: "profile-version:time-layer-fixture",
@@ -611,7 +662,7 @@ it("keeps free Ziwei year facts navigable and fail-closes paid month facts", () 
   expect(
     locator.compareDocumentPosition(board) & Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
-  fireEvent.click(within(locator).getByRole("tab", { name: /午 宫6/ }));
+  fireEvent.click(within(locator).getByRole("button", { name: /午 宫6/ }));
   expect(
     within(screen.getByRole("region", { name: "聚焦详情" })).getByText(
       "宫6 · 午",
@@ -622,10 +673,10 @@ it("keeps free Ziwei year facts navigable and fail-closes paid month facts", () 
     "2026-02-17—2027-02-06",
   );
   fireEvent.click(screen.getByRole("tab", { name: /流月/ }));
-  expect(screen.getByText("权益状态未确认")).toBeVisible();
-  expect(
-    screen.queryByRole("table", { name: "流月盘面事实" }),
-  ).not.toBeInTheDocument();
+  expect(screen.getByRole("table", { name: "流月盘面事实" })).toHaveTextContent(
+    "2026-08",
+  );
+  expect(screen.queryByText("权益状态未确认")).not.toBeInTheDocument();
   expect(
     screen.queryByRole("link", { name: "了解专业版" }),
   ).not.toBeInTheDocument();

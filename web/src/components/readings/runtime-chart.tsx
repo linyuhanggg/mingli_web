@@ -27,7 +27,10 @@ import type {
   ZiweiChartViewModel,
   ZiweiRelationshipViewModel,
 } from "@/view-models/registry";
-import type { CapabilityProjection } from "@/lib/api/contracts";
+import type {
+  CapabilityProjection,
+  TimeLayerEntitlementResponse,
+} from "@/lib/api/contracts";
 import {
   formatBaziInterpretiveCandidateRows,
   formatLiuyaoRoleAdjudicationRows,
@@ -264,14 +267,17 @@ function fengshuiMissingLabel(value: string): string {
 function ZiweiChart({
   view,
   showInterpretiveSections,
+  timeLayerEntitlement,
 }: Readonly<{
   view: ZiweiChartViewModel;
   showInterpretiveSections: boolean;
+  timeLayerEntitlement?: TimeLayerEntitlementResponse | null;
 }>) {
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <ZiweiWorkspace
         showInterpretiveSections={showInterpretiveSections}
+        timeLayerEntitlement={timeLayerEntitlement}
         view={view}
       />
     </div>
@@ -1816,9 +1822,11 @@ function RelationshipChart({
 export function RuntimeChart({
   viewModel,
   capability,
+  timeLayerEntitlement,
 }: Readonly<{
   viewModel: ViewModel;
   capability?: CapabilityProjection | null;
+  timeLayerEntitlement?: TimeLayerEntitlementResponse | null;
 }>) {
   const showInterpretiveSections = capability ? capability.tier === "A" : true;
   switch (viewModel.schema_version) {
@@ -1837,6 +1845,7 @@ export function RuntimeChart({
         <ZiweiChart
           view={viewModel}
           showInterpretiveSections={showInterpretiveSections}
+          timeLayerEntitlement={timeLayerEntitlement}
         />
       );
     case "qizheng-chart/v1":
