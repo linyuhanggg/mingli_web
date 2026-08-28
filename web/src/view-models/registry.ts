@@ -560,7 +560,7 @@ export type FiveElementsFactsViewModel = {
 export type ZiweiCalendarCoverage = {
   readonly start_inclusive: string;
   readonly end_exclusive: string;
-  readonly requested_target_date: string;
+  readonly requested_target_date: string | null;
 };
 
 export type ZiweiMajorLimitSegment = {
