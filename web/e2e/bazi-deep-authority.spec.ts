@@ -11,6 +11,15 @@ import {
 
 const PREVIEW_READING_ID = "preview-reading-1";
 const DEEP_READING_ID = "deep-reading-1";
+const BAZI_CAPABILITY_A = {
+  capability_id: "bazi",
+  label: "八字",
+  tier: "A",
+  source_system: "bazi",
+  runtime_active_rule_count: 24,
+  judgment_rule_count: 19,
+  source_status: "available",
+};
 
 function readingSummary(
   readingId: string,
@@ -54,6 +63,56 @@ async function fillBaziInput(page: Page) {
   await page.getByLabel("出生城市").selectOption("常州市");
   await page.getByLabel("出生区县").selectOption("金坛区");
   await page.getByRole("radio", { name: "男" }).check();
+}
+
+function baziResult(readingId: string, acceptedCopy: string) {
+  return {
+    reading_version_id: readingId,
+    status: "accepted",
+    accepted_copy: acceptedCopy,
+    capability: BAZI_CAPABILITY_A,
+    fact_panel: {
+      question: "请核对免费八字盘面。",
+      vocabulary: [],
+      facts: [
+        {
+          ref: "fact:bazi-ui-lab/day-master",
+          subject_ref: "subject:e2e",
+          kind_id: "bazi.day-master",
+          value: "丙火",
+          display_text: "日主为丙火。",
+        },
+        {
+          ref: "fact:bazi-ui-lab/month-order",
+          subject_ref: "subject:e2e",
+          kind_id: "bazi.month-order",
+          value: "午月",
+          display_text: "月令为午火；全局强弱与喜用神未裁定。",
+        },
+      ],
+      evidence: [...BAZI_EVIDENCE_RESULT_EVIDENCE],
+      findings: [],
+      claim_scopes: [],
+      limits: [{
+        kind_id: "limit.unadjudicated-strength",
+        public_text: "当前只展示月令事实，不输出全局身强身弱或喜用神结论。",
+        scope_refs: ["career"],
+        detail_ids: [],
+      }],
+      prior_answer: null,
+      request_view: {
+        subject_refs: ["subject:e2e"],
+        capability_ids: ["bazi"],
+        object_id: "natal",
+        dimension_ids: ["career"],
+        horizon: { kind_id: "life", start: null, end: null },
+      },
+    },
+    view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+    verification: null,
+    input_request: null,
+    document: null,
+  };
 }
 
 test("bazi deep checkout stays fail-closed at the unavailable gateway", async ({ page }, testInfo) => {
@@ -115,52 +174,11 @@ test("bazi deep checkout stays fail-closed at the unavailable gateway", async ({
       return;
     }
     if (method === "GET" && path === `/api/v1/readings/${PREVIEW_READING_ID}/result`) {
-      await json(route, {
-        reading_version_id: PREVIEW_READING_ID,
-        status: "accepted",
-        accepted_copy: "免费确定性盘面已由服务端固定。",
-        fact_panel: {
-          question: "请核对免费八字盘面。",
-          vocabulary: [],
-          facts: [
-            {
-              ref: "fact:bazi-ui-lab/day-master",
-              subject_ref: "subject:e2e",
-              kind_id: "bazi.day-master",
-              value: "丙火",
-              display_text: "日主为丙火。",
-            },
-            {
-              ref: "fact:bazi-ui-lab/month-order",
-              subject_ref: "subject:e2e",
-              kind_id: "bazi.month-order",
-              value: "午月",
-              display_text: "月令为午火；全局强弱与喜用神未裁定。",
-            },
-          ],
-          evidence: [...BAZI_EVIDENCE_RESULT_EVIDENCE],
-          findings: [],
-          claim_scopes: [],
-          limits: [{
-            kind_id: "limit.unadjudicated-strength",
-            public_text: "当前只展示月令事实，不输出全局身强身弱或喜用神结论。",
-            scope_refs: ["career"],
-            detail_ids: [],
-          }],
-          prior_answer: null,
-          request_view: {
-            subject_refs: ["subject:e2e"],
-            capability_ids: ["bazi"],
-            object_id: "natal",
-            dimension_ids: ["career"],
-            horizon: { kind_id: "life", start: null, end: null },
-          },
-        },
-        view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
-        verification: null,
-        input_request: null,
-        document: null,
-      });
+      await json(route, baziResult(PREVIEW_READING_ID, "免费确定性盘面已由服务端固定。"));
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/auth/consents") {
+      await json(route, { status: "accepted" }, 201);
       return;
     }
     if (method === "POST" && path === "/api/v1/readings/bazi-deep") {
@@ -212,9 +230,40 @@ test("bazi deep checkout stays fail-closed at the unavailable gateway", async ({
   await expect(page.getByRole("heading", { name: "八字工作台" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "免费确定性盘面" })).toBeVisible();
   await expect(page.getByText("尚未确认付费")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "专业深读已锁定" })).toBeVisible();
+
+  const workspace = page.getByRole("region", { name: "排盘工作台" });
+  const chartPane = workspace.getByRole("tabpanel", { name: "本命" });
+  const readingPane = workspace.getByLabel("连续阅读面");
+  const [chartBox, readingBox] = await Promise.all([
+    chartPane.boundingBox(),
+    readingPane.boundingBox(),
+  ]);
+  expect(chartBox).not.toBeNull();
+  expect(readingBox).not.toBeNull();
+  console.log(`MING58_NESTED_WORKSPACE ${JSON.stringify({
+    viewport: testInfo.project.name,
+    chartWidth: Math.round(chartBox!.width),
+    readingWidth: Math.round(readingBox!.width),
+    chartX: Math.round(chartBox!.x),
+    readingX: Math.round(readingBox!.x),
+  })}`);
+  if (testInfo.project.name === "1024") {
+    expect(chartBox!.width, "1024px nested chart pane width").toBeGreaterThanOrEqual(480);
+    expect(chartBox!.width, "1024px nested chart pane width").toBeLessThanOrEqual(520);
+    expect(readingBox!.width, "1024px nested reading pane width").toBeGreaterThanOrEqual(360);
+    expect(readingBox!.x, "1024px nested panes stay side by side")
+      .toBeGreaterThanOrEqual(chartBox!.x + chartBox!.width);
+  } else if (["360", "768"].includes(testInfo.project.name)) {
+    expect(readingBox!.y, `${testInfo.project.name}px nested panes stack vertically`)
+      .toBeGreaterThanOrEqual(chartBox!.y + chartBox!.height);
+  } else if (testInfo.project.name === "1440") {
+    expect(readingBox!.x, "1440px nested panes stay side by side")
+      .toBeGreaterThanOrEqual(chartBox!.x + chartBox!.width);
+  }
   await page.getByRole("button", { name: "开始安全结账" }).click();
 
-  await expect(page.getByRole("heading", { name: "支付入口暂不可用" }).first()).toBeVisible();
+  await expect(page.getByRole("heading", { name: "支付暂时不可用" }).first()).toBeVisible();
   expect(checkoutBodies).toEqual([{ reading_version_id: DEEP_READING_ID }]);
   expect(fulfillmentRequests).toEqual([]);
   expect(deepResultRequests).toEqual([]);
@@ -281,6 +330,154 @@ test("bazi deep checkout stays fail-closed at the unavailable gateway", async ({
   await mkdir(directory, { recursive: true });
   await page.screenshot({
     path: resolve(directory, "checkout-unavailable.png"),
+    fullPage: true,
+  });
+});
+
+test("a delivered deep report coexists with the preview without a duplicate offer", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "1024", "The same-page fulfillment counterexample runs at the review breakpoint.");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.context().addCookies([
+    {
+      name: "mingli_csrf",
+      value: "bazi-deep-e2e-csrf",
+      domain: "127.0.0.1",
+      path: "/",
+    },
+  ]);
+  await page.route("**/api/v1/**", async (route) => {
+    const request = route.request();
+    const path = new URL(request.url()).pathname;
+    const method = request.method();
+
+    if (method === "GET" && path === "/api/v1/account") {
+      await json(route, {
+        user_id: "e2e-user-1",
+        identities: [{
+          id: "e2e-identity-1",
+          provider: "email",
+          masked_destination: "e2e***@example.com",
+          verified_at: "2026-08-18T00:00:00Z",
+        }],
+      });
+      return;
+    }
+    if (method === "GET" && path === "/api/v1/profiles") {
+      await json(route, { profiles: [] });
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/profiles/drafts") {
+      await json(route, { draft_id: "draft-1", status: "draft" }, 201);
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/profiles/drafts/draft-1/confirm") {
+      await json(route, {
+        profile_id: "profile-1",
+        profile_version_id: "profile-version-1",
+        subject_ref: "subject:e2e",
+        version: 1,
+        created_at: "2026-08-18T00:00:00Z",
+      }, 201);
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/readings/preview") {
+      await json(route, readingSummary(PREVIEW_READING_ID), 201);
+      return;
+    }
+    if (method === "GET" && path === `/api/v1/readings/${PREVIEW_READING_ID}`) {
+      await json(route, readingSummary(PREVIEW_READING_ID));
+      return;
+    }
+    if (method === "GET" && path === `/api/v1/readings/${PREVIEW_READING_ID}/result`) {
+      await json(route, baziResult(PREVIEW_READING_ID, "免费确定性盘面已由服务端固定。"));
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/readings/bazi-deep") {
+      await json(route, readingSummary(DEEP_READING_ID, {
+        status: "input_ready",
+        delivery_state: "payment_required",
+      }), 201);
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/auth/consents") {
+      await json(route, { status: "accepted" }, 201);
+      return;
+    }
+    if (method === "POST" && path === "/api/v1/commerce/checkout") {
+      await json(route, {
+        order: {
+          order_id: "server-owned-order-1",
+          reading_version_id: DEEP_READING_ID,
+          product_id: "bazi-deep",
+          product_version: "v1",
+          amount_minor: 9900,
+          currency: "CNY",
+          status: "paid",
+          created_at: "2026-08-18T00:00:00Z",
+          paid_at: "2026-08-18T00:01:00Z",
+        },
+        attempt: {
+          attempt_id: "server-owned-attempt-1",
+          channel: "fake",
+          status: "succeeded",
+          created_at: "2026-08-18T00:00:00Z",
+        },
+        gateway_status: "succeeded",
+        redirect_url: null,
+        payment_id: "server-confirmed-payment-1",
+        created: true,
+      }, 201);
+      return;
+    }
+    if (method === "POST" && path === `/api/v1/readings/${DEEP_READING_ID}/fulfillment`) {
+      await json(route, {
+        fulfillment_id: "fulfillment-1",
+        reading_version_id: DEEP_READING_ID,
+        reading_job_id: "job-1",
+        status: "running",
+        created: true,
+      }, 201);
+      return;
+    }
+    if (method === "GET" && path === `/api/v1/readings/${DEEP_READING_ID}`) {
+      await json(route, readingSummary(DEEP_READING_ID, {
+        status: "accepted",
+        delivery_state: "delivered",
+      }));
+      return;
+    }
+    if (method === "GET" && path === `/api/v1/readings/${DEEP_READING_ID}/result`) {
+      await json(route, baziResult(DEEP_READING_ID, "这是一份已经交付的服务端深读报告。"));
+      return;
+    }
+    await json(route, { title: "Unhandled e2e API", detail: `${method} ${path}` }, 599);
+  });
+
+  await page.goto("/bazi", { waitUntil: "domcontentloaded" });
+  await fillBaziInput(page);
+  await page.getByRole("button", { name: /^立即排盘（免费）/ }).click();
+
+  const previewSection = page
+    .getByRole("heading", { name: "免费确定性盘面" })
+    .locator("xpath=ancestor::section[1]");
+  await expect(previewSection.getByRole("heading", { name: "专业深读已锁定" })).toBeVisible();
+  await page.getByRole("button", { name: "开始安全结账" }).click();
+
+  await expect(page.getByRole("heading", { name: "八字深读结果" })).toBeVisible();
+  await expect(page.getByText("这是一份已经交付的服务端深读报告。")).toBeVisible();
+  await expect(previewSection.getByText(/专业深读已交付；免费盘面继续保留/)).toBeVisible();
+  await expect(previewSection.getByRole("heading", { name: "专业深读已锁定" })).toHaveCount(0);
+  await expect(previewSection.getByRole("link", { name: "了解专业版" })).toHaveCount(0);
+
+  const directory = resolve(
+    process.env.BROWSER_EVIDENCE_DIR
+      ?? resolve(process.cwd(), "e2e/screenshots/2026-08-18-bazi-deep-authority"),
+    testInfo.project.name,
+  );
+  await mkdir(directory, { recursive: true });
+  await page.screenshot({
+    path: resolve(directory, "delivered-same-page.png"),
     fullPage: true,
   });
 });

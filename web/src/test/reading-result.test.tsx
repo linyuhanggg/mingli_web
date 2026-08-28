@@ -1655,7 +1655,7 @@ describe("bazi chart workspace", () => {
     });
     vi.stubGlobal("fetch", fetchMock);
 
-    render(<ReadingResult readingId={VERSION_ID} />);
+    const view = render(<ReadingResult readingId={VERSION_ID} />);
 
     expect(await screen.findAllByRole("heading", { name: "八字命盘" })).toHaveLength(2);
     const workspaceSection = screen.getByRole("heading", { name: "排盘结果" }).closest("section");
@@ -1663,6 +1663,7 @@ describe("bazi chart workspace", () => {
     expect(screen.getByRole("heading", { name: "阅读说明" }).closest("section"))
       .toHaveAttribute("data-layout", "full-width-reading-section");
     expect(screen.getByText(/免费排盘预览/)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "专业深读已锁定" })).toBeVisible();
     const visible = document.body.textContent ?? "";
     expect(visible).not.toContain("这是合同测试候选稿");
     expect(visible).not.toMatch(/branch relations|branch_relations|positions|year|month/i);
@@ -1672,6 +1673,12 @@ describe("bazi chart workspace", () => {
     expect(screen.queryByRole("heading", { name: "判断" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "事实" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "依据与边界" })).not.toBeInTheDocument();
+
+    view.rerender(<ReadingResult baziDeepFulfilled readingId={VERSION_ID} />);
+    expect(screen.getByText(/专业深读已交付；免费盘面继续保留/)).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "专业深读已锁定" }))
+      .not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "了解专业版" })).not.toBeInTheDocument();
   });
 
   it("fails closed when the Bazi Runtime capability projection is missing", async () => {

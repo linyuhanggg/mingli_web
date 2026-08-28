@@ -217,7 +217,13 @@ function ArchiveRail({
   );
 }
 
-export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
+export function ReadingResult({
+  readingId,
+  baziDeepFulfilled = false,
+}: Readonly<{
+  readingId: string;
+  baziDeepFulfilled?: boolean;
+}>) {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
   const [result, setResult] = useState<ReadingResultResponse | null>(null);
@@ -1075,13 +1081,15 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                   <p className={surface.inlineNote}>
                     点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
                   </p>
-                  <BaziChart
-                    chart={chart}
-                    title="八字命盘"
-                    evidence={result.fact_panel?.evidence ?? []}
-                    showInterpretiveSections={capabilityTier === "A"}
-                    timeLayerEntitlement={timeLayerEntitlement}
-                  />
+                  <div data-bazi-chart-host="true">
+                    <BaziChart
+                      chart={chart}
+                      title="八字命盘"
+                      evidence={result.fact_panel?.evidence ?? []}
+                      showInterpretiveSections={capabilityTier === "A"}
+                      timeLayerEntitlement={timeLayerEntitlement}
+                    />
+                  </div>
                 </>
               )}
             </div>
@@ -1098,13 +1106,17 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                 <p className={surface.inlineNote}>
                   深度解读只采用本次盘面与已接纳正文，不会把内部字段当作结论展示。
                 </p>
+              ) : baziDeepFulfilled ? (
+                <p className={surface.inlineNote}>
+                  专业深读已交付；免费盘面继续保留，本区不重复展示深读入口。
+                </p>
               ) : (
                 <p className={surface.inlineNote}>
                   当前是免费排盘预览，只提供命盘与确定性事实。完整深度解读待接入。
                 </p>
               )}
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
-              {productId !== "bazi-deep" ? <BaziDeepEntry /> : null}
+              {productId !== "bazi-deep" && !baziDeepFulfilled ? <BaziDeepEntry /> : null}
             </div>
           </section>
 
