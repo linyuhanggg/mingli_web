@@ -1538,7 +1538,9 @@ function ZiweiWorkspaceState({ layer }: Readonly<{ layer: WorkspaceLayer }>) {
         <p>当前盘面不会展示或预填任何锁定事实。</p>
       )}
       {layer.upgradeCta === "professional_info" ? (
-        <Link href="/pricing">了解专业版</Link>
+        <Link className={styles.professionalInfoLink} href="/pricing">
+          了解专业版
+        </Link>
       ) : null}
     </div>
   );
@@ -1628,6 +1630,11 @@ export function ZiweiWorkspace({
     () => projectZiweiWorkspace(view, timeLayerEntitlement),
     [timeLayerEntitlement, view],
   );
+  const unavailableLayerReasons = workspace.layers.flatMap((layer) => {
+    const reason =
+      layer.status === "locked-unavailable" ? layer.summary?.trim() : null;
+    return reason ? [{ id: layer.id, label: layer.label, reason }] : [];
+  });
   const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
     workspace.activeLayerId,
   );
@@ -1701,6 +1708,24 @@ export function ZiweiWorkspace({
           layers={workspace.layers}
           onSelect={selectLayer}
         />
+        {unavailableLayerReasons.length ? (
+          <section
+            aria-labelledby={`${tabIdPrefix}-unavailable-layer-title`}
+            className={styles.unavailableLayerNotes}
+          >
+            <p id={`${tabIdPrefix}-unavailable-layer-title`}>
+              不可用时间层说明
+            </p>
+            <ul aria-labelledby={`${tabIdPrefix}-unavailable-layer-title`}>
+              {unavailableLayerReasons.map((layer) => (
+                <li key={layer.id}>
+                  <strong>{layer.label}：</strong>
+                  <span>{layer.reason}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
         <div className={styles.workspaceBody}>
           <div
             aria-labelledby={`${tabIdPrefix}-tab-${activeLayer.id}`}

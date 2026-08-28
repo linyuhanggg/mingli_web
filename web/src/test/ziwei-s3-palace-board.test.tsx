@@ -539,6 +539,17 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(decadal).toBeDisabled();
     expect(hourly).toBeDisabled();
 
+    const unavailableReasons = screen.getByRole("list", {
+      name: "不可用时间层说明",
+    });
+    expect(unavailableReasons).toBeVisible();
+    expect(unavailableReasons).toHaveTextContent(
+      "流日：本次结果未返回逐日盘面。",
+    );
+    expect(unavailableReasons).toHaveTextContent(
+      "流时：本次结果未返回逐时盘面。",
+    );
+
     natal.focus();
     fireEvent.keyDown(natal, { key: "ArrowRight" });
     expect(yearly).toHaveFocus();
@@ -574,9 +585,16 @@ describe("紫微 S3 十二宫环盘", () => {
     rerender(<ZiweiWorkspace timeLayerEntitlement={denied} view={view} />);
     expect(screen.getByText("流月已锁定")).toBeVisible();
     expect(screen.queryByText("权益状态未确认")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "了解专业版" })).toHaveAttribute(
-      "href",
-      "/pricing",
+    const professionalInfoLink = screen.getByRole("link", {
+      name: "了解专业版",
+    });
+    expect(professionalInfoLink).toHaveAttribute("href", "/pricing");
+    expect(professionalInfoLink.className).toMatch(/professionalInfoLink/);
+    expect(boardCss()).toMatch(
+      /\.professionalInfoLink\s*\{[^}]*display:\s*inline-flex[^}]*min-height:\s*var\(--ds-touch-min\)[^}]*\}/s,
+    );
+    expect(boardCss()).toMatch(
+      /\.professionalInfoLink:focus-visible\s*\{[^}]*outline:\s*2px solid var\(--ds-focus\)[^}]*\}/s,
     );
     expect(
       screen.queryByRole("table", { name: "流月盘面事实" }),
@@ -910,6 +928,12 @@ describe("紫微 S3 十二宫环盘", () => {
     expect(noon).not.toHaveAttribute("aria-controls");
     expect(noon).not.toHaveAttribute("aria-selected");
     expect(palaceButton("午")).toHaveAttribute("data-highlight", "primary");
+
+    const css = boardCss();
+    expect(css).toMatch(
+      /\.locatorButton\[aria-current="true"\]\s*\{[^}]*border-color:\s*var\(--ds-accent\)[^}]*\}/s,
+    );
+    expect(css).not.toMatch(/\.locatorButton\[aria-selected="true"\]/);
 
     noon.focus();
     await user.keyboard("{ArrowRight}");
