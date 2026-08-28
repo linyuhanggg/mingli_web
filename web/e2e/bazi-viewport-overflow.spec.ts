@@ -22,13 +22,12 @@ async function assertNoOverflow(page: Page, label: string) {
 }
 
 const RESULT_TABS = [
-  "已返回事实",
+  "ready",
   "loading",
   "empty",
+  "locked",
+  "need-input",
   "error",
-  "processing",
-  "unavailable",
-  "unauthorized",
 ] as const;
 
 const WORKBENCH_STATES = [
@@ -40,6 +39,21 @@ const WORKBENCH_STATES = [
   "unavailable",
   "unauthorized",
 ] as const;
+
+test("bazi result six states stay within the viewport", async ({ page }, testInfo) => {
+  const viewport = testInfo.project.name;
+  await page.goto("/_ui-lab/bazi-result", { waitUntil: "domcontentloaded" });
+
+  for (const state of RESULT_TABS) {
+    await page.getByRole("button", { name: state, exact: true }).click();
+    await assertNoOverflow(page, `${viewport} bazi-result ${state}`);
+  }
+
+  await page.getByRole("button", { name: "ready", exact: true }).click();
+  await expect(page.getByRole("tablist", { name: "时间层" })).toBeVisible();
+  await expect(page.getByRole("tab")).toHaveCount(6);
+  await expect(page.getByRole("table", { name: "四柱专业矩阵" })).toBeVisible();
+});
 
 test("bazi 360 first-screen controls stay above the mobile bottom bar", async ({ page }) => {
   test.skip(page.viewportSize()?.width !== 360, "This is the focused 360px geometry contract.");

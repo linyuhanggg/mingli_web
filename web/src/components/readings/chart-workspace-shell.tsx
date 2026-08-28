@@ -1,5 +1,7 @@
 "use client";
 
+import { AlertCircle, Ban, LockKeyhole } from "lucide-react";
+import Link from "next/link";
 import { useId, useState, type ReactNode } from "react";
 
 import type {
@@ -42,6 +44,49 @@ export function ChartWorkspaceShell({
   const activeLayer =
     view.layers.find((layer) => layer.id === activeLayerId) ?? view.layers[0];
 
+  function renderLayerState(layer: WorkspaceLayer) {
+    if (layer.status === "ready") return renderBoard(layer);
+    if (layer.status === "empty") {
+      return (
+        <div className={styles.statePanel} data-state="empty">
+          <AlertCircle aria-hidden="true" />
+          <h4>{layer.label}暂无结构</h4>
+          <p>{layer.summary ?? "服务端尚未返回可展示的结构"}</p>
+        </div>
+      );
+    }
+    if (layer.status === "locked-unavailable") {
+      return (
+        <div className={styles.statePanel} data-state="unavailable">
+          <Ban aria-hidden="true" />
+          <h4>{layer.label}待接入</h4>
+          <p>当前 Runtime 尚未返回这一时间层的可展示事实。</p>
+        </div>
+      );
+    }
+
+    const paywall = layer.status === "locked-paywall";
+    return (
+      <div className={styles.statePanel} data-state="locked">
+        <LockKeyhole aria-hidden="true" />
+        <h4>{layer.label}已锁定</h4>
+        {paywall ? (
+          <p>这是专业版时间层；当前盘面不会展示或预填任何锁定事实。</p>
+        ) : (
+          <p>
+            <strong>权益状态未确认</strong>
+            <span>为保护边界，当前盘面不会展示或预填任何付费事实。</span>
+          </p>
+        )}
+        {layer.upgradeCta === "professional_info" ? (
+          <Link className={styles.stateLink} href="/pricing">
+            了解专业版
+          </Link>
+        ) : null}
+      </div>
+    );
+  }
+
   function handleSelectLayer(layerId: WorkspaceLayerId) {
     if (layerId === activeLayerId) return;
     setActiveLayerId(layerId);
@@ -52,8 +97,8 @@ export function ChartWorkspaceShell({
     <section className={styles.workspace} aria-label="排盘工作台">
       <header className={styles.header}>
         <div>
-          <p className={styles.kicker}>确定性盘面</p>
           <h3 className={styles.title}>{view.title}</h3>
+          <p className={styles.order}>定位与时间层 → 盘面 → 连续阅读面</p>
         </div>
         {view.subtitle ? (
           <p className={styles.subtitle}>{view.subtitle}</p>
@@ -87,19 +132,16 @@ export function ChartWorkspaceShell({
                   role="group"
                   aria-label={`${boardLabel} · ${layer.label}`}
                 >
-                  {layer.status === "empty" ? (
-                    <p className={styles.emptyState}>
-                      {layer.summary ?? "服务端尚未返回可展示的结构"}
-                    </p>
-                  ) : (
-                    renderBoard(layer)
-                  )}
+                  {renderLayerState(layer)}
                 </div>
               </div>
             );
           })}
         </div>
-        <FocusDetailDrawer id={detailId} detail={detail} onClose={onCloseDetail} />
+        <div className={styles.readingPane} aria-label="连续阅读面">
+          <p className={styles.readingOrder}>盘面事实 / 方法解释 / 来源依据</p>
+          <FocusDetailDrawer id={detailId} detail={detail} onClose={onCloseDetail} />
+        </div>
       </div>
     </section>
   );

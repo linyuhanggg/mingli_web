@@ -28,6 +28,7 @@ import {
   baziWorkspaceFactsFromChart,
   buildBaziWorkspaceView,
   resolveBaziFocusDetail,
+  type TimeLayerEntitlement,
   type WorkspaceCell,
   type WorkspaceLayer,
 } from "@/lib/chart-workspace";
@@ -242,6 +243,170 @@ const BRANCH_ELEMENTS: Readonly<Record<string, string>> = {
   戌: "earth",
   亥: "water",
 };
+
+const ELEMENT_SHAPES: Readonly<Record<string, string>> = {
+  wood: "▯",
+  fire: "△",
+  earth: "■",
+  metal: "●",
+  water: "〜",
+};
+
+function ElementGlyph({
+  value,
+  position,
+}: Readonly<{ value: string; position: PillarPosition }>) {
+  const element = STEM_ELEMENTS[value] ?? BRANCH_ELEMENTS[value];
+  if (!element) return <span>{value || "—"}</span>;
+  const shape = ELEMENT_SHAPES[element];
+  return (
+    <span
+      className={styles.elementGlyph}
+      data-element={element}
+      data-shape={shape}
+      data-position={position}
+      title={`${POSITION_LABELS[position]} · ${ELEMENT_LABELS[element]}`}
+    >
+      <span>{value}</span>
+      <span aria-hidden="true">{shape}</span>
+      <span className={styles.visuallyHidden}>
+        {POSITION_LABELS[position]}{ELEMENT_LABELS[element]}
+      </span>
+    </span>
+  );
+}
+
+function factsForPosition<T extends { readonly position: string }>(
+  items: ReadonlyArray<T> | null | undefined,
+  position: PillarPosition,
+): T[] {
+  return items?.filter((item) => item.position === position) ?? [];
+}
+
+function MatrixText({ value }: Readonly<{ value: string }>) {
+  return (
+    <span aria-label={value}>
+      {Array.from(value).map((character, index) => (
+        <span aria-hidden="true" key={`${character}-${index}`}>{character}</span>
+      ))}
+    </span>
+  );
+}
+
+function BaziFactMatrix({
+  chart,
+}: Readonly<{ chart: BaziChartView }>) {
+  const facts = chart.coreFacts;
+  const cells = PILLAR_POSITIONS.map((position) => ({
+    position,
+    value: chart.pillars?.[position] ?? "",
+  }));
+  const shensha = facts?.shensha_auxiliary?.calculated_items ?? [];
+  const rows = [
+    {
+      label: "主星",
+      value: (position: PillarPosition) => {
+        const value = factsForPosition(facts?.ten_gods?.heavenly_stems, position)
+          .map((item) => item.ten_god)
+          .join("、");
+        return value ? <MatrixText value={value} /> : "—";
+      },
+    },
+    {
+      label: "天干",
+      value: (position: PillarPosition, pillar: string) => (
+        <ElementGlyph value={pillar.slice(0, 1)} position={position} />
+      ),
+    },
+    {
+      label: "地支",
+      value: (position: PillarPosition, pillar: string) => (
+        <ElementGlyph value={pillar.slice(1, 2)} position={position} />
+      ),
+    },
+    {
+      label: "藏干",
+      value: (position: PillarPosition) =>
+        factsForPosition(facts?.hidden_stems, position)
+          .flatMap((item) => item.stems)
+          .map((stem) => <ElementGlyph key={stem} value={stem} position={position} />),
+    },
+    {
+      label: "副星",
+      value: (position: PillarPosition) => {
+        const value = factsForPosition(facts?.ten_gods?.hidden_stems, position)
+          .map((item) => item.ten_god)
+          .join("、");
+        return value ? <MatrixText value={value} /> : "—";
+      },
+    },
+    {
+      label: "星运",
+      value: () => <span className={styles.gapMark}>ALGO-GAP-1</span>,
+    },
+    {
+      label: "自坐",
+      value: (position: PillarPosition) =>
+        factsForPosition(facts?.twelve_growth_stages, position)[0]?.stage ?? "—",
+    },
+    {
+      label: "单柱空亡",
+      value: () => <span className={styles.gapMark}>ALGO-GAP-2</span>,
+    },
+    {
+      label: "纳音",
+      value: (position: PillarPosition) =>
+        factsForPosition(facts?.nayin, position)[0]?.name ?? "—",
+    },
+    {
+      label: "神煞",
+      value: (position: PillarPosition) =>
+        shensha
+          .filter((item) => item.matched_positions.includes(position))
+          .map((item) => item.name)
+          .join("、") || "—",
+    },
+  ] satisfies ReadonlyArray<{
+    label: string;
+    value: (position: PillarPosition, pillar: string) => ReactNode;
+  }>;
+
+  return (
+    <section className={styles.matrixSection} aria-labelledby="bazi-matrix-title">
+      <div className={styles.sectionHeading}>
+        <h4 id="bazi-matrix-title">四柱专业矩阵</h4>
+        <p>文字、形状与柱位共同标识五行；缺失算法按冻结合同原样标记。</p>
+      </div>
+      <table className={styles.factMatrix}>
+        <caption>四柱专业矩阵</caption>
+        <thead>
+          <tr>
+            <th scope="col">层级</th>
+            {cells.map((cell) => (
+              <th key={cell.position} scope="col">{POSITION_LABELS[cell.position]}</th>
+            ))}
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((row) => (
+            <tr key={row.label}>
+              <th scope="row">{row.label}</th>
+              {cells.map((cell) => (
+                <td key={`${row.label}-${cell.position}`}>
+                  {row.value(cell.position, cell.value) || "—"}
+                </td>
+              ))}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <div className={styles.algorithmGaps} aria-label="大运算法缺口">
+        <p><strong>ALGO-GAP-3</strong> 公历起止年份区间待 Runtime 接入。</p>
+        <p><strong>ALGO-GAP-4</strong> 农历起运文本待 Runtime 接入。</p>
+      </div>
+    </section>
+  );
+}
 
 const LUCK_STATUS_LABELS: Readonly<Record<string, string>> = {
   calculated: "已计算",
@@ -647,12 +812,36 @@ const TEMPORAL_FACT_LABELS: Readonly<Record<string, string>> = {
   shensha_auxiliary: "神煞辅助",
   active_luck_cycle: "当前大运",
   calendar_normalization: "历法归一化",
+  status: "状态",
+  pillar: "干支",
+  hard_verdict: "明确结论",
+  relation_type: "关系类型",
+  natal_position: "本命柱位",
+  natal_branch: "本命地支",
+  transit_branch: "行运地支",
+  stem: "天干",
+  ten_god: "十神",
+};
+
+const TEMPORAL_VALUE_LABELS: Readonly<Record<string, string>> = {
+  mechanical_candidates_only: "仅机械候选",
+  returned: "已返回",
+  calculated: "已计算",
+  year: "年柱",
+  month: "月柱",
+  day: "日柱",
+  hour: "时柱",
 };
 
 function formatRecordValue(value: unknown, depth = 0): string {
   if (value === null || value === undefined) return "未返回";
-  if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
-    return String(value);
+  if (typeof value === "string") {
+    return TEMPORAL_VALUE_LABELS[value] ?? (/^\d{4}-\d{2}-\d{2}T/u.test(value)
+      ? formatServerDateTime(value)
+      : value);
+  }
+  if (typeof value === "number" || typeof value === "boolean") {
+    return typeof value === "boolean" ? (value ? "是" : "否") : String(value);
   }
   if (Array.isArray(value)) {
     return value.length > 0
@@ -661,7 +850,7 @@ function formatRecordValue(value: unknown, depth = 0): string {
   }
   if (depth >= 2) return "已返回结构";
   return Object.entries(value)
-    .map(([key, item]) => `${key}：${formatRecordValue(item, depth + 1)}`)
+    .map(([key, item]) => `${TEMPORAL_FACT_LABELS[key] ?? "结构事实"}：${formatRecordValue(item, depth + 1)}`)
     .join("；");
 }
 
@@ -792,7 +981,7 @@ function YearLayerBoard({
                         .join("；")
                     : "未返回"}
                 </td>
-                <td>{layer.structural_changes.status}</td>
+                <td>{formatRecordValue(layer.structural_changes.status)}</td>
                 <td>{layer.ganzhi_segments.length}</td>
               </tr>
             ))}
@@ -1140,7 +1329,7 @@ function BaziCandidateSection({
       <div className={styles.candidateGroups}>
         <div>
           <h5>支持性事实</h5>
-          <p className={styles.candidateFactLabel}>全局强弱证据（未裁定）</p>
+          <p className={styles.candidateFactLabel}>全局结论：未裁定</p>
           <ul>
             <li>同类 {strength.same_element_occurrences} 项；生扶 {ELEMENT_LABELS[strength.resource_element] ?? strength.resource_element} {strength.resource_occurrences} 项</li>
           </ul>
@@ -1168,7 +1357,7 @@ function BaziCandidateSection({
       <dl className={styles.candidateBoundary}>
         <div>
           <dt>证据边界</dt>
-          <dd>{strength.boundary}</dd>
+          <dd>{strength.boundary.replaceAll("未裁定", "待核定")}</dd>
         </div>
       </dl>
     </section>
@@ -1812,16 +2001,20 @@ export function BaziChart({
   title = "八字命盘",
   evidence = [],
   showInterpretiveSections = true,
+  timeLayerEntitlement = null,
 }: Readonly<{
   chart: BaziChartView;
   title?: string;
   evidence?: ReadonlyArray<ReadingEvidence>;
   showInterpretiveSections?: boolean;
+  timeLayerEntitlement?: TimeLayerEntitlement | null;
 }>) {
   const detailId = `bazi-focus-${useId()}`;
   const view = useMemo(
-    () => buildBaziWorkspaceView(baziWorkspaceFactsFromChart(chart)),
-    [chart],
+    () => buildBaziWorkspaceView(
+      baziWorkspaceFactsFromChart(chart, timeLayerEntitlement),
+    ),
+    [chart, timeLayerEntitlement],
   );
   const workspaceView = useMemo(
     () => ({ ...view, title }),
@@ -1831,6 +2024,9 @@ export function BaziChart({
   const [transientCellId, setTransientCellId] = useState<string | null>(null);
   const [evidenceDrawerOpen, setEvidenceDrawerOpen] = useState(false);
   const [evidenceFocusPillar, setEvidenceFocusPillar] = useState<PillarId | null>(null);
+  const [displayMode, setDisplayMode] = useState<"basic" | "professional" | "notes">(
+    "professional",
+  );
   const firstScreenCitation = useMemo(
     () => pickFirstVerifiedExactCitation(evidence),
     [evidence],
@@ -1910,6 +2106,7 @@ export function BaziChart({
         <LayerNote layer={layer} />
       );
     }
+    if (layer.id === "hourly") return <LayerNote layer={layer} />;
     return (
       <div className={styles.board}>
         <div className={styles.brandBlock}>
@@ -1920,6 +2117,23 @@ export function BaziChart({
           {chart.monthCommand ? (
             <p className={styles.brandMeta}>月令 {chart.monthCommand}</p>
           ) : null}
+        </div>
+
+        <div className={styles.disclosure} aria-label="盘面披露层级">
+          {([
+            ["basic", "基本排盘"],
+            ["professional", "专业细盘"],
+            ["notes", "解读笔记"],
+          ] as const).map(([mode, label]) => (
+            <button
+              key={mode}
+              type="button"
+              aria-pressed={displayMode === mode}
+              onClick={() => setDisplayMode(mode)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
 
         <PillarGrid
@@ -1941,6 +2155,8 @@ export function BaziChart({
           }}
           sourceCounts={pillarSourceCounts}
         />
+
+        <BaziFactMatrix chart={chart} />
 
         {firstScreenPublicSource ? (
           <figure
@@ -1971,16 +2187,18 @@ export function BaziChart({
           </div>
         ) : null}
 
-        <BaziCoreFactSummary
-          facts={chart.coreFacts}
-          pillars={chart.pillars}
-          selection={selection}
-          evidence={evidence}
-          showInterpretiveSections={showInterpretiveSections}
-          evidenceDrawerOpen={evidenceDrawerOpen}
-          onEvidenceDrawerOpenChange={setEvidenceDrawerOpen}
-          evidenceFocusPillar={evidenceFocusPillar}
-        />
+        {displayMode !== "basic" ? (
+          <BaziCoreFactSummary
+            facts={chart.coreFacts}
+            pillars={chart.pillars}
+            selection={selection}
+            evidence={evidence}
+            showInterpretiveSections={showInterpretiveSections}
+            evidenceDrawerOpen={evidenceDrawerOpen}
+            onEvidenceDrawerOpenChange={setEvidenceDrawerOpen}
+            evidenceFocusPillar={evidenceFocusPillar}
+          />
+        ) : null}
       </div>
     );
   }

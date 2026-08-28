@@ -1859,15 +1859,16 @@ describe("bazi chart workspace", () => {
     ).toBeVisible();
     expect(screen.getByRole("article", { name: "解读正文" })).toBeVisible();
     expect(screen.getAllByText("八字命盘").length).toBeGreaterThan(0);
-    expect(screen.getByText("年柱")).toBeVisible();
+    expect(screen.getAllByText("年柱")[0]).toBeVisible();
     expect(screen.getAllByText("庚辰").length).toBeGreaterThan(0);
     expect(screen.getAllByText(/日主.*己/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/当前大运|大运 戊子|戊子/).length).toBeGreaterThan(0);
-    expect(screen.getByText("全局强弱证据（未裁定）")).toBeVisible();
+    expect(screen.getByText("全局结论：未裁定")).toBeVisible();
     expect(screen.getByText("月令状态裁定")).toBeVisible();
     expect(screen.getByText(/月令状态 旺/)).toBeVisible();
     expect(screen.getByText(/同类 5 项；生扶 火 3 项/)).toBeVisible();
     expect(screen.getByText(/不等于旺衰定论/)).toBeVisible();
+    expect(document.body.textContent?.match(/未裁定/gu)).toHaveLength(1);
     expect(screen.getByText("十二长生")).toBeVisible();
     expect(screen.getByText(/年柱 庚辰：养；月柱 丙戌：冠带/)).toBeVisible();
     expect(screen.getByText("旬空")).toBeVisible();

@@ -36,6 +36,38 @@
   font-size: var(--font-size-label);
 }
 
+.disclosure {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  padding: 1px;
+  border-radius: var(--radius-control);
+  background: var(--color-border);
+  overflow: hidden;
+}
+
+.disclosure button {
+  min-height: 2.75rem;
+  padding: 0.45rem 0.35rem;
+  border: 0;
+  border-radius: 0;
+  background: var(--color-surface-subtle);
+  color: var(--color-text-secondary);
+  font: inherit;
+  font-size: var(--font-size-aux);
+  font-weight: 720;
+  cursor: pointer;
+}
+
+.disclosure button:hover {
+  background: var(--color-canvas);
+}
+
+.disclosure button[aria-pressed="true"] {
+  background: var(--color-action);
+  color: var(--color-on-action);
+}
+
 .firstScreenCitation {
   margin: 0;
   padding: 0.75rem 0.8rem;
@@ -167,6 +199,77 @@
   overflow: hidden;
   clip-path: inset(50%);
   white-space: nowrap;
+}
+
+.matrixSection {
+  display: grid;
+  gap: 0.65rem;
+  min-width: 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.factMatrix {
+  width: 100%;
+  table-layout: fixed;
+  border-collapse: collapse;
+  color: var(--color-text);
+  font-size: var(--font-size-meta);
+  line-height: 1.45;
+}
+
+.factMatrix caption {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+.factMatrix th,
+.factMatrix td {
+  min-width: 0;
+  padding: 0.42rem 0.2rem;
+  border-bottom: 1px solid var(--color-border);
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.factMatrix thead th,
+.factMatrix tbody th {
+  color: var(--color-text-secondary);
+  font-weight: 750;
+}
+
+.factMatrix thead th:first-child,
+.factMatrix tbody th {
+  width: 4rem;
+  text-align: left;
+}
+
+.elementGlyph {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.18rem;
+  margin-inline: 0.08rem;
+  color: var(--color-text);
+  font-family: var(--font-domain);
+  font-weight: 720;
+}
+
+.elementGlyph > span:nth-child(2) {
+  color: var(--color-text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+}
+
+.gapMark {
+  display: inline-block;
+  color: var(--color-text-muted);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.68rem;
+  letter-spacing: -0.02em;
 }
 
 .factHighlight,
@@ -920,6 +1023,26 @@
   background: var(--color-surface-subtle);
 }
 
+.algorithmGaps {
+  display: grid;
+  gap: 0.25rem;
+  padding-block: 0.55rem;
+  border-top: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.algorithmGaps p {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-meta);
+  line-height: 1.55;
+}
+
+.algorithmGaps strong {
+  color: var(--color-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
 .unavailableFacts h5 {
   margin: 0 0 0.35rem;
   color: var(--color-text-secondary);
@@ -1042,5 +1165,50 @@
   .elementCount {
     grid-column: 2;
     text-align: left;
+  }
+
+  .luckTable {
+    min-width: 0;
+  }
+
+  .luckTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+
+  .luckTable tbody {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.35rem;
+  }
+
+  .luckTable tr {
+    display: grid;
+    min-width: 0;
+    padding: 0.42rem 0.15rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface-subtle);
+    text-align: center;
+  }
+
+  .luckTable th,
+  .luckTable td {
+    padding: 0.1rem;
+    border: 0;
+    text-align: center;
+  }
+
+  .luckTable td:last-child {
+    color: var(--color-text-muted);
+    font-size: 0.65rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .disclosure button {
+    transition: none;
   }
 }

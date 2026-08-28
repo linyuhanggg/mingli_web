@@ -9,10 +9,28 @@ import { BAZI_EVIDENCE_RESULT_VIEW_MODEL } from "@/fixtures/bazi-evidence-result
 import { BaziChart } from "@/components/readings/bazi-chart";
 import { buildBaziChartViewFromViewModel } from "@/lib/reading-display";
 import type { BaziChartView } from "@/lib/reading-display";
+import type { TimeLayerEntitlement } from "@/lib/chart-workspace";
 import type { BaziCoreFacts, BaziTemporalLayer } from "@/view-models/registry";
 
 const baseChart = buildBaziChartViewFromViewModel(BAZI_EVIDENCE_RESULT_VIEW_MODEL);
 const baseFacts = baseChart.coreFacts as BaziCoreFacts;
+
+const grantedEntitlement: TimeLayerEntitlement = {
+  schemaVersion: "time-layer-entitlement/v1",
+  capabilityId: "bazi",
+  resolution: "granted",
+  freeBoundaryLayerId: "year",
+  paidLayerIds: ["month", "day", "hour"],
+  freeYearSet: [2026],
+  layers: [
+    { layerId: "life", tier: "free", access: "readable", upgradeCta: null },
+    { layerId: "luck_cycles", tier: "free", access: "readable", upgradeCta: null },
+    { layerId: "year", tier: "free", access: "readable", upgradeCta: null },
+    { layerId: "month", tier: "paid", access: "readable", upgradeCta: null },
+    { layerId: "day", tier: "paid", access: "readable", upgradeCta: null },
+    { layerId: "hour", tier: "paid", access: "unavailable", upgradeCta: null },
+  ],
+};
 
 const temporalSegment = {
   start_inclusive: "2026-08-01T00:00:00+08:00",
@@ -105,6 +123,28 @@ function pillarButton(label: RegExp) {
 }
 
 describe("BaziChart fact-density workspace", () => {
+  it("maps the four pillars into the Xuan Order matrix with dual-coded elements and honest gaps", () => {
+    render(<BaziChart chart={denseChart()} evidence={[]} />);
+
+    const matrix = screen.getByRole("table", { name: "四柱专业矩阵" });
+    expect(within(matrix).getByRole("row", { name: /主星/ })).toBeVisible();
+    expect(within(matrix).getByRole("row", { name: /藏干/ })).toBeVisible();
+    expect(within(matrix).getByRole("row", { name: /副星/ })).toBeVisible();
+    expect(within(matrix).getByRole("row", { name: /自坐/ })).toBeVisible();
+    expect(within(matrix).getByRole("row", { name: /纳音/ })).toBeVisible();
+    expect(within(matrix).getAllByText("ALGO-GAP-1").length).toBeGreaterThan(0);
+    expect(within(matrix).getAllByText("ALGO-GAP-2").length).toBeGreaterThan(0);
+    expect(matrix.querySelector('[data-element="fire"][data-shape="△"]')).not.toBeNull();
+    expect(screen.getByText("ALGO-GAP-3")).toBeVisible();
+    expect(screen.getByText("ALGO-GAP-4")).toBeVisible();
+    expect(screen.getByRole("button", { name: "基本排盘" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "专业细盘" })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    expect(screen.getByRole("button", { name: "解读笔记" })).toBeVisible();
+  });
+
   it("renders raw relation types, neutral lines, and a semantic table", async () => {
     const user = userEvent.setup();
     render(<BaziChart chart={denseChart()} evidence={[]} />);
@@ -236,15 +276,22 @@ describe("BaziChart fact-density workspace", () => {
     expect(within(missingGenderPanel).getByText("缺少性别，无法计算顺逆与起运序列")).toBeVisible();
   });
 
-  it("keeps five layer panels mounted and exposes year, month, and day facts", async () => {
+  it("keeps six layer panels mounted and exposes paid facts only with a server grant", async () => {
     const user = userEvent.setup();
-    render(<BaziChart chart={denseChart()} evidence={[]} />);
+    render(
+      <BaziChart
+        chart={denseChart()}
+        evidence={[]}
+        timeLayerEntitlement={grantedEntitlement}
+      />,
+    );
 
-    expect(screen.getAllByRole("tabpanel", { hidden: true })).toHaveLength(5);
+    expect(screen.getAllByRole("tabpanel", { hidden: true })).toHaveLength(6);
     await user.click(screen.getByRole("tab", { name: /流年/ }));
     const yearlyPanel = screen.getByRole("tabpanel", { name: /流年/ });
     expect(within(yearlyPanel).getByRole("table", { name: "完整流年事实" })).toBeVisible();
-    expect(within(yearlyPanel).getAllByText("mechanical_candidates_only").length).toBeGreaterThan(0);
+    expect(within(yearlyPanel).getAllByText("仅机械候选").length).toBeGreaterThan(0);
+    expect(yearlyPanel.textContent).not.toMatch(/mechanical_candidates_only|active_luck_cycle/);
     expect(screen.getByRole("tab", { name: /流年/ })).toHaveAttribute("aria-selected", "true");
 
     await user.click(screen.getByRole("tab", { name: /流月/ }));
@@ -264,6 +311,22 @@ describe("BaziChart fact-density workspace", () => {
     const dailyPanel = screen.getByRole("tabpanel", { name: /流日/ });
     expect(within(dailyPanel).getByRole("table", { name: "流日总览" })).toBeVisible();
     expect(within(dailyPanel).getAllByText("2026-08-15").length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("tab", { name: /流时/ }));
+    const hourlyPanel = screen.getByRole("tabpanel", { name: /流时/ });
+    expect(within(hourlyPanel).getByText("流时待接入")).toBeVisible();
+    expect(within(hourlyPanel).queryByRole("link", { name: "了解专业版" })).not.toBeInTheDocument();
+  });
+
+  it("keeps paid layer facts out of the DOM when entitlement is absent", async () => {
+    const user = userEvent.setup();
+    render(<BaziChart chart={denseChart()} evidence={[]} />);
+
+    await user.click(screen.getByRole("tab", { name: /流月/ }));
+    const monthlyPanel = screen.getByRole("tabpanel", { name: /流月/ });
+    expect(within(monthlyPanel).getByText("流月已锁定")).toBeVisible();
+    expect(within(monthlyPanel).getByText("权益状态未确认")).toBeVisible();
+    expect(within(monthlyPanel).queryByText("2026-08")).not.toBeInTheDocument();
   });
 
   it("locks the layer transition to opacity and transform without skeletons", () => {

@@ -108,13 +108,14 @@ describe("ChartWorkspaceShell", () => {
     render(<WorkspaceFixture view={view} />);
 
     const tabs = screen.getAllByRole("tab");
-    expect(tabs).toHaveLength(5);
+    expect(tabs).toHaveLength(6);
     expect(tabs[0]).toHaveTextContent("本命");
     expect(tabs[1]).toHaveTextContent("大运");
     expect(tabs[1]).toHaveTextContent("当前大运 丙午大运");
     expect(tabs[2]).toHaveTextContent("流年");
     expect(tabs[3]).toHaveTextContent("流月");
     expect(tabs[4]).toHaveTextContent("流日");
+    expect(tabs[5]).toHaveTextContent("流时");
     expect(screen.getByRole("tab", { name: /^本命/ })).toHaveAttribute(
       "aria-selected",
       "true",
@@ -147,9 +148,10 @@ describe("ChartWorkspaceShell", () => {
     expect(tabs[2]).toHaveAttribute("tabindex", "-1");
     expect(tabs[3]).toHaveAttribute("tabindex", "-1");
     expect(tabs[4]).toHaveAttribute("tabindex", "-1");
+    expect(tabs[5]).toHaveAttribute("tabindex", "-1");
   });
 
-  it("moves and activates tabs with arrows, Home, and End while skipping disabled layers", async () => {
+  it("moves and activates every inspectable layer with arrows, Home, and End", async () => {
     const user = userEvent.setup();
     const view = buildBaziWorkspaceView({
       pillars: FOUR_PILLARS,
@@ -170,9 +172,8 @@ describe("ChartWorkspaceShell", () => {
     expect(screen.getByRole("tabpanel", { name: /^大运/ })).toBeVisible();
 
     await user.keyboard("{ArrowRight}");
-    expect(natal).toHaveFocus();
-    expect(natal).toHaveAttribute("aria-selected", "true");
-    expect(yearly).not.toHaveFocus();
+    expect(yearly).toHaveFocus();
+    expect(yearly).toHaveAttribute("aria-selected", "true");
 
     await user.keyboard("{ArrowLeft}");
     expect(decadal).toHaveFocus();
@@ -184,24 +185,51 @@ describe("ChartWorkspaceShell", () => {
     expect(natal).toHaveAttribute("aria-selected", "true");
 
     await user.keyboard("{End}");
-    expect(decadal).toHaveFocus();
-    expect(decadal).toHaveAttribute("aria-selected", "true");
-    expect(yearly).toBeDisabled();
+    const hourly = screen.getByRole("tab", { name: /流时/ });
+    expect(hourly).toHaveFocus();
+    expect(hourly).toHaveAttribute("aria-selected", "true");
   });
 
-  it("keeps unavailable layers visible but never fake-ready", () => {
+  it("keeps unavailable layers inspectable, honest, and free of upgrade actions", async () => {
+    const user = userEvent.setup();
     const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
     render(<WorkspaceFixture view={view} />);
 
     const yearly = screen.getByRole("tab", { name: /流年/ });
     expect(yearly).toBeVisible();
-    expect(yearly).toBeDisabled();
-    expect(yearly).toHaveAttribute("aria-disabled", "true");
+    expect(yearly).not.toBeDisabled();
     expect(yearly).not.toHaveAttribute("aria-selected", "true");
-    expect(within(yearly).getByText("需指定目标时间")).toBeVisible();
-    expect(screen.getByRole("tab", { name: /流月/ })).toBeDisabled();
-    expect(screen.getByRole("tab", { name: /流日/ })).toBeDisabled();
-    expect(screen.getByRole("tab", { name: /^大运/ })).toBeDisabled();
+    expect(within(yearly).getByText("待接入")).toBeVisible();
+
+    await user.click(yearly);
+    const panel = screen.getByRole("tabpanel", { name: /流年/ });
+    expect(within(panel).getByText("流年待接入")).toBeVisible();
+    expect(within(panel).queryByRole("link", { name: "了解专业版" })).not.toBeInTheDocument();
+  });
+
+  it("locks returned paid facts when entitlement is unknown without leaking their values", async () => {
+    const user = userEvent.setup();
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      yearlyReady: true,
+      yearlySummary: "2026 丙午",
+      monthlyReady: true,
+      monthlySummary: "2026-08 丙午",
+    });
+    render(<WorkspaceFixture view={view} />);
+
+    const monthly = screen.getByRole("tab", { name: /流月/ });
+    expect(within(monthly).getByText("权益未确认")).toBeVisible();
+    await user.click(monthly);
+
+    const panel = screen.getByRole("tabpanel", { name: /流月/ });
+    expect(within(panel).getByText("流月已锁定")).toBeVisible();
+    expect(within(panel).getByText("权益状态未确认")).toBeVisible();
+    expect(within(panel).getByRole("link", { name: "了解专业版" })).toHaveAttribute(
+      "href",
+      "/pricing",
+    );
+    expect(within(panel).queryByText(/2026-08|丙午/)).not.toBeInTheDocument();
   });
 
   it("opens the focus detail drawer with title and server facts on cell click", async () => {
