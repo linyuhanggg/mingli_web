@@ -17,6 +17,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 import re
 import sys
 from collections import Counter
@@ -1385,7 +1386,77 @@ class BaziEngineAdapter(
             (BaziBirthEngineRequest, BaziPillarsEngineRequest),
         ):
             raise ValueError("unsupported Bazi normalized engine request")
+        if isinstance(request, BaziPillarsEngineRequest):
+            source = {
+                "user_text": "text",
+                "screenshot": "image",
+            }.get(request.source, request.source)
+            if source not in {"image", "text", "user_chart"}:
+                raise ValueError(
+                    f"unsupported supplied-pillar source: {source}"
+                )
+            _validate_pillars(list(request.pillars))
+            _normalize_gender(request.gender)
+        else:
+            _normalize_gender(request.gender)
+            if request.expected_pillars is not None:
+                _validate_pillars(list(request.expected_pillars))
+            self._validate_calendar_request(request)
         return _BaziPrivateEngineRequest(normalized=request)
+
+    @staticmethod
+    def _validate_calendar_request(request: BaziBirthEngineRequest) -> None:
+        """Validate owned calendar policy without loading a chart engine."""
+
+        if not str(request.location or "").strip():
+            raise ValueError("location is required")
+        if request.zi_hour_policy not in calendar_core.ZI_HOUR_POLICIES:
+            raise ValueError(
+                f"unsupported Zi-hour policy: {request.zi_hour_policy!r}"
+            )
+        if request.time_basis_policy not in calendar_core.TIME_BASIS_POLICIES:
+            raise ValueError(
+                f"unsupported time-basis policy: {request.time_basis_policy!r}"
+            )
+        longitude = calendar_core._number(
+            request.longitude,
+            label="longitude",
+            minimum=-180.0,
+            maximum=180.0,
+        )
+        latitude = calendar_core._number(
+            request.latitude,
+            label="latitude",
+            minimum=-90.0,
+            maximum=90.0,
+        )
+        if (longitude is None) != (latitude is None):
+            raise ValueError("longitude and latitude must be supplied together")
+        if longitude is not None and not str(
+            request.coordinate_source or ""
+        ).strip():
+            raise ValueError(
+                "coordinate_source is required with longitude/latitude"
+            )
+        if request.coordinate_accuracy_meters is not None:
+            accuracy = float(request.coordinate_accuracy_meters)
+            if not math.isfinite(accuracy) or accuracy < 0:
+                raise ValueError(
+                    "coordinate_accuracy_meters must be a finite,"
+                    " non-negative number"
+                )
+        calendar_core._localize_civil(
+            request.civil_datetime,
+            request.timezone_name,
+        )
+        if (
+            request.time_basis_policy
+            in {"longitude_mean_solar-v1", "local_apparent_solar-v1"}
+            and longitude is None
+        ):
+            raise ValueError(
+                f"{request.time_basis_policy} requires measured coordinates"
+            )
 
     def _invoke_engine(
         self,
