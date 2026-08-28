@@ -1207,6 +1207,20 @@ type ZiweiTemporalSelection = {
   initialId: string;
 };
 
+type ZiweiMajorLimitSelection = {
+  segments: readonly ZiweiTemporalSegmentOption[];
+  initialSegmentId: string | null;
+};
+
+type ZiweiMajorLimitTarget =
+  | { status: "none" }
+  | {
+      status: "valid";
+      startInclusive: string;
+      endExclusive: string;
+    }
+  | { status: "invalid" };
+
 function isEarthlyBranch(value: unknown): value is (typeof BRANCHES)[number] {
   return (
     typeof value === "string" &&
@@ -1462,19 +1476,6 @@ function projectTemporalPalaceView(
     : null;
 }
 
-function activeMajorLimitPalaceView(
-  view: ZiweiChartViewModel,
-): ZiweiChartViewModel | null {
-  const activeMajorLimit = view.core_facts?.active_major_limit;
-  if (
-    !isRecord(activeMajorLimit) ||
-    !Array.isArray(activeMajorLimit.palace_assignments)
-  ) {
-    return null;
-  }
-  return projectTemporalPalaceView(view, activeMajorLimit);
-}
-
 type ZiweiTemporalTarget =
   { status: "none" } | { status: "valid"; id: string } | { status: "invalid" };
 
@@ -1548,6 +1549,209 @@ function dateTargetFromRecord(value: unknown): ZiweiTemporalTarget {
   if (dates.size > 1) return { status: "invalid" };
   const date = [...dates][0];
   return date ? { status: "valid", id: date } : { status: "none" };
+}
+
+function nextCivilDate(value: string): string {
+  const [year, month, day] = value.split("-").map(Number);
+  const next = new Date(Date.UTC(year, month - 1, day + 1));
+  return next.toISOString().slice(0, 10);
+}
+
+function majorLimitTargetFromRecord(value: unknown): ZiweiMajorLimitTarget {
+  const exactDate = dateTargetFromRecord(value);
+  const month = targetFromRecord(value, "monthly");
+  const year = targetFromRecord(value, "yearly");
+  if (
+    exactDate.status === "invalid" ||
+    month.status === "invalid" ||
+    year.status === "invalid"
+  ) {
+    return { status: "invalid" };
+  }
+
+  if (exactDate.status === "valid") {
+    const exactYear = exactDate.id.slice(0, 4);
+    const exactMonth = exactDate.id.slice(0, 7);
+    if (
+      (month.status === "valid" && month.id !== exactMonth) ||
+      (year.status === "valid" && year.id !== exactYear)
+    ) {
+      return { status: "invalid" };
+    }
+    return {
+      status: "valid",
+      startInclusive: exactDate.id,
+      endExclusive: nextCivilDate(exactDate.id),
+    };
+  }
+
+  if (month.status === "valid") {
+    const [monthYear, monthNumber] = month.id.split("-").map(Number);
+    if (year.status === "valid" && year.id !== String(monthYear)) {
+      return { status: "invalid" };
+    }
+    const nextMonthYear = monthNumber === 12 ? monthYear + 1 : monthYear;
+    const nextMonthNumber = monthNumber === 12 ? 1 : monthNumber + 1;
+    return {
+      status: "valid",
+      startInclusive: `${month.id}-01`,
+      endExclusive: `${nextMonthYear}-${String(nextMonthNumber).padStart(2, "0")}-01`,
+    };
+  }
+
+  if (year.status === "valid") {
+    return {
+      status: "valid",
+      startInclusive: `${year.id}-01-01`,
+      endExclusive: `${Number(year.id) + 1}-01-01`,
+    };
+  }
+  return { status: "none" };
+}
+
+function majorLimitTargetFromTemporalSelection(
+  selection: ZiweiTemporalSelection | null,
+): ZiweiMajorLimitTarget {
+  if (!selection) return { status: "invalid" };
+  const segments = selection.options.flatMap((option) => option.segments);
+  if (!segments.length) return { status: "invalid" };
+  let previousEnd: string | null = null;
+  for (const segment of segments) {
+    if (
+      previousEnd !== null &&
+      segment.startInclusive !== previousEnd
+    ) {
+      return { status: "invalid" };
+    }
+    previousEnd = segment.endExclusive;
+  }
+  return {
+    status: "valid",
+    startInclusive: segments[0].startInclusive,
+    endExclusive: segments.at(-1)!.endExclusive,
+  };
+}
+
+function activeMajorLimitTarget(
+  view: ZiweiChartViewModel,
+): ZiweiMajorLimitTarget {
+  const explicit = majorLimitTargetFromRecord(
+    view.core_facts?.chart_convention,
+  );
+  if (explicit.status !== "none") return explicit;
+  if (view.core_facts?.monthly_layers != null) {
+    return majorLimitTargetFromTemporalSelection(
+      temporalSelectionForLayer(view, "monthly"),
+    );
+  }
+  if (view.core_facts?.annual_layers != null) {
+    return majorLimitTargetFromTemporalSelection(
+      temporalSelectionForLayer(view, "yearly"),
+    );
+  }
+  return { status: "none" };
+}
+
+function activeMajorLimitSelection(
+  view: ZiweiChartViewModel,
+): ZiweiMajorLimitSelection | null {
+  const coreFacts = view.core_facts;
+  if (!coreFacts) return null;
+  const hasSegments = Object.prototype.hasOwnProperty.call(
+    coreFacts,
+    "active_major_limit_segments",
+  );
+  if (!hasSegments) {
+    const activeMajorLimit = coreFacts.active_major_limit;
+    if (
+      !isRecord(activeMajorLimit) ||
+      !Array.isArray(activeMajorLimit.palace_assignments)
+    ) {
+      return null;
+    }
+    const projected = projectTemporalPalaceView(view, activeMajorLimit);
+    return projected
+      ? {
+          segments: [
+            {
+              id: "legacy-active-major-limit",
+              label: "服务端当前大限",
+              startInclusive: "",
+              endExclusive: "",
+              view: projected,
+            },
+          ],
+          initialSegmentId: "legacy-active-major-limit",
+        }
+      : null;
+  }
+
+  const rawSegments: unknown = coreFacts.active_major_limit_segments;
+  if (!Array.isArray(rawSegments) || !rawSegments.length) return null;
+  const segments: ZiweiTemporalSegmentOption[] = [];
+  let previousEnd: string | null = null;
+  for (const raw of rawSegments) {
+    if (
+      !isRecord(raw) ||
+      !hasExactKeys(raw, [
+        "start_inclusive",
+        "end_exclusive",
+        "major_limit",
+      ]) ||
+      !isIsoCivilDate(raw.start_inclusive) ||
+      !isIsoCivilDate(raw.end_exclusive) ||
+      raw.start_inclusive >= raw.end_exclusive ||
+      (previousEnd !== null && raw.start_inclusive !== previousEnd) ||
+      !isRecord(raw.major_limit) ||
+      !Object.keys(raw.major_limit).length ||
+      !Array.isArray(raw.major_limit.palace_assignments)
+    ) {
+      return null;
+    }
+    const projected = projectTemporalPalaceView(view, raw.major_limit);
+    if (!projected) return null;
+    const id = `${raw.start_inclusive}/${raw.end_exclusive}`;
+    if (segments.some((segment) => segment.id === id)) return null;
+    previousEnd = raw.end_exclusive;
+    segments.push({
+      id,
+      label: `${raw.start_inclusive}—${raw.end_exclusive}`,
+      startInclusive: raw.start_inclusive,
+      endExclusive: raw.end_exclusive,
+      view: projected,
+    });
+  }
+
+  const target = activeMajorLimitTarget(view);
+  if (target.status !== "valid") return null;
+  if (
+    segments[0].startInclusive > target.startInclusive ||
+    segments.at(-1)!.endExclusive < target.endExclusive
+  ) {
+    return null;
+  }
+  const covering = segments.filter(
+    (segment) =>
+      segment.startInclusive <= target.startInclusive &&
+      target.endExclusive <= segment.endExclusive,
+  );
+  if (covering.length > 1) return null;
+  return {
+    segments,
+    initialSegmentId: covering.length === 1 ? covering[0].id : null,
+  };
+}
+
+function activeMajorLimitPalaceView(
+  selection: ZiweiMajorLimitSelection | null,
+  selectedSegmentId?: string | null,
+): ZiweiChartViewModel | null {
+  if (!selection) return null;
+  const resolvedId = selectedSegmentId ?? selection.initialSegmentId;
+  return (
+    selection.segments.find((segment) => segment.id === resolvedId)?.view ??
+    null
+  );
 }
 
 function temporalSegmentsForRange(
@@ -1877,7 +2081,7 @@ function layerHasFacts(
 ): boolean {
   if (layerId === "natal") return true;
   if (layerId === "decadal") {
-    return activeMajorLimitPalaceView(view) !== null;
+    return activeMajorLimitSelection(view) !== null;
   }
   if (layerId === "yearly") {
     return (
@@ -2162,21 +2366,30 @@ function TemporalLayerSelector({
   label,
   onSelect,
   options,
+  placeholder,
   selectedId,
 }: Readonly<{
   label: string;
   onSelect: (id: string) => void;
   options: readonly { id: string; label: string }[];
-  selectedId: string;
+  placeholder?: string;
+  selectedId: string | null;
 }>) {
   if (options.length < 2) return null;
   return (
     <label className={styles.temporalSelector}>
       <span>{label}</span>
       <select
-        value={selectedId}
-        onChange={(event) => onSelect(event.currentTarget.value)}
+        value={selectedId ?? ""}
+        onChange={(event) => {
+          if (event.currentTarget.value) onSelect(event.currentTarget.value);
+        }}
       >
+        {placeholder && !selectedId ? (
+          <option disabled value="">
+            {placeholder}
+          </option>
+        ) : null}
         {options.map((option) => (
           <option key={option.id} value={option.id}>
             {option.label}
@@ -2424,6 +2637,27 @@ export function ZiweiWorkspace({
     () => projectZiweiWorkspace(view, timeLayerEntitlement),
     [timeLayerEntitlement, view],
   );
+  const majorLimitSelection = useMemo(
+    () => activeMajorLimitSelection(view),
+    [view],
+  );
+  const majorLimitSelectionKey = majorLimitSelection
+    ? `${view.subject_ref}:${majorLimitSelection.initialSegmentId ?? "none"}:${majorLimitSelection.segments
+        .map((segment) => segment.id)
+        .join(",")}`
+    : `${view.subject_ref}:none`;
+  const [majorLimitSelectionState, setMajorLimitSelectionState] = useState<{
+    key: string;
+    id: string | null;
+  }>({ key: majorLimitSelectionKey, id: null });
+  const selectedMajorLimitSegmentId =
+    majorLimitSelectionState.key === majorLimitSelectionKey
+      ? majorLimitSelectionState.id
+      : null;
+  const activeMajorLimitSegmentId =
+    selectedMajorLimitSegmentId ??
+    majorLimitSelection?.initialSegmentId ??
+    null;
   const temporalSelections = useMemo(
     () => ({
       yearly: temporalSelectionForLayer(
@@ -2499,7 +2733,12 @@ export function ZiweiWorkspace({
   const activePalaceView = useMemo(() => {
     if (activeLayer.status !== "ready") return view;
     if (activeLayer.id === "decadal") {
-      return activeMajorLimitPalaceView(view) ?? view;
+      return (
+        activeMajorLimitPalaceView(
+          majorLimitSelection,
+          activeMajorLimitSegmentId,
+        ) ?? view
+      );
     }
     if (
       (activeLayer.id === "yearly" || activeLayer.id === "monthly") &&
@@ -2517,9 +2756,11 @@ export function ZiweiWorkspace({
   }, [
     activeLayer.id,
     activeLayer.status,
+    activeMajorLimitSegmentId,
     activeTemporalId,
     activeTemporalSegmentId,
     activeTemporalSelection,
+    majorLimitSelection,
     view,
   ]);
   const detail = useMemo(
@@ -2534,6 +2775,13 @@ export function ZiweiWorkspace({
 
   function selectLayer(layerId: WorkspaceLayerId) {
     setActiveLayerId(layerId);
+  }
+
+  function selectMajorLimitSegment(id: string) {
+    if (!majorLimitSelection?.segments.some((segment) => segment.id === id)) {
+      return;
+    }
+    setMajorLimitSelectionState({ key: majorLimitSelectionKey, id });
   }
 
   function selectTemporalLayer(layerId: ZiweiTemporalLayerId, id: string) {
@@ -2569,12 +2817,23 @@ export function ZiweiWorkspace({
     if (layer.id === "natal") return null;
     if (layer.id === "decadal") {
       return (
-        <ZiweiMajorLimitTrack
-          limits={view.core_facts?.major_limits ?? null}
-          onSelectLimit={selectBranch}
-          selectedBranch={selectedBranch}
-          sequence={view.core_facts?.major_limit_sequence ?? null}
-        />
+        <div className={styles.layerFacts}>
+          {majorLimitSelection ? (
+            <TemporalLayerSelector
+              label="大限分段"
+              onSelect={selectMajorLimitSegment}
+              options={majorLimitSelection.segments}
+              placeholder="请选择服务端大限分段"
+              selectedId={activeMajorLimitSegmentId}
+            />
+          ) : null}
+          <ZiweiMajorLimitTrack
+            limits={view.core_facts?.major_limits ?? null}
+            onSelectLimit={selectBranch}
+            selectedBranch={selectedBranch}
+            sequence={view.core_facts?.major_limit_sequence ?? null}
+          />
+        </div>
       );
     }
     if (layer.id === "yearly" && temporalSelections.yearly) {
