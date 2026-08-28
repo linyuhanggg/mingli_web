@@ -53,6 +53,24 @@ test("bazi result six states stay within the viewport", async ({ page }, testInf
   await expect(page.getByRole("tablist", { name: "时间层" })).toBeVisible();
   await expect(page.getByRole("tab")).toHaveCount(6);
   await expect(page.getByRole("table", { name: "四柱专业矩阵" })).toBeVisible();
+
+  if (page.viewportSize()?.width === 1024) {
+    const workspace = page.getByRole("region", { name: "排盘工作台" });
+    const chartPane = workspace.getByRole("tabpanel", { name: /^本命/ });
+    const readingPane = workspace.getByLabel("连续阅读面");
+    const [chartBox, readingBox] = await Promise.all([
+      chartPane.boundingBox(),
+      readingPane.boundingBox(),
+    ]);
+
+    expect(chartBox, "1024px chart column box").not.toBeNull();
+    expect(readingBox, "1024px reading column box").not.toBeNull();
+    expect(chartBox!.width, "1024px chart column minimum").toBeGreaterThanOrEqual(480);
+    expect(chartBox!.width, "1024px chart column maximum").toBeLessThanOrEqual(520);
+    expect(readingBox!.width, "1024px reading column minimum").toBeGreaterThanOrEqual(360);
+    expect(readingBox!.x, "1024px reading follows chart horizontally")
+      .toBeGreaterThanOrEqual(chartBox!.x + chartBox!.width);
+  }
 });
 
 test("bazi mobile luck cycles form a 4 by 2 grid without local scrolling", async ({

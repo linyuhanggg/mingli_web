@@ -157,9 +157,9 @@
   margin-top: 0;
 }
 
-@media (min-width: 1181px) {
+@media (min-width: 1024px) {
   .body {
-    grid-template-columns: minmax(0, 1.7fr) minmax(18rem, 0.8fr);
+    grid-template-columns: minmax(30rem, 32.5rem) minmax(22.5rem, 1fr);
   }
 }
 

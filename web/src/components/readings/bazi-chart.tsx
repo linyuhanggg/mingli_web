@@ -294,6 +294,27 @@ function MatrixText({ value }: Readonly<{ value: string }>) {
   );
 }
 
+const BAZI_ALGORITHM_GAPS = {
+  stellarFortune: {
+    id: "ALGO-GAP-1",
+    label: "待接入",
+    detail: "星运事实待接入。",
+  },
+  pillarVoid: {
+    id: "ALGO-GAP-2",
+    label: "暂无该项事实",
+    detail: "服务端暂无单柱空亡事实。",
+  },
+  gregorianLuckRange: {
+    id: "ALGO-GAP-3",
+    label: "公历起止年份区间待接入。",
+  },
+  lunarLuckStart: {
+    id: "ALGO-GAP-4",
+    label: "农历起运文本待接入。",
+  },
+} as const;
+
 function BaziFactMatrix({
   chart,
 }: Readonly<{ chart: BaziChartView }>) {
@@ -343,7 +364,14 @@ function BaziFactMatrix({
     },
     {
       label: "星运",
-      value: () => <span className={styles.gapMark}>ALGO-GAP-1</span>,
+      value: () => (
+        <span
+          className={styles.gapMark}
+          title={BAZI_ALGORITHM_GAPS.stellarFortune.detail}
+        >
+          {BAZI_ALGORITHM_GAPS.stellarFortune.label}
+        </span>
+      ),
     },
     {
       label: "自坐",
@@ -352,7 +380,14 @@ function BaziFactMatrix({
     },
     {
       label: "单柱空亡",
-      value: () => <span className={styles.gapMark}>ALGO-GAP-2</span>,
+      value: () => (
+        <span
+          className={styles.gapMark}
+          title={BAZI_ALGORITHM_GAPS.pillarVoid.detail}
+        >
+          {BAZI_ALGORITHM_GAPS.pillarVoid.label}
+        </span>
+      ),
     },
     {
       label: "纳音",
@@ -376,7 +411,7 @@ function BaziFactMatrix({
     <section className={styles.matrixSection} aria-labelledby="bazi-matrix-title">
       <div className={styles.sectionHeading}>
         <h4 id="bazi-matrix-title">四柱专业矩阵</h4>
-        <p>文字、形状与柱位共同标识五行；缺失算法按冻结合同原样标记。</p>
+        <p>文字、形状与柱位共同标识五行；服务端未返回的项目会在对应位置标明。</p>
       </div>
       <table className={styles.factMatrix}>
         <caption>四柱专业矩阵</caption>
@@ -401,9 +436,13 @@ function BaziFactMatrix({
           ))}
         </tbody>
       </table>
-      <div className={styles.algorithmGaps} aria-label="大运算法缺口">
-        <p><strong>ALGO-GAP-3</strong> 公历起止年份区间待 Runtime 接入。</p>
-        <p><strong>ALGO-GAP-4</strong> 农历起运文本待 Runtime 接入。</p>
+      <div className={styles.algorithmGaps} aria-label="大运待接入项目">
+        {[
+          BAZI_ALGORITHM_GAPS.gregorianLuckRange,
+          BAZI_ALGORITHM_GAPS.lunarLuckStart,
+        ].map((gap) => (
+          <p key={gap.id}>{gap.label}</p>
+        ))}
       </div>
     </section>
   );
