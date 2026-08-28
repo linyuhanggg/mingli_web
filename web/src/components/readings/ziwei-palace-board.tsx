@@ -1632,19 +1632,52 @@ function majorLimitTargetFromTemporalSelection(
   };
 }
 
+function majorLimitTargetFromCalendarCoverage(
+  value: unknown,
+): ZiweiMajorLimitTarget {
+  if (
+    !isRecord(value) ||
+    !hasExactKeys(value, [
+      "start_inclusive",
+      "end_exclusive",
+      "requested_target_date",
+    ]) ||
+    !isIsoCivilDate(value.start_inclusive) ||
+    !isIsoCivilDate(value.end_exclusive) ||
+    !isIsoCivilDate(value.requested_target_date) ||
+    value.start_inclusive >= value.end_exclusive ||
+    value.requested_target_date < value.start_inclusive ||
+    value.requested_target_date >= value.end_exclusive
+  ) {
+    return { status: "invalid" };
+  }
+  return {
+    status: "valid",
+    startInclusive: value.requested_target_date,
+    endExclusive: nextCivilDate(value.requested_target_date),
+  };
+}
+
 function activeMajorLimitTarget(
   view: ZiweiChartViewModel,
 ): ZiweiMajorLimitTarget {
+  const coreFacts = view.core_facts;
+  if (
+    coreFacts &&
+    Object.prototype.hasOwnProperty.call(coreFacts, "calendar_coverage")
+  ) {
+    return majorLimitTargetFromCalendarCoverage(coreFacts.calendar_coverage);
+  }
   const explicit = majorLimitTargetFromRecord(
-    view.core_facts?.chart_convention,
+    coreFacts?.chart_convention,
   );
   if (explicit.status !== "none") return explicit;
-  if (view.core_facts?.monthly_layers != null) {
+  if (coreFacts?.monthly_layers != null) {
     return majorLimitTargetFromTemporalSelection(
       temporalSelectionForLayer(view, "monthly"),
     );
   }
-  if (view.core_facts?.annual_layers != null) {
+  if (coreFacts?.annual_layers != null) {
     return majorLimitTargetFromTemporalSelection(
       temporalSelectionForLayer(view, "yearly"),
     );
