@@ -427,7 +427,7 @@
     left: 0;
     display: grid;
     min-height: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--space-xs);
     padding: var(--space-xs) var(--space-xs) calc(var(--space-xs) + env(safe-area-inset-bottom));
     overflow-x: clip;
@@ -444,8 +444,8 @@
   .megaMenu,
   .crossMenu { display: none; }
 
-  .mobileDrawer {
-    width: min(28rem, 100vw);
+  .mobileDrawer.mobileDrawer {
+    width: 100vw;
     max-width: 100vw;
     border-left: 0;
   }
