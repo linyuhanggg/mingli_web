@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   baziWorkspaceFactsFromChart,
   buildBaziWorkspaceView,
+  filterBaziYearLayersByEntitlement,
   parseTimeLayerEntitlement,
   resolveBaziFocusDetail,
   type TimeLayerEntitlement,
@@ -269,6 +270,20 @@ describe("buildBaziWorkspaceView", () => {
     const facts = baziWorkspaceFactsFromChart(chart);
     expect(facts.decadalSummary).toBe("状态：已计算");
     expect(facts.decadalSummary).not.toContain("calculated");
+  });
+
+  it("uses the server free_year_set as the only readable yearly subset", () => {
+    const returnedYears = [
+      { year: 2026, ganzhi: "丙午" },
+      { year: 2027, ganzhi: "丁未" },
+    ];
+
+    expect(
+      filterBaziYearLayersByEntitlement(returnedYears, GRANTED_ENTITLEMENT),
+    ).toEqual([{ year: 2026, ganzhi: "丙午" }]);
+    expect(filterBaziYearLayersByEntitlement(returnedYears, null)).toEqual(
+      returnedYears,
+    );
   });
 
   it("builds the basis only from provided public facts", () => {

@@ -351,6 +351,22 @@ export function parseTimeLayerEntitlement(value: unknown): TimeLayerEntitlement 
   };
 }
 
+/**
+ * The backend owns the free yearly window. When no entitlement sibling is
+ * available, returned free facts remain readable; once present, free_year_set
+ * is the authoritative allow-list and extra returned years stay hidden.
+ */
+export function filterBaziYearLayersByEntitlement<T extends { year: number }>(
+  layers: readonly T[] | null | undefined,
+  entitlement?: TimeLayerEntitlement | null,
+): T[] {
+  const returnedLayers = layers ?? [];
+  if (!entitlement) return [...returnedLayers];
+
+  const readableYears = new Set(entitlement.freeYearSet);
+  return returnedLayers.filter((layer) => readableYears.has(layer.year));
+}
+
 const PILLAR_ORDER = [
   { key: "year" as const, label: "年柱" },
   { key: "month" as const, label: "月柱" },
@@ -615,6 +631,18 @@ export function baziWorkspaceFactsFromChart(
     sequence_only: "仅返回大运序列",
     not_calculated_missing_gender: "缺少性别，暂未计算",
   };
+  const readableYearLayers = filterBaziYearLayersByEntitlement(
+    chart.coreFacts?.year_layers,
+    entitlement,
+  );
+  const yearlyReady = entitlement
+    ? readableYearLayers.length > 0
+    : readableYearLayers.length > 0 ||
+      Boolean(
+        chart.timeLayers?.some(
+          (layer) => layer.layer_id === "year" && layer.available,
+        ),
+      );
 
   return {
     pillars: chart.pillars
@@ -641,14 +669,9 @@ export function baziWorkspaceFactsFromChart(
     decadalSummary: chart.coreFacts?.luck_cycles
       ? `状态：${luckStatusLabels[chart.coreFacts.luck_cycles.status] ?? "已记录"}`
       : null,
-    yearlyReady: Boolean(
-      chart.coreFacts?.year_layers?.length ||
-        chart.timeLayers?.some(
-          (layer) => layer.layer_id === "year" && layer.available,
-        ),
-    ),
-    yearlySummary: chart.coreFacts?.year_layers?.length
-      ? chart.coreFacts.year_layers
+    yearlyReady,
+    yearlySummary: readableYearLayers.length
+      ? readableYearLayers
           .map((item) => `${item.year} ${item.ganzhi}（${item.ganzhi_segments.length} 个节气分段）`)
           .join("；")
       : null,
