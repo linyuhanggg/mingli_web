@@ -33,6 +33,51 @@ const GRANTED_ENTITLEMENT: TimeLayerEntitlement = {
   ],
 };
 
+function grantedEntitlementPayload() {
+  return {
+    schema_version: "time-layer-entitlement/v1",
+    capability_id: "bazi",
+    resolution: "granted",
+    free_boundary_layer_id: "year",
+    paid_layer_ids: ["month", "day", "hour"],
+    free_year_set: [2026],
+    capability: {
+      time_layers: [
+        {
+          layer_id: "life",
+          label: "本命",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "year",
+          label: "流年",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "month",
+          label: "流月",
+          available: false,
+          unavailable_reason: "本次结果尚未返回逐月盘面。",
+        },
+        {
+          layer_id: "day",
+          label: "流日",
+          available: false,
+          unavailable_reason: "本次结果尚未返回逐日盘面。",
+        },
+      ],
+    },
+    layers: GRANTED_ENTITLEMENT.layers.map((layer) => ({
+      layer_id: layer.layerId,
+      tier: layer.tier,
+      access: layer.access,
+      upgrade_cta: layer.upgradeCta,
+    })),
+  };
+}
+
 describe("buildBaziWorkspaceView", () => {
   it("returns an honest empty workspace when no public facts exist", () => {
     const view = buildBaziWorkspaceView({});
@@ -279,36 +324,147 @@ describe("buildBaziWorkspaceView", () => {
 
 describe("parseTimeLayerEntitlement", () => {
   it("accepts only the explicit bazi v1 sibling contract", () => {
-    expect(parseTimeLayerEntitlement({
-      schema_version: "time-layer-entitlement/v1",
-      capability_id: "bazi",
-      resolution: "granted",
-      free_boundary_layer_id: "year",
-      paid_layer_ids: ["month", "day", "hour"],
-      free_year_set: [2026],
-      capability: { time_layers: [] },
-      layers: GRANTED_ENTITLEMENT.layers.map((layer) => ({
-        layer_id: layer.layerId,
-        tier: layer.tier,
-        access: layer.access,
-        upgrade_cta: layer.upgradeCta,
-      })),
-    })).toEqual(GRANTED_ENTITLEMENT);
+    expect(parseTimeLayerEntitlement(grantedEntitlementPayload())).toEqual(
+      GRANTED_ENTITLEMENT,
+    );
   });
 
-  it("rejects missing, parallel-version, and contradictory paid grants", () => {
+  it("rejects missing and parallel-version contracts", () => {
     expect(parseTimeLayerEntitlement(undefined)).toBeNull();
     expect(parseTimeLayerEntitlement({ schema_version: "time-layer-entitlement/v2" })).toBeNull();
-    expect(parseTimeLayerEntitlement({
-      schema_version: "time-layer-entitlement/v1",
-      capability_id: "bazi",
-      resolution: "denied",
-      free_boundary_layer_id: "year",
-      paid_layer_ids: ["month", "day", "hour"],
-      free_year_set: [],
-      capability: { time_layers: [] },
-      layers: GRANTED_ENTITLEMENT.layers,
-    })).toBeNull();
+  });
+
+  it("rejects the six QA closed-table mutations", () => {
+    const mutations: Array<{
+      name: string;
+      mutate: (payload: ReturnType<typeof grantedEntitlementPayload>) => void;
+    }> = [
+      {
+        name: "extra_top",
+        mutate: (payload) => {
+          Object.assign(payload, { price: 99 });
+        },
+      },
+      {
+        name: "malformed_capability",
+        mutate: (payload) => {
+          Object.assign(payload.capability.time_layers[0], { tier: "free" });
+        },
+      },
+      {
+        name: "wrong_month_tier",
+        mutate: (payload) => {
+          payload.layers[3].tier = "free";
+        },
+      },
+      {
+        name: "reversed_closed_table",
+        mutate: (payload) => {
+          payload.layers.reverse();
+        },
+      },
+      {
+        name: "invalid_year_set",
+        mutate: (payload) => {
+          payload.free_year_set = [1799, 2026];
+        },
+      },
+      {
+        name: "extra_layer_key",
+        mutate: (payload) => {
+          Object.assign(payload.layers[0], { note: "parallel-contract" });
+        },
+      },
+    ];
+
+    for (const { name, mutate } of mutations) {
+      const payload = grantedEntitlementPayload();
+      mutate(payload);
+      expect(parseTimeLayerEntitlement(payload), name).toBeNull();
+    }
+  });
+
+  it("enforces the frozen resolution and paid-access matrix", () => {
+    const accepted = [
+      ["granted", "readable", null],
+      ["denied", "locked_paywall", "professional_info"],
+      ["unknown", "fail_closed_unknown", "professional_info"],
+      ["unauthenticated", "fail_closed_unknown", "professional_info"],
+      ["request_failed", "fail_closed_unknown", "professional_info"],
+    ] as const;
+
+    for (const [resolution, access, upgradeCta] of accepted) {
+      const payload = grantedEntitlementPayload();
+      payload.resolution = resolution;
+      for (const layer of payload.layers.slice(3)) {
+        layer.access = access;
+        layer.upgrade_cta = upgradeCta;
+      }
+      expect(parseTimeLayerEntitlement(payload)?.resolution).toBe(resolution);
+    }
+
+    const rejected = [
+      ["granted", "locked_paywall", "professional_info"],
+      ["denied", "readable", null],
+      ["unknown", "readable", null],
+      ["unauthenticated", "locked_paywall", "professional_info"],
+      ["request_failed", "locked_paywall", "professional_info"],
+    ] as const;
+
+    for (const [resolution, access, upgradeCta] of rejected) {
+      const payload = grantedEntitlementPayload();
+      payload.resolution = resolution;
+      for (const layer of payload.layers.slice(3)) {
+        layer.access = access;
+        layer.upgrade_cta = upgradeCta;
+      }
+      expect(parseTimeLayerEntitlement(payload)).toBeNull();
+    }
+
+    const missingLockedCta = grantedEntitlementPayload();
+    missingLockedCta.resolution = "denied";
+    for (const layer of missingLockedCta.layers.slice(3)) {
+      layer.access = "locked_paywall";
+      layer.upgrade_cta = "professional_info";
+    }
+    missingLockedCta.layers[3].upgrade_cta = null;
+    expect(parseTimeLayerEntitlement(missingLockedCta)).toBeNull();
+  });
+
+  it("rejects duplicate years and malformed capability snapshot shapes", () => {
+    const duplicateYears = grantedEntitlementPayload();
+    duplicateYears.free_year_set = [2026, 2026];
+    expect(parseTimeLayerEntitlement(duplicateYears)).toBeNull();
+
+    const malformedCapabilities: Array<
+      (payload: ReturnType<typeof grantedEntitlementPayload>) => void
+    > = [
+      (payload) => {
+        Object.assign(payload.capability, { status: "parallel-contract" });
+      },
+      (payload) => {
+        delete (
+          payload.capability.time_layers[0] as Partial<
+            (typeof payload.capability.time_layers)[number]
+          >
+        ).unavailable_reason;
+      },
+      (payload) => {
+        payload.capability.time_layers[0].unavailable_reason = "矛盾原因";
+      },
+      (payload) => {
+        payload.capability.time_layers[0].layer_id = "quarter";
+      },
+      (payload) => {
+        payload.capability.time_layers[1].layer_id = "life";
+      },
+    ];
+
+    for (const mutate of malformedCapabilities) {
+      const payload = grantedEntitlementPayload();
+      mutate(payload);
+      expect(parseTimeLayerEntitlement(payload)).toBeNull();
+    }
   });
 });
 
