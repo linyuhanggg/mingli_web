@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import {
   baziWorkspaceFactsFromChart,
   buildBaziWorkspaceView,
+  filterBaziYearLayersByEntitlement,
+  parseTimeLayerEntitlement,
   resolveBaziFocusDetail,
+  type TimeLayerEntitlement,
 } from "@/lib/chart-workspace";
 import type { BaziChartView } from "@/lib/reading-display";
 
@@ -13,6 +16,86 @@ const FOUR_PILLARS = {
   day: "戊午",
   hour: "丁卯",
 };
+
+const GRANTED_ENTITLEMENT: TimeLayerEntitlement = {
+  schemaVersion: "time-layer-entitlement/v1",
+  capabilityId: "bazi",
+  resolution: "granted",
+  freeBoundaryLayerId: "year",
+  paidLayerIds: ["month", "day", "hour"],
+  freeYearSet: [2026],
+  layers: [
+    { layerId: "life", tier: "free", access: "readable", upgradeCta: null },
+    { layerId: "luck_cycles", tier: "free", access: "readable", upgradeCta: null },
+    { layerId: "year", tier: "free", access: "readable", upgradeCta: null },
+    { layerId: "month", tier: "paid", access: "readable", upgradeCta: null },
+    { layerId: "day", tier: "paid", access: "readable", upgradeCta: null },
+    { layerId: "hour", tier: "paid", access: "unavailable", upgradeCta: null },
+  ],
+};
+
+function entitlementWithPaidAccess(
+  resolution: TimeLayerEntitlement["resolution"],
+  access: TimeLayerEntitlement["layers"][number]["access"],
+): TimeLayerEntitlement {
+  const upgradeCta =
+    access === "locked_paywall" || access === "fail_closed_unknown"
+      ? "professional_info"
+      : null;
+
+  return {
+    ...GRANTED_ENTITLEMENT,
+    resolution,
+    layers: GRANTED_ENTITLEMENT.layers.map((layer) =>
+      layer.tier === "paid" ? { ...layer, access, upgradeCta } : layer,
+    ),
+  };
+}
+
+function grantedEntitlementPayload() {
+  return {
+    schema_version: "time-layer-entitlement/v1",
+    capability_id: "bazi",
+    resolution: "granted",
+    free_boundary_layer_id: "year",
+    paid_layer_ids: ["month", "day", "hour"],
+    free_year_set: [2026],
+    capability: {
+      time_layers: [
+        {
+          layer_id: "life",
+          label: "本命",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "year",
+          label: "流年",
+          available: true,
+          unavailable_reason: null,
+        },
+        {
+          layer_id: "month",
+          label: "流月",
+          available: false,
+          unavailable_reason: "本次结果尚未返回逐月盘面。",
+        },
+        {
+          layer_id: "day",
+          label: "流日",
+          available: false,
+          unavailable_reason: "本次结果尚未返回逐日盘面。",
+        },
+      ],
+    },
+    layers: GRANTED_ENTITLEMENT.layers.map((layer) => ({
+      layer_id: layer.layerId,
+      tier: layer.tier,
+      access: layer.access,
+      upgrade_cta: layer.upgradeCta,
+    })),
+  };
+}
 
 describe("buildBaziWorkspaceView", () => {
   it("returns an honest empty workspace when no public facts exist", () => {
@@ -25,16 +108,19 @@ describe("buildBaziWorkspaceView", () => {
       "empty",
     );
     expect(view.layers.find((layer) => layer.id === "decadal")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
     );
     expect(view.layers.find((layer) => layer.id === "yearly")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
     );
     expect(view.layers.find((layer) => layer.id === "monthly")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
     );
     expect(view.layers.find((layer) => layer.id === "daily")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
+    );
+    expect(view.layers.find((layer) => layer.id === "hourly")?.status).toBe(
+      "locked-unavailable",
     );
   });
 
@@ -71,16 +157,19 @@ describe("buildBaziWorkspaceView", () => {
       highlights: [],
     });
     expect(view.layers.find((layer) => layer.id === "decadal")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
     );
     expect(view.layers.find((layer) => layer.id === "yearly")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
     );
     expect(view.layers.find((layer) => layer.id === "monthly")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
     );
     expect(view.layers.find((layer) => layer.id === "daily")?.status).toBe(
-      "unavailable",
+      "locked-unavailable",
+    );
+    expect(view.layers.find((layer) => layer.id === "hourly")?.status).toBe(
+      "locked-unavailable",
     );
     expect(view.cells.find((cell) => cell.id === "hour")?.value).toBeNull();
     expect(view.cells.find((cell) => cell.id === "hour")?.badges).toContain(
@@ -101,7 +190,7 @@ describe("buildBaziWorkspaceView", () => {
     );
   });
 
-  it("keeps each returned temporal layer ready with an itemized summary", () => {
+  it("keeps free layers readable but fail-closes paid facts without explicit entitlement", () => {
     const view = buildBaziWorkspaceView({
       pillars: FOUR_PILLARS,
       decadalReady: true,
@@ -117,15 +206,127 @@ describe("buildBaziWorkspaceView", () => {
       "ready",
       "ready",
       "ready",
-      "ready",
-      "ready",
+      "fail-closed-unknown",
+      "fail-closed-unknown",
+      "locked-unavailable",
     ]);
     expect(view.layers.find((layer) => layer.id === "decadal")?.summary).toContain(
       "not_calculated_missing_gender",
     );
+    expect(view.layers.find((layer) => layer.id === "daily")?.summary).toBe(
+      "权益状态未确认",
+    );
+  });
+
+  it("reveals paid facts only when the backend entitlement grants the same layer", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      decadalReady: true,
+      yearlyReady: true,
+      monthlyReady: true,
+      monthlySummary: "2026-08（2 个节气分段）",
+      dailyReady: true,
+      dailySummary: "2026-08-15（1 个日界分段）",
+      entitlement: GRANTED_ENTITLEMENT,
+    });
+
+    expect(view.layers.map((layer) => layer.status)).toEqual([
+      "ready",
+      "ready",
+      "ready",
+      "ready",
+      "ready",
+      "locked-unavailable",
+    ]);
     expect(view.layers.find((layer) => layer.id === "daily")?.summary).toContain(
       "2026-08-15",
     );
+  });
+
+  it.each([
+    ["denied", "locked_paywall", "locked-paywall", "专业版时间层"],
+    [
+      "unknown",
+      "fail_closed_unknown",
+      "fail-closed-unknown",
+      "权益状态未确认",
+    ],
+  ] as const)(
+    "preserves the %s entitlement lock when paid facts are absent",
+    (resolution, access, expectedStatus, expectedSummary) => {
+      const view = buildBaziWorkspaceView({
+        pillars: FOUR_PILLARS,
+        entitlement: entitlementWithPaidAccess(resolution, access),
+      });
+      const monthly = view.layers.find((layer) => layer.id === "monthly");
+
+      expect(monthly).toMatchObject({
+        status: expectedStatus,
+        summary: expectedSummary,
+        upgradeCta: "professional_info",
+      });
+    },
+  );
+
+  it("keeps granted paid layers unavailable until their fact rows arrive", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      entitlement: entitlementWithPaidAccess("granted", "readable"),
+    });
+
+    expect(view.layers.find((layer) => layer.id === "monthly")).toMatchObject({
+      status: "locked-unavailable",
+      summary: "待接入",
+      upgradeCta: null,
+    });
+  });
+
+  it("keeps explicit capability unavailability even when a fact row is returned", () => {
+    const view = buildBaziWorkspaceView({
+      pillars: FOUR_PILLARS,
+      monthlyReady: true,
+      monthlySummary: "不得泄露的流月事实",
+      entitlement: entitlementWithPaidAccess("granted", "unavailable"),
+    });
+
+    expect(view.layers.find((layer) => layer.id === "monthly")).toMatchObject({
+      status: "locked-unavailable",
+      summary: "待接入",
+      upgradeCta: null,
+    });
+  });
+
+  it("never lets denied, guest, or failed entitlement lock the free boundary", () => {
+    for (const resolution of ["denied", "unauthenticated", "request_failed"] as const) {
+      const entitlement: TimeLayerEntitlement = {
+        ...GRANTED_ENTITLEMENT,
+        resolution,
+        layers: GRANTED_ENTITLEMENT.layers.map((layer) => (
+          layer.tier === "paid"
+            ? {
+                ...layer,
+                access: resolution === "denied" ? "locked_paywall" : "fail_closed_unknown",
+                upgradeCta: layer.layerId === "hour" ? null : "professional_info",
+              }
+            : layer
+        )),
+      };
+      const view = buildBaziWorkspaceView({
+        pillars: FOUR_PILLARS,
+        decadalReady: true,
+        yearlyReady: true,
+        monthlyReady: true,
+        entitlement,
+      });
+      expect(view.layers.slice(0, 3).map((layer) => layer.status)).toEqual([
+        "ready",
+        "ready",
+        "ready",
+      ]);
+      expect(view.layers.find((layer) => layer.id === "monthly")?.status).toBe(
+        resolution === "denied" ? "locked-paywall" : "fail-closed-unknown",
+      );
+    }
   });
 
   it("localizes the server luck status before it reaches the tabs", () => {
@@ -140,6 +341,20 @@ describe("buildBaziWorkspaceView", () => {
     const facts = baziWorkspaceFactsFromChart(chart);
     expect(facts.decadalSummary).toBe("状态：已计算");
     expect(facts.decadalSummary).not.toContain("calculated");
+  });
+
+  it("uses the server free_year_set as the only readable yearly subset", () => {
+    const returnedYears = [
+      { year: 2026, ganzhi: "丙午" },
+      { year: 2027, ganzhi: "丁未" },
+    ];
+
+    expect(
+      filterBaziYearLayersByEntitlement(returnedYears, GRANTED_ENTITLEMENT),
+    ).toEqual([{ year: 2026, ganzhi: "丙午" }]);
+    expect(filterBaziYearLayersByEntitlement(returnedYears, null)).toEqual(
+      returnedYears,
+    );
   });
 
   it("builds the basis only from provided public facts", () => {
@@ -190,6 +405,152 @@ describe("buildBaziWorkspaceView", () => {
       body: "服务端已确认",
       tone: "neutral",
     });
+  });
+});
+
+describe("parseTimeLayerEntitlement", () => {
+  it("accepts only the explicit bazi v1 sibling contract", () => {
+    expect(parseTimeLayerEntitlement(grantedEntitlementPayload())).toEqual(
+      GRANTED_ENTITLEMENT,
+    );
+  });
+
+  it("rejects missing and parallel-version contracts", () => {
+    expect(parseTimeLayerEntitlement(undefined)).toBeNull();
+    expect(parseTimeLayerEntitlement({ schema_version: "time-layer-entitlement/v2" })).toBeNull();
+  });
+
+  it("rejects the six QA closed-table mutations", () => {
+    const mutations: Array<{
+      name: string;
+      mutate: (payload: ReturnType<typeof grantedEntitlementPayload>) => void;
+    }> = [
+      {
+        name: "extra_top",
+        mutate: (payload) => {
+          Object.assign(payload, { price: 99 });
+        },
+      },
+      {
+        name: "malformed_capability",
+        mutate: (payload) => {
+          Object.assign(payload.capability.time_layers[0], { tier: "free" });
+        },
+      },
+      {
+        name: "wrong_month_tier",
+        mutate: (payload) => {
+          payload.layers[3].tier = "free";
+        },
+      },
+      {
+        name: "reversed_closed_table",
+        mutate: (payload) => {
+          payload.layers.reverse();
+        },
+      },
+      {
+        name: "invalid_year_set",
+        mutate: (payload) => {
+          payload.free_year_set = [1799, 2026];
+        },
+      },
+      {
+        name: "extra_layer_key",
+        mutate: (payload) => {
+          Object.assign(payload.layers[0], { note: "parallel-contract" });
+        },
+      },
+    ];
+
+    for (const { name, mutate } of mutations) {
+      const payload = grantedEntitlementPayload();
+      mutate(payload);
+      expect(parseTimeLayerEntitlement(payload), name).toBeNull();
+    }
+  });
+
+  it("enforces the frozen resolution and paid-access matrix", () => {
+    const accepted = [
+      ["granted", "readable", null],
+      ["denied", "locked_paywall", "professional_info"],
+      ["unknown", "fail_closed_unknown", "professional_info"],
+      ["unauthenticated", "fail_closed_unknown", "professional_info"],
+      ["request_failed", "fail_closed_unknown", "professional_info"],
+    ] as const;
+
+    for (const [resolution, access, upgradeCta] of accepted) {
+      const payload = grantedEntitlementPayload();
+      payload.resolution = resolution;
+      for (const layer of payload.layers.slice(3)) {
+        layer.access = access;
+        layer.upgrade_cta = upgradeCta;
+      }
+      expect(parseTimeLayerEntitlement(payload)?.resolution).toBe(resolution);
+    }
+
+    const rejected = [
+      ["granted", "locked_paywall", "professional_info"],
+      ["denied", "readable", null],
+      ["unknown", "readable", null],
+      ["unauthenticated", "locked_paywall", "professional_info"],
+      ["request_failed", "locked_paywall", "professional_info"],
+    ] as const;
+
+    for (const [resolution, access, upgradeCta] of rejected) {
+      const payload = grantedEntitlementPayload();
+      payload.resolution = resolution;
+      for (const layer of payload.layers.slice(3)) {
+        layer.access = access;
+        layer.upgrade_cta = upgradeCta;
+      }
+      expect(parseTimeLayerEntitlement(payload)).toBeNull();
+    }
+
+    const missingLockedCta = grantedEntitlementPayload();
+    missingLockedCta.resolution = "denied";
+    for (const layer of missingLockedCta.layers.slice(3)) {
+      layer.access = "locked_paywall";
+      layer.upgrade_cta = "professional_info";
+    }
+    missingLockedCta.layers[3].upgrade_cta = null;
+    expect(parseTimeLayerEntitlement(missingLockedCta)).toBeNull();
+  });
+
+  it("rejects duplicate years and malformed capability snapshot shapes", () => {
+    const duplicateYears = grantedEntitlementPayload();
+    duplicateYears.free_year_set = [2026, 2026];
+    expect(parseTimeLayerEntitlement(duplicateYears)).toBeNull();
+
+    const malformedCapabilities: Array<
+      (payload: ReturnType<typeof grantedEntitlementPayload>) => void
+    > = [
+      (payload) => {
+        Object.assign(payload.capability, { status: "parallel-contract" });
+      },
+      (payload) => {
+        delete (
+          payload.capability.time_layers[0] as Partial<
+            (typeof payload.capability.time_layers)[number]
+          >
+        ).unavailable_reason;
+      },
+      (payload) => {
+        payload.capability.time_layers[0].unavailable_reason = "矛盾原因";
+      },
+      (payload) => {
+        payload.capability.time_layers[0].layer_id = "quarter";
+      },
+      (payload) => {
+        payload.capability.time_layers[1].layer_id = "life";
+      },
+    ];
+
+    for (const mutate of malformedCapabilities) {
+      const payload = grantedEntitlementPayload();
+      mutate(payload);
+      expect(parseTimeLayerEntitlement(payload)).toBeNull();
+    }
   });
 });
 

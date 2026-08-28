@@ -508,6 +508,47 @@ export type CapabilityProjectionResponse = {
   capabilities: CapabilityProjection[];
 };
 
+export type TimeLayerCapabilityItemResponse = {
+  layer_id: string;
+  label: string;
+  available: boolean;
+  unavailable_reason: string | null;
+};
+
+export type TimeLayerEntitlementLayerResponse = {
+  layer_id:
+    | "life"
+    | "luck_cycles"
+    | "major_limits"
+    | "year"
+    | "month"
+    | "day"
+    | "hour";
+  tier: "free" | "paid";
+  access:
+    | "readable"
+    | "locked_paywall"
+    | "fail_closed_unknown"
+    | "unavailable";
+  upgrade_cta: "professional_info" | null;
+};
+
+export type TimeLayerEntitlementResponse = {
+  schema_version: "time-layer-entitlement/v1";
+  capability_id: "bazi" | "ziwei";
+  resolution:
+    | "granted"
+    | "denied"
+    | "unknown"
+    | "unauthenticated"
+    | "request_failed";
+  free_boundary_layer_id: "year";
+  paid_layer_ids: ["month", "day", "hour"];
+  free_year_set: number[];
+  capability: { time_layers: TimeLayerCapabilityItemResponse[] };
+  layers: TimeLayerEntitlementLayerResponse[];
+};
+
 export type ReadingResultResponse = {
   reading_version_id: string;
   status: ReadingStatus;
@@ -521,6 +562,7 @@ export type ReadingResultResponse = {
   result_available?: boolean;
   poll_required?: boolean;
   poll_after_seconds?: number | null;
+  time_layer_entitlement?: TimeLayerEntitlementResponse | null;
 };
 
 export type ReadingDocumentV1 = {

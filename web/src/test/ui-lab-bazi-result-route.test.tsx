@@ -44,14 +44,22 @@ describe("direct UI Lab bazi result route", () => {
     const nav = screen.getByRole("navigation", { name: "结果页六态" });
     expect(nav).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "unauthorized" }));
-    expect(screen.getByRole("status", { name: "需要登录才能看这份结果" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "登录后继续" })).toBeVisible();
-    expect(screen.queryByRole("heading", { name: "八字结果页验收切片" })).not.toBeInTheDocument();
+    for (const state of ["ready", "loading", "empty", "locked", "need-input", "error"]) {
+      expect(screen.getByRole("button", { name: state })).toBeVisible();
+    }
 
-    await user.click(screen.getByRole("button", { name: "unavailable" }));
-    expect(screen.getByRole("status", { name: "结果服务暂时不可用，不会展示未确认内容" })).toBeVisible();
+    await user.click(screen.getByRole("button", { name: "loading" }));
+    expect(screen.getByRole("status", { name: "正在同步出盘" })).toBeVisible();
 
-    await user.click(screen.getByRole("button", { name: "已返回事实" }));
+    await user.click(screen.getByRole("button", { name: "locked" }));
+    expect(screen.getByRole("status", { name: "专业时间层与深读已锁定" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "八字结果页验收切片" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "了解专业版" })).toHaveAttribute("href", "/pricing");
+
+    await user.click(screen.getByRole("button", { name: "need-input" }));
+    expect(screen.getByRole("status", { name: "需要确认边界口径" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "返回补充资料" })).toBeVisible();
+
+    await user.click(screen.getByRole("button", { name: "ready" }));
     expect(screen.getByRole("heading", { name: "八字结果页验收切片" })).toBeVisible();
   });

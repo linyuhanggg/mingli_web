@@ -22,10 +22,12 @@ import {
   extractFortunePeriodMarkers,
   isFortunePeriodMarkerFact,
 } from "@/lib/fortune-period-markers";
+import { parseTimeLayerEntitlement } from "@/lib/chart-workspace";
 import surface from "@/components/app-surface.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
 import { BaziChart } from "./bazi-chart";
+import { BaziDeepEntry } from "./bazi-deep-entry";
 import { EvidenceList } from "./evidence-list";
 import { FactPanel } from "./fact-panel";
 import { FollowUpForm } from "./follow-up-form";
@@ -39,6 +41,8 @@ import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
 
 const DEFAULT_POLL_MS = 2000;
+// The earlier loading label “正在读取结果” is retained here only as migration context;
+// bazi synchronization now uses the frozen public wording “正在同步出盘”.
 const RUNTIME_CHART_VERSIONS = new Set([
   "hecan-view/v1",
   "canwen-view/v1",
@@ -213,7 +217,13 @@ function ArchiveRail({
   );
 }
 
-export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
+export function ReadingResult({
+  readingId,
+  baziDeepFulfilled = false,
+}: Readonly<{
+  readingId: string;
+  baziDeepFulfilled?: boolean;
+}>) {
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
   const [result, setResult] = useState<ReadingResultResponse | null>(null);
@@ -351,9 +361,9 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
     return (
       <article className={surface.readingBody}>
         <Status
-          description="页面只展示服务端公开摘要；状态与正文分开保存。"
+          description="正在准备定位、时间层与盘面事实；完成后直接进入结果。"
           state="loading"
-          title="正在读取结果…"
+          title="正在同步出盘"
         />
       </article>
     );
@@ -437,6 +447,9 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
           ? buildBaziChartViewFromViewModel(result.view_model)
           : buildBaziChartView(publicFacts)
         : null;
+    const timeLayerEntitlement = isBazi
+      ? parseTimeLayerEntitlement(result.time_layer_entitlement)
+      : null;
     const fortuneMarkers = isFortune
       ? extractFortunePeriodMarkers(publicFacts)
       : [];
@@ -1068,12 +1081,15 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                   <p className={surface.inlineNote}>
                     点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
                   </p>
-                  <BaziChart
-                    chart={chart}
-                    title="八字命盘"
-                    evidence={result.fact_panel?.evidence ?? []}
-                    showInterpretiveSections={capabilityTier === "A"}
-                  />
+                  <div data-bazi-chart-host="true">
+                    <BaziChart
+                      chart={chart}
+                      title="八字命盘"
+                      evidence={result.fact_panel?.evidence ?? []}
+                      showInterpretiveSections={capabilityTier === "A"}
+                      timeLayerEntitlement={timeLayerEntitlement}
+                    />
+                  </div>
                 </>
               )}
             </div>
@@ -1090,12 +1106,17 @@ export function ReadingResult({ readingId }: Readonly<{ readingId: string }>) {
                 <p className={surface.inlineNote}>
                   深度解读只采用本次盘面与已接纳正文，不会把内部字段当作结论展示。
                 </p>
+              ) : baziDeepFulfilled ? (
+                <p className={surface.inlineNote}>
+                  专业深读已交付；免费盘面继续保留，本区不重复展示深读入口。
+                </p>
               ) : (
                 <p className={surface.inlineNote}>
                   当前是免费排盘预览，只提供命盘与确定性事实。完整深度解读待接入。
                 </p>
               )}
               <LimitNotice limits={result.fact_panel?.limits ?? null} />
+              {productId !== "bazi-deep" && !baziDeepFulfilled ? <BaziDeepEntry /> : null}
             </div>
           </section>
 
