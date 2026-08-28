@@ -71,22 +71,31 @@ class EngineAdapterBase(
         self,
         request: NormalizedRequestT,
     ) -> EngineAdapterResult[CanonicalFactsT]:
+        # Request and policy/provenance validation are owned by the adapter.
+        # Finish both before crossing into the third-party invocation so their
+        # actionable deterministic errors cannot be confused with engine
+        # failures.
         engine_request = self._build_engine_request(request)
+        provenance = self._provenance(request)
+
+        engine_output: PrivateEngineOutputT
         try:
             engine_output = self._invoke_engine(engine_request)
-        except EngineAdapterError:
-            raise
-        except ValueError:
-            # Input and policy validation is owned by the adapter and remains
-            # an actionable deterministic error, not a third-party exception.
-            raise
-        except Exception as exc:
+        except Exception:
+            engine_failed = True
+        else:
+            engine_failed = False
+
+        # Raise only after leaving the ``except`` suite.  This deliberately
+        # discards exception chaining as well as the original message/type, so
+        # private engine payloads cannot remain reachable through __cause__ or
+        # __context__.
+        if engine_failed:
             raise EngineAdapterError(
                 self.art_id or "unknown",
                 "engine_execution_failed",
-            ) from exc
+            )
 
-        provenance = self._provenance(request)
         try:
             canonical_facts = self._project_engine_output(
                 request,

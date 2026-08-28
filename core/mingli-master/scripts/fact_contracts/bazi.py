@@ -17,12 +17,54 @@ from evidence_contract import canonical_digest
 
 from fact_contracts.common import (
     CanonicalFactsError,
+    CanonicalFactsFieldClosure,
     EngineProvenance,
     FactContract,
     canonical_json_snapshot,
 )
 from fact_contracts.common import finding as _finding
 from fact_contracts.common import valid_text as _valid_text
+
+
+_BAZI_CANONICAL_FIELDS = CanonicalFactsFieldClosure(
+    root_fields=frozenset(
+        {
+            "adapter",
+            "calendar_normalization",
+            "capabilities",
+            "conflicts",
+            "fact_layer_scope",
+            "fact_layer_status",
+            "input",
+            "output",
+            "schema_version",
+            "trace",
+            "warnings",
+        }
+    ),
+    output_fields=frozenset(
+        {
+            "branch_relations",
+            "day_master",
+            "element_inventory",
+            "four_pillars",
+            "hidden_stems",
+            "interpretive_candidates",
+            "luck_cycles",
+            "month_command",
+            "nayin",
+            "san_yuan",
+            "seasonal_profile",
+            "shensha_auxiliary",
+            "source_conditioned_patterns",
+            "ten_gods",
+            "tiaohou_markers",
+            "twelve_growth_stages",
+            "xunkong",
+        }
+    ),
+    optional_root_fields=frozenset({"public_calendar_normalization"}),
+)
 
 
 @dataclass(frozen=True)
@@ -38,7 +80,10 @@ class BaziCanonicalFacts:
         payload: dict[str, Any],
         provenance: EngineProvenance,
     ) -> "BaziCanonicalFacts":
-        snapshot = canonical_json_snapshot(payload)
+        snapshot = canonical_json_snapshot(
+            payload,
+            field_closure=_BAZI_CANONICAL_FIELDS,
+        )
         if snapshot.get("schema_version") != "mingli-bazi-fact-v1":
             raise CanonicalFactsError("invalid Bazi Canonical Facts schema")
         adapter = snapshot.get("adapter")

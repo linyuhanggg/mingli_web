@@ -18,11 +18,62 @@ from reading_engine.contracts import FactRef
 
 from fact_contracts.common import (
     CanonicalFactsError,
+    CanonicalFactsFieldClosure,
     EngineProvenance,
     FactContract,
     canonical_json_snapshot,
 )
 from fact_contracts.common import finding as _finding
+
+
+_ZIWEI_CANONICAL_FIELDS = CanonicalFactsFieldClosure(
+    root_fields=frozenset(
+        {
+            "adapter",
+            "calendar_normalization",
+            "capabilities",
+            "fact_layer_scope",
+            "fact_layer_status",
+            "input",
+            "natal_fact_digest",
+            "output",
+            "schema_version",
+            "source_lineage",
+            "system",
+            "trace",
+            "warnings",
+        }
+    ),
+    output_fields=frozenset(
+        {
+            "chart_convention",
+            "chinese_date",
+            "fact_layer_separation",
+            "five_elements_class",
+            "interpretation_status",
+            "interpretive_candidates",
+            "lunar_date_display",
+            "major_limit_direction",
+            "major_limit_sequence",
+            "major_limit_starting_age",
+            "major_limits",
+            "ming_shen",
+            "natal_transformation_facts",
+            "palace_facts",
+            "palaces",
+            "sihua",
+            "solar_date",
+            "source_conditioned_patterns",
+            "source_lineage",
+            "source_roles",
+            "star_facts",
+            "stars",
+            "time",
+            "time_range",
+            "transformation_layers",
+        }
+    ),
+)
 
 
 @dataclass(frozen=True)
@@ -38,7 +89,10 @@ class ZiweiCanonicalFacts:
         payload: dict[str, Any],
         provenance: EngineProvenance,
     ) -> "ZiweiCanonicalFacts":
-        snapshot = canonical_json_snapshot(payload)
+        snapshot = canonical_json_snapshot(
+            payload,
+            field_closure=_ZIWEI_CANONICAL_FIELDS,
+        )
         if snapshot.get("schema_version") != "mingli-ziwei-fact-v1":
             raise CanonicalFactsError("invalid Ziwei Canonical Facts schema")
         adapter = snapshot.get("adapter")

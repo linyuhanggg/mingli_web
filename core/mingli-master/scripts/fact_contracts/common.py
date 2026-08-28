@@ -22,23 +22,45 @@ from dataclasses import dataclass
 from typing import Any
 
 
-_FORBIDDEN_THIRD_PARTY_RAW_KEYS = frozenset(
-    {
-        "candidate_oss_output",
-        "engine_raw",
-        "engine_raw_json",
-        "iztro_raw",
-        "oss_raw",
-        "raw_engine_output",
-        "third_party_raw",
-        "third_party_raw_object",
-        "third_party_runtime_object",
-    }
-)
-
-
 class CanonicalFactsError(ValueError):
     """An art-specific fact snapshot is not safe or provenance-complete."""
+
+
+@dataclass(frozen=True)
+class CanonicalFactsFieldClosure:
+    """Positive field closure for one art-specific fact boundary.
+
+    Root and ``output`` are the two maps through which an engine-owned blob
+    could otherwise be attached to an existing Runtime payload.  Requiring
+    exact field equality makes unknown containers fail independently of their
+    spelling; this is intentionally not a denylist of guessed raw aliases.
+    """
+
+    root_fields: frozenset[str]
+    output_fields: frozenset[str]
+    optional_root_fields: frozenset[str] = frozenset()
+    optional_output_fields: frozenset[str] = frozenset()
+
+    def validate(self, payload: dict[str, Any]) -> None:
+        actual_root = frozenset(payload)
+        if (
+            not self.root_fields <= actual_root
+            or not actual_root <= self.root_fields | self.optional_root_fields
+        ):
+            raise CanonicalFactsError(
+                "canonical facts contain unknown or missing root fields"
+            )
+        output = payload.get("output")
+        actual_output = frozenset(output) if type(output) is dict else frozenset()
+        if (
+            type(output) is not dict
+            or not self.output_fields <= actual_output
+            or not actual_output
+            <= self.output_fields | self.optional_output_fields
+        ):
+            raise CanonicalFactsError(
+                "canonical facts contain unknown or missing output fields"
+            )
 
 
 @dataclass(frozen=True)
@@ -83,13 +105,17 @@ class EngineProvenance:
         }
 
 
-def canonical_json_snapshot(payload: Any) -> dict[str, Any]:
+def canonical_json_snapshot(
+    payload: Any,
+    *,
+    field_closure: CanonicalFactsFieldClosure,
+) -> dict[str, Any]:
     """Return a detached JSON object or fail closed on private/raw values.
 
     Canonical Facts cross the Provider boundary, so only exact JSON runtime
     types are admitted.  In particular, engine classes, Mapping subclasses,
-    exception objects and explicitly raw third-party containers cannot be
-    smuggled into a public calculation record.
+    exception objects and fields outside the art-specific positive closure
+    cannot be smuggled into a public calculation record.
     """
 
     def clone(value: Any, path: str) -> Any:
@@ -111,10 +137,6 @@ def canonical_json_snapshot(payload: Any) -> dict[str, Any]:
                     raise CanonicalFactsError(
                         f"canonical facts contain a non-text key at {path}"
                     )
-                if key in _FORBIDDEN_THIRD_PARTY_RAW_KEYS:
-                    raise CanonicalFactsError(
-                        "third-party raw output cannot enter Canonical Facts"
-                    )
                 result[key] = clone(item, f"{path}/{key}")
             return result
         raise CanonicalFactsError(
@@ -124,6 +146,7 @@ def canonical_json_snapshot(payload: Any) -> dict[str, Any]:
     snapshot = clone(payload, "")
     if type(snapshot) is not dict:
         raise CanonicalFactsError("canonical facts must be a JSON object")
+    field_closure.validate(snapshot)
     # Exercise the strict JSON encoder as a second, independent closed-world
     # check.  This is an in-memory snapshot, not a baseline hash or checksum.
     try:

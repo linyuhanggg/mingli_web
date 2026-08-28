@@ -92,6 +92,25 @@ class _FailingFakeAdapter(_HappyFakeAdapter):
         raise RuntimeError("third-party raw exception detail")
 
 
+class _ValueErrorFailingFakeAdapter(_HappyFakeAdapter):
+    def _invoke_engine(self, request: dict[str, str]) -> _RawThirdPartyValue:
+        del request
+        raise ValueError("third-party-secret-detail")
+
+
+class _OwnedPolicyFailingFakeAdapter(_HappyFakeAdapter):
+    def __init__(self) -> None:
+        self.engine_invoked = False
+
+    def _invoke_engine(self, request: dict[str, str]) -> _RawThirdPartyValue:
+        self.engine_invoked = True
+        return super()._invoke_engine(request)
+
+    def _provenance(self, request: str) -> EngineProvenance:
+        del request
+        raise ValueError("owned policy validation failed")
+
+
 class EngineAdapterProtocolTests(unittest.TestCase):
     def test_protocol_exposes_only_normalized_request_and_canonical_result(self) -> None:
         adapter = _HappyFakeAdapter()
@@ -113,6 +132,27 @@ class EngineAdapterProtocolTests(unittest.TestCase):
 
         self.assertEqual(raised.exception.code, "engine_execution_failed")
         self.assertNotIn("third-party raw exception detail", str(raised.exception))
+
+    def test_third_party_value_error_is_normalized_without_retained_detail(
+        self,
+    ) -> None:
+        with self.assertRaises(EngineAdapterError) as raised:
+            _ValueErrorFailingFakeAdapter().adapt("normalized")
+
+        error = raised.exception
+        self.assertEqual(error.code, "engine_execution_failed")
+        self.assertNotIn("third-party-secret-detail", str(error))
+        self.assertNotIn("ValueError", repr(error))
+        self.assertIsNone(error.__cause__)
+        self.assertIsNone(error.__context__)
+
+    def test_owned_policy_validation_finishes_before_engine_invocation(self) -> None:
+        adapter = _OwnedPolicyFailingFakeAdapter()
+
+        with self.assertRaisesRegex(ValueError, "owned policy validation failed"):
+            adapter.adapt("normalized")
+
+        self.assertFalse(adapter.engine_invoked)
 
     def test_bazi_and_ziwei_adapters_satisfy_the_same_minimal_protocol(self) -> None:
         self.assertIsInstance(bazi_fact_adapter.BaziEngineAdapter(), EngineAdapter)
@@ -190,6 +230,26 @@ class ArtSpecificCanonicalFactsTests(unittest.TestCase):
         raw_object["output"]["third_party_runtime_object"] = _RawThirdPartyValue()
         with self.assertRaises(CanonicalFactsError):
             ZiweiFactContract().bind_canonical_facts(raw_object, provenance)
+
+    def test_canonical_fact_fields_are_closed_to_unknown_json_containers(
+        self,
+    ) -> None:
+        for case_id, contract in (
+            ("bazi-normal-civil", BaziFactContract()),
+            ("ziwei-normal-civil", ZiweiFactContract()),
+        ):
+            case = _fixture(case_id)
+            provenance = _provenance(case)
+            for target in ("root", "output"):
+                hostile = copy.deepcopy(case["expected_canonical_facts"])
+                container = hostile if target == "root" else hostile["output"]
+                container["third_party_payload"] = {
+                    "raw": {"palaces": []},
+                }
+
+                with self.subTest(case=case_id, target=target):
+                    with self.assertRaises(CanonicalFactsError):
+                        contract.bind_canonical_facts(hostile, provenance)
 
     def test_canonical_fact_snapshots_are_detached_from_mutable_input(self) -> None:
         case = _fixture("bazi-normal-civil")
