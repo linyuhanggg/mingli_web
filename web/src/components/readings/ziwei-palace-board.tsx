@@ -16,6 +16,7 @@ import type {
   WorkspaceLayer,
   WorkspaceLayerId,
 } from "@/lib/chart-workspace";
+import type { TimeLayerEntitlementResponse } from "@/lib/api/contracts";
 import type { ZiweiChartViewModel } from "@/view-models/registry";
 
 import {
@@ -443,12 +444,10 @@ function locatorPalaceName(palace: Palace, view: ZiweiChartViewModel): string {
 function ZiweiPalaceLocator({
   view,
   selectedBranch,
-  layout,
   onSelect,
 }: Readonly<{
   view: ZiweiChartViewModel;
   selectedBranch: string | null;
-  layout: Layout;
   onSelect: (branch: string) => void;
 }>) {
   const refs = useRef<Partial<Record<string, HTMLButtonElement | null>>>({});
@@ -517,20 +516,15 @@ function ZiweiPalaceLocator({
         <span>十二宫定位</span>
         <small>左右方向键移动，选择后联动盘面与阅读</small>
       </div>
-      <div
-        aria-label="十二宫定位"
-        className={styles.locatorTrack}
-        role="tablist"
-      >
+      <div className={styles.locatorTrack}>
         {orderedBranches.map((branch) => {
           const palace = palaceMap.get(branch);
           if (!palace) return null;
           const active = activeBranch === branch;
           return (
             <button
-              aria-controls={`ziwei-${layout}-${branch}`}
+              aria-current={active ? "true" : undefined}
               aria-label={`${locatorPalaceName(palace, view)}，定位至该宫`}
-              aria-selected={active}
               className={styles.locatorButton}
               data-branch={branch}
               key={branch}
@@ -539,7 +533,6 @@ function ZiweiPalaceLocator({
               ref={(node) => {
                 refs.current[branch] = node;
               }}
-              role="tab"
               tabIndex={active ? 0 : -1}
               type="button"
             >
@@ -743,7 +736,6 @@ export function ZiweiPalaceBoard({
   const locator =
     view && !structural && showLocator ? (
       <ZiweiPalaceLocator
-        layout={resolvedLayout}
         onSelect={updateSelected}
         selectedBranch={selected}
         view={view}
@@ -1078,6 +1070,194 @@ const WORKSPACE_LAYER_ALIASES: Readonly<Record<string, WorkspaceLayerId>> = {
   hourly: "hourly",
 };
 
+const ZIWEI_ENTITLEMENT_KEYS = [
+  "schema_version",
+  "capability_id",
+  "resolution",
+  "free_boundary_layer_id",
+  "paid_layer_ids",
+  "free_year_set",
+  "capability",
+  "layers",
+] as const;
+const ZIWEI_CAPABILITY_KEYS = ["time_layers"] as const;
+const ZIWEI_CAPABILITY_LAYER_KEYS = [
+  "layer_id",
+  "label",
+  "available",
+  "unavailable_reason",
+] as const;
+const ZIWEI_ENTITLEMENT_LAYER_KEYS = [
+  "layer_id",
+  "tier",
+  "access",
+  "upgrade_cta",
+] as const;
+const ZIWEI_CAPABILITY_LAYER_IDS = new Set([
+  "life",
+  "year",
+  "month",
+  "day",
+  "hour",
+]);
+const ZIWEI_ENTITLEMENT_LAYER_TABLE = [
+  { layerId: "life", tier: "free" },
+  { layerId: "major_limits", tier: "free" },
+  { layerId: "year", tier: "free" },
+  { layerId: "month", tier: "paid" },
+  { layerId: "day", tier: "paid" },
+  { layerId: "hour", tier: "paid" },
+] as const;
+const ZIWEI_ENTITLEMENT_RESOLUTIONS = new Set([
+  "granted",
+  "denied",
+  "unknown",
+  "unauthenticated",
+  "request_failed",
+]);
+const ZIWEI_ENTITLEMENT_ACCESS = new Set([
+  "readable",
+  "locked_paywall",
+  "fail_closed_unknown",
+  "unavailable",
+]);
+const ZIWEI_PAID_ACCESS_BY_RESOLUTION: Readonly<
+  Record<
+    TimeLayerEntitlementResponse["resolution"],
+    ReadonlySet<TimeLayerEntitlementResponse["layers"][number]["access"]>
+  >
+> = {
+  granted: new Set(["readable", "unavailable"]),
+  denied: new Set(["locked_paywall", "unavailable"]),
+  unknown: new Set(["fail_closed_unknown", "unavailable"]),
+  unauthenticated: new Set(["fail_closed_unknown", "unavailable"]),
+  request_failed: new Set(["fail_closed_unknown", "unavailable"]),
+};
+
+type ZiweiEntitlementLayer = TimeLayerEntitlementResponse["layers"][number];
+type ZiweiCapabilityLayer =
+  TimeLayerEntitlementResponse["capability"]["time_layers"][number];
+
+type ParsedZiweiEntitlement = {
+  layers: ReadonlyMap<string, ZiweiEntitlementLayer>;
+  capability: ReadonlyMap<string, ZiweiCapabilityLayer>;
+};
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function hasExactKeys(
+  value: Record<string, unknown>,
+  expected: readonly string[],
+): boolean {
+  const keys = Object.keys(value);
+  return (
+    keys.length === expected.length &&
+    expected.every((key) => Object.prototype.hasOwnProperty.call(value, key))
+  );
+}
+
+function isNonEmptyText(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function parseZiweiEntitlement(value: unknown): ParsedZiweiEntitlement | null {
+  if (!isRecord(value) || !hasExactKeys(value, ZIWEI_ENTITLEMENT_KEYS)) {
+    return null;
+  }
+  if (
+    value.schema_version !== "time-layer-entitlement/v1" ||
+    value.capability_id !== "ziwei" ||
+    !ZIWEI_ENTITLEMENT_RESOLUTIONS.has(String(value.resolution)) ||
+    value.free_boundary_layer_id !== "year" ||
+    !Array.isArray(value.paid_layer_ids) ||
+    value.paid_layer_ids.length !== 3 ||
+    value.paid_layer_ids[0] !== "month" ||
+    value.paid_layer_ids[1] !== "day" ||
+    value.paid_layer_ids[2] !== "hour" ||
+    !Array.isArray(value.free_year_set) ||
+    !isRecord(value.capability) ||
+    !hasExactKeys(value.capability, ZIWEI_CAPABILITY_KEYS) ||
+    !Array.isArray(value.capability.time_layers) ||
+    !Array.isArray(value.layers) ||
+    value.layers.length !== ZIWEI_ENTITLEMENT_LAYER_TABLE.length
+  ) {
+    return null;
+  }
+
+  const seenYears = new Set<number>();
+  for (const year of value.free_year_set) {
+    if (
+      typeof year !== "number" ||
+      !Number.isInteger(year) ||
+      year < 1800 ||
+      year > 2199 ||
+      seenYears.has(year)
+    ) {
+      return null;
+    }
+    seenYears.add(year);
+  }
+
+  const capability = new Map<string, ZiweiCapabilityLayer>();
+  for (const item of value.capability.time_layers) {
+    if (
+      !isRecord(item) ||
+      !hasExactKeys(item, ZIWEI_CAPABILITY_LAYER_KEYS) ||
+      !isNonEmptyText(item.layer_id) ||
+      !ZIWEI_CAPABILITY_LAYER_IDS.has(item.layer_id) ||
+      capability.has(item.layer_id) ||
+      !isNonEmptyText(item.label) ||
+      typeof item.available !== "boolean" ||
+      (item.unavailable_reason !== null &&
+        !isNonEmptyText(item.unavailable_reason)) ||
+      item.available === (item.unavailable_reason !== null)
+    ) {
+      return null;
+    }
+    capability.set(item.layer_id, item as ZiweiCapabilityLayer);
+  }
+
+  const resolution =
+    value.resolution as TimeLayerEntitlementResponse["resolution"];
+  const layers = new Map<string, ZiweiEntitlementLayer>();
+  for (const [index, item] of value.layers.entries()) {
+    if (!isRecord(item) || !hasExactKeys(item, ZIWEI_ENTITLEMENT_LAYER_KEYS)) {
+      return null;
+    }
+    const expected = ZIWEI_ENTITLEMENT_LAYER_TABLE[index];
+    const access = item.access as ZiweiEntitlementLayer["access"];
+    const expectedCta =
+      expected.tier === "paid" &&
+      (access === "locked_paywall" || access === "fail_closed_unknown")
+        ? "professional_info"
+        : null;
+    if (
+      item.layer_id !== expected.layerId ||
+      item.tier !== expected.tier ||
+      !ZIWEI_ENTITLEMENT_ACCESS.has(String(item.access)) ||
+      item.upgrade_cta !== expectedCta ||
+      (expected.tier === "free" &&
+        access !== "readable" &&
+        access !== "unavailable") ||
+      (expected.tier === "paid" &&
+        !ZIWEI_PAID_ACCESS_BY_RESOLUTION[resolution].has(access))
+    ) {
+      return null;
+    }
+    layers.set(expected.layerId, item as ZiweiEntitlementLayer);
+  }
+
+  for (const [layerId, snapshot] of capability) {
+    if (!snapshot.available && layers.get(layerId)?.access === "readable") {
+      return null;
+    }
+  }
+
+  return { capability, layers };
+}
+
 function layerHasFacts(
   view: ZiweiChartViewModel,
   layerId: WorkspaceLayerId,
@@ -1098,7 +1278,9 @@ function layerHasFacts(
 
 export function projectZiweiWorkspace(
   view: ZiweiChartViewModel,
+  timeLayerEntitlement?: TimeLayerEntitlementResponse | null,
 ): ChartWorkspaceView {
+  const entitlement = parseZiweiEntitlement(timeLayerEntitlement);
   const declared = new Map<
     WorkspaceLayerId,
     ZiweiChartViewModel["time_layers"][number]
@@ -1156,15 +1338,38 @@ export function projectZiweiWorkspace(
     if (!capability) continue;
     const hasFacts = layerHasFacts(view, layerId);
     const meta = WORKSPACE_LAYER_META[layerId];
+    const entitlementLayerId =
+      layerId === "decadal"
+        ? "major_limits"
+        : layerId === "yearly"
+          ? "year"
+          : layerId === "monthly"
+            ? "month"
+            : layerId === "daily"
+              ? "day"
+              : "hour";
+    const entitlementLayer = entitlement?.layers.get(entitlementLayerId);
+    const entitlementCapability =
+      entitlement?.capability.get(entitlementLayerId);
     let status: WorkspaceLayer["status"];
     if (!capability.available) {
       status = "locked-unavailable";
     } else if (!hasFacts) {
       status = meta.tier === "paid" ? "locked-unavailable" : "empty";
     } else if (meta.tier === "paid") {
-      // ziwei-chart/v1 目前没有可消费的付费授权结果。即使 Runtime
-      // 返回了结构，也必须保持零事实，直到合同明确声明已授权。
-      status = "fail-closed-unknown";
+      if (!entitlement || !entitlementLayer) {
+        status = "fail-closed-unknown";
+      } else if (entitlementCapability?.available === false) {
+        status = "locked-unavailable";
+      } else if (entitlementLayer.access === "readable") {
+        status = "ready";
+      } else if (entitlementLayer.access === "locked_paywall") {
+        status = "locked-paywall";
+      } else if (entitlementLayer.access === "fail_closed_unknown") {
+        status = "fail-closed-unknown";
+      } else {
+        status = "locked-unavailable";
+      }
     } else {
       status = "ready";
     }
@@ -1175,7 +1380,9 @@ export function projectZiweiWorkspace(
       summary:
         status === "ready"
           ? `${meta.label}事实已返回`
-          : capability.unavailable_reason?.trim() || null,
+          : capability.unavailable_reason?.trim() ||
+            entitlementCapability?.unavailable_reason?.trim() ||
+            null,
       upgradeCta: null,
     });
   }
@@ -1265,6 +1472,35 @@ function ZiweiYearLayer({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
       </table>
       <p className={styles.layerBoundary}>
         仅列出服务端已返回的年份、覆盖区间与分段数量。
+      </p>
+    </div>
+  );
+}
+
+function ZiweiMonthLayer({ view }: Readonly<{ view: ZiweiChartViewModel }>) {
+  const monthlyLayers = view.core_facts?.monthly_layers ?? [];
+  if (!monthlyLayers.length) return null;
+  return (
+    <div className={styles.layerFacts}>
+      <table className={styles.layerTable}>
+        <caption>流月盘面事实</caption>
+        <thead>
+          <tr>
+            <th scope="col">月份</th>
+            <th scope="col">分段</th>
+          </tr>
+        </thead>
+        <tbody>
+          {monthlyLayers.map((item) => (
+            <tr key={`${item.year}-${item.month}`}>
+              <td>{`${item.year}-${String(item.month).padStart(2, "0")}`}</td>
+              <td>{item.segments.length}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      <p className={styles.layerBoundary}>
+        仅列出服务端已返回的流月月份与分段数量。
       </p>
     </div>
   );
@@ -1368,9 +1604,11 @@ function ZiweiReadingPane({
 export function ZiweiWorkspace({
   view,
   showInterpretiveSections = true,
+  timeLayerEntitlement,
 }: Readonly<{
   view: ZiweiChartViewModel;
   showInterpretiveSections?: boolean;
+  timeLayerEntitlement?: TimeLayerEntitlementResponse | null;
 }>) {
   const layout = useResolvedLayout();
   const lifeBranch =
@@ -1380,7 +1618,10 @@ export function ZiweiWorkspace({
     lifeBranch,
   );
   const [activeBranch, setActiveBranch] = useState<string | null>(lifeBranch);
-  const workspace = useMemo(() => projectZiweiWorkspace(view), [view]);
+  const workspace = useMemo(
+    () => projectZiweiWorkspace(view, timeLayerEntitlement),
+    [timeLayerEntitlement, view],
+  );
   const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
     workspace.activeLayerId,
   );
@@ -1415,6 +1656,7 @@ export function ZiweiWorkspace({
       );
     }
     if (layer.id === "yearly") return <ZiweiYearLayer view={view} />;
+    if (layer.id === "monthly") return <ZiweiMonthLayer view={view} />;
     return null;
   }
 
@@ -1435,7 +1677,6 @@ export function ZiweiWorkspace({
       }}
     >
       <ZiweiPalaceLocator
-        layout={layout}
         onSelect={selectBranch}
         selectedBranch={selectedBranch}
         view={view}

@@ -450,6 +450,9 @@ export function ReadingResult({
     const timeLayerEntitlement = isBazi
       ? parseTimeLayerEntitlement(result.time_layer_entitlement)
       : null;
+    const runtimeTimeLayerEntitlement = isZiweiNatal
+      ? result.time_layer_entitlement
+      : null;
     const fortuneMarkers = isFortune
       ? extractFortunePeriodMarkers(publicFacts)
       : [];
@@ -590,7 +593,11 @@ export function ReadingResult({
                       当前只提供确定性盘面与事实，不提供断语。
                     </p>
                   ) : null}
-                  <RuntimeChart viewModel={result.view_model} capability={result.capability} />
+                  <RuntimeChart
+                    viewModel={result.view_model}
+                    capability={result.capability}
+                    timeLayerEntitlement={runtimeTimeLayerEntitlement}
+                  />
                 </div>
               </section>
             ) : null}
@@ -736,7 +743,11 @@ export function ReadingResult({
                       </>
                     ) : null}
                     {(typedFortuneReady || typedLiuyaoReady) && result.view_model ? (
-                      <RuntimeChart viewModel={result.view_model} capability={result.capability} />
+                      <RuntimeChart
+                        viewModel={result.view_model}
+                        capability={result.capability}
+                        timeLayerEntitlement={runtimeTimeLayerEntitlement}
+                      />
                     ) : null}
                     {generalFactPanel && remainingFacts.length > 0 ? (
                       <section aria-labelledby="reading-fact-title">
@@ -862,7 +873,11 @@ export function ReadingResult({
                       facts={result.fact_panel?.facts ?? []}
                     />
                     {typedReady && result.view_model ? (
-                      <RuntimeChart viewModel={result.view_model} capability={result.capability} />
+                      <RuntimeChart
+                        viewModel={result.view_model}
+                        capability={result.capability}
+                        timeLayerEntitlement={runtimeTimeLayerEntitlement}
+                      />
                     ) : null}
                     {remainingFacts.length > 0 ? (
                       <section aria-labelledby="reading-fact-title">
@@ -982,7 +997,11 @@ export function ReadingResult({
                           evidence={result.fact_panel?.evidence ?? []}
                           facts={result.fact_panel?.facts ?? []}
                         />
-                        <RuntimeChart viewModel={natalViewModel} capability={result.capability} />
+                        <RuntimeChart
+                          viewModel={natalViewModel}
+                          capability={result.capability}
+                          timeLayerEntitlement={runtimeTimeLayerEntitlement}
+                        />
                       </>
                     ) : null}
                     {result.accepted_copy ? (
