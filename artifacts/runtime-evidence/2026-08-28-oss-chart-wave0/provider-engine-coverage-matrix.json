@@ -1,0 +1,1190 @@
+{
+  "schema_version": "mingli-provider-engine-coverage-matrix-v1",
+  "issue": "MING-65",
+  "generated_at": "2026-08-28T17:33:54+08:00",
+  "retrieval_date": "2026-08-28",
+  "baseline": {
+    "branch": "agent/core/ming-65-provider-matrix",
+    "commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
+    "tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+    "parent": "f1b7026acd461c0de23abf215a74b77468e02e50",
+    "catalog": {
+      "path": "core/mingli-master/resources/runtime/catalog-v1.json",
+      "sha256": "bf389894f19bdf3b4a1ab7ec02334ef2ca0f8947861b4b73f35f78389fc7fc97",
+      "schema_version": "catalog-v1",
+      "provider_count": 14,
+      "provider_ids": [
+        "bazi",
+        "fengshui",
+        "fortune",
+        "liuren",
+        "liuyao",
+        "luming-nayin",
+        "meihua",
+        "physiognomy",
+        "qimen",
+        "selection",
+        "taiyi",
+        "time-check",
+        "xingming",
+        "ziwei"
+      ]
+    },
+    "audit_coverage": {
+      "dedicated_matrix_path": "core/mingli-master/references/matrices/provider-completeness.yaml",
+      "dedicated_matrix_sha256": "387208a3bfb85bad18fcc5f4a31c93d1a776b2927963fd4c6b7d2695324526b0",
+      "dedicated_matrix_provider_count": 13,
+      "dedicated_matrix_omission": "time-check",
+      "algorithm_source_matrix_path": "core/mingli-master/references/matrices/algorithm-source-dependencies.yaml",
+      "algorithm_source_matrix_sha256": "c3889298cd845a1fe447ffcc19b93cffca6fecf3e3daac2ced84444d7a7c1bdb",
+      "signed_release_evidence": {
+        "path": "artifacts/runtime-evidence/2026-08-18-bazi-v53-g1/README.md",
+        "provider_count": 14,
+        "signed_file_count": 220,
+        "verifier_status": "ok"
+      },
+      "finding": "Catalog and signed V53 evidence contain 14 Providers; the legacy completeness matrix contains 13 and omits time-check. This matrix uses the catalog as enumeration truth and records the missing dedicated time-check audit as a gap."
+    }
+  },
+  "architecture_contract": {
+    "authority_draft": "/Users/yuhanglin/.codex/worktrees/oss-chart-layering/mingli_web",
+    "pipeline": [
+      "Birth/Event Input",
+      "owned Request Compiler and Time/Policy Normalizer",
+      "Runtime Provider",
+      "licensed pinned OSS Chart Engine",
+      "Engine Adapter",
+      "per-art Canonical Facts",
+      "owned rules, evidence, adjudication and AI"
+    ],
+    "classification_scope": "One decision per catalog Provider for its dominant mechanical chart layer. Shared calendar normalization does not change a self-owned Provider into WRAP.",
+    "public_contract_rule": "Runtime Canonical Facts are the only external fact truth. Third-party raw objects or JSON remain private behind the Engine Adapter and must never become Backend, Web, LLM, evidence or snapshot contracts.",
+    "normalizer_rule": "Timezone, coordinates, true-solar-time, Zi-hour, leap-month, epoch, school and horizon policies remain owned and versioned before or around the engine boundary."
+  },
+  "classification_definitions": {
+    "KEEP": "A licensed, pinned engine is already isolated behind a stable internal service; retain it and do not rewrite merely for uniformity.",
+    "WRAP": "The current licensed engine remains the default, but direct/raw coupling or an incomplete per-art Canonical Facts seam requires an explicit Engine Adapter.",
+    "REPLACE-CANDIDATE": "A current self-owned mechanical layer has a licensed frozen comparator broad enough for a controlled differential trial; this is not approval to adopt or replace.",
+    "SELF-OWNED": "No qualified mature OSS engine covers the selected convention, or the capability is observation/policy/composition rather than a standalone chart engine."
+  },
+  "classification_counts": {
+    "KEEP": 1,
+    "WRAP": 3,
+    "REPLACE-CANDIDATE": 2,
+    "SELF-OWNED": 8,
+    "total": 14
+  },
+  "dependency_evidence": {
+    "repo-owned": {
+      "kind": "repository-maintained implementation",
+      "status": "INTERNAL_SCOPE_NOT_THIRD_PARTY",
+      "evidence_paths": [
+        "core/mingli-master/scripts/reading_engine/providers.py"
+      ],
+      "official_links": []
+    },
+    "sxtwl@2.0.7": {
+      "kind": "current runtime dependency",
+      "role": "shared solar-term, sexagenary and lunar calendar mechanics",
+      "license": "BSD-3-Clause in upstream metadata",
+      "status": "UPSTREAM_VERIFIED_LOCAL_LICENSE_GAP",
+      "evidence_paths": [
+        "core/mingli-master/requirements-runtime.lock",
+        "core/mingli-master/docs/runtime-dependencies.md"
+      ],
+      "artifact_sha256": "38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512",
+      "official_links": [
+        "https://pypi.org/project/sxtwl/2.0.7/",
+        "https://github.com/yuangu/sxtwl_cpp"
+      ],
+      "gap": "The exact artifact is hash-pinned, but the repository does not preserve an exact-version provenance record and license/NOTICE beside it. Close in P10-000C before calling the evidence bundle complete."
+    },
+    "astronomy-engine@2.1.19": {
+      "kind": "current runtime dependency",
+      "role": "apparent-solar equation-of-time and Xingming geocentric true-ecliptic ephemeris",
+      "license": "MIT",
+      "status": "LOCAL_PIN_AND_LICENSE_VERIFIED",
+      "evidence_paths": [
+        "core/mingli-master/vendor/astronomy-engine-2.1.19/PROVENANCE.json",
+        "core/mingli-master/vendor/astronomy-engine-2.1.19/LICENSE",
+        "core/mingli-master/docs/runtime-dependencies.md"
+      ],
+      "reviewed_upstream_commit": "61dc07020aaa6885d2c7f688a4d82beaf6edb9ef",
+      "distribution_sha256": "95b797b87b659adc0602a6a205143ce5a10451664e80650bb7cd8ba3c8f1f02b",
+      "official_links": [
+        "https://github.com/cosinekitty/astronomy/tree/v2.1.19",
+        "https://pypi.org/project/astronomy-engine/2.1.19/"
+      ]
+    },
+    "iztro@2.5.8": {
+      "kind": "current vendored runtime dependency",
+      "role": "Ziwei natal and temporal astrolabe mechanics",
+      "license": "MIT",
+      "status": "LOCAL_PIN_AND_LICENSE_VERIFIED_WITH_DOC_COMMIT_DRIFT",
+      "evidence_paths": [
+        "core/mingli-master/vendor/iztro-2.5.8/PROVENANCE.json",
+        "core/mingli-master/vendor/iztro-2.5.8/LICENSE",
+        "core/mingli-master/docs/runtime-dependencies.md"
+      ],
+      "tag_commit_from_vendor_and_upstream": "9d39f1743bf31c2b3c635c9b9556215d9c90ee2c",
+      "runtime_sha256": "4b8eca323e5d4291471567c62255a2166471c55c77ebe8f0d2d38240e69d12b1",
+      "official_links": [
+        "https://github.com/SylarLong/iztro/tree/2.5.8",
+        "https://www.npmjs.com/package/iztro/v/2.5.8"
+      ],
+      "gap": "docs/runtime-dependencies.md names reviewed commit 2dfe3ecb..., while the vendored PROVENANCE and upstream 2.5.8 tag resolve to 9d39f174.... Wave 2 must reconcile the documentation without changing the pinned npm artifact."
+    },
+    "cnlunar@0.2.4": {
+      "kind": "current runtime dependency",
+      "role": "selected Xieji almanac tables for Selection",
+      "license": "MIT at exact annotated tag 0.2.4",
+      "status": "LOCAL_PIN_AND_LICENSE_VERIFIED",
+      "evidence_paths": [
+        "core/mingli-master/vendor/cnlunar-0.2.4/PROVENANCE.json",
+        "core/mingli-master/vendor/cnlunar-0.2.4/LICENSE",
+        "core/mingli-master/docs/runtime-dependencies.md"
+      ],
+      "reviewed_upstream_commit": "71e448a3ad4fa17bb731a57637ee0728e6f53d37",
+      "wheel_sha256": "19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea",
+      "official_links": [
+        "https://github.com/OPN48/cnlunar/tree/0.2.4",
+        "https://pypi.org/project/cnlunar/0.2.4/"
+      ]
+    },
+    "lunar-python@1.4.8-comparator": {
+      "kind": "frozen comparator only",
+      "license": "MIT",
+      "status": "LOCAL_COMPARATOR_PIN_AND_LICENSE_VERIFIED",
+      "evidence_paths": [
+        "core/mingli-master/vendor/lunar-python-1.4.8/PROVENANCE.json",
+        "core/mingli-master/vendor/lunar-python-1.4.8/LICENSE"
+      ],
+      "reviewed_upstream_commit": "000c8a3d74eed098d6256a28fdd51b869324c559",
+      "official_links": [
+        "https://github.com/6tail/lunar-python/tree/v1.4.8"
+      ]
+    },
+    "qimen-go@4d3f58f-comparator": {
+      "kind": "frozen comparator only",
+      "license": "MIT",
+      "status": "FROZEN_COMPARATOR_LICENSE_HASH_VERIFIED",
+      "evidence_paths": [
+        "core/mingli-master/references/fixtures/qimen-go-v51.yaml",
+        "core/mingli-master/scripts/audit_qimen_provider.py"
+      ],
+      "reviewed_upstream_commit": "4d3f58fa0f401b5b3a337f119138e99e90685dda",
+      "official_links": [
+        "https://github.com/deminzhang/qimen-go"
+      ]
+    },
+    "kintaiyi@68892c6-comparator": {
+      "kind": "frozen comparator only",
+      "license": "MIT",
+      "status": "FROZEN_COMPARATOR_LICENSE_HASH_VERIFIED",
+      "evidence_paths": [
+        "core/mingli-master/references/matrices/taiyi-source-tables-v1.yaml",
+        "core/mingli-master/references/fixtures/kintaiyi-taiyi-v51.yaml",
+        "core/mingli-master/scripts/audit_taiyi_provider.py"
+      ],
+      "reviewed_upstream_commit": "68892c6bfe3a9635ff4a19a5f14559fff1adf4ab",
+      "official_links": [
+        "https://github.com/kentang2017/kintaiyi"
+      ]
+    },
+    "liuren-ts-lib@8e9a7b5-audit-witness": {
+      "kind": "frozen audit witness only",
+      "license": "CONFLICTING",
+      "status": "NOT_ADMISSIBLE_AS_ENGINE",
+      "evidence_paths": [
+        "core/mingli-master/scripts/data/LIUREN-720-NOTICE.md",
+        "core/mingli-master/docs/runtime-dependencies.md"
+      ],
+      "reviewed_upstream_commit": "8e9a7b53245c8ae19fa12773087e1f90b3376d5e",
+      "official_links": [
+        "https://github.com/look-fate/liuren-ts-lib/tree/8e9a7b53245c8ae19fa12773087e1f90b3376d5e"
+      ],
+      "gap": "The repository exposes Apache-2.0 metadata while the README at the pinned commit forbids commercial use. The 720-case audit also finds 4 method-label and 16 transmission disagreements. Keep as a non-authoritative witness only."
+    },
+    "liuyao-engine@v0.1.0-exploratory": {
+      "kind": "unfrozen discovery candidate",
+      "license": "Apache-2.0 in upstream metadata",
+      "status": "EXPLORATORY_NOT_ADMISSIBLE",
+      "evidence_paths": [],
+      "official_links": [
+        "https://github.com/yaomancy/liuyao-engine/tree/v0.1.0"
+      ],
+      "gap": "No local provenance pin, license copy, selected-school mapping or frozen differential corpus exists."
+    }
+  },
+  "providers": [
+    {
+      "provider_id": "bazi",
+      "art": "八字",
+      "classification": "WRAP",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["natal", "near_time_personal"],
+        "horizons": ["day", "month", "year", "life"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/bazi.json",
+        "entrypoint": "reading_engine.providers:BaziProvider",
+        "provider_class": "BaziProvider",
+        "provider_runtime_id": "mingli-master.bazi.v7",
+        "provider_version": "mingli-bazi-pipeline-v1-interpreted",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/bazi_calc.py",
+          "core/mingli-master/scripts/bazi_fact_adapter.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "sxtwl", "version": "2.0.7", "role": "solar terms, lunar conversion and four-pillar calendar mechanics"},
+          {"name": "astronomy-engine", "version": "2.1.19", "role": "equation of time for local apparent solar time"},
+          {"name": "mingli bazi fact adapter", "version": "1.3.0", "role": "owned static facts and selected rule profiles"}
+        ],
+        "mechanical_coverage": [
+          "calendar normalization and exact Jie boundary",
+          "four pillars",
+          "lunar date and solar-term context",
+          "major-luck direction, sequence and bounded timing",
+          "hidden stems, ten gods, element inventory, branch relations, Nayin, growth stages and Xunkong"
+        ]
+      },
+      "owned_normalizer_policy": [
+        "IANA timezone, named location, coordinates and coordinate provenance",
+        "civil, longitude-mean-solar and local-apparent-solar policy",
+        "midnight versus late-Zi-next-day policy",
+        "major-luck convention, source profiles, Tiaohou, Shensha and interpretive-candidate rules"
+      ],
+      "canonical_facts": {
+        "status": "TYPED_MANIFEST_CONTRACT",
+        "declared_contract": "fact_contracts.bazi:BaziFactContract",
+        "outputs": [
+          "four_pillars", "hidden_stems", "ten_gods", "day_master", "month_command", "seasonal_profile", "tiaohou_markers", "element_inventory", "branch_relations", "shensha_auxiliary", "nayin", "twelve_growth_stages", "xunkong", "san_yuan", "interpretive_candidates", "source_conditioned_patterns", "luck_cycles", "calendar_normalization", "year_layers", "month_layers", "day_layers", "dimension_fact_scope"
+        ],
+        "gap": "The public typed contract exists, but sxtwl/Astronomy calls and owned enrichment are not yet expressed as the minimum explicit Engine Adapter boundary required by the layering ADR.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/bazi-fortune-v51.yaml",
+        "qualifying_cases": 30,
+        "boundary_cases": 34,
+        "audit": "core/mingli-master/scripts/audit_bazi_provider.py",
+        "tests": [
+          "core/mingli-master/scripts/test_v51_bazi_provider_audit.py",
+          "core/mingli-master/scripts/test_bazi_fact_adapter.py",
+          "core/mingli-master/scripts/test_v51_provider_completeness.py"
+        ]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL",
+        "components": ["repo-owned", "sxtwl@2.0.7", "astronomy-engine@2.1.19"],
+        "gap": "Preserve the exact sxtwl license/NOTICE and provenance locally."
+      },
+      "oss_candidate": {
+        "status": "CURRENT_ENGINE",
+        "name": "sxtwl 2.0.7 plus Astronomy Engine 2.1.19",
+        "fit": "Mature and already production-pinned for the selected calendar and true-solar mechanics.",
+        "gap": "Adapter seam and local sxtwl legal evidence, not engine replacement."
+      },
+      "decision": "Retain both current OSS engines and wrap their minimum raw outputs; do not replace the owned Bazi rule/evidence layer.",
+      "next_step": "WAVE_1"
+    },
+    {
+      "provider_id": "fengshui",
+      "art": "风水",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "observation_driven_ready",
+        "objects": ["spatial_observation"],
+        "horizons": ["instant"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/fengshui.json",
+        "entrypoint": "reading_engine.providers:FengshuiProvider",
+        "provider_class": "FengshuiProvider",
+        "provider_runtime_id": "mingli-master.fengshui.v1",
+        "provider_version": "1.0.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/fengshui.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli fengshui observation engine", "version": "1.0.0", "role": "owned bounded observation and selected source-table evaluation"}
+        ],
+        "mechanical_coverage": [
+          "observation provenance and scope",
+          "compass correction and 24-mountain normalization",
+          "chronology and layout graph",
+          "form and selected Liqi facts",
+          "active rules, conflicts, uncertainty and missing-input closure"
+        ]
+      },
+      "owned_normalizer_policy": [
+        "asset, region, quality and correction provenance",
+        "property scope, measurement authority and declared school/profile",
+        "form/Liqi applicability and fail-closed missing observations"
+      ],
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["observation_provenance", "compass", "building_chronology", "layout_graph", "form", "liqi", "active_source_rule_ids", "conflicts", "uncertainties", "critical_missing", "source_conditioned_patterns", "observed_spatial_scope"],
+        "gap": "No dedicated manifest fact_contract type; the capability is observation-driven and should not be forced through an unrelated chart engine.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/fengshui-v51.yaml",
+        "qualifying_cases": 21,
+        "boundary_cases": 7,
+        "audit": "core/mingli-master/scripts/audit_fengshui_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_remaining_provider_replays.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "REPOSITORY_OWNED",
+        "components": ["repo-owned"],
+        "gap": null
+      },
+      "oss_candidate": {
+        "status": "NONE_ADMITTED",
+        "name": null,
+        "fit": "No mature engine was evidenced for this provenance-bound observation contract.",
+        "gap": "Any future candidate must preserve measurement provenance, selected school and missing/uncertainty semantics."
+      },
+      "decision": "Keep self-owned; an OSS geometric or compass helper would be a component, not the canonical Provider.",
+      "next_step": "WAVE_3_11"
+    },
+    {
+      "provider_id": "fortune",
+      "art": "日运",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["near_time_personal"],
+        "horizons": ["day", "week"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/fortune.json",
+        "entrypoint": "reading_engine.providers:FortuneProvider",
+        "provider_class": "FortuneProvider",
+        "provider_runtime_id": "mingli-master.fortune.v6",
+        "provider_version": "fortune-public-v6-mechanism-stack",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/near_time_fortune_adapter.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli near-time fortune adapter", "version": "2.2.1 / fortune-public-v6-mechanism-stack", "role": "owned composition over unchanged Bazi canonical facts"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared calendar mechanics"}
+        ],
+        "mechanical_coverage": [
+          "natal pillars and day master",
+          "active major-luck cycle",
+          "target day and available period layers",
+          "calendar normalization and mechanism markers"
+        ]
+      },
+      "owned_normalizer_policy": [
+        "reference date, timezone, location and requested horizon",
+        "active-luck selection and mechanism-stack composition",
+        "source-family and user-domain claim policy"
+      ],
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["natal_pillars", "active_luck_cycle", "day_master", "month_command", "target_day", "calendar_normalization", "target_period", "available_periods", "period_markers"],
+        "gap": "Versioned output exists but no dedicated manifest fact_contract; it must consume Bazi Canonical Facts rather than becoming a second chart engine.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/fortune-v51.yaml",
+        "qualifying_cases": 36,
+        "boundary_cases": 13,
+        "audit": "core/mingli-master/scripts/audit_fortune_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_fortune_provider_audit.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL",
+        "components": ["repo-owned", "sxtwl@2.0.7", "astronomy-engine@2.1.19"],
+        "gap": "Inherited shared-calendar sxtwl evidence gap."
+      },
+      "oss_candidate": {
+        "status": "NONE_ADMITTED",
+        "name": null,
+        "fit": "Near-time mechanism composition is product policy, not a standalone OSS chart-engine seam.",
+        "gap": "First bind it to the Wave 1 Bazi canonical contract."
+      },
+      "decision": "Keep the composition layer self-owned and consume the wrapped Bazi facts.",
+      "next_step": "WAVE_3_06"
+    },
+    {
+      "provider_id": "liuren",
+      "art": "大六壬",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["concrete_event"],
+        "horizons": ["instant", "day", "month"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/liuren.json",
+        "entrypoint": "reading_engine.providers:LiurenProvider",
+        "provider_class": "LiurenProvider",
+        "provider_runtime_id": "mingli-master.liuren.v8",
+        "provider_version": "mingli-liuren-pipeline-v6-runtime-contract",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/liuren_calc.py",
+          "core/mingli-master/scripts/liuren_fact_adapter.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli classical nine-method algorithm", "version": "daliuren-daquan-wyg-classical-nine-method-v2", "role": "authoritative owned plate, lessons and transmissions"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared calendar and exact Jie boundary"}
+        ],
+        "mechanical_coverage": ["four lessons", "three transmissions", "lesson method", "month general", "Xunkong", "core/dimension/timing extension facts"]
+      },
+      "owned_normalizer_policy": [
+        "event time, timezone, location and Zi-hour policy",
+        "month-general and five-rat profile",
+        "nine-method selection, Shehai trace and Guiren profile",
+        "source disagreement retention"
+      ],
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["four_lessons", "three_transmissions", "lesson_method", "month_general", "xunkong", "runtime_core_facts", "dimension_facts", "timing_candidates"],
+        "gap": "No dedicated manifest fact_contract; the existing local fact adapter remains authoritative pending a typed contract.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/liuren-v51.yaml",
+        "qualifying_cases": 39,
+        "boundary_cases": 8,
+        "audit": "core/mingli-master/scripts/audit_liuren_provider.py",
+        "tests": ["core/mingli-master/scripts/test_liuren_fact_adapter.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL_WITH_REJECTED_WITNESS",
+        "components": ["repo-owned", "sxtwl@2.0.7", "liuren-ts-lib@8e9a7b5-audit-witness"],
+        "gap": "Do not promote the conflicting-license, disagreeing 720-table witness into the runtime engine."
+      },
+      "oss_candidate": {
+        "status": "REJECTED_CURRENT_WITNESS",
+        "name": "look-fate/liuren-ts-lib",
+        "fit": "Only a deterministic 60x12 audit witness.",
+        "gap": "License text conflict and 20 audited disagreements; no qualified replacement engine remains."
+      },
+      "decision": "Keep the nine-method implementation self-owned and preserve the external table only as conflict evidence.",
+      "next_step": "WAVE_3_07"
+    },
+    {
+      "provider_id": "liuyao",
+      "art": "六爻",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["concrete_event"],
+        "horizons": ["instant"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/liuyao.json",
+        "entrypoint": "reading_engine.providers:LiuyaoProvider",
+        "provider_class": "LiuyaoProvider",
+        "provider_runtime_id": "mingli-master.liuyao.v1",
+        "provider_version": "1.4.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/liuyao.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli Jingfang eight-palace Najia engine", "version": "1.4.0", "role": "owned deterministic hexagram mechanics"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared event calendar"}
+        ],
+        "mechanical_coverage": ["primary/changed hexagrams and moving lines", "Najia and Shi-Ying", "six relatives and spirits", "Xunkong and hidden lines", "strength/relations and useful-spirit candidates", "casting and calendar facts"]
+      },
+      "owned_normalizer_policy": ["cast-method and raw-throw normalization", "event time/location policy", "Jingfang profile", "useful-spirit and source-conditioned candidate policy"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["primary_hexagram", "changed_hexagram", "moving_lines", "najia", "changed_najia", "shi_ying", "six_relatives", "changed_six_relatives", "changed_plate_lines", "six_spirits", "xunkong", "hidden_lines", "month_day_strength", "relation_facts", "shi_ying_moving_relations", "useful_spirit_candidates", "calendar", "casting", "casting_method", "interpretation_status", "lines", "requested_useful_spirit_candidates", "six_spirit_profile", "useful_spirit_selection", "source_conditioned_patterns", "dimension_candidate_facts", "line_facts", "returning_relations"],
+        "gap": "No dedicated manifest fact_contract.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/liuyao-v51.yaml",
+        "qualifying_cases": 41,
+        "boundary_cases": 11,
+        "audit": "core/mingli-master/scripts/audit_liuyao_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_liuyao_meihua_provider_replay.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL",
+        "components": ["repo-owned", "sxtwl@2.0.7", "liuyao-engine@v0.1.0-exploratory"],
+        "gap": "Shared-calendar evidence gap; exploratory engine is not locally pinned or reviewed."
+      },
+      "oss_candidate": {
+        "status": "EXPLORATORY_ONLY",
+        "name": "yaomancy/liuyao-engine v0.1.0",
+        "fit": "Potential deterministic comparator for a later differential spike.",
+        "gap": "No frozen fixture diff, school/profile mapping, provenance or local license copy; insufficient for REPLACE-CANDIDATE."
+      },
+      "decision": "Keep self-owned until a legally pinned comparator proves the selected Jingfang contract field by field.",
+      "next_step": "WAVE_3_08"
+    },
+    {
+      "provider_id": "luming-nayin",
+      "art": "早期禄命（纳音）",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["natal"],
+        "horizons": ["life"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/luming-nayin.json",
+        "entrypoint": "reading_engine.providers:LumingProvider",
+        "provider_class": "LumingProvider",
+        "provider_runtime_id": "mingli-master.luming-nayin.v1",
+        "provider_version": "1.2.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/luming.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli Luming/Nayin tables", "version": "1.2.0", "role": "owned 60-Jiazi and source-profiled lookup mechanics"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared birth calendar when birth data are supplied"}
+        ],
+        "mechanical_coverage": ["four pillars", "60-Jiazi Nayin", "three-Yuan profiles", "selected Taiyuan", "source-named Lu/Ma/Gui", "source-conditioned patterns"]
+      },
+      "owned_normalizer_policy": ["birth/four-pillar input distinction", "calendar and timezone policy", "Taiyuan/Renyuan source-profile separation", "Lu/Ma/Gui applicability"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["four_pillars", "sixty_jiazi_nayin", "three_yuan_profiles", "taiyuan_when_selected", "source_named_lu_ma_gui", "source_conditioned_patterns", "dimension_fact_scope"],
+        "gap": "No dedicated manifest fact_contract; own tables are the selected convention and should remain explicit.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/luming-v51.yaml",
+        "qualifying_cases": 99,
+        "boundary_cases": 7,
+        "audit": "core/mingli-master/scripts/audit_luming_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_luming_provider_replay.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL",
+        "components": ["repo-owned", "sxtwl@2.0.7"],
+        "gap": "Inherited shared-calendar sxtwl evidence gap."
+      },
+      "oss_candidate": {
+        "status": "NONE_ADMITTED",
+        "name": null,
+        "fit": "No mature candidate was evidenced for the selected early-Luming source profiles.",
+        "gap": "A candidate must keep disputed profiles separate rather than collapse them."
+      },
+      "decision": "Keep source-profiled tables self-owned; reuse only the shared calendar seam.",
+      "next_step": "WAVE_3_10"
+    },
+    {
+      "provider_id": "meihua",
+      "art": "梅花易数",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["concrete_event", "supplied_chart"],
+        "horizons": ["instant"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/meihua.json",
+        "entrypoint": "reading_engine.providers:MeihuaProvider",
+        "provider_class": "MeihuaProvider",
+        "provider_runtime_id": "mingli-master.meihua.v1",
+        "provider_version": "1.1.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/meihua.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli explicit-method Meihua engine", "version": "1.1.0", "role": "owned casting and trigram mechanics"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared event calendar"}
+        ],
+        "mechanical_coverage": ["upper/lower trigrams", "moving lines", "primary/mutual/changed hexagrams", "body/use and relation facts", "seasonal strength", "casting and source-conditioned candidates"]
+      },
+      "owned_normalizer_policy": ["explicit casting-method selection", "event/supplied-chart input distinction", "time/location policy", "body-use and seasonal/source profiles"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["upper_trigram", "lower_trigram", "moving_lines", "primary_hexagram", "mutual_hexagram", "changed_hexagram", "body_use", "body_relation_facts", "seasonal_strength", "interpretive_candidates", "casting_method", "source_conditioned_patterns", "dimension_candidate_facts"],
+        "gap": "No dedicated manifest fact_contract.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/meihua-v51.yaml",
+        "qualifying_cases": 30,
+        "boundary_cases": 8,
+        "audit": "core/mingli-master/scripts/audit_meihua_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_liuyao_meihua_provider_replay.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL",
+        "components": ["repo-owned", "sxtwl@2.0.7"],
+        "gap": "Inherited shared-calendar sxtwl evidence gap."
+      },
+      "oss_candidate": {
+        "status": "NONE_ADMITTED",
+        "name": null,
+        "fit": "No frozen, licensed comparator is mapped to the explicit casting methods and output contract.",
+        "gap": "Candidate discovery needs method-by-method fixtures, not generic hexagram arithmetic."
+      },
+      "decision": "Keep self-owned until a convention-compatible comparator is pinned and diffed.",
+      "next_step": "WAVE_3_09"
+    },
+    {
+      "provider_id": "physiognomy",
+      "art": "相法",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "observation_driven_ready",
+        "objects": ["visible_observation"],
+        "horizons": ["instant"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/physiognomy.json",
+        "entrypoint": "reading_engine.providers:PhysiognomyProvider",
+        "provider_class": "PhysiognomyProvider",
+        "provider_runtime_id": "mingli-master.physiognomy.v1",
+        "provider_version": "1.1.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/physiognomy.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli visible-observation engine", "version": "1.1.0", "role": "owned provenance, uncertainty and source-layering mechanics"}
+        ],
+        "mechanical_coverage": ["observation scope", "normalized visible observations", "missing targets", "same-capture conflicts", "cross-capture variations", "source comparison", "uncertainty and accepted fact keys"]
+      },
+      "owned_normalizer_policy": ["private asset/capture provenance", "neutral descriptor vocabulary", "lighting/angle/focus/occlusion quality", "missing/conflict/correction lineage", "no identity, health, lifespan or future verdict"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["observation_scope", "normalized_visible_observations", "missing_targets", "observation_conflicts", "cross_capture_variations", "source_comparison", "uncertainties", "critical_missing", "accepted_observation_fact_keys", "visible_observation_scope"],
+        "gap": "No dedicated manifest fact_contract; this is deliberately not a chart-engine problem.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/physiognomy-v51.yaml",
+        "qualifying_cases": 21,
+        "boundary_cases": 5,
+        "audit": "core/mingli-master/scripts/audit_physiognomy_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_remaining_provider_replays.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "REPOSITORY_OWNED",
+        "components": ["repo-owned"],
+        "gap": null
+      },
+      "oss_candidate": {
+        "status": "NONE_ADMITTED",
+        "name": null,
+        "fit": "General computer-vision models do not satisfy the provenance-bound neutral-observation contract.",
+        "gap": "Any helper must remain transcription-only and cannot become the fact authority."
+      },
+      "decision": "Keep self-owned; retain the observation gate and explicit uncertainty as the canonical boundary.",
+      "next_step": "WAVE_3_12"
+    },
+    {
+      "provider_id": "qimen",
+      "art": "奇门遁甲",
+      "classification": "REPLACE-CANDIDATE",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["concrete_event"],
+        "horizons": ["instant"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/qimen.json",
+        "entrypoint": "reading_engine.providers:QimenProvider",
+        "provider_class": "QimenProvider",
+        "provider_runtime_id": "mingli-master.qimen.v1",
+        "provider_version": "5.2.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/qimen.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli Shijia rotating-plate Qimen engine", "version": "5.2.0 / shijia-zhuanpan-chaibu-xieji-v1", "role": "owned selected-school board mechanics"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared exact solar-term calendar"}
+        ],
+        "mechanical_coverage": ["Dun/Ju and Yuan", "Chief and Director", "nine palaces", "instruments, wonders, stars, doors and deities", "Xunkong and horse", "named source patterns"]
+      },
+      "owned_normalizer_policy": ["event time/location and exact-term policy", "Chaibu versus incompatible alternatives", "most-recent Jia/Ji Yuan", "always-Kun center hosting", "deity and named-pattern profiles"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["ju", "chief", "director", "palaces", "instruments_wonders", "stars_doors_deities", "xunkong", "horse", "named_patterns", "calculated_board_scope"],
+        "gap": "No dedicated manifest fact_contract; candidate output must be projected into these facts and cannot dictate school policy.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/qimen-v51.yaml",
+        "qualifying_cases": 30,
+        "boundary_cases": 9,
+        "audit": "core/mingli-master/scripts/audit_qimen_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_qimen_completion.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"],
+        "external_comparator": "core/mingli-master/references/fixtures/qimen-go-v51.yaml",
+        "external_compatible_projection_cases": 30
+      },
+      "license_evidence": {
+        "overall": "PARTIAL_WITH_VERIFIED_COMPARATOR",
+        "components": ["repo-owned", "sxtwl@2.0.7", "qimen-go@4d3f58f-comparator"],
+        "gap": "Shared-calendar evidence gap; comparator is not yet a production dependency."
+      },
+      "oss_candidate": {
+        "status": "QUALIFIED_COMPARATOR",
+        "name": "deminzhang/qimen-go",
+        "fit": "MIT, exact commit frozen, 30 compatible board projections audited against the selected profile.",
+        "gap": "Upstream center-hosting and school options differ; only the proven mechanical subset may enter a replacement trial."
+      },
+      "decision": "Open a later differential adapter spike for the compatible board subset; retain owned policy and current engine until all selected-profile goldens pass.",
+      "next_step": "WAVE_3_03"
+    },
+    {
+      "provider_id": "selection",
+      "art": "择日",
+      "classification": "WRAP",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["calendar_choice"],
+        "horizons": ["day", "month", "year"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/selection.json",
+        "entrypoint": "reading_engine.providers:SelectionProvider",
+        "provider_class": "SelectionProvider",
+        "provider_runtime_id": "mingli-master.selection.v1",
+        "provider_version": "1.3.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/selection.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "cnlunar", "version": "0.2.4", "role": "selected Xieji day/hour table mechanics; imported directly in selection.py"},
+          {"name": "mingli selection engine", "version": "1.3.0 / xieji-official-cnlunar-v1", "role": "owned candidate, constraint, lineage and ranking logic"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared calendar boundary"}
+        ],
+        "mechanical_coverage": ["calendar and date-time candidates", "eligible candidates and eliminations", "source-profiled day/hour facts", "ranking components", "lineage and no-valid-candidate closure"]
+      },
+      "owned_normalizer_policy": ["event profile and requested actions", "date range, timezone and location", "hard constraints and participant/direction requirements", "official/folk lineage separation", "ranking and no-guarantee policy"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["event_profile", "calendar_candidates", "date_time_candidates", "eligible_candidates", "eligible_date_time_candidates", "eliminations", "ranking", "lineage_policy", "no_valid_candidate", "source_conditioned_patterns", "bounded_ranked_candidate_facts"],
+        "gap": "No dedicated manifest fact_contract and cnlunar types are imported directly; add a narrow engine projection without moving owned ranking/policy into it.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/selection-v51.yaml",
+        "qualifying_cases": 30,
+        "boundary_cases": 8,
+        "audit": "core/mingli-master/scripts/audit_selection_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_selection_source_audit.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"],
+        "external_comparator": "core/mingli-master/vendor/lunar-python-1.4.8/PROVENANCE.json",
+        "external_comparator_cases": 30
+      },
+      "license_evidence": {
+        "overall": "PARTIAL_WITH_VERIFIED_CURRENT_ENGINE",
+        "components": ["repo-owned", "sxtwl@2.0.7", "cnlunar@0.2.4", "lunar-python@1.4.8-comparator"],
+        "gap": "Only the shared sxtwl record lacks a local license/provenance bundle."
+      },
+      "oss_candidate": {
+        "status": "CURRENT_ENGINE_PLUS_COMPARATOR",
+        "name": "cnlunar 0.2.4; lunar-python 1.4.8 comparator",
+        "fit": "cnlunar is exact-version and byte-integrity pinned; lunar-python is a frozen independent comparator only.",
+        "gap": "Create the engine adapter and typed facts; do not replace source policy or ranking with either library."
+      },
+      "decision": "Retain cnlunar and wrap its narrow day/hour projection; keep all event, lineage and ranking policy self-owned.",
+      "next_step": "WAVE_3_01"
+    },
+    {
+      "provider_id": "taiyi",
+      "art": "太乙",
+      "classification": "REPLACE-CANDIDATE",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["macro_historical"],
+        "horizons": ["year"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/taiyi.json",
+        "entrypoint": "reading_engine.providers:TaiyiProvider",
+        "provider_class": "TaiyiProvider",
+        "provider_runtime_id": "mingli-master.taiyi.v1",
+        "provider_version": "5.2.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/taiyi.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli Taiyi Jinjing annual Yang-board engine", "version": "5.2.0 / taiyi-jinjing-annual-yang-board-v1", "role": "owned selected-epoch board mechanics"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared lunar-year boundary"}
+        ],
+        "mechanical_coverage": ["calendar, epoch and cycle", "board and Taiyi position", "Wenchang/Tianmu and Shiji/Kemu", "host/guest counts and four generals", "long-cycle deities", "board predicates and scope contract"]
+      },
+      "owned_normalizer_policy": ["annual macro-historical scope", "lunar-new-year boundary", "Jinjing Tang-Jiazi epoch", "Yang-72 board and separate long-cycle epochs", "no modern event verdict"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["calendar", "epoch", "cycle", "board", "taiyi_position", "wenchang_tianmu", "shiji_kemu", "host_guest_counts", "four_generals", "long_cycle_deities", "board_predicates", "scope_contract", "calculated_annual_board_scope"],
+        "gap": "No dedicated manifest fact_contract; candidate output must remain subordinate to the selected source/epoch profile.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/taiyi-v51.yaml",
+        "qualifying_cases": 30,
+        "boundary_cases": 10,
+        "audit": "core/mingli-master/scripts/audit_taiyi_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_taiyi_independent_review.py", "core/mingli-master/scripts/test_v51_taiyi_source_audit.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"],
+        "external_comparator": "core/mingli-master/references/fixtures/kintaiyi-taiyi-v51.yaml",
+        "external_raw_boards": 72,
+        "external_matching_reference_cases": 30,
+        "declared_source_differences": [30, 44, 66]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL_WITH_VERIFIED_COMPARATOR",
+        "components": ["repo-owned", "sxtwl@2.0.7", "kintaiyi@68892c6-comparator"],
+        "gap": "Shared-calendar evidence gap; comparator remains non-authoritative."
+      },
+      "oss_candidate": {
+        "status": "QUALIFIED_COMPARATOR",
+        "name": "kentang2017/kintaiyi",
+        "fit": "MIT exact commit, all 72 raw boards frozen, 30 matching reference boards.",
+        "gap": "Bureaus 30, 44 and 66 differ from the primary source; epoch/scope/profile ownership cannot be delegated."
+      },
+      "decision": "Permit a partial mechanical adapter trial only; source differences must remain explicit and current canonical facts stay authoritative.",
+      "next_step": "WAVE_3_04"
+    },
+    {
+      "provider_id": "time-check",
+      "art": "寻时定盘",
+      "classification": "SELF-OWNED",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["natal"],
+        "horizons": ["life"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/time-check.json",
+        "entrypoint": "reading_engine.providers:TimeCheckProvider",
+        "provider_class": "TimeCheckProvider",
+        "provider_runtime_id": "mingli-master.time-check.v1",
+        "provider_version": "time-check-classical-rectification-v1",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "mingli time-check candidate-hours-over-bazi", "version": "v1", "role": "owned 12-candidate generation and rectification"},
+          {"name": "BaziProvider", "version": "mingli-master.bazi.v7", "role": "unchanged candidate chart facts"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared calendar via Bazi"}
+        ],
+        "mechanical_coverage": ["12 double-hour candidates", "known-time range and policy", "structured event evidence", "bounded candidate rankings and matches", "classical rectification status and conclusion"]
+      },
+      "owned_normalizer_policy": ["known date/range, timezone, location and gender", "true-solar-time preservation", "structured event evidence schema", "candidate scoring/negative evidence", "unique-candidate rectification rule"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS",
+        "declared_contract": null,
+        "outputs": ["candidate_count", "candidates", "known_time_range", "time_basis_policy", "known_event_count", "ranking_status", "event_matching_status", "event_input_status", "candidate_rankings", "event_matches", "rectification_status", "rectification_conclusion", "dimension_fact_scope"],
+        "gap": "No dedicated manifest fact_contract and no dedicated entry in provider-completeness.yaml, despite catalog and V53 release inclusion.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "CATALOG_AND_BEHAVIOR_TESTED_DEDICATED_AUDIT_GAP",
+        "fixture": null,
+        "qualifying_cases": null,
+        "boundary_cases": null,
+        "audit": null,
+        "tests": ["core/mingli-master/scripts/test_provider_time_policy_matrix.py", "core/mingli-master/scripts/test_v51_evidence_fact_ref_closure.py", "core/mingli-master/scripts/test_reading_source_plan.py"],
+        "behavior_samples": ["12 Bazi candidates", "apparent-solar policy preservation", "structured event evidence", "classical rectification"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL",
+        "components": ["repo-owned", "sxtwl@2.0.7", "astronomy-engine@2.1.19"],
+        "gap": "Inherited Bazi shared-calendar sxtwl evidence gap."
+      },
+      "oss_candidate": {
+        "status": "NONE_ADMITTED",
+        "name": null,
+        "fit": "Rectification is an owned evidence/policy workflow over Bazi facts, not an independent chart engine.",
+        "gap": "Add legal golden fixtures, a dedicated audit and typed contract before any engine search."
+      },
+      "decision": "Keep self-owned and close the catalog-versus-audit coverage gap first.",
+      "next_step": "WAVE_3_02"
+    },
+    {
+      "provider_id": "xingming",
+      "art": "七政四余（星命）",
+      "classification": "KEEP",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["natal", "near_time_personal"],
+        "horizons": ["instant", "day", "month", "year", "life"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/xingming.json",
+        "entrypoint": "reading_engine.providers:XingmingProvider",
+        "provider_class": "XingmingProvider",
+        "provider_runtime_id": "mingli-master.xingming.v1",
+        "provider_version": "1.1.0",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/reading_engine/xingming.py",
+          "core/mingli-master/scripts/reading_engine/ephemeris_core.py",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "astronomy-engine", "version": "2.1.19", "role": "isolated ephemeris service with version, coordinate convention, observer metadata and digest"},
+          {"name": "mingli Xingming engine", "version": "1.1.0", "role": "owned classical positions, houses, transformations and limits"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared calendar normalization"}
+        ],
+        "mechanical_coverage": ["seven-body ephemeris", "four explicitly profiled residual points", "classical positions", "Ming/Shen and houses", "ten-stem transformations", "Dongwei Bailiu limits", "source-conditioned patterns"]
+      },
+      "owned_normalizer_policy": ["IANA timezone and WGS84 coordinate provenance", "tropical/equal-house and topocentric profiles", "residual-point and transformation profiles", "Bailiu limit and source applicability"]
+      ,
+      "canonical_facts": {
+        "status": "VERSIONED_PROVIDER_OUTPUT_BINDINGS_WITH_ISOLATED_ENGINE_SCHEMA",
+        "declared_contract": null,
+        "internal_engine_schema": "mingli-ephemeris-v1",
+        "outputs": ["ephemeris", "classical_positions", "ming_shen", "houses", "transformations", "major_limits", "source_conditioned_patterns", "requested_limit_layers", "annual_transformations"],
+        "gap": "The engine seam is already isolated; only a dedicated manifest fact_contract remains missing.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/xingming-v51.yaml",
+        "qualifying_cases": 30,
+        "boundary_cases": 30,
+        "audit": "core/mingli-master/scripts/audit_xingming_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_xingming_provider_replay.py", "core/mingli-master/scripts/test_v51_xingming_completion.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL_WITH_VERIFIED_CHART_ENGINE",
+        "components": ["repo-owned", "sxtwl@2.0.7", "astronomy-engine@2.1.19"],
+        "gap": "Only the shared sxtwl record lacks a local license/provenance bundle."
+      },
+      "oss_candidate": {
+        "status": "CURRENT_ENGINE",
+        "name": "Astronomy Engine 2.1.19",
+        "fit": "Pinned, MIT, isolated, deterministic and provenance-bound for the required ephemeris subset.",
+        "gap": "No replacement work; add the catalog-declared typed fact contract later."
+      },
+      "decision": "Keep the current ephemeris engine and service boundary unchanged.",
+      "next_step": "WAVE_3_05"
+    },
+    {
+      "provider_id": "ziwei",
+      "art": "紫微斗数",
+      "classification": "WRAP",
+      "capability": {
+        "mode": "calculation",
+        "objects": ["natal", "near_time_personal"],
+        "horizons": ["month", "year", "life"]
+      },
+      "implementation": {
+        "manifest": "core/mingli-master/resources/runtime/providers/ziwei.json",
+        "entrypoint": "reading_engine.providers:ZiweiProvider",
+        "provider_class": "ZiweiProvider",
+        "provider_runtime_id": "mingli-master.ziwei.iztro",
+        "provider_version": "1.2.0+iztro-2.5.8",
+        "paths": [
+          "core/mingli-master/scripts/reading_engine/providers.py",
+          "core/mingli-master/scripts/ziwei_fact_adapter.py",
+          "core/mingli-master/scripts/ziwei_runtime.js",
+          "core/mingli-master/scripts/reading_engine/calendar_core.py",
+          "core/mingli-master/vendor/iztro-2.5.8/iztro.min.js"
+        ]
+      },
+      "engine": {
+        "current": [
+          {"name": "iztro", "version": "2.5.8", "role": "vendored natal and decadal/year/month astrolabe mechanics"},
+          {"name": "mingli Ziwei fact adapter", "version": "1.2.0", "role": "owned input policy, projection, provenance and source layering"},
+          {"name": "sxtwl", "version": "2.0.7", "role": "shared calendar normalization"}
+        ],
+        "mechanical_coverage": ["Ming/Shen", "twelve palaces", "stars", "four transformations", "major limits", "annual/month palace-star-transformation layers"]
+      },
+      "owned_normalizer_policy": [
+        "birth time, timezone, location and gender normalization",
+        "fixLeap=true, algorithm=default, yearDivide=normal, horoscopeDivide=normal and ageDivide=normal",
+        "midnight dayDivide=current versus late-Zi-next-day dayDivide=forward",
+        "school/profile warnings, source-conditioned patterns and interpretive candidates"
+      ],
+      "canonical_facts": {
+        "status": "TYPED_MANIFEST_CONTRACT",
+        "declared_contract": "fact_contracts.ziwei:ZiweiFactContract",
+        "outputs": ["ming_shen", "palaces", "stars", "sihua", "interpretive_candidates", "source_conditioned_patterns", "active_major_limit", "annual_layers", "monthly_layers", "dimension_fact_scope"],
+        "gap": "The typed contract exists, but Wave 2 must make the iztro raw-object boundary explicit and reconcile the documentation-versus-vendor commit drift.",
+        "raw_third_party_public": false
+      },
+      "tests": {
+        "status": "READY_IN_13_PROVIDER_MATRIX",
+        "fixture": "core/mingli-master/references/fixtures/ziwei-v51.yaml",
+        "qualifying_cases": 32,
+        "boundary_cases": 32,
+        "audit": "core/mingli-master/scripts/audit_ziwei_provider.py",
+        "tests": ["core/mingli-master/scripts/test_v51_ziwei_provider_audit.py", "core/mingli-master/scripts/test_ziwei_fact_adapter.py", "core/mingli-master/scripts/test_v51_provider_completeness.py"]
+      },
+      "license_evidence": {
+        "overall": "PARTIAL_WITH_VERIFIED_CHART_ENGINE_AND_DOC_DRIFT",
+        "components": ["repo-owned", "sxtwl@2.0.7", "iztro@2.5.8"],
+        "gap": "Reconcile iztro commit documentation and preserve the missing local sxtwl evidence."
+      },
+      "oss_candidate": {
+        "status": "CURRENT_ENGINE",
+        "name": "iztro 2.5.8",
+        "fit": "Mature, vendored, MIT, hash-pinned and already covered by natal/temporal regressions.",
+        "gap": "Adapter seam and provenance-document consistency, not engine replacement."
+      },
+      "decision": "Retain iztro and wrap its raw astrolabe behind the existing typed Ziwei facts; do not migrate for novelty.",
+      "next_step": "WAVE_2"
+    }
+  ],
+  "wave_boundaries": {
+    "wave_1_bazi": {
+      "provider": "bazi",
+      "goal": "Introduce the minimum internal OSS Engine Adapter without changing Bazi public facts or owned rule semantics.",
+      "owned_input_contract": [
+        "normalized instant with IANA timezone",
+        "location and WGS84 coordinates with provenance when policy requires",
+        "time_basis_policy and zi_hour_policy",
+        "gender when luck direction is requested",
+        "or validated explicit four pillars for static scope"
+      ],
+      "engine_private_input": [
+        "instant converted to the pinned sxtwl calendar basis",
+        "coordinates and instant required for Astronomy Engine equation of time"
+      ],
+      "engine_private_output": [
+        "sxtwl lunar date, ganzhi and solar-term/Jie mechanics",
+        "Astronomy Engine equation-of-time value and provenance"
+      ],
+      "adapter_output": {
+        "internal_schema": "BaziEngineFactsV1",
+        "fields": ["calendar_normalization", "four_pillars", "lunar_date", "solar_term_context", "boundary_trace", "engine_provenance"]
+      },
+      "provider_owned_after_adapter": [
+        "hidden stems, ten gods, element and branch relations",
+        "Nayin, growth stages, Xunkong and San Yuan",
+        "major-luck convention and timing",
+        "Tiaohou, Shensha, source patterns, evidence and adjudication"
+      ],
+      "public_contract": "Existing BaziFactContract remains the only public fact truth; BaziEngineFactsV1 and all third-party objects are private."
+    },
+    "wave_2_ziwei": {
+      "provider": "ziwei",
+      "goal": "Make the existing vendored iztro seam explicit and preserve the current ZiweiFactContract byte/semantic behavior.",
+      "owned_input_contract": [
+        "normalized birth instant, timezone, location and gender",
+        "time_basis_policy and zi_hour_policy",
+        "fixLeap, dayDivide, yearDivide, horoscopeDivide and ageDivide rule profile",
+        "requested life/year/month horizons"
+      ],
+      "engine_private_input": ["minimal iztro solar/lunar date, time index, gender and fixed rule options"],
+      "engine_private_output": ["vendored iztro astrolabe and horoscope objects"],
+      "adapter_output": {
+        "contract": "fact_contracts.ziwei:ZiweiFactContract",
+        "fields": ["ming_shen", "palaces", "stars", "sihua", "active_major_limit", "annual_layer", "monthly_layer", "engine_provenance", "rule_profile"]
+      },
+      "provider_owned_after_adapter": ["source-conditioned patterns", "interpretive candidates", "school warnings", "evidence and adjudication"],
+      "public_contract": "No iztro raw JSON or JavaScript object may reach Backend, Web, LLM, evidence or snapshots."
+    }
+  },
+  "later_provider_order": [
+    {"order": 1, "provider_id": "selection", "reason": "Direct cnlunar import plus missing typed fact contract; narrow WRAP after Wave 2."},
+    {"order": 2, "provider_id": "time-check", "reason": "Only catalog Provider absent from the dedicated completeness matrix; add fixture/audit/typed contract."},
+    {"order": 3, "provider_id": "qimen", "reason": "Run the already-frozen qimen-go compatible-subset differential adapter spike."},
+    {"order": 4, "provider_id": "taiyi", "reason": "Run a partial kintaiyi differential spike while preserving three declared source differences."},
+    {"order": 5, "provider_id": "xingming", "reason": "KEEP engine; add only a manifest-declared typed fact contract."},
+    {"order": 6, "provider_id": "fortune", "reason": "Bind composition explicitly to the Wave 1 Bazi contract."},
+    {"order": 7, "provider_id": "liuren", "reason": "Type the current facts; retain rejected external table as witness only."},
+    {"order": 8, "provider_id": "liuyao", "reason": "Type facts; independently pin and diff any future candidate before reclassification."},
+    {"order": 9, "provider_id": "meihua", "reason": "Type method-specific facts; no admitted OSS candidate."},
+    {"order": 10, "provider_id": "luming-nayin", "reason": "Type source-profiled facts; no admitted OSS candidate."},
+    {"order": 11, "provider_id": "fengshui", "reason": "Type observation facts without inventing a chart-engine dependency."},
+    {"order": 12, "provider_id": "physiognomy", "reason": "Type observation facts while preserving privacy and uncertainty gates."}
+  ],
+  "closed_gaps": [
+    "Catalog truth is explicitly 14 Providers rather than the stale 13-Provider completeness set.",
+    "Every catalog Provider has exactly one migration classification.",
+    "Current OSS engines and frozen comparators are separated from owned normalizer/policy responsibilities.",
+    "Wave 1 Bazi and Wave 2 Ziwei minimum adapter boundaries are explicit.",
+    "No third-party raw JSON is designated as a public contract."
+  ],
+  "open_gaps": [
+    {"id": "GAP-01", "scope": "shared", "detail": "Preserve exact-version sxtwl provenance plus license/NOTICE locally."},
+    {"id": "GAP-02", "scope": "ziwei", "detail": "Reconcile iztro reviewed-commit drift between runtime-dependencies.md and vendored PROVENANCE/upstream tag."},
+    {"id": "GAP-03", "scope": "time-check", "detail": "Add a dedicated legal fixture, audit and provider-completeness entry."},
+    {"id": "GAP-04", "scope": "canonical-facts", "detail": "Twelve Providers lack a manifest-declared dedicated fact_contract; prioritize in later_provider_order."},
+    {"id": "GAP-05", "scope": "qimen/taiyi", "detail": "Candidate status authorizes differential trials only; no adoption before selected-profile goldens, license bundle and rollback proof."},
+    {"id": "GAP-06", "scope": "legal-goldens", "detail": "P10-000C must retain only redistributable or project-authored goldens and record license/NOTICE per dependency."}
+  ],
+  "self_checks": {
+    "expected_provider_count": 14,
+    "expected_unique_provider_count": 14,
+    "allowed_classifications": ["KEEP", "WRAP", "REPLACE-CANDIDATE", "SELF-OWNED"],
+    "classification_sum": 14,
+    "catalog_provider_set_must_equal_matrix_provider_set": true,
+    "markdown_companion": "artifacts/runtime-evidence/2026-08-28-oss-chart-wave0/provider-engine-coverage-matrix.md"
+  }
+}
