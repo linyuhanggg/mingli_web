@@ -2,10 +2,11 @@
   "baseline_commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
   "baseline_tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
   "case_count": 12,
-  "content_sha256": "0738c29e667ef3e3cda92328e7ed152108643732cba74bc68c17c9af48d7a06c",
+  "case_schema_version": "mingli-oss-chart-golden-case-v1",
   "errors": 0,
   "failures": 0,
-  "manifest_sha256": "de79e716b3b2aa07bc09a50ce8f7b4105802049907d4c3a6e2e32dd14c966f68",
+  "manifest_schema_version": "mingli-oss-chart-golden-manifest-v1",
+  "provenance_source_type": "accepted_runtime_replay",
   "runtime": {
     "bazi_adapter_version": "1.3.0",
     "python_implementation": "CPython",

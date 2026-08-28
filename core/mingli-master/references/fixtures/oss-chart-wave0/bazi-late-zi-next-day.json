@@ -1,7 +1,6 @@
 {
   "case_id": "bazi-late-zi-next-day",
   "category": "zi_hour_boundary",
-  "content_sha256": "6ee4baec05dd0cfe333cb3bc70b9510a13016cc5439682ce09614ea2df71bc59",
   "expected_canonical_facts": {
     "adapter": {
       "license_status": "verified_local_dependency",

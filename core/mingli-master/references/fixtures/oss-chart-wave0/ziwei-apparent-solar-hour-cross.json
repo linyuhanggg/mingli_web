@@ -1,7 +1,6 @@
 {
   "case_id": "ziwei-apparent-solar-hour-cross",
   "category": "true_solar_time",
-  "content_sha256": "3ffd5b256b1d1501f90dca6a34a778587b879cd8a73a68a9f4c117ea3f71a7bd",
   "expected_canonical_facts": {
     "adapter": {
       "dependency": {

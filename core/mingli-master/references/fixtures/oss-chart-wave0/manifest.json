@@ -6,89 +6,76 @@
     {
       "case_id": "bazi-normal-civil",
       "category": "normal",
-      "content_sha256": "f438548a5763d0d57ae4c93647479aa9cc76b4d49c4e83eddf515b10c57d4a2f",
       "path": "bazi-normal-civil.json",
       "system": "bazi"
     },
     {
       "case_id": "bazi-lichun-before",
       "category": "solar_term_boundary",
-      "content_sha256": "7a0adeaee2040cf8925bafe9f80b5e7ecc1f5daafbd1a8d87fc5b3811f24108f",
       "path": "bazi-lichun-before.json",
       "system": "bazi"
     },
     {
       "case_id": "bazi-lichun-after",
       "category": "solar_term_boundary",
-      "content_sha256": "3e1a7edbd89ae25b7fe34116530d03a647858a47b96dd3c1b442f69bce0ce1db",
       "path": "bazi-lichun-after.json",
       "system": "bazi"
     },
     {
       "case_id": "bazi-late-zi-midnight",
       "category": "zi_hour_boundary",
-      "content_sha256": "5eee8248330d27d976e642f24b2ab3fe6ff81edcf2d21cead0bca4a23a88691b",
       "path": "bazi-late-zi-midnight.json",
       "system": "bazi"
     },
     {
       "case_id": "bazi-late-zi-next-day",
       "category": "zi_hour_boundary",
-      "content_sha256": "6ee4baec05dd0cfe333cb3bc70b9510a13016cc5439682ce09614ea2df71bc59",
       "path": "bazi-late-zi-next-day.json",
       "system": "bazi"
     },
     {
       "case_id": "bazi-historical-shanghai-dst",
       "category": "historical_dst",
-      "content_sha256": "96e0ae157dd9548c33c7e84d7dcadafdc0579bb0ecb7735247de09ab39ffe4d8",
       "path": "bazi-historical-shanghai-dst.json",
       "system": "bazi"
     },
     {
       "case_id": "bazi-apparent-solar-hour-cross",
       "category": "true_solar_time",
-      "content_sha256": "de6df7859b6dbd6a1ebc47f2a680b090951d6f852f793996d03eadb0e2138276",
       "path": "bazi-apparent-solar-hour-cross.json",
       "system": "bazi"
     },
     {
       "case_id": "ziwei-normal-civil",
       "category": "normal",
-      "content_sha256": "8d7f34bb2f17c78b66073cc0ac811ed2ec9654d980dbdda94f3e1659caf22142",
       "path": "ziwei-normal-civil.json",
       "system": "ziwei"
     },
     {
       "case_id": "ziwei-leap-month-first-day",
       "category": "lunar_leap_month",
-      "content_sha256": "69b5491bfc7da067438e459280581cd4c28874fbca4574a1b3c73af8c1800a7f",
       "path": "ziwei-leap-month-first-day.json",
       "system": "ziwei"
     },
     {
       "case_id": "ziwei-late-zi-midnight",
       "category": "zi_hour_boundary",
-      "content_sha256": "5f9349951dda17681e95929c0f1e6e67c5a5d33460288b7f15eba83cd379ec3f",
       "path": "ziwei-late-zi-midnight.json",
       "system": "ziwei"
     },
     {
       "case_id": "ziwei-late-zi-next-day",
       "category": "zi_hour_boundary",
-      "content_sha256": "d72330ccec24b0f78ca6baadc064eb8e4ac07415e1ab4e7300256cf8a55bf1a3",
       "path": "ziwei-late-zi-next-day.json",
       "system": "ziwei"
     },
     {
       "case_id": "ziwei-apparent-solar-hour-cross",
       "category": "true_solar_time",
-      "content_sha256": "3ffd5b256b1d1501f90dca6a34a778587b879cd8a73a68a9f4c117ea3f71a7bd",
       "path": "ziwei-apparent-solar-hour-cross.json",
       "system": "ziwei"
     }
   ],
-  "content_sha256": "de79e716b3b2aa07bc09a50ce8f7b4105802049907d4c3a6e2e32dd14c966f68",
   "schema_version": "mingli-oss-chart-golden-manifest-v1",
   "source_policy": {
     "allowed_expected_source_types": [

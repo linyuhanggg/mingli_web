@@ -14,7 +14,7 @@ expected value.
   policies, and apparent-solar hour crossing.
 - Every input location is explicitly synthetic. Each case carries adapter,
   engine, policy, time-basis, schema, baseline commit/tree, source references,
-  and a canonical content SHA-256.
+  and structured canonical facts with complete provenance.
 
 ## Replay
 
@@ -23,10 +23,11 @@ PYTHONDONTWRITEBYTECODE=1 "$MINGLI_PYTHON" -B \
   core/mingli-master/scripts/test_oss_chart_wave0_golden_baseline.py
 ```
 
-The focused suite validates manifest/schema integrity, unique IDs, content
-hashes, required boundary coverage, provenance, synthetic-only inputs, raw
-third-party container exclusion, and two exact deterministic replays per case.
-The machine-readable result is `replay-receipt.json`.
+The focused suite directly compares structured canonical facts, schema/version,
+and provenance. It also validates manifest integrity, unique IDs, required
+boundary coverage, synthetic-only inputs, raw third-party container exclusion,
+and two exact deterministic replays per case. The machine-readable result is
+`replay-receipt.json`.
 
 ## Environment gap
 
