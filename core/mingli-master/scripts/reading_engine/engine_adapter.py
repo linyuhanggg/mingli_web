@@ -112,6 +112,10 @@ class EngineAdapterBase(
         # suite, exactly like invocation failures, so neither implicit nor
         # explicit exception chaining can expose that object.
         if projection_failed:
+            # The normalized error's traceback includes this frame.  Drop the
+            # final local reference before raising so ``f_locals`` cannot
+            # expose the private engine output through that traceback.
+            del engine_output
             raise EngineAdapterError(
                 self.art_id or "unknown",
                 "canonical_projection_failed",
