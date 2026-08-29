@@ -12,7 +12,7 @@
 | BSZZ-Q006 | 四．卜筮之书如天玄赋，易林补遗，易隐易冒，增删卜易，诸刻虽各有搜精，标异然其间非执偏见即自相矛盾，读者不无遗憾，惟黄金策为刘诚意所著，洵足阐先天之秘旨， | part 1 local 6 | fulltext.md L16 | false | 六爻短引 |
 | BSZZ-Q007 | 五．馀幼研易理历有年，所后遇新安杨广含先生，因得以悉其所学是书十三、十四卷，有十八问皆吾师所授及馀所占验，学者熟此始知启蒙节要之法与十八调及辟诸书之谬， | part 1 local 7 | fulltext.md L17 | false | 六爻短引 |
 | BSZZ-Q008 | 六．余垂帘市肆酬应纷如，拟异日返故山结庐林屋尽谢人事，聿著成书藏之石室不欲向外人道也，奈从游目至因，相与讲论之馀，手定是编蠡测管窥之讥或所不免， | part 1 local 8 | fulltext.md L18 | false | 六爻短引 |
-| BSZZ-Q009 | 卜筮正宗目录 卜筮格言 启蒙节要 六十花甲纳音歌 十十天干所属 十二地支所属 天乾地支八卦方位图 五行相生相克 六亲相生相克 天干相合 地支相合相冲 五 | part 1 local 9 | fulltext.md L19 | false | 六爻短引 |
+| BSZZ-Q009 | 卜筮正宗目录 卜筮格言 启蒙节要 六十花甲纳音歌 十十天干所属 十二地支所属 天干地支八卦方位图 五行相生相克 六亲相生相克 天干相合 地支相合相冲 五 | part 1 local 9 | fulltext.md L19 | false | 六爻短引 |
 | BSZZ-Q010 | 八卦象例 八宫所属 以钱代蓍法 | part 1 local 10 | fulltext.md L20 | false | 六爻短引 |
 | BSZZ-Q011 | 六十四卦名 纳甲装卦歌 安世应诀 | part 1 local 11 | fulltext.md L21 | false | 六爻短引 |
 | BSZZ-Q012 | 六兽歌 六兽起例 安月卦身诀 | part 1 local 12 | fulltext.md L22 | false | 六爻短引 |
@@ -95,7 +95,7 @@
 | BSZZ-Q089 | 五音 商 角 羽 征 宫 | part 1 local 93 | fulltext.md L103 | false | 六爻短引 |
 | BSZZ-Q090 | 地支 子 丑 寅 卯 辰 巳 午 未 申 酉 戌 亥 | part 1 local 95 | fulltext.md L105 | false | 六爻短引 |
 | BSZZ-Q091 | 属性 水 土 木 木 土 火 火 土 金 金 土 水 | part 1 local 96 | fulltext.md L106 | false | 六爻短引 |
-| BSZZ-Q092 | 藏乾 癸 癸 | part 1 local 97 | fulltext.md L107 | false | 六爻短引 |
+| BSZZ-Q092 | 藏干 癸 癸 | part 1 local 97 | fulltext.md L107 | false | 六爻短引 |
 | BSZZ-Q093 | 刑，冲，破，穿，合 | part 1 local 114 | fulltext.md L124 | false | 六爻短引 |
 | BSZZ-Q094 | 合局 六冲 六破 六穿 六刑 | part 1 local 115 | fulltext.md L125 | false | 六爻短引 |
 | BSZZ-Q095 | 申子辰水局 子午，丑未，寅申， | part 1 local 116 | fulltext.md L126 | false | 六爻短引 |
@@ -104,7 +104,7 @@
 | BSZZ-Q098 | 卯辰，申亥，酉戌． 子卯，寅巳，巳申，申寅， | part 1 local 119 | fulltext.md L129 | false | 六爻短引 |
 | BSZZ-Q099 | 丑未，未戌，戌丑 | part 1 local 120 | fulltext.md L130 | false | 六爻短引 |
 | BSZZ-Q100 | 六亲相生相克： 生我者为父母，我生者为子孙，克我者为官鬼，我克者为妻财．比和者为兄弟． | part 1 local 121 | fulltext.md L131 | false | 六爻短引 |
-| BSZZ-Q101 | 五行次序：水一 火二 木三 金四 土五 八卦次序：乾一，兑二，离三，震四，巽五，坎六，艮七，坤八． 八卦象例：乾三连，坤六断，震仰盂，艮覆碗，离中虚， | part 1 local 122 | fulltext.md L132 | false | 六爻短引 |
+| BSZZ-Q101 | 五行次序：水一 火二 木三 金四 土五 八卦次序：干一，兑二，离三，震四，巽五，坎六，艮七，坤八． 八卦象例：干三连，坤六断，震仰盂，艮覆碗，离中虚， | part 1 local 122 | fulltext.md L132 | false | 六爻短引 |
 | BSZZ-Q102 | 以钱代蓍法： 以钱三文熏于炉上致敬而祝曰：天何言哉，叩之即应神之灵矣，感 | part 1 local 123 | fulltext.md L133 | false | 六爻短引 |
 | BSZZ-Q103 | 而遂通，今有（某姓）有事关心，不知休咎罔释厥疑，惟神惟灵若 | part 1 local 124 | fulltext.md L134 | false | 六爻短引 |
 | BSZZ-Q104 | 可若否，望垂昭报． | part 1 local 125 | fulltext.md L135 | false | 六爻短引 |
@@ -114,12 +114,12 @@
 | BSZZ-Q108 | 爻以成一卦，以决忧疑．祝毕复如前法再掷合成一卦而断吉凶．至 | part 1 local 129 | fulltext.md L139 | false | 六爻短引 |
 | BSZZ-Q109 | 敬至诚无不感应，诀曰：两背由来拆，双眉本是单，浑眉交定位， | part 1 local 130 | fulltext.md L140 | false | 六爻短引 |
 | BSZZ-Q110 | 总背是重安． | part 1 local 131 | fulltext.md L141 | false | 六爻短引 |
-| BSZZ-Q111 | 单单单曰乾，拆拆拆曰坤，单拆单曰离，拆单拆曰坎，馀卦仿此． | part 1 local 132 | fulltext.md L142 | false | 六爻短引 |
+| BSZZ-Q111 | 单单单曰干，拆拆拆曰坤，单拆单曰离，拆单拆曰坎，馀卦仿此． | part 1 local 132 | fulltext.md L142 | false | 六爻短引 |
 | BSZZ-Q112 | 三背为重，三字为交，重交之爻谓之发动，重作单属阳，交作拆属 | part 1 local 133 | fulltext.md L143 | false | 六爻短引 |
 | BSZZ-Q113 | 阴，凡动爻有变，重变拆，交变单，馀爻仿此． | part 1 local 134 | fulltext.md L144 | false | 六爻短引 |
 | BSZZ-Q114 | 六十四卦名（装卦表） | part 1 local 135 | fulltext.md L145 | false | 六爻短引 |
-| BSZZ-Q115 | 乾 一 六 八 财 四 孙财 九 孙爻 二 孙兄 六 兄 三 孙 七 | part 1 local 136 | fulltext.md L146 | false | 六爻短引 |
-| BSZZ-Q116 | 乾为天 冲 天风垢 爻 天山遯 爻 天地否 缺 风地观 爻 山地剥 爻 火地晋 爻 火天大有 | part 1 local 137 | fulltext.md L147 | false | 六爻短引 |
+| BSZZ-Q115 | 干 一 六 八 财 四 孙财 九 孙爻 二 孙兄 六 兄 三 孙 七 | part 1 local 136 | fulltext.md L146 | false | 六爻短引 |
+| BSZZ-Q116 | 干为天 冲 天风垢 爻 天山遯 爻 天地否 缺 风地观 爻 山地剥 爻 火地晋 爻 火天大有 | part 1 local 137 | fulltext.md L147 | false | 六爻短引 |
 | BSZZ-Q117 | 宫 甲午 卦 甲午 缺 乙酉 缺 庚戌 六合 己亥 缺 癸亥 缺 乙亥 缺 辛巳 | part 1 local 138 | fulltext.md L148 | false | 六爻短引 |
 | BSZZ-Q118 | 世 －－－ 戌父 －－－ 戌父 －－－ 戌父 应 －－－ 戌父 －－－ 卯财 －－－ 寅财 －－－ 巳官 应 －－－ 巳官 | part 1 local 139 | fulltext.md L149 | false | 六爻短引 |
 | BSZZ-Q119 | －－－ 申兄 －－－ 申兄 应 －－－ 申兄 －－－ 申兄 －－－ 巳官 世 － － 子孙 － － 未父 － － 未父 | part 1 local 140 | fulltext.md L150 | false | 六爻短引 |
@@ -197,7 +197,7 @@
 | BSZZ-Q191 | 火巳卯外巳酉卯丑亥酉未巳坤土乙未外癸丑未巳卯 | part 1 local 218 | fulltext.md L228 | false | 六爻短引 |
 | BSZZ-Q192 | 丑亥酉兑金丁亥巳卯丑亥巳酉未 | part 1 local 219 | fulltext.md L229 | false | 六爻短引 |
 | BSZZ-Q193 | 装卦，纳甲表 | part 1 local 220 | fulltext.md L230 | false | 六爻短引 |
-| BSZZ-Q194 | 乾 纳甲 子，寅，辰 乾 纳壬 午，申，戌 | part 1 local 222 | fulltext.md L232 | false | 六爻短引 |
+| BSZZ-Q194 | 干 纳甲 子，寅，辰 干 纳壬 午，申，戌 | part 1 local 222 | fulltext.md L232 | false | 六爻短引 |
 | BSZZ-Q195 | 震 纳庚 子，寅，辰 震 纳庚 午，申，戌 | part 1 local 223 | fulltext.md L233 | false | 六爻短引 |
 | BSZZ-Q196 | 坎 纳戊 寅，辰，午 坎 纳戊 申，戌，子 | part 1 local 224 | fulltext.md L234 | false | 六爻短引 |
 | BSZZ-Q197 | 艮 纳丙 辰，午，申 艮 纳丙 戌，子，寅 | part 1 local 225 | fulltext.md L235 | false | 六爻短引 |
@@ -222,7 +222,7 @@
 | BSZZ-Q216 | 玄武：主盗贼，鼠蛇之辈，淫乱，娱乐过度，不正泒，赌抟，邪淫，欺骗，虚伪， | part 1 local 248 | fulltext.md L258 | false | 六爻短引 |
 | BSZZ-Q217 | 六神辨象结合六亲辨象之断法． | part 1 local 250 | fulltext.md L260 | false | 六爻短引 |
 | BSZZ-Q218 | 青龙 朱雀 勾神 腾蛇 白虎 玄武 | part 1 local 251 | fulltext.md L261 | false | 六爻短引 |
-| BSZZ-Q219 | 官鬼 法律，官禄，正直，占絪缘为正配之夫星．家宅风水为神位．占申请为官方或海关等． 官非，辩驳，报案．咒咀伤人， | part 1 local 252 | fulltext.md L262 | false | 六爻短引 |
+| BSZZ-Q219 | 官鬼 法律，官禄，正直，占𬘡缘为正配之夫星．家宅风水为神位．占申请为官方或海关等． 官非，辩驳，报案．咒咀伤人， | part 1 local 252 | fulltext.md L262 | false | 六爻短引 |
 | BSZZ-Q220 | 父 文书，文凭，证件，法律条文，契约，官方档案，登记簿册，经文． 书信，邮寄，电报．教师， | part 1 local 253 | fulltext.md L263 | false | 六爻短引 |
 | BSZZ-Q221 | 兄 胞兄弟，正义朋友． 口角争吵，激气，搬弄是非． 相好之友辈． 动而克用为受阴谋暗害骗财．占朋友官司为牢狱． 朋友疾病缠身． 为欺骗， | part 1 local 254 | fulltext.md L264 | false | 六爻短引 |
 | BSZZ-Q222 | 财 正义之财．发妻．喜财．占身命为福禄之财，享福． 汇款，男占姻妻多言或任职公关之务． 男占为妻， | part 1 local 255 | fulltext.md L265 | false | 六爻短引 |
@@ -243,8 +243,8 @@
 | BSZZ-Q237 | 此是贵人方． | part 1 local 275 | fulltext.md L285 | false | 六爻短引 |
 | BSZZ-Q238 | 六刑：寅刑巳，巳刑申，丑戌相刑未并臻；子刑卯，卯刑子，辰午酉亥自相刑． | part 1 local 277 | fulltext.md L287 | false | 六爻短引 |
 | BSZZ-Q239 | 六害：六害子未不堪亲，丑害午兮寅巳真，卯害辰兮申害亥，酉戍相穿转见深． | part 1 local 278 | fulltext.md L288 | false | 六爻短引 |
-| BSZZ-Q240 | 乾为马，坤为牛，震为龙，巽为鸡，坎为豕，离为雉，艮为狗，兑为羊． | part 1 local 280 | fulltext.md L290 | false | 六爻短引 |
-| BSZZ-Q241 | 乾为首，坤为腹，震为足，巽为股，坎为耳，离为目，艮为手，兑为口． | part 1 local 282 | fulltext.md L292 | false | 六爻短引 |
+| BSZZ-Q240 | 干为马，坤为牛，震为龙，巽为鸡，坎为豕，离为雉，艮为狗，兑为羊． | part 1 local 280 | fulltext.md L290 | false | 六爻短引 |
+| BSZZ-Q241 | 干为首，坤为腹，震为足，巽为股，坎为耳，离为目，艮为手，兑为口． | part 1 local 282 | fulltext.md L292 | false | 六爻短引 |
 | BSZZ-Q242 | 世应当中两间爻，忌神发动莫相交，元辰与用当中动，生世扶身事事高， | part 1 local 284 | fulltext.md L294 | false | 六爻短引 |
 | BSZZ-Q243 | 甲己之年丙作首，乙庚之岁戊为头，丙辛之位从庚上，丁壬壬位顺行流，戊癸之年何方法，甲寅之上好追求． | part 1 local 286 | fulltext.md L296 | false | 六爻短引 |
 | BSZZ-Q244 | 甲己还加甲，乙庚丙作初，丙辛从戊起，丁壬庚子居，戊癸何方法，壬子是顺行． | part 1 local 288 | fulltext.md L298 | false | 六爻短引 |

@@ -16,6 +16,8 @@ from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
 
+from simplified_canonical import canonicalize
+
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 CATALOG = SKILL_ROOT / "references" / "catalog" / "catalog.json"
@@ -59,7 +61,7 @@ def catalog_fulltext_path(item: dict) -> Path | None:
 
 
 def tokenize(text: str) -> list[str]:
-    text = text.lower()
+    text = canonicalize(text).lower()
     ascii_terms = re.findall(r"[a-z0-9_][a-z0-9_\-]*", text)
     cjk_chars = re.findall(r"[\u3400-\u9fff]", text)
     cjk_bigrams = [cjk_chars[i] + cjk_chars[i + 1] for i in range(len(cjk_chars) - 1)]
@@ -89,7 +91,7 @@ def build_docs(args: argparse.Namespace) -> list[Document]:
     for item in iter_packs(args.system, args.pack):
         for path in layer_paths(item, layers, args.fulltext):
             for line_no, line in enumerate(path.read_text(encoding="utf-8", errors="ignore").splitlines(), start=1):
-                text = re.sub(r"\s+", " ", line).strip()
+                text = canonicalize(re.sub(r"\s+", " ", line).strip())
                 if len(text) < args.min_chars:
                     continue
                 tokens = tokenize(text)

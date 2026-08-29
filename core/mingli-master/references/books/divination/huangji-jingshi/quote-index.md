@@ -1090,7 +1090,7 @@ last_updated: 2026-06-16
 | HJ-Q1078 | 〔一千七十八〕 | 辰酉 | fulltext.md L3276 |
 | HJ-Q1079 | 〔一千七十九〕 | 辰戌 | fulltext.md L3279 |
 | HJ-Q1080 | 〔一千八十〕 | 辰亥 | fulltext.md L3282 |
-| HJ-Q1081 | 欽定四庫全書 | 皇極經世書卷一上 | fulltext.md L3286 |
+| HJ-Q1081 | 钦定四库全书 | 皇极经世书卷一上 | fulltext.md L3286 |
 | HJ-Q1082 | 〔一〕月卯〔四〕星甲〔九十一〕辰子〔一千八十一〕 | 日甲 | fulltext.md L3291 |
 | HJ-Q1083 | 〔一千八十二〕 | 辰丑 | fulltext.md L3294 |
 | HJ-Q1084 | 〔一千八十三〕 | 辰寅 | fulltext.md L3297 |
@@ -2166,32 +2166,32 @@ last_updated: 2026-06-16
 | HJ-Q2154 | 〔二千一百五十四〕 | 辰巳 | fulltext.md L6510 |
 | HJ-Q2155 | 〔二千一百五十五〕 | 辰午 | fulltext.md L6513 |
 | HJ-Q2156 | 〔二千一百五十六〕 | 辰未 | fulltext.md L6516 |
-| HJ-Q2157 | 〔二千一百五十七〕 唐堯〔二十一〕辰酉〔二千一百五十八〕 唐堯〔五十一〕辰戌〔二千一百五十九〕 虞舜〔九〕辰亥〔二千一百六十〕 虞舜〔三十九〕 | 辰申 | fulltext.md L6519 |
-| HJ-Q2158 | 欽定四庫全書 | 皇極經世書卷一下 | fulltext.md L6523 |
+| HJ-Q2157 | 〔二千一百五十七〕 唐尧〔二十一〕辰酉〔二千一百五十八〕 唐尧〔五十一〕辰戌〔二千一百五十九〕 虞舜〔九〕辰亥〔二千一百六十〕 虞舜〔三十九〕 | 辰申 | fulltext.md L6519 |
+| HJ-Q2158 | 钦定四库全书 | 皇极经世书卷一下 | fulltext.md L6523 |
 | HJ-Q2159 | 〔一〕月午〔七〕星甲〔一百八十一〕辰子〔二千一百六十一〕 夏禹〔八〕 | 日甲 | fulltext.md L6528 |
 | HJ-Q2160 | 〔二千一百六十二〕 夏太康〔二〕辰寅〔二千一百六十三〕 夏仲康〔二〕辰卯〔二千一百六十四〕 夏王相〔二十〕辰辰〔二千一百六十五〕 夏少康〔二十三〕辰巳〔二千一百 | 辰丑 | fulltext.md L6531 |
 | HJ-Q2161 | 〔一百八十二〕 辰子〔二千一百七十三〕 夏孔甲〔二十三〕 | 星乙 | fulltext.md L6534 |
-| HJ-Q2162 | 〔二千一百七〕 夏發〔十四〕辰寅〔十一二千一〕 夏癸〔百七〕辰卯〔十五二十二〕 夏癸〔二千〕辰辰〔一百七十六〕 商太甲〔五十〕辰巳〔二二千一百〕 商沃丁〔七十〕辰 | 辰丑 | fulltext.md L6537 |
+| HJ-Q2162 | 〔二千一百七〕 夏发〔十四〕辰寅〔十一二千一〕 夏癸〔百七〕辰卯〔十五二十二〕 夏癸〔二千〕辰辰〔一百七十六〕 商太甲〔五十〕辰巳〔二二千一百〕 商沃丁〔七十〕辰 | 辰丑 | fulltext.md L6537 |
 | HJ-Q2163 | 〔千一百八〕 辰子〔十二五十一〕 商祖辛〔二〕 | 星丙 | fulltext.md L6540 |
-| HJ-Q2164 | 〔千一百八十〕 商沃甲〔三六〕辰寅〔二千一百八〕 商祖丁〔十四〕辰卯〔八一百八十〕 商陽甲〔三〕辰辰〔二千一百八〕 商盤庚〔十五〕 | 辰丑 | fulltext.md L6543 |
+| HJ-Q2164 | 〔千一百八十〕 商沃甲〔三六〕辰寅〔二千一百八〕 商祖丁〔十四〕辰卯〔八一百八十〕 商阳甲〔三〕辰辰〔二千一百八〕 商盘庚〔十五〕 | 辰丑 | fulltext.md L6543 |
 | HJ-Q2165 | 〔二千一百九〕 商小乙〔十〕辰午〔六二千一百〕 商武丁〔九〕辰未〔十一八二千〕 商武丁〔一百九〕辰申〔十二二十八〕 商祖甲〔二〕辰酉〔千一百九十〕 商祖甲〔三二二 | 辰巳 | fulltext.md L6546 |
 | HJ-Q2166 | 〔十五二二〕 辰子〔千一百九十〕 商受辛〔六二〕 | 星丁 | fulltext.md L6549 |
 | HJ-Q2167 | 〔十五一百八〕 周成王〔十〕辰寅〔四二千一百〕 周康王〔九〕辰卯〔十七十〕 周昭王〔八〕辰辰〔二千一百〕 周昭王〔九十八〕辰巳〔九二千一〕 周穆王〔百九〕辰午〔十 | 辰丑 | fulltext.md L6552 |
 | HJ-Q2168 | 〔二十一一〕 辰子〔百八十五〕 周幽王〔二〕 | 星戊 | fulltext.md L6555 |
 | HJ-Q2169 | 〔千二百九〕 周平王〔五二千〕辰寅〔二百十二十〕 周桓王〔四〕辰卯〔二千二百十〕 周荘王〔一〕辰辰〔二二千二百〕 周惠王〔十二〕辰巳〔十二千二百〕 周襄王〔十三二 | 辰丑 | fulltext.md L6558 |
 | HJ-Q2170 | 〔二百十九〕 辰子〔四十三二千〕 周威烈〔二〕 | 星己 | fulltext.md L6561 |
-| HJ-Q2171 | 〔二千二百二〕 周安王〔十二〕辰寅〔十五二千二〕 周顯王〔百二〕辰卯〔十三十六二〕 周顯王〔千二〕辰辰〔百二十四十〕 周赧王〔七二〕辰巳〔千二百二十〕 周赧王〔五 | 辰丑 | fulltext.md L6564 |
-| HJ-Q2172 | 〔十二千二〕 辰子〔百三十一二〕 漢宣帝〔十四〕 | 星庚 | fulltext.md L6567 |
-| HJ-Q2173 | 〔二千二百三〕 漢成帝〔十〕辰寅〔二五十四一〕 漢平帝〔百〕辰卯〔八十七二千〕 漢光武〔二百〕辰辰〔三十三十七〕 漢明帝〔二〕辰巳〔二千二百三〕 漢和帝〔十〕 | 辰丑 | fulltext.md L6570 |
-| HJ-Q2174 | 〔八六二千二〕 漢安帝〔百三〕辰未〔十九十八二〕 漢桓帝〔千〕 | 辰午 | fulltext.md L6573 |
-| HJ-Q2175 | 〔二百四十八〕 漢靈帝〔二千〕辰酉〔二百四十一〕 漢獻帝〔十七〕辰戌〔二千二百四〕 魏帝 | 辰申 | fulltext.md L6576 |
-| HJ-Q2176 | 〔十二二十五〕 晉武帝〔二〕吴帝皓〔千二〕 | 辰亥 | fulltext.md L6579 |
-| HJ-Q2177 | 〔百四十三〕 辰子〔二千二百四〕 晉惠帝〔十四〕 | 星辛 | fulltext.md L6582 |
-| HJ-Q2178 | 〔十十二一百〕 晉成帝〔八〕 | 辰丑 | fulltext.md L6585 |
-| HJ-Q2179 | 〔十八二千二〕 晉哀帝〔百〕 | 辰寅 | fulltext.md L6588 |
-| HJ-Q2180 | 〔四十五十四〕 晉武帝〔二千〕後魏道武〔二〕辰辰〔百四十六九〕 宋帝義隆〔二〕後魏太武〔千〕辰巳〔二百四十七〕 宋武帝〔三〕後魏文成〔二〕辰午〔千二百四十〕 齊 | 辰卯 | fulltext.md L6591 |
+| HJ-Q2171 | 〔二千二百二〕 周安王〔十二〕辰寅〔十五二千二〕 周显王〔百二〕辰卯〔十三十六二〕 周显王〔千二〕辰辰〔百二十四十〕 周赧王〔七二〕辰巳〔千二百二十〕 周赧王〔五 | 辰丑 | fulltext.md L6564 |
+| HJ-Q2172 | 〔十二千二〕 辰子〔百三十一二〕 汉宣帝〔十四〕 | 星庚 | fulltext.md L6567 |
+| HJ-Q2173 | 〔二千二百三〕 汉成帝〔十〕辰寅〔二五十四一〕 汉平帝〔百〕辰卯〔八十七二千〕 汉光武〔二百〕辰辰〔三十三十七〕 汉明帝〔二〕辰巳〔二千二百三〕 汉和帝〔十〕 | 辰丑 | fulltext.md L6570 |
+| HJ-Q2174 | 〔八六二千二〕 汉安帝〔百三〕辰未〔十九十八二〕 汉桓帝〔千〕 | 辰午 | fulltext.md L6573 |
+| HJ-Q2175 | 〔二百四十八〕 汉灵帝〔二千〕辰酉〔二百四十一〕 汉献帝〔十七〕辰戌〔二千二百四〕 魏帝 | 辰申 | fulltext.md L6576 |
+| HJ-Q2176 | 〔十二二十五〕 晋武帝〔二〕吴帝皓〔千二〕 | 辰亥 | fulltext.md L6579 |
+| HJ-Q2177 | 〔百四十三〕 辰子〔二千二百四〕 晋惠帝〔十四〕 | 星辛 | fulltext.md L6582 |
+| HJ-Q2178 | 〔十十二一百〕 晋成帝〔八〕 | 辰丑 | fulltext.md L6585 |
+| HJ-Q2179 | 〔十八二千二〕 晋哀帝〔百〕 | 辰寅 | fulltext.md L6588 |
+| HJ-Q2180 | 〔四十五十四〕 晋武帝〔二千〕后魏道武〔二〕辰辰〔百四十六九〕 宋帝义隆〔二〕后魏太武〔千〕辰巳〔二百四十七〕 宋武帝〔三〕后魏文成〔二〕辰午〔千二百四十〕 齐 | 辰卯 | fulltext.md L6591 |
 | HJ-Q2181 | 〔二百五十〕 辰子〔六九一百八〕 唐髙宗〔十九〕 | 星壬 | fulltext.md L6594 |
-| HJ-Q2182 | 〔二千二百五〕 唐中宗〔十七〕辰寅〔十五二千二〕 唐𤣥宗〔百五〕辰卯〔十八十一二〕 唐𤣥宗〔千二〕辰辰〔百五十九十〕 唐徳宗〔三〕辰巳〔二千二百六〕 唐憲宗〔十〕 | 辰丑 | fulltext.md L6597 |
+| HJ-Q2182 | 〔二千二百五〕 唐中宗〔十七〕辰寅〔十五二千二〕 唐𤣥宗〔百五〕辰卯〔十八十一二〕 唐𤣥宗〔千二〕辰辰〔百五十九十〕 唐徳宗〔三〕辰巳〔二千二百六〕 唐宪宗〔十〕 | 辰丑 | fulltext.md L6597 |
 | HJ-Q2183 | 〔十三四二千〕 宋太祖〔二〕辰亥〔百六十四元〕 宋太宗〔二千〕 | 辰戌 | fulltext.md L6600 |
 | HJ-Q2184 | 〔二百六〕 辰子〔十五十六二〕 宋仁宗〔千〕 | 星癸 | fulltext.md L6603 |
 | HJ-Q2185 | 〔二千二百七〕 宋仁宗〔十三十〕辰寅〔二二千二百七〕 | 辰丑 | fulltext.md L6606 |
@@ -2804,7 +2804,7 @@ last_updated: 2026-06-16
 | HJ-Q2792 | 〔二千八百七十八〕 | 辰酉 | fulltext.md L8428 |
 | HJ-Q2793 | 〔二千八百七十九〕 | 辰戌 | fulltext.md L8431 |
 | HJ-Q2794 | 〔二千八百八十〕 | 辰亥 | fulltext.md L8434 |
-| HJ-Q2795 | 欽定四庫全書 | 皇極經世書卷二上 | fulltext.md L8438 |
+| HJ-Q2795 | 钦定四库全书 | 皇极经世书卷二上 | fulltext.md L8438 |
 | HJ-Q2796 | 〔一〕月申〔九〕星甲〔二百四十一〕辰子〔二千八百八十一〕 | 日甲 | fulltext.md L8443 |
 | HJ-Q2797 | 〔二千八百八十二〕 | 辰丑 | fulltext.md L8446 |
 | HJ-Q2798 | 〔二千八百八十三〕 | 辰寅 | fulltext.md L8449 |
@@ -3525,7 +3525,7 @@ last_updated: 2026-06-16
 | HJ-Q3513 | 〔三千五百九十八〕 | 辰酉 | fulltext.md L10595 |
 | HJ-Q3514 | 〔三千五百九十九〕 | 辰戌 | fulltext.md L10598 |
 | HJ-Q3515 | 〔三千六百〕 | 辰亥 | fulltext.md L10601 |
-| HJ-Q3516 | 欽定四庫全書 | 皇極經世書卷二中 | fulltext.md L10605 |
+| HJ-Q3516 | 钦定四库全书 | 皇极经世书卷二中 | fulltext.md L10605 |
 | HJ-Q3517 | 〔一〕月戊〔十一〕星甲〔三百一〕辰子〔三千六百一〕 | 日甲 | fulltext.md L10609 |
 | HJ-Q3518 | 〔三千六百二〕 | 辰丑 | fulltext.md L10612 |
 | HJ-Q3519 | 〔三千六百三〕 | 辰寅 | fulltext.md L10615 |
@@ -4233,66 +4233,66 @@ last_updated: 2026-06-16
 | HJ-Q4221 | 〔四千三百一十八〕 | 辰酉 | fulltext.md L12723 |
 | HJ-Q4222 | 〔四千三百一十九〕 | 辰戌 | fulltext.md L12726 |
 | HJ-Q4223 | 〔四千三百二十〕 | 辰亥 | fulltext.md L12729 |
-| HJ-Q4224 | 欽定四庫全書 | 皇極經世書卷二下 | fulltext.md L12733 |
-| HJ-Q4225 | 經月之寅三 | 經日之甲一 | fulltext.md L12738 |
-| HJ-Q4226 | 經星之己七十六 | 開物始月寅之中 | fulltext.md L12742 |
-| HJ-Q4227 | 經星之辛七十八 | 經星之庚七十七 | fulltext.md L12746 |
-| HJ-Q4228 | 經星之癸八十 | 經星之壬七十九 | fulltext.md L12750 |
-| HJ-Q4229 | 經星之乙八十二 | 經星之甲八十一 | fulltext.md L12754 |
-| HJ-Q4230 | 經星之丁八十四 | 經星之丙八十三 | fulltext.md L12758 |
-| HJ-Q4231 | 經星之己八十六 | 經星之戊八十五 | fulltext.md L12762 |
-| HJ-Q4232 | 經星之辛八十八 | 經星之庚八十七 | fulltext.md L12766 |
-| HJ-Q4233 | 經星之癸九十 | 經星之壬八十九 | fulltext.md L12770 |
-| HJ-Q4234 | 經月之卯四 | 經日之甲一 | fulltext.md L12774 |
-| HJ-Q4235 | 經星之乙九十二 | 經星之甲九十一 | fulltext.md L12778 |
-| HJ-Q4236 | 經星之丁九十四 | 經星之丙九十三 | fulltext.md L12782 |
-| HJ-Q4237 | 經星之己九十六 | 經星之戊九十五 | fulltext.md L12786 |
-| HJ-Q4238 | 經星之辛九十八 | 經星之庚九十七 | fulltext.md L12790 |
-| HJ-Q4239 | 經星之癸一百 | 經星之壬九十九 | fulltext.md L12794 |
-| HJ-Q4240 | 經星之乙一百二 | 經星之甲一百一 | fulltext.md L12798 |
-| HJ-Q4241 | 經星之丁一百四 | 經星之丙一百三 | fulltext.md L12802 |
-| HJ-Q4242 | 經星之己一百六 | 經星之戊一百五 | fulltext.md L12806 |
-| HJ-Q4243 | 經星之辛一百八 | 經星之庚一百七 | fulltext.md L12810 |
-| HJ-Q4244 | 經星之癸一百十 | 經星之壬一百九 | fulltext.md L12814 |
-| HJ-Q4245 | 經星之乙一百十二 | 經星之甲一百十一 | fulltext.md L12818 |
-| HJ-Q4246 | 經星之丁一百十四 | 經星之丙一百十三 | fulltext.md L12822 |
-| HJ-Q4247 | 經星之己一百十六 | 經星之戊一百十五 | fulltext.md L12826 |
-| HJ-Q4248 | 經星之辛一百十八 | 經星之庚一百十七 | fulltext.md L12830 |
-| HJ-Q4249 | 經星之癸一百二十 | 經星之壬一百十九 | fulltext.md L12834 |
-| HJ-Q4250 | 經月之辰五 | 經日之甲一 | fulltext.md L12838 |
-| HJ-Q4251 | 經星之乙一百二十二 | 經星之甲一百二十一 | fulltext.md L12842 |
-| HJ-Q4252 | 經星之丁一百二十四 | 經星之丙一百二十三 | fulltext.md L12846 |
-| HJ-Q4253 | 經星之己一百二十六 | 經星之戊一百二十五 | fulltext.md L12850 |
-| HJ-Q4254 | 經星之辛一百二十八 | 經星之庚一百二十七 | fulltext.md L12854 |
-| HJ-Q4255 | 經星之癸一百三十 | 經星之壬一百二十九 | fulltext.md L12858 |
-| HJ-Q4256 | 經星之乙一百三十二 | 經星之甲一百三十一 | fulltext.md L12862 |
-| HJ-Q4257 | 經星之丁一百三十四 | 經星之丙一百三十三 | fulltext.md L12866 |
-| HJ-Q4258 | 經星之己一百三十六 | 經星之戊一百三十五 | fulltext.md L12870 |
-| HJ-Q4259 | 經星之辛一百三十八 | 經星之庚一百三十七 | fulltext.md L12874 |
-| HJ-Q4260 | 經星之癸一百四十 | 經星之壬一百三十九 | fulltext.md L12878 |
-| HJ-Q4261 | 經星之乙一百四十二 | 經星之甲一百四十一 | fulltext.md L12882 |
-| HJ-Q4262 | 經星之丁一百四十四 | 經星之丙一百四十三 | fulltext.md L12886 |
-| HJ-Q4263 | 經星之己一百四十六 | 經星之戊一百四十五 | fulltext.md L12890 |
-| HJ-Q4264 | 經星之辛一百四十八 | 經星之庚一百四十七 | fulltext.md L12894 |
-| HJ-Q4265 | 經星之癸一百五十 | 經星之壬一百四十九 | fulltext.md L12898 |
-| HJ-Q4266 | 經月之己六 | 經日之甲一 | fulltext.md L12902 |
-| HJ-Q4267 | 經星之乙一百五十二 | 經星之甲一百五十一 | fulltext.md L12906 |
-| HJ-Q4268 | 經星之丁一百五十四 | 經星之丙一百五十三 | fulltext.md L12910 |
-| HJ-Q4269 | 經星之己一百五十六 | 經星之戊一百五十五 | fulltext.md L12914 |
-| HJ-Q4270 | 經星之辛一百五十八 | 經星之庚一百五十七 | fulltext.md L12918 |
-| HJ-Q4271 | 經星之癸一百六十 | 經星之壬一百五十九 | fulltext.md L12922 |
-| HJ-Q4272 | 經星之乙一百六十二 | 經星之甲一百六十一 | fulltext.md L12926 |
-| HJ-Q4273 | 經星之丁一百六十四 | 經星之丙一百六十三 | fulltext.md L12930 |
-| HJ-Q4274 | 經星之己一百六十六 | 經星之戊一百六十五 | fulltext.md L12934 |
-| HJ-Q4275 | 經星之辛一百六十八 | 經星之庚一百六十七 | fulltext.md L12938 |
-| HJ-Q4276 | 經星之癸一百七十 | 經星之壬一百六十九 | fulltext.md L12942 |
-| HJ-Q4277 | 經星之乙一百七十二 | 經星之甲一百七十一 | fulltext.md L12946 |
-| HJ-Q4278 | 經星之丁一百七十四 | 經星之丙一百七十三 | fulltext.md L12950 |
-| HJ-Q4279 | 經星之己一百七十六 | 經星之戊一百七十五 | fulltext.md L12954 |
-| HJ-Q4280 | 經星之辛一百七十八 | 經星之庚一百七十七 | fulltext.md L12958 |
-| HJ-Q4281 | 觀物篇十四 以㑹經運二 | 經星之壬一百七十九 | fulltext.md L12962 |
-| HJ-Q4282 | 經月之己六 | 經日之甲一 | fulltext.md L12966 |
-| HJ-Q4283 | 經辰之子二千一百四十九 | 經星之癸一百八十 | fulltext.md L12970 |
+| HJ-Q4224 | 钦定四库全书 | 皇极经世书卷二下 | fulltext.md L12733 |
+| HJ-Q4225 | 经月之寅三 | 经日之甲一 | fulltext.md L12738 |
+| HJ-Q4226 | 经星之己七十六 | 开物始月寅之中 | fulltext.md L12742 |
+| HJ-Q4227 | 经星之辛七十八 | 经星之庚七十七 | fulltext.md L12746 |
+| HJ-Q4228 | 经星之癸八十 | 经星之壬七十九 | fulltext.md L12750 |
+| HJ-Q4229 | 经星之乙八十二 | 经星之甲八十一 | fulltext.md L12754 |
+| HJ-Q4230 | 经星之丁八十四 | 经星之丙八十三 | fulltext.md L12758 |
+| HJ-Q4231 | 经星之己八十六 | 经星之戊八十五 | fulltext.md L12762 |
+| HJ-Q4232 | 经星之辛八十八 | 经星之庚八十七 | fulltext.md L12766 |
+| HJ-Q4233 | 经星之癸九十 | 经星之壬八十九 | fulltext.md L12770 |
+| HJ-Q4234 | 经月之卯四 | 经日之甲一 | fulltext.md L12774 |
+| HJ-Q4235 | 经星之乙九十二 | 经星之甲九十一 | fulltext.md L12778 |
+| HJ-Q4236 | 经星之丁九十四 | 经星之丙九十三 | fulltext.md L12782 |
+| HJ-Q4237 | 经星之己九十六 | 经星之戊九十五 | fulltext.md L12786 |
+| HJ-Q4238 | 经星之辛九十八 | 经星之庚九十七 | fulltext.md L12790 |
+| HJ-Q4239 | 经星之癸一百 | 经星之壬九十九 | fulltext.md L12794 |
+| HJ-Q4240 | 经星之乙一百二 | 经星之甲一百一 | fulltext.md L12798 |
+| HJ-Q4241 | 经星之丁一百四 | 经星之丙一百三 | fulltext.md L12802 |
+| HJ-Q4242 | 经星之己一百六 | 经星之戊一百五 | fulltext.md L12806 |
+| HJ-Q4243 | 经星之辛一百八 | 经星之庚一百七 | fulltext.md L12810 |
+| HJ-Q4244 | 经星之癸一百十 | 经星之壬一百九 | fulltext.md L12814 |
+| HJ-Q4245 | 经星之乙一百十二 | 经星之甲一百十一 | fulltext.md L12818 |
+| HJ-Q4246 | 经星之丁一百十四 | 经星之丙一百十三 | fulltext.md L12822 |
+| HJ-Q4247 | 经星之己一百十六 | 经星之戊一百十五 | fulltext.md L12826 |
+| HJ-Q4248 | 经星之辛一百十八 | 经星之庚一百十七 | fulltext.md L12830 |
+| HJ-Q4249 | 经星之癸一百二十 | 经星之壬一百十九 | fulltext.md L12834 |
+| HJ-Q4250 | 经月之辰五 | 经日之甲一 | fulltext.md L12838 |
+| HJ-Q4251 | 经星之乙一百二十二 | 经星之甲一百二十一 | fulltext.md L12842 |
+| HJ-Q4252 | 经星之丁一百二十四 | 经星之丙一百二十三 | fulltext.md L12846 |
+| HJ-Q4253 | 经星之己一百二十六 | 经星之戊一百二十五 | fulltext.md L12850 |
+| HJ-Q4254 | 经星之辛一百二十八 | 经星之庚一百二十七 | fulltext.md L12854 |
+| HJ-Q4255 | 经星之癸一百三十 | 经星之壬一百二十九 | fulltext.md L12858 |
+| HJ-Q4256 | 经星之乙一百三十二 | 经星之甲一百三十一 | fulltext.md L12862 |
+| HJ-Q4257 | 经星之丁一百三十四 | 经星之丙一百三十三 | fulltext.md L12866 |
+| HJ-Q4258 | 经星之己一百三十六 | 经星之戊一百三十五 | fulltext.md L12870 |
+| HJ-Q4259 | 经星之辛一百三十八 | 经星之庚一百三十七 | fulltext.md L12874 |
+| HJ-Q4260 | 经星之癸一百四十 | 经星之壬一百三十九 | fulltext.md L12878 |
+| HJ-Q4261 | 经星之乙一百四十二 | 经星之甲一百四十一 | fulltext.md L12882 |
+| HJ-Q4262 | 经星之丁一百四十四 | 经星之丙一百四十三 | fulltext.md L12886 |
+| HJ-Q4263 | 经星之己一百四十六 | 经星之戊一百四十五 | fulltext.md L12890 |
+| HJ-Q4264 | 经星之辛一百四十八 | 经星之庚一百四十七 | fulltext.md L12894 |
+| HJ-Q4265 | 经星之癸一百五十 | 经星之壬一百四十九 | fulltext.md L12898 |
+| HJ-Q4266 | 经月之己六 | 经日之甲一 | fulltext.md L12902 |
+| HJ-Q4267 | 经星之乙一百五十二 | 经星之甲一百五十一 | fulltext.md L12906 |
+| HJ-Q4268 | 经星之丁一百五十四 | 经星之丙一百五十三 | fulltext.md L12910 |
+| HJ-Q4269 | 经星之己一百五十六 | 经星之戊一百五十五 | fulltext.md L12914 |
+| HJ-Q4270 | 经星之辛一百五十八 | 经星之庚一百五十七 | fulltext.md L12918 |
+| HJ-Q4271 | 经星之癸一百六十 | 经星之壬一百五十九 | fulltext.md L12922 |
+| HJ-Q4272 | 经星之乙一百六十二 | 经星之甲一百六十一 | fulltext.md L12926 |
+| HJ-Q4273 | 经星之丁一百六十四 | 经星之丙一百六十三 | fulltext.md L12930 |
+| HJ-Q4274 | 经星之己一百六十六 | 经星之戊一百六十五 | fulltext.md L12934 |
+| HJ-Q4275 | 经星之辛一百六十八 | 经星之庚一百六十七 | fulltext.md L12938 |
+| HJ-Q4276 | 经星之癸一百七十 | 经星之壬一百六十九 | fulltext.md L12942 |
+| HJ-Q4277 | 经星之乙一百七十二 | 经星之甲一百七十一 | fulltext.md L12946 |
+| HJ-Q4278 | 经星之丁一百七十四 | 经星之丙一百七十三 | fulltext.md L12950 |
+| HJ-Q4279 | 经星之己一百七十六 | 经星之戊一百七十五 | fulltext.md L12954 |
+| HJ-Q4280 | 经星之辛一百七十八 | 经星之庚一百七十七 | fulltext.md L12958 |
+| HJ-Q4281 | 观物篇十四 以㑹经运二 | 经星之壬一百七十九 | fulltext.md L12962 |
+| HJ-Q4282 | 经月之己六 | 经日之甲一 | fulltext.md L12966 |
+| HJ-Q4283 | 经辰之子二千一百四十九 | 经星之癸一百八十 | fulltext.md L12970 |
 | HJ-Q4284 | ### 甲子 | 甲子 | fulltext.md L12972 |
 | HJ-Q4285 | ### 丙寅 | 丙寅 | fulltext.md L12976 |
 | HJ-Q4286 | ### 戊辰 | 戊辰 | fulltext.md L12980 |
@@ -4308,7 +4308,7 @@ last_updated: 2026-06-16
 | HJ-Q4296 | ### 戊子 | 戊子 | fulltext.md L13020 |
 | HJ-Q4297 | ### 庚寅 | 庚寅 | fulltext.md L13024 |
 | HJ-Q4298 | ### 壬辰 | 壬辰 | fulltext.md L13028 |
-| HJ-Q4299 | ### 經辰之丑二千一百五十 | 經辰之丑二千一百五十 | fulltext.md L13032 |
+| HJ-Q4299 | ### 经辰之丑二千一百五十 | 经辰之丑二千一百五十 | fulltext.md L13032 |
 | HJ-Q4300 | ### 乙未 | 乙未 | fulltext.md L13036 |
 | HJ-Q4301 | ### 丁酉 | 丁酉 | fulltext.md L13040 |
 | HJ-Q4302 | ### 己亥 | 己亥 | fulltext.md L13044 |
@@ -4323,7 +4323,7 @@ last_updated: 2026-06-16
 | HJ-Q4311 | ### 丁巳 | 丁巳 | fulltext.md L13080 |
 | HJ-Q4312 | ### 己未 | 己未 | fulltext.md L13084 |
 | HJ-Q4313 | ### 辛酉 | 辛酉 | fulltext.md L13088 |
-| HJ-Q4314 | 經辰之寅二千一百五十一 | 癸亥 | fulltext.md L13094 |
+| HJ-Q4314 | 经辰之寅二千一百五十一 | 癸亥 | fulltext.md L13094 |
 | HJ-Q4315 | ### 甲子 | 甲子 | fulltext.md L13096 |
 | HJ-Q4316 | ### 丙寅 | 丙寅 | fulltext.md L13100 |
 | HJ-Q4317 | ### 戊辰 | 戊辰 | fulltext.md L13104 |
@@ -4339,7 +4339,7 @@ last_updated: 2026-06-16
 | HJ-Q4327 | ### 戊子 | 戊子 | fulltext.md L13144 |
 | HJ-Q4328 | ### 庚寅 | 庚寅 | fulltext.md L13148 |
 | HJ-Q4329 | ### 壬辰 | 壬辰 | fulltext.md L13152 |
-| HJ-Q4330 | ### 經辰之卯二千一百五十二 | 經辰之卯二千一百五十二 | fulltext.md L13156 |
+| HJ-Q4330 | ### 经辰之卯二千一百五十二 | 经辰之卯二千一百五十二 | fulltext.md L13156 |
 | HJ-Q4331 | ### 乙未 | 乙未 | fulltext.md L13160 |
 | HJ-Q4332 | ### 丁酉 | 丁酉 | fulltext.md L13164 |
 | HJ-Q4333 | ### 己亥 | 己亥 | fulltext.md L13168 |
@@ -4354,7 +4354,7 @@ last_updated: 2026-06-16
 | HJ-Q4342 | ### 丁巳 | 丁巳 | fulltext.md L13204 |
 | HJ-Q4343 | ### 己未 | 己未 | fulltext.md L13208 |
 | HJ-Q4344 | ### 辛酉 | 辛酉 | fulltext.md L13212 |
-| HJ-Q4345 | 經辰之辰二千一百五十三 | 癸亥 | fulltext.md L13218 |
+| HJ-Q4345 | 经辰之辰二千一百五十三 | 癸亥 | fulltext.md L13218 |
 | HJ-Q4346 | ### 甲子 | 甲子 | fulltext.md L13220 |
 | HJ-Q4347 | ### 丙寅 | 丙寅 | fulltext.md L13224 |
 | HJ-Q4348 | ### 戊辰 | 戊辰 | fulltext.md L13228 |
@@ -4370,7 +4370,7 @@ last_updated: 2026-06-16
 | HJ-Q4358 | ### 戊子 | 戊子 | fulltext.md L13268 |
 | HJ-Q4359 | ### 庚寅 | 庚寅 | fulltext.md L13272 |
 | HJ-Q4360 | ### 壬辰 | 壬辰 | fulltext.md L13276 |
-| HJ-Q4361 | ### 經辰之巳二千一百五十四 | 經辰之巳二千一百五十四 | fulltext.md L13280 |
+| HJ-Q4361 | ### 经辰之巳二千一百五十四 | 经辰之巳二千一百五十四 | fulltext.md L13280 |
 | HJ-Q4362 | ### 乙未 | 乙未 | fulltext.md L13284 |
 | HJ-Q4363 | ### 丁酉 | 丁酉 | fulltext.md L13288 |
 | HJ-Q4364 | ### 己亥 | 己亥 | fulltext.md L13292 |
@@ -4385,7 +4385,7 @@ last_updated: 2026-06-16
 | HJ-Q4373 | ### 丁巳 | 丁巳 | fulltext.md L13328 |
 | HJ-Q4374 | ### 己未 | 己未 | fulltext.md L13332 |
 | HJ-Q4375 | ### 辛酉 | 辛酉 | fulltext.md L13336 |
-| HJ-Q4376 | 經辰之午二千一百五十五 | 癸亥 | fulltext.md L13342 |
+| HJ-Q4376 | 经辰之午二千一百五十五 | 癸亥 | fulltext.md L13342 |
 | HJ-Q4377 | ### 甲子 | 甲子 | fulltext.md L13344 |
 | HJ-Q4378 | ### 丙寅 | 丙寅 | fulltext.md L13348 |
 | HJ-Q4379 | ### 戊辰 | 戊辰 | fulltext.md L13352 |
@@ -4401,7 +4401,7 @@ last_updated: 2026-06-16
 | HJ-Q4389 | ### 戊子 | 戊子 | fulltext.md L13392 |
 | HJ-Q4390 | ### 庚寅 | 庚寅 | fulltext.md L13396 |
 | HJ-Q4391 | ### 壬辰 | 壬辰 | fulltext.md L13400 |
-| HJ-Q4392 | ### 經辰之未二千一百五十六 | 經辰之未二千一百五十六 | fulltext.md L13404 |
+| HJ-Q4392 | ### 经辰之未二千一百五十六 | 经辰之未二千一百五十六 | fulltext.md L13404 |
 | HJ-Q4393 | ### 乙未 | 乙未 | fulltext.md L13408 |
 | HJ-Q4394 | ### 丁酉 | 丁酉 | fulltext.md L13412 |
 | HJ-Q4395 | ### 己亥 | 己亥 | fulltext.md L13416 |
@@ -4416,7 +4416,7 @@ last_updated: 2026-06-16
 | HJ-Q4404 | ### 丁巳十四 | 丁巳十四 | fulltext.md L13452 |
 | HJ-Q4405 | ### 己未十六 | 己未十六 | fulltext.md L13456 |
 | HJ-Q4406 | ### 辛酉十八 | 辛酉十八 | fulltext.md L13460 |
-| HJ-Q4407 | 經辰之申二千一百五十七 | 癸亥二十 | fulltext.md L13466 |
+| HJ-Q4407 | 经辰之申二千一百五十七 | 癸亥二十 | fulltext.md L13466 |
 | HJ-Q4408 | 乙丑二十二 | 甲子二十一 | fulltext.md L13470 |
 | HJ-Q4409 | 丁卯二十四 | 丙寅二十三 | fulltext.md L13474 |
 | HJ-Q4410 | 己巳二十六 | 戊辰二十五 | fulltext.md L13478 |
@@ -4432,21 +4432,21 @@ last_updated: 2026-06-16
 | HJ-Q4420 | 己丑四十六 | 戊子四十五 | fulltext.md L13518 |
 | HJ-Q4421 | 辛卯四十八 | 庚寅四十七 | fulltext.md L13522 |
 | HJ-Q4422 | ### 壬辰四十九 | 壬辰四十九 | fulltext.md L13524 |
-| HJ-Q4423 | 甲午五十一 | 經辰之酉二千一百五十八 | fulltext.md L13530 |
+| HJ-Q4423 | 甲午五十一 | 经辰之酉二千一百五十八 | fulltext.md L13530 |
 | HJ-Q4424 | 丙申五十三 | 乙未五十二 | fulltext.md L13534 |
 | HJ-Q4425 | 戊戌五十五 | 丁酉五十四 | fulltext.md L13538 |
 | HJ-Q4426 | 庚子五十七 | 己亥五十六 | fulltext.md L13542 |
 | HJ-Q4427 | 壬寅五十九 | 辛丑五十八 | fulltext.md L13546 |
-| HJ-Q4428 | 甲辰六十一〔洪水方割命鯀治之〕 | 癸卯六十 | fulltext.md L13550 |
+| HJ-Q4428 | 甲辰六十一〔洪水方割命鲧治之〕 | 癸卯六十 | fulltext.md L13550 |
 | HJ-Q4429 | 丙午六十三 | 乙巳六十二 | fulltext.md L13554 |
 | HJ-Q4430 | 戊申六十五 | 丁未六十四 | fulltext.md L13558 |
 | HJ-Q4431 | 庚戌六十七 | 己酉六十六 | fulltext.md L13562 |
 | HJ-Q4432 | 壬子六十九 | 辛亥六十八 | fulltext.md L13566 |
-| HJ-Q4433 | 乙卯七十二〔薦舜于天命之位〕 | 甲寅七十一 | fulltext.md L13571 |
+| HJ-Q4433 | 乙卯七十二〔荐舜于天命之位〕 | 甲寅七十一 | fulltext.md L13571 |
 | HJ-Q4434 | ### 丁巳二 | 丁巳二 | fulltext.md L13574 |
 | HJ-Q4435 | ### 己未四 | 己未四 | fulltext.md L13578 |
 | HJ-Q4436 | ### 辛酉六 | 辛酉六 | fulltext.md L13582 |
-| HJ-Q4437 | 經辰之戌二千一百五十九 | 癸亥八 | fulltext.md L13588 |
+| HJ-Q4437 | 经辰之戌二千一百五十九 | 癸亥八 | fulltext.md L13588 |
 | HJ-Q4438 | ### 甲子九 | 甲子九 | fulltext.md L13590 |
 | HJ-Q4439 | ### 丙寅十一 | 丙寅十一 | fulltext.md L13594 |
 | HJ-Q4440 | ### 戊辰十三 | 戊辰十三 | fulltext.md L13598 |
@@ -4456,13 +4456,13 @@ last_updated: 2026-06-16
 | HJ-Q4444 | 丁丑二十二 | 丙子二十一 | fulltext.md L13616 |
 | HJ-Q4445 | 己卯二十四 | 戊寅二十三 | fulltext.md L13620 |
 | HJ-Q4446 | 辛巳二十六 | 庚辰二十五 | fulltext.md L13624 |
-| HJ-Q4447 | 癸未二十八〔帝堯殂落〕 | 壬午二十七 | fulltext.md L13628 |
+| HJ-Q4447 | 癸未二十八〔帝尧殂落〕 | 壬午二十七 | fulltext.md L13628 |
 | HJ-Q4448 | ### 甲申二十九 | 甲申二十九 | fulltext.md L13630 |
 | HJ-Q4449 | 〔月正元日舜格于文祖〕 | 丙戌三十一 | fulltext.md L13635 |
 | HJ-Q4450 | 戊子三十三 | 丁亥三十二 | fulltext.md L13639 |
 | HJ-Q4451 | 庚寅三十五 | 己丑三十四 | fulltext.md L13643 |
 | HJ-Q4452 | 壬辰三十七 | 辛卯三十六 | fulltext.md L13647 |
-| HJ-Q4453 | 經辰之亥二千一百六十 | 癸巳三十八 | fulltext.md L13651 |
+| HJ-Q4453 | 经辰之亥二千一百六十 | 癸巳三十八 | fulltext.md L13651 |
 | HJ-Q4454 | ### 甲午三十九 | 甲午三十九 | fulltext.md L13653 |
 | HJ-Q4455 | 丁酉四十二 | 丙申四十一 | fulltext.md L13659 |
 | HJ-Q4456 | 己亥四十四 | 戊戌四十三 | fulltext.md L13663 |
@@ -4474,12 +4474,12 @@ last_updated: 2026-06-16
 | HJ-Q4462 | 辛亥五十六 | 庚戌五十五 | fulltext.md L13687 |
 | HJ-Q4463 | 癸丑五十八 | 壬子五十七 | fulltext.md L13691 |
 | HJ-Q4464 | ### 甲寅五十九 | 甲寅五十九 | fulltext.md L13693 |
-| HJ-Q4465 | 〔薦禹于天命之位〕 | 丙辰六十一 | fulltext.md L13698 |
+| HJ-Q4465 | 〔荐禹于天命之位〕 | 丙辰六十一 | fulltext.md L13698 |
 | HJ-Q4466 | ### 戊午二 | 戊午二 | fulltext.md L13701 |
 | HJ-Q4467 | ### 庚申四 | 庚申四 | fulltext.md L13705 |
-| HJ-Q4468 | 觀物篇十五 以㑹經運三 | 壬戌六 | fulltext.md L13712 |
-| HJ-Q4469 | 經星之甲一百八十一 | 經月之午七 | fulltext.md L13717 |
-| HJ-Q4470 | ### 經辰之子二千一百六十一 | 經辰之子二千一百六十一 | fulltext.md L13719 |
+| HJ-Q4468 | 观物篇十五 以㑹经运三 | 壬戌六 | fulltext.md L13712 |
+| HJ-Q4469 | 经星之甲一百八十一 | 经月之午七 | fulltext.md L13717 |
+| HJ-Q4470 | ### 经辰之子二千一百六十一 | 经辰之子二千一百六十一 | fulltext.md L13719 |
 | HJ-Q4471 | ### 乙丑九 | 乙丑九 | fulltext.md L13723 |
 | HJ-Q4472 | ### 丁卯十一 | 丁卯十一 | fulltext.md L13727 |
 | HJ-Q4473 | ### 己巳十三 | 己巳十三 | fulltext.md L13731 |
@@ -4489,13 +4489,13 @@ last_updated: 2026-06-16
 | HJ-Q4477 | 丁丑二十一 | 丙子二十 | fulltext.md L13748 |
 | HJ-Q4478 | 己卯二十三 | 戊寅二十二 | fulltext.md L13752 |
 | HJ-Q4479 | 辛巳二十五 | 庚辰二十四 | fulltext.md L13756 |
-| HJ-Q4480 | 癸未二十七〔東巡至于㑹稽崩〕 | 壬午二十六 | fulltext.md L13760 |
-| HJ-Q4481 | ### 甲申夏啓 | 甲申夏啓 | fulltext.md L13762 |
+| HJ-Q4480 | 癸未二十七〔东巡至于㑹稽崩〕 | 壬午二十六 | fulltext.md L13760 |
+| HJ-Q4481 | ### 甲申夏启 | 甲申夏启 | fulltext.md L13762 |
 | HJ-Q4482 | ### 丙戌三 | 丙戌三 | fulltext.md L13766 |
 | HJ-Q4483 | ### 戊子五 | 戊子五 | fulltext.md L13770 |
 | HJ-Q4484 | ### 庚寅七 | 庚寅七 | fulltext.md L13774 |
 | HJ-Q4485 | 癸巳夏太康 | 壬辰九 | fulltext.md L13780 |
-| HJ-Q4486 | ### 經辰之丑二千一百六十二 | 經辰之丑二千一百六十二 | fulltext.md L13782 |
+| HJ-Q4486 | ### 经辰之丑二千一百六十二 | 经辰之丑二千一百六十二 | fulltext.md L13782 |
 | HJ-Q4487 | ### 乙未三 | 乙未三 | fulltext.md L13786 |
 | HJ-Q4488 | ### 丁酉五 | 丁酉五 | fulltext.md L13790 |
 | HJ-Q4489 | ### 己亥七 | 己亥七 | fulltext.md L13794 |
@@ -4509,9 +4509,9 @@ last_updated: 2026-06-16
 | HJ-Q4497 | 丙辰二十四 | 乙卯二十三 | fulltext.md L13828 |
 | HJ-Q4498 | 戊午二十六 | 丁巳二十五 | fulltext.md L13832 |
 | HJ-Q4499 | 庚申二十八 | 己未二十七 | fulltext.md L13836 |
-| HJ-Q4500 | 〔太康失邦有窮后羿拒于河而死〕 | 辛酉二十九 | fulltext.md L13839 |
+| HJ-Q4500 | 〔太康失邦有穷后羿拒于河而死〕 | 辛酉二十九 | fulltext.md L13839 |
 | HJ-Q4501 | ### 壬戌夏仲康 | 壬戌夏仲康 | fulltext.md L13841 |
-| HJ-Q4502 | ### 經辰之寅二千一百六十三 | 經辰之寅二千一百六十三 | fulltext.md L13845 |
+| HJ-Q4502 | ### 经辰之寅二千一百六十三 | 经辰之寅二千一百六十三 | fulltext.md L13845 |
 | HJ-Q4503 | ### 乙丑四 | 乙丑四 | fulltext.md L13849 |
 | HJ-Q4504 | ### 丁卯六 | 丁卯六 | fulltext.md L13853 |
 | HJ-Q4505 | ### 己巳八 | 己巳八 | fulltext.md L13857 |
@@ -4526,12 +4526,12 @@ last_updated: 2026-06-16
 | HJ-Q4514 | ### 丁亥十三 | 丁亥十三 | fulltext.md L13893 |
 | HJ-Q4515 | ### 己丑十五 | 己丑十五 | fulltext.md L13897 |
 | HJ-Q4516 | ### 辛卯十七 | 辛卯十七 | fulltext.md L13901 |
-| HJ-Q4517 | 經辰之卯二千一百六十四 | 癸巳十九 | fulltext.md L13907 |
+| HJ-Q4517 | 经辰之卯二千一百六十四 | 癸巳十九 | fulltext.md L13907 |
 | HJ-Q4518 | 乙未二十一 | 甲午二十 | fulltext.md L13911 |
 | HJ-Q4519 | 丁酉二十三 | 丙申二十二 | fulltext.md L13915 |
 | HJ-Q4520 | 己亥二十五 | 戊戌二十四 | fulltext.md L13919 |
 | HJ-Q4521 | 辛丑二十七 | 庚子二十六 | fulltext.md L13923 |
-| HJ-Q4522 | 〔寒浞殺有窮后羿代立使子澆及豷伐斟灌斟鄩氏滅相封澆于過封豷于戈相之臣靡逃于有鬲氏相之后緍還于有仍氏始生少康〕 | 壬寅二十八 | fulltext.md L13926 |
+| HJ-Q4522 | 〔寒浞杀有穷后羿代立使子浇及豷伐斟灌斟𬩽氏灭相封浇于过封豷于戈相之臣靡逃于有鬲氏相之后𦈏还于有仍氏始生少康〕 | 壬寅二十八 | fulltext.md L13926 |
 | HJ-Q4523 | ### 癸卯夏少康 | 癸卯夏少康 | fulltext.md L13928 |
 | HJ-Q4524 | ### 甲辰二 | 甲辰二 | fulltext.md L13931 |
 | HJ-Q4525 | ### 丙午四 | 丙午四 | fulltext.md L13935 |
@@ -4543,7 +4543,7 @@ last_updated: 2026-06-16
 | HJ-Q4531 | ### 戊午十六 | 戊午十六 | fulltext.md L13959 |
 | HJ-Q4532 | ### 庚申十八 | 庚申十八 | fulltext.md L13963 |
 | HJ-Q4533 | 癸亥二十一 | 壬戌二十 | fulltext.md L13969 |
-| HJ-Q4534 | 甲子二十二 | 經辰之辰二千一百六十五 | fulltext.md L13973 |
+| HJ-Q4534 | 甲子二十二 | 经辰之辰二千一百六十五 | fulltext.md L13973 |
 | HJ-Q4535 | 丙寅二十四 | 乙丑二十三 | fulltext.md L13977 |
 | HJ-Q4536 | 戊辰二十六 | 丁卯二十五 | fulltext.md L13981 |
 | HJ-Q4537 | 庚午二十八 | 己巳二十七 | fulltext.md L13985 |
@@ -4552,14 +4552,14 @@ last_updated: 2026-06-16
 | HJ-Q4540 | 丙子三十四 | 乙亥三十三 | fulltext.md L13997 |
 | HJ-Q4541 | 戊寅三十六 | 丁丑三十五 | fulltext.md L14001 |
 | HJ-Q4542 | 庚辰三十八 | 己卯三十七 | fulltext.md L14005 |
-| HJ-Q4543 | 壬午夏少康立〔夏之臣靡自鬲收斟灌斟鄩之燼以滅浞而立少康少康旣立遂滅澆于過滅 | 辛巳三十九 | fulltext.md L14009 |
-| HJ-Q4544 | ### 豷于戈以絶有窮氏之族〕 | 豷于戈以絶有窮氏之族〕 | fulltext.md L14011 |
+| HJ-Q4543 | 壬午夏少康立〔夏之臣靡自鬲收斟灌斟𬩽之烬以灭浞而立少康少康既立遂灭浇于过灭 | 辛巳三十九 | fulltext.md L14009 |
+| HJ-Q4544 | ### 豷于戈以绝有穷氏之族〕 | 豷于戈以绝有穷氏之族〕 | fulltext.md L14011 |
 | HJ-Q4545 | ### 甲申三 | 甲申三 | fulltext.md L14014 |
 | HJ-Q4546 | ### 丙戌五 | 丙戌五 | fulltext.md L14018 |
 | HJ-Q4547 | ### 戊子七 | 戊子七 | fulltext.md L14022 |
 | HJ-Q4548 | ### 庚寅九 | 庚寅九 | fulltext.md L14026 |
 | HJ-Q4549 | ### 壬辰十一 | 壬辰十一 | fulltext.md L14030 |
-| HJ-Q4550 | ### 經辰之巳二千一百六十六 | 經辰之巳二千一百六十六 | fulltext.md L14034 |
+| HJ-Q4550 | ### 经辰之巳二千一百六十六 | 经辰之巳二千一百六十六 | fulltext.md L14034 |
 | HJ-Q4551 | ### 乙未十四 | 乙未十四 | fulltext.md L14038 |
 | HJ-Q4552 | ### 丁酉十六 | 丁酉十六 | fulltext.md L14042 |
 | HJ-Q4553 | ### 己亥十八 | 己亥十八 | fulltext.md L14046 |
@@ -4574,7 +4574,7 @@ last_updated: 2026-06-16
 | HJ-Q4562 | ### 丁巳十四 | 丁巳十四 | fulltext.md L14082 |
 | HJ-Q4563 | ### 己未十六 | 己未十六 | fulltext.md L14086 |
 | HJ-Q4564 | ### 辛酉夏槐 | 辛酉夏槐 | fulltext.md L14090 |
-| HJ-Q4565 | 經辰之午二千一百六十七 | 癸亥三 | fulltext.md L14096 |
+| HJ-Q4565 | 经辰之午二千一百六十七 | 癸亥三 | fulltext.md L14096 |
 | HJ-Q4566 | ### 甲子四 | 甲子四 | fulltext.md L14098 |
 | HJ-Q4567 | ### 丙寅六 | 丙寅六 | fulltext.md L14102 |
 | HJ-Q4568 | ### 戊辰八 | 戊辰八 | fulltext.md L14106 |
@@ -4590,7 +4590,7 @@ last_updated: 2026-06-16
 | HJ-Q4578 | ### 戊子二 | 戊子二 | fulltext.md L14146 |
 | HJ-Q4579 | ### 庚寅四 | 庚寅四 | fulltext.md L14150 |
 | HJ-Q4580 | ### 壬辰六 | 壬辰六 | fulltext.md L14154 |
-| HJ-Q4581 | ### 經辰之未二千一百六十八 | 經辰之未二千一百六十八 | fulltext.md L14158 |
+| HJ-Q4581 | ### 经辰之未二千一百六十八 | 经辰之未二千一百六十八 | fulltext.md L14158 |
 | HJ-Q4582 | ### 乙未九 | 乙未九 | fulltext.md L14162 |
 | HJ-Q4583 | ### 丁酉十一 | 丁酉十一 | fulltext.md L14166 |
 | HJ-Q4584 | ### 己亥十三 | 己亥十三 | fulltext.md L14170 |
@@ -4605,7 +4605,7 @@ last_updated: 2026-06-16
 | HJ-Q4593 | ### 丁巳十三 | 丁巳十三 | fulltext.md L14206 |
 | HJ-Q4594 | ### 己未十五 | 己未十五 | fulltext.md L14210 |
 | HJ-Q4595 | ### 辛酉夏不降 | 辛酉夏不降 | fulltext.md L14214 |
-| HJ-Q4596 | 經辰之申二千一百六十九 | 癸亥三 | fulltext.md L14220 |
+| HJ-Q4596 | 经辰之申二千一百六十九 | 癸亥三 | fulltext.md L14220 |
 | HJ-Q4597 | ### 甲子四 | 甲子四 | fulltext.md L14222 |
 | HJ-Q4598 | ### 丙寅六 | 丙寅六 | fulltext.md L14226 |
 | HJ-Q4599 | ### 戊辰八 | 戊辰八 | fulltext.md L14230 |
@@ -4621,7 +4621,7 @@ last_updated: 2026-06-16
 | HJ-Q4609 | 己丑二十九 | 戊子二十八 | fulltext.md L14272 |
 | HJ-Q4610 | 辛卯三十一 | 庚寅三十 | fulltext.md L14276 |
 | HJ-Q4611 | 癸巳三十三 | 壬辰三十二 | fulltext.md L14280 |
-| HJ-Q4612 | 甲午三十四 | 經辰之酉二千一百七十 | fulltext.md L14284 |
+| HJ-Q4612 | 甲午三十四 | 经辰之酉二千一百七十 | fulltext.md L14284 |
 | HJ-Q4613 | 丙申三十六 | 乙未三十五 | fulltext.md L14288 |
 | HJ-Q4614 | 戊戌三十八 | 丁酉三十七 | fulltext.md L14292 |
 | HJ-Q4615 | ### 己亥三十九 | 己亥三十九 | fulltext.md L14294 |
@@ -4636,7 +4636,7 @@ last_updated: 2026-06-16
 | HJ-Q4624 | 戊午五十八 | 丁巳五十七 | fulltext.md L14332 |
 | HJ-Q4625 | ### 己未五十九 | 己未五十九 | fulltext.md L14334 |
 | HJ-Q4626 | ### 辛酉二 | 辛酉二 | fulltext.md L14338 |
-| HJ-Q4627 | 經辰之戌二千一百七十一 | 癸亥四 | fulltext.md L14344 |
+| HJ-Q4627 | 经辰之戌二千一百七十一 | 癸亥四 | fulltext.md L14344 |
 | HJ-Q4628 | ### 甲子五 | 甲子五 | fulltext.md L14346 |
 | HJ-Q4629 | ### 丙寅七 | 丙寅七 | fulltext.md L14350 |
 | HJ-Q4630 | ### 戊辰九 | 戊辰九 | fulltext.md L14354 |
@@ -4652,7 +4652,7 @@ last_updated: 2026-06-16
 | HJ-Q4640 | ### 戊子八 | 戊子八 | fulltext.md L14394 |
 | HJ-Q4641 | ### 庚寅十 | 庚寅十 | fulltext.md L14398 |
 | HJ-Q4642 | ### 壬辰十二 | 壬辰十二 | fulltext.md L14402 |
-| HJ-Q4643 | ### 經辰之亥二千一百七十二 | 經辰之亥二千一百七十二 | fulltext.md L14406 |
+| HJ-Q4643 | ### 经辰之亥二千一百七十二 | 经辰之亥二千一百七十二 | fulltext.md L14406 |
 | HJ-Q4644 | ### 乙未十五 | 乙未十五 | fulltext.md L14410 |
 | HJ-Q4645 | ### 丁酉十七 | 丁酉十七 | fulltext.md L14414 |
 | HJ-Q4646 | ### 己亥十九 | 己亥十九 | fulltext.md L14418 |
@@ -4667,9 +4667,9 @@ last_updated: 2026-06-16
 | HJ-Q4655 | ### 丁巳十六 | 丁巳十六 | fulltext.md L14454 |
 | HJ-Q4656 | ### 己未十八 | 己未十八 | fulltext.md L14458 |
 | HJ-Q4657 | 壬戌二十一 | 辛酉二十 | fulltext.md L14464 |
-| HJ-Q4658 | 觀物篇十六 以㑹經運四 | 癸亥二十二 | fulltext.md L14468 |
-| HJ-Q4659 | 經月之未八 | 經日之甲一 | fulltext.md L14472 |
-| HJ-Q4660 | 經辰之子二千一百七十三 | 經星之乙一百八十二 | fulltext.md L14476 |
+| HJ-Q4658 | 观物篇十六 以㑹经运四 | 癸亥二十二 | fulltext.md L14468 |
+| HJ-Q4659 | 经月之未八 | 经日之甲一 | fulltext.md L14472 |
+| HJ-Q4660 | 经辰之子二千一百七十三 | 经星之乙一百八十二 | fulltext.md L14476 |
 | HJ-Q4661 | 乙丑二十四 | 甲子二十三 | fulltext.md L14480 |
 | HJ-Q4662 | 丁卯二十六 | 丙寅二十五 | fulltext.md L14484 |
 | HJ-Q4663 | 己巳二十八 | 戊辰二十七 | fulltext.md L14488 |
@@ -4680,12 +4680,12 @@ last_updated: 2026-06-16
 | HJ-Q4668 | ### 戊寅六 | 戊寅六 | fulltext.md L14506 |
 | HJ-Q4669 | ### 庚辰八 | 庚辰八 | fulltext.md L14510 |
 | HJ-Q4670 | ### 壬午十 | 壬午十 | fulltext.md L14514 |
-| HJ-Q4671 | ### 甲申夏發 | 甲申夏發 | fulltext.md L14518 |
+| HJ-Q4671 | ### 甲申夏发 | 甲申夏发 | fulltext.md L14518 |
 | HJ-Q4672 | ### 丙戌三 | 丙戌三 | fulltext.md L14522 |
 | HJ-Q4673 | ### 戊子五 | 戊子五 | fulltext.md L14526 |
 | HJ-Q4674 | ### 庚寅七 | 庚寅七 | fulltext.md L14530 |
 | HJ-Q4675 | ### 壬辰九 | 壬辰九 | fulltext.md L14534 |
-| HJ-Q4676 | ### 經辰之丑二千一百七十四 | 經辰之丑二千一百七十四 | fulltext.md L14538 |
+| HJ-Q4676 | ### 经辰之丑二千一百七十四 | 经辰之丑二千一百七十四 | fulltext.md L14538 |
 | HJ-Q4677 | ### 乙未十二 | 乙未十二 | fulltext.md L14542 |
 | HJ-Q4678 | ### 丁酉十四 | 丁酉十四 | fulltext.md L14546 |
 | HJ-Q4679 | ### 己亥十六 | 己亥十六 | fulltext.md L14550 |
@@ -4700,7 +4700,7 @@ last_updated: 2026-06-16
 | HJ-Q4688 | ### 丁巳十五 | 丁巳十五 | fulltext.md L14586 |
 | HJ-Q4689 | ### 己未十七 | 己未十七 | fulltext.md L14590 |
 | HJ-Q4690 | ### 辛酉十九 | 辛酉十九 | fulltext.md L14594 |
-| HJ-Q4691 | 經辰之寅二千一百七十五 | 癸亥二十一 | fulltext.md L14600 |
+| HJ-Q4691 | 经辰之寅二千一百七十五 | 癸亥二十一 | fulltext.md L14600 |
 | HJ-Q4692 | 乙丑二十三 | 甲子二十二 | fulltext.md L14604 |
 | HJ-Q4693 | 丁卯二十五 | 丙寅二十四 | fulltext.md L14608 |
 | HJ-Q4694 | 己巳二十七 | 戊辰二十六 | fulltext.md L14612 |
@@ -4716,8 +4716,8 @@ last_updated: 2026-06-16
 | HJ-Q4704 | 己丑四十七 | 戊子四十六 | fulltext.md L14652 |
 | HJ-Q4705 | 辛卯四十九 | 庚寅四十八 | fulltext.md L14656 |
 | HJ-Q4706 | 癸巳五十一 | 壬辰五十 | fulltext.md L14660 |
-| HJ-Q4707 | 甲午五十二 | 經辰之卯二千一百七十六 | fulltext.md L14664 |
-| HJ-Q4708 | ### 乙未商湯 | 乙未商湯 | fulltext.md L14666 |
+| HJ-Q4707 | 甲午五十二 | 经辰之卯二千一百七十六 | fulltext.md L14664 |
+| HJ-Q4708 | ### 乙未商汤 | 乙未商汤 | fulltext.md L14666 |
 | HJ-Q4709 | ### 丁酉三 | 丁酉三 | fulltext.md L14670 |
 | HJ-Q4710 | ### 己亥五 | 己亥五 | fulltext.md L14674 |
 | HJ-Q4711 | ### 辛丑七 | 辛丑七 | fulltext.md L14678 |
@@ -4731,7 +4731,7 @@ last_updated: 2026-06-16
 | HJ-Q4719 | ### 丁巳十 | 丁巳十 | fulltext.md L14710 |
 | HJ-Q4720 | ### 己未十二 | 己未十二 | fulltext.md L14714 |
 | HJ-Q4721 | ### 辛酉十四 | 辛酉十四 | fulltext.md L14718 |
-| HJ-Q4722 | 經辰之辰二千一百七十七 | 癸亥十六 | fulltext.md L14724 |
+| HJ-Q4722 | 经辰之辰二千一百七十七 | 癸亥十六 | fulltext.md L14724 |
 | HJ-Q4723 | ### 甲子十七 | 甲子十七 | fulltext.md L14726 |
 | HJ-Q4724 | ### 丙寅十九 | 丙寅十九 | fulltext.md L14730 |
 | HJ-Q4725 | 己巳二十二 | 戊辰二十一 | fulltext.md L14736 |
@@ -4747,7 +4747,7 @@ last_updated: 2026-06-16
 | HJ-Q4735 | ### 戊子八 | 戊子八 | fulltext.md L14774 |
 | HJ-Q4736 | ### 庚寅十 | 庚寅十 | fulltext.md L14778 |
 | HJ-Q4737 | ### 壬辰十二 | 壬辰十二 | fulltext.md L14782 |
-| HJ-Q4738 | ### 經辰之己二千一百七十八 | 經辰之己二千一百七十八 | fulltext.md L14786 |
+| HJ-Q4738 | ### 经辰之己二千一百七十八 | 经辰之己二千一百七十八 | fulltext.md L14786 |
 | HJ-Q4739 | ### 乙未十五 | 乙未十五 | fulltext.md L14790 |
 | HJ-Q4740 | ### 丁酉十七 | 丁酉十七 | fulltext.md L14794 |
 | HJ-Q4741 | ### 己亥十九 | 己亥十九 | fulltext.md L14798 |
@@ -4762,7 +4762,7 @@ last_updated: 2026-06-16
 | HJ-Q4750 | ### 丁巳八 | 丁巳八 | fulltext.md L14834 |
 | HJ-Q4751 | ### 己未十 | 己未十 | fulltext.md L14838 |
 | HJ-Q4752 | ### 辛酉十二 | 辛酉十二 | fulltext.md L14842 |
-| HJ-Q4753 | 經辰之午二千一百七十九 | 癸亥十四 | fulltext.md L14848 |
+| HJ-Q4753 | 经辰之午二千一百七十九 | 癸亥十四 | fulltext.md L14848 |
 | HJ-Q4754 | ### 甲子十五 | 甲子十五 | fulltext.md L14850 |
 | HJ-Q4755 | ### 丙寅十七 | 丙寅十七 | fulltext.md L14854 |
 | HJ-Q4756 | ### 戊辰十九 | 戊辰十九 | fulltext.md L14858 |
@@ -4778,7 +4778,7 @@ last_updated: 2026-06-16
 | HJ-Q4766 | ### 戊子十四 | 戊子十四 | fulltext.md L14898 |
 | HJ-Q4767 | ### 庚寅十六 | 庚寅十六 | fulltext.md L14902 |
 | HJ-Q4768 | ### 壬辰商雍己 | 壬辰商雍己 | fulltext.md L14906 |
-| HJ-Q4769 | ### 經辰之未二千一百八十 | 經辰之未二千一百八十 | fulltext.md L14910 |
+| HJ-Q4769 | ### 经辰之未二千一百八十 | 经辰之未二千一百八十 | fulltext.md L14910 |
 | HJ-Q4770 | ### 乙未四 | 乙未四 | fulltext.md L14914 |
 | HJ-Q4771 | ### 丁酉六 | 丁酉六 | fulltext.md L14918 |
 | HJ-Q4772 | ### 己亥八 | 己亥八 | fulltext.md L14922 |
@@ -4793,7 +4793,7 @@ last_updated: 2026-06-16
 | HJ-Q4781 | ### 丁巳十四 | 丁巳十四 | fulltext.md L14958 |
 | HJ-Q4782 | ### 己未十六 | 己未十六 | fulltext.md L14962 |
 | HJ-Q4783 | ### 辛酉十八 | 辛酉十八 | fulltext.md L14966 |
-| HJ-Q4784 | 經辰之申二千一百八十一 | 癸亥二十 | fulltext.md L14972 |
+| HJ-Q4784 | 经辰之申二千一百八十一 | 癸亥二十 | fulltext.md L14972 |
 | HJ-Q4785 | 乙丑二十二 | 甲子二十一 | fulltext.md L14976 |
 | HJ-Q4786 | 丁卯二十四 | 丙寅二十三 | fulltext.md L14980 |
 | HJ-Q4787 | 己巳二十六 | 戊辰二十五 | fulltext.md L14984 |
@@ -4809,7 +4809,7 @@ last_updated: 2026-06-16
 | HJ-Q4797 | 己丑四十六 | 戊子四十五 | fulltext.md L15024 |
 | HJ-Q4798 | 辛卯四十八 | 庚寅四十七 | fulltext.md L15028 |
 | HJ-Q4799 | ### 壬辰四十九 | 壬辰四十九 | fulltext.md L15030 |
-| HJ-Q4800 | 甲午五十一 | 經辰之酉二千一百八十二 | fulltext.md L15036 |
+| HJ-Q4800 | 甲午五十一 | 经辰之酉二千一百八十二 | fulltext.md L15036 |
 | HJ-Q4801 | 丙申五十三 | 乙未五十二 | fulltext.md L15040 |
 | HJ-Q4802 | 戊戌五十五 | 丁酉五十四 | fulltext.md L15044 |
 | HJ-Q4803 | 庚子五十七 | 己亥五十六 | fulltext.md L15048 |
@@ -4824,7 +4824,7 @@ last_updated: 2026-06-16
 | HJ-Q4812 | 戊午七十五 | 丁巳七十四 | fulltext.md L15084 |
 | HJ-Q4813 | ### 己未商仲丁 | 己未商仲丁 | fulltext.md L15086 |
 | HJ-Q4814 | ### 辛酉三 | 辛酉三 | fulltext.md L15090 |
-| HJ-Q4815 | 經辰之戌二千一百八十三 | 癸亥五 | fulltext.md L15096 |
+| HJ-Q4815 | 经辰之戌二千一百八十三 | 癸亥五 | fulltext.md L15096 |
 | HJ-Q4816 | ### 甲子六 | 甲子六 | fulltext.md L15098 |
 | HJ-Q4817 | ### 丙寅八 | 丙寅八 | fulltext.md L15102 |
 | HJ-Q4818 | ### 戊辰十 | 戊辰十 | fulltext.md L15106 |
@@ -4840,7 +4840,7 @@ last_updated: 2026-06-16
 | HJ-Q4828 | ### 戊子二 | 戊子二 | fulltext.md L15146 |
 | HJ-Q4829 | ### 庚寅四 | 庚寅四 | fulltext.md L15150 |
 | HJ-Q4830 | ### 壬辰六 | 壬辰六 | fulltext.md L15154 |
-| HJ-Q4831 | ### 經辰之亥二千一百八十四 | 經辰之亥二千一百八十四 | fulltext.md L15158 |
+| HJ-Q4831 | ### 经辰之亥二千一百八十四 | 经辰之亥二千一百八十四 | fulltext.md L15158 |
 | HJ-Q4832 | 丙申商祖乙 | 乙未九 | fulltext.md L15164 |
 | HJ-Q4833 | ### 丁酉二 | 丁酉二 | fulltext.md L15166 |
 | HJ-Q4834 | ### 己亥四 | 己亥四 | fulltext.md L15170 |
@@ -4856,9 +4856,9 @@ last_updated: 2026-06-16
 | HJ-Q4844 | ### 己未五 | 己未五 | fulltext.md L15210 |
 | HJ-Q4845 | ### 辛酉七 | 辛酉七 | fulltext.md L15214 |
 | HJ-Q4846 | ### 癸亥九 | 癸亥九 | fulltext.md L15218 |
-| HJ-Q4847 | 欽定四庫全書 | 皇極經世書卷三上 | fulltext.md L15222 |
-| HJ-Q4848 | 經月之午七 | 經日之甲一 | fulltext.md L15227 |
-| HJ-Q4849 | 經辰之子二千一百八十五 | 經星之丙一百八十三 | fulltext.md L15231 |
+| HJ-Q4847 | 钦定四库全书 | 皇极经世书卷三上 | fulltext.md L15222 |
+| HJ-Q4848 | 经月之午七 | 经日之甲一 | fulltext.md L15227 |
+| HJ-Q4849 | 经辰之子二千一百八十五 | 经星之丙一百八十三 | fulltext.md L15231 |
 | HJ-Q4850 | ### 甲子十 | 甲子十 | fulltext.md L15233 |
 | HJ-Q4851 | ### 丙寅十二 | 丙寅十二 | fulltext.md L15237 |
 | HJ-Q4852 | ### 戊辰十四 | 戊辰十四 | fulltext.md L15241 |
@@ -4874,7 +4874,7 @@ last_updated: 2026-06-16
 | HJ-Q4862 | ### 戊子十八 | 戊子十八 | fulltext.md L15281 |
 | HJ-Q4863 | 辛卯二十一 | 庚寅二十 | fulltext.md L15287 |
 | HJ-Q4864 | 癸巳二十三 | 壬辰二十二 | fulltext.md L15291 |
-| HJ-Q4865 | 甲午二十四 | 經辰之丑二千一百八十六 | fulltext.md L15295 |
+| HJ-Q4865 | 甲午二十四 | 经辰之丑二千一百八十六 | fulltext.md L15295 |
 | HJ-Q4866 | 丙申商祖丁 | 乙未二十五 | fulltext.md L15299 |
 | HJ-Q4867 | ### 丁酉二 | 丁酉二 | fulltext.md L15301 |
 | HJ-Q4868 | ### 己亥四 | 己亥四 | fulltext.md L15305 |
@@ -4889,7 +4889,7 @@ last_updated: 2026-06-16
 | HJ-Q4877 | 戊午二十三 | 丁巳二十二 | fulltext.md L15343 |
 | HJ-Q4878 | 庚申二十五 | 己未二十四 | fulltext.md L15347 |
 | HJ-Q4879 | 壬戌二十七 | 辛酉二十六 | fulltext.md L15351 |
-| HJ-Q4880 | 經辰之寅二千一百八十七 | 癸亥二十八 | fulltext.md L15355 |
+| HJ-Q4880 | 经辰之寅二千一百八十七 | 癸亥二十八 | fulltext.md L15355 |
 | HJ-Q4881 | ### 甲子二十九 | 甲子二十九 | fulltext.md L15357 |
 | HJ-Q4882 | 丁卯三十二 | 丙寅三十一 | fulltext.md L15363 |
 | HJ-Q4883 | ### 戊辰商南庚 | 戊辰商南庚 | fulltext.md L15365 |
@@ -4904,11 +4904,11 @@ last_updated: 2026-06-16
 | HJ-Q4892 | ### 丙戌十九 | 丙戌十九 | fulltext.md L15401 |
 | HJ-Q4893 | 己丑二十二 | 戊子二十一 | fulltext.md L15407 |
 | HJ-Q4894 | 辛卯二十四 | 庚寅二十三 | fulltext.md L15411 |
-| HJ-Q4895 | 癸巳商陽甲 | 壬辰二十五 | fulltext.md L15415 |
-| HJ-Q4896 | ### 經辰之卯二千一百八十八 | 經辰之卯二千一百八十八 | fulltext.md L15417 |
+| HJ-Q4895 | 癸巳商阳甲 | 壬辰二十五 | fulltext.md L15415 |
+| HJ-Q4896 | ### 经辰之卯二千一百八十八 | 经辰之卯二千一百八十八 | fulltext.md L15417 |
 | HJ-Q4897 | ### 乙未三 | 乙未三 | fulltext.md L15421 |
 | HJ-Q4898 | ### 丁酉五 | 丁酉五 | fulltext.md L15425 |
-| HJ-Q4899 | 庚子商盤庚 | 己亥七 | fulltext.md L15431 |
+| HJ-Q4899 | 庚子商盘庚 | 己亥七 | fulltext.md L15431 |
 | HJ-Q4900 | ### 辛丑二 | 辛丑二 | fulltext.md L15433 |
 | HJ-Q4901 | ### 癸卯四 | 癸卯四 | fulltext.md L15437 |
 | HJ-Q4902 | ### 乙巳六 | 乙巳六 | fulltext.md L15441 |
@@ -4920,7 +4920,7 @@ last_updated: 2026-06-16
 | HJ-Q4908 | ### 丁巳十八 | 丁巳十八 | fulltext.md L15465 |
 | HJ-Q4909 | 庚申二十一 | 己未二十 | fulltext.md L15471 |
 | HJ-Q4910 | 壬戌二十三 | 辛酉二十二 | fulltext.md L15475 |
-| HJ-Q4911 | 經辰之辰二千一百八十九 | 癸亥二十四 | fulltext.md L15479 |
+| HJ-Q4911 | 经辰之辰二千一百八十九 | 癸亥二十四 | fulltext.md L15479 |
 | HJ-Q4912 | 乙丑二十六 | 甲子二十五 | fulltext.md L15483 |
 | HJ-Q4913 | 丁卯二十八 | 丙寅二十七 | fulltext.md L15487 |
 | HJ-Q4914 | ### 戊辰商小辛 | 戊辰商小辛 | fulltext.md L15489 |
@@ -4936,7 +4936,7 @@ last_updated: 2026-06-16
 | HJ-Q4924 | 己丑商小乙 | 戊子二十一 | fulltext.md L15531 |
 | HJ-Q4925 | ### 庚寅二 | 庚寅二 | fulltext.md L15533 |
 | HJ-Q4926 | ### 壬辰四 | 壬辰四 | fulltext.md L15537 |
-| HJ-Q4927 | ### 經辰之己二千一百九十 | 經辰之己二千一百九十 | fulltext.md L15541 |
+| HJ-Q4927 | ### 经辰之己二千一百九十 | 经辰之己二千一百九十 | fulltext.md L15541 |
 | HJ-Q4928 | ### 乙未七 | 乙未七 | fulltext.md L15545 |
 | HJ-Q4929 | ### 丁酉九 | 丁酉九 | fulltext.md L15549 |
 | HJ-Q4930 | ### 己亥十一 | 己亥十一 | fulltext.md L15553 |
@@ -4951,7 +4951,7 @@ last_updated: 2026-06-16
 | HJ-Q4939 | ### 丁巳商武丁 | 丁巳商武丁 | fulltext.md L15589 |
 | HJ-Q4940 | ### 己未三 | 己未三 | fulltext.md L15593 |
 | HJ-Q4941 | ### 辛酉五 | 辛酉五 | fulltext.md L15597 |
-| HJ-Q4942 | 經辰之午二千一百九十一 | 癸亥七 | fulltext.md L15603 |
+| HJ-Q4942 | 经辰之午二千一百九十一 | 癸亥七 | fulltext.md L15603 |
 | HJ-Q4943 | ### 甲子八 | 甲子八 | fulltext.md L15605 |
 | HJ-Q4944 | ### 丙寅十 | 丙寅十 | fulltext.md L15609 |
 | HJ-Q4945 | ### 戊辰十二 | 戊辰十二 | fulltext.md L15613 |
@@ -4967,7 +4967,7 @@ last_updated: 2026-06-16
 | HJ-Q4955 | 己丑三十三 | 戊子三十二 | fulltext.md L15655 |
 | HJ-Q4956 | 辛卯三十五 | 庚寅三十四 | fulltext.md L15659 |
 | HJ-Q4957 | 癸巳三十七 | 壬辰三十六 | fulltext.md L15663 |
-| HJ-Q4958 | 甲午三十八 | 經辰之未二千一百九十二 | fulltext.md L15667 |
+| HJ-Q4958 | 甲午三十八 | 经辰之未二千一百九十二 | fulltext.md L15667 |
 | HJ-Q4959 | ### 乙未三十九 | 乙未三十九 | fulltext.md L15669 |
 | HJ-Q4960 | 戊戌四十二 | 丁酉四十一 | fulltext.md L15675 |
 | HJ-Q4961 | 庚子四十四 | 己亥四十三 | fulltext.md L15679 |
@@ -4982,7 +4982,7 @@ last_updated: 2026-06-16
 | HJ-Q4970 | ### 丁巳二 | 丁巳二 | fulltext.md L15713 |
 | HJ-Q4971 | ### 己未四 | 己未四 | fulltext.md L15717 |
 | HJ-Q4972 | ### 辛酉六 | 辛酉六 | fulltext.md L15721 |
-| HJ-Q4973 | 經辰之申二千一百九十三 | 癸亥商祖甲 | fulltext.md L15727 |
+| HJ-Q4973 | 经辰之申二千一百九十三 | 癸亥商祖甲 | fulltext.md L15727 |
 | HJ-Q4974 | ### 甲子二 | 甲子二 | fulltext.md L15729 |
 | HJ-Q4975 | ### 丙寅四 | 丙寅四 | fulltext.md L15733 |
 | HJ-Q4976 | ### 戊辰六 | 戊辰六 | fulltext.md L15737 |
@@ -4998,8 +4998,8 @@ last_updated: 2026-06-16
 | HJ-Q4986 | 己丑二十七 | 戊子二十六 | fulltext.md L15779 |
 | HJ-Q4987 | 辛卯二十九 | 庚寅二十八 | fulltext.md L15783 |
 | HJ-Q4988 | 癸巳三十一 | 壬辰三十 | fulltext.md L15787 |
-| HJ-Q4989 | 甲午三十二 | 經辰之酉二千一百九十四 | fulltext.md L15791 |
-| HJ-Q4990 | 丙申商廩辛 | 乙未三十三 | fulltext.md L15795 |
+| HJ-Q4989 | 甲午三十二 | 经辰之酉二千一百九十四 | fulltext.md L15791 |
+| HJ-Q4990 | 丙申商廪辛 | 乙未三十三 | fulltext.md L15795 |
 | HJ-Q4991 | ### 丁酉二 | 丁酉二 | fulltext.md L15797 |
 | HJ-Q4992 | ### 己亥四 | 己亥四 | fulltext.md L15801 |
 | HJ-Q4993 | 壬寅商庚丁 | 辛丑六 | fulltext.md L15807 |
@@ -5013,7 +5013,7 @@ last_updated: 2026-06-16
 | HJ-Q5001 | ### 丁巳十六 | 丁巳十六 | fulltext.md L15837 |
 | HJ-Q5002 | ### 己未十八 | 己未十八 | fulltext.md L15841 |
 | HJ-Q5003 | 壬戌二十一 | 辛酉二十 | fulltext.md L15847 |
-| HJ-Q5004 | 經辰之戌二千一百九十五 | 癸亥商武乙 | fulltext.md L15851 |
+| HJ-Q5004 | 经辰之戌二千一百九十五 | 癸亥商武乙 | fulltext.md L15851 |
 | HJ-Q5005 | ### 甲子二 | 甲子二 | fulltext.md L15853 |
 | HJ-Q5006 | 丁卯商太丁 | 丙寅四 | fulltext.md L15859 |
 | HJ-Q5007 | ### 戊辰二 | 戊辰二 | fulltext.md L15861 |
@@ -5029,7 +5029,7 @@ last_updated: 2026-06-16
 | HJ-Q5017 | ### 戊子十九 | 戊子十九 | fulltext.md L15901 |
 | HJ-Q5018 | 辛卯二十二 | 庚寅二十一 | fulltext.md L15907 |
 | HJ-Q5019 | 癸巳二十四 | 壬辰二十三 | fulltext.md L15911 |
-| HJ-Q5020 | 甲午二十五 | 經辰之亥二千一百九十六 | fulltext.md L15915 |
+| HJ-Q5020 | 甲午二十五 | 经辰之亥二千一百九十六 | fulltext.md L15915 |
 | HJ-Q5021 | 丙申二十七 | 乙未二十六 | fulltext.md L15919 |
 | HJ-Q5022 | 戊戌二十九 | 丁酉二十八 | fulltext.md L15923 |
 | HJ-Q5023 | 庚子三十一 | 己亥三十 | fulltext.md L15927 |
@@ -5044,12 +5044,12 @@ last_updated: 2026-06-16
 | HJ-Q5032 | ### 丁巳十一 | 丁巳十一 | fulltext.md L15961 |
 | HJ-Q5033 | ### 己未十三 | 己未十三 | fulltext.md L15965 |
 | HJ-Q5034 | ### 辛酉十五 | 辛酉十五 | fulltext.md L15969 |
-| HJ-Q5035 | 〔錫周文王命為西伯〕 | 癸亥十七 | fulltext.md L15974 |
-| HJ-Q5036 | 經星之丁一百八十四 | 經月之午七 | fulltext.md L15980 |
-| HJ-Q5037 | ### 經辰之子二千一百九十七 | 經辰之子二千一百九十七 | fulltext.md L15982 |
+| HJ-Q5035 | 〔锡周文王命为西伯〕 | 癸亥十七 | fulltext.md L15974 |
+| HJ-Q5036 | 经星之丁一百八十四 | 经月之午七 | fulltext.md L15980 |
+| HJ-Q5037 | ### 经辰之子二千一百九十七 | 经辰之子二千一百九十七 | fulltext.md L15982 |
 | HJ-Q5038 | ### 乙丑十九 | 乙丑十九 | fulltext.md L15986 |
 | HJ-Q5039 | 戊辰二十二 | 丁卯二十一 | fulltext.md L15992 |
-| HJ-Q5040 | 〔周文王沒武王即位〕 | 己巳二十三 | fulltext.md L15995 |
+| HJ-Q5040 | 〔周文王没武王即位〕 | 己巳二十三 | fulltext.md L15995 |
 | HJ-Q5041 | 辛未二十五 | 庚午二十四 | fulltext.md L15999 |
 | HJ-Q5042 | 癸酉二十七 | 壬申二十六 | fulltext.md L16003 |
 | HJ-Q5043 | 乙亥二十九 | 甲戌二十八 | fulltext.md L16007 |
@@ -5062,7 +5062,7 @@ last_updated: 2026-06-16
 | HJ-Q5050 | ### 戊子三 | 戊子三 | fulltext.md L16033 |
 | HJ-Q5051 | ### 庚寅五 | 庚寅五 | fulltext.md L16037 |
 | HJ-Q5052 | ### 壬辰七 | 壬辰七 | fulltext.md L16041 |
-| HJ-Q5053 | ### 經辰之丑二千一百九十八 | 經辰之丑二千一百九十八 | fulltext.md L16045 |
+| HJ-Q5053 | ### 经辰之丑二千一百九十八 | 经辰之丑二千一百九十八 | fulltext.md L16045 |
 | HJ-Q5054 | ### 乙未十 | 乙未十 | fulltext.md L16049 |
 | HJ-Q5055 | ### 丁酉十二 | 丁酉十二 | fulltext.md L16053 |
 | HJ-Q5056 | ### 己亥十四 | 己亥十四 | fulltext.md L16057 |
@@ -5077,7 +5077,7 @@ last_updated: 2026-06-16
 | HJ-Q5065 | 戊午三十三 | 丁巳三十二 | fulltext.md L16095 |
 | HJ-Q5066 | 庚申三十五 | 己未三十四 | fulltext.md L16099 |
 | HJ-Q5067 | 壬戌三十七 | 辛酉三十六 | fulltext.md L16103 |
-| HJ-Q5068 | 經辰之寅二千一百九十九 | 癸亥周康王 | fulltext.md L16107 |
+| HJ-Q5068 | 经辰之寅二千一百九十九 | 癸亥周康王 | fulltext.md L16107 |
 | HJ-Q5069 | ### 甲子二 | 甲子二 | fulltext.md L16109 |
 | HJ-Q5070 | ### 丙寅四 | 丙寅四 | fulltext.md L16113 |
 | HJ-Q5071 | ### 戊辰六 | 戊辰六 | fulltext.md L16117 |
@@ -5093,7 +5093,7 @@ last_updated: 2026-06-16
 | HJ-Q5081 | 己丑周昭王 | 戊子二十六 | fulltext.md L16159 |
 | HJ-Q5082 | ### 庚寅二 | 庚寅二 | fulltext.md L16161 |
 | HJ-Q5083 | ### 壬辰四 | 壬辰四 | fulltext.md L16165 |
-| HJ-Q5084 | ### 經辰之卯二千二百 | 經辰之卯二千二百 | fulltext.md L16169 |
+| HJ-Q5084 | ### 经辰之卯二千二百 | 经辰之卯二千二百 | fulltext.md L16169 |
 | HJ-Q5085 | ### 乙未七 | 乙未七 | fulltext.md L16173 |
 | HJ-Q5086 | ### 丁酉九 | 丁酉九 | fulltext.md L16177 |
 | HJ-Q5087 | ### 己亥十一 | 己亥十一 | fulltext.md L16181 |
@@ -5108,7 +5108,7 @@ last_updated: 2026-06-16
 | HJ-Q5096 | ### 丁巳二十九 | 丁巳二十九 | fulltext.md L16217 |
 | HJ-Q5097 | 庚申三十二 | 己未三十一 | fulltext.md L16223 |
 | HJ-Q5098 | 壬戌三十四 | 辛酉三十三 | fulltext.md L16227 |
-| HJ-Q5099 | 經辰之辰二千二百一 | 癸亥三十五 | fulltext.md L16231 |
+| HJ-Q5099 | 经辰之辰二千二百一 | 癸亥三十五 | fulltext.md L16231 |
 | HJ-Q5100 | 乙丑三十七 | 甲子三十六 | fulltext.md L16235 |
 | HJ-Q5101 | 丁卯三十九 | 丙寅三十八 | fulltext.md L16239 |
 | HJ-Q5102 | 己巳四十一 | 戊辰四十 | fulltext.md L16243 |
@@ -5124,7 +5124,7 @@ last_updated: 2026-06-16
 | HJ-Q5112 | ### 戊子九 | 戊子九 | fulltext.md L16281 |
 | HJ-Q5113 | ### 庚寅十一 | 庚寅十一 | fulltext.md L16285 |
 | HJ-Q5114 | ### 壬辰十三 | 壬辰十三 | fulltext.md L16289 |
-| HJ-Q5115 | ### 經辰之巳二千二百二 | 經辰之巳二千二百二 | fulltext.md L16293 |
+| HJ-Q5115 | ### 经辰之巳二千二百二 | 经辰之巳二千二百二 | fulltext.md L16293 |
 | HJ-Q5116 | ### 乙未十六 | 乙未十六 | fulltext.md L16297 |
 | HJ-Q5117 | ### 丁酉十八 | 丁酉十八 | fulltext.md L16301 |
 | HJ-Q5118 | 庚子二十一 | 己亥二十 | fulltext.md L16307 |
@@ -5139,7 +5139,7 @@ last_updated: 2026-06-16
 | HJ-Q5127 | 戊午三十九 | 丁巳三十八 | fulltext.md L16343 |
 | HJ-Q5128 | 庚申四十一 | 己未四十 | fulltext.md L16347 |
 | HJ-Q5129 | 壬戌四十三 | 辛酉四十二 | fulltext.md L16351 |
-| HJ-Q5130 | 經辰之午二千二百三 | 癸亥四十四 | fulltext.md L16355 |
+| HJ-Q5130 | 经辰之午二千二百三 | 癸亥四十四 | fulltext.md L16355 |
 | HJ-Q5131 | 乙丑四十六 | 甲子四十五 | fulltext.md L16359 |
 | HJ-Q5132 | 丁卯四十八 | 丙寅四十七 | fulltext.md L16363 |
 | HJ-Q5133 | ### 戊辰四十九 | 戊辰四十九 | fulltext.md L16365 |
@@ -5155,7 +5155,7 @@ last_updated: 2026-06-16
 | HJ-Q5143 | ### 戊子二 | 戊子二 | fulltext.md L16405 |
 | HJ-Q5144 | ### 庚寅四 | 庚寅四 | fulltext.md L16409 |
 | HJ-Q5145 | ### 壬辰六 | 壬辰六 | fulltext.md L16413 |
-| HJ-Q5146 | ### 經辰之未二千二百四 | 經辰之未二千二百四 | fulltext.md L16417 |
+| HJ-Q5146 | ### 经辰之未二千二百四 | 经辰之未二千二百四 | fulltext.md L16417 |
 | HJ-Q5147 | ### 乙未九 | 乙未九 | fulltext.md L16421 |
 | HJ-Q5148 | ### 丁酉十一 | 丁酉十一 | fulltext.md L16425 |
 | HJ-Q5149 | ### 己亥十三 | 己亥十三 | fulltext.md L16429 |
@@ -5170,7 +5170,7 @@ last_updated: 2026-06-16
 | HJ-Q5158 | ### 丁巳六 | 丁巳六 | fulltext.md L16465 |
 | HJ-Q5159 | ### 己未八 | 己未八 | fulltext.md L16469 |
 | HJ-Q5160 | ### 辛酉十 | 辛酉十 | fulltext.md L16473 |
-| HJ-Q5161 | 經辰之申二千二百五 | 癸亥十二 | fulltext.md L16479 |
+| HJ-Q5161 | 经辰之申二千二百五 | 癸亥十二 | fulltext.md L16479 |
 | HJ-Q5162 | ### 甲子十三 | 甲子十三 | fulltext.md L16481 |
 | HJ-Q5163 | 丁卯周夷王 | 丙寅十五 | fulltext.md L16487 |
 | HJ-Q5164 | ### 戊辰二 | 戊辰二 | fulltext.md L16489 |
@@ -5180,13 +5180,13 @@ last_updated: 2026-06-16
 | HJ-Q5168 | ### 丙子十 | 丙子十 | fulltext.md L16505 |
 | HJ-Q5169 | ### 戊寅十二 | 戊寅十二 | fulltext.md L16509 |
 | HJ-Q5170 | ### 庚辰十四 | 庚辰十四 | fulltext.md L16513 |
-| HJ-Q5171 | 癸未周厲王 | 壬午十六 | fulltext.md L16519 |
+| HJ-Q5171 | 癸未周厉王 | 壬午十六 | fulltext.md L16519 |
 | HJ-Q5172 | ### 甲申二 | 甲申二 | fulltext.md L16521 |
 | HJ-Q5173 | ### 丙戌四 | 丙戌四 | fulltext.md L16525 |
 | HJ-Q5174 | ### 戊子六 | 戊子六 | fulltext.md L16529 |
 | HJ-Q5175 | ### 庚寅八 | 庚寅八 | fulltext.md L16533 |
 | HJ-Q5176 | ### 壬辰十 | 壬辰十 | fulltext.md L16537 |
-| HJ-Q5177 | ### 經辰之酉二千二百六 | 經辰之酉二千二百六 | fulltext.md L16541 |
+| HJ-Q5177 | ### 经辰之酉二千二百六 | 经辰之酉二千二百六 | fulltext.md L16541 |
 | HJ-Q5178 | ### 乙未十三 | 乙未十三 | fulltext.md L16545 |
 | HJ-Q5179 | ### 丁酉十五 | 丁酉十五 | fulltext.md L16549 |
 | HJ-Q5180 | ### 己亥十七 | 己亥十七 | fulltext.md L16553 |
@@ -5201,7 +5201,7 @@ last_updated: 2026-06-16
 | HJ-Q5189 | 戊午三十六 | 丁巳三十五 | fulltext.md L16591 |
 | HJ-Q5190 | 庚申三十八 | 己未三十七 | fulltext.md L16595 |
 | HJ-Q5191 | ### 辛酉三十九 | 辛酉三十九 | fulltext.md L16597 |
-| HJ-Q5192 | 經辰之戌二千二百七 | 癸亥四十一 | fulltext.md L16603 |
+| HJ-Q5192 | 经辰之戌二千二百七 | 癸亥四十一 | fulltext.md L16603 |
 | HJ-Q5193 | 乙丑四十三 | 甲子四十二 | fulltext.md L16607 |
 | HJ-Q5194 | 丁卯四十五 | 丙寅四十四 | fulltext.md L16611 |
 | HJ-Q5195 | 己巳四十七 | 戊辰四十六 | fulltext.md L16615 |
@@ -5217,7 +5217,7 @@ last_updated: 2026-06-16
 | HJ-Q5205 | ### 戊子十五 | 戊子十五 | fulltext.md L16653 |
 | HJ-Q5206 | ### 庚寅十七 | 庚寅十七 | fulltext.md L16657 |
 | HJ-Q5207 | ### 壬辰十九 | 壬辰十九 | fulltext.md L16661 |
-| HJ-Q5208 | 甲午二十一 | 經辰之亥二千二百八 | fulltext.md L16667 |
+| HJ-Q5208 | 甲午二十一 | 经辰之亥二千二百八 | fulltext.md L16667 |
 | HJ-Q5209 | 丙申二十三 | 乙未二十二 | fulltext.md L16671 |
 | HJ-Q5210 | 戊戌二十五 | 丁酉二十四 | fulltext.md L16675 |
 | HJ-Q5211 | 庚子二十七 | 己亥二十六 | fulltext.md L16679 |
@@ -5233,71 +5233,71 @@ last_updated: 2026-06-16
 | HJ-Q5221 | 庚申周幽王 | 己未四十六 | fulltext.md L16719 |
 | HJ-Q5222 | ### 辛酉二 | 辛酉二 | fulltext.md L16721 |
 | HJ-Q5223 | ### 癸亥四 | 癸亥四 | fulltext.md L16725 |
-| HJ-Q5224 | 欽定四庫全書 | 皇極經世書卷三下 | fulltext.md L16729 |
-| HJ-Q5225 | 經月之午七 | 經日之甲一 | fulltext.md L16734 |
-| HJ-Q5226 | 經辰之子二千二百九 | 經星之戊一百八十五 | fulltext.md L16738 |
+| HJ-Q5224 | 钦定四库全书 | 皇极经世书卷三下 | fulltext.md L16729 |
+| HJ-Q5225 | 经月之午七 | 经日之甲一 | fulltext.md L16734 |
+| HJ-Q5226 | 经辰之子二千二百九 | 经星之戊一百八十五 | fulltext.md L16738 |
 | HJ-Q5227 | ### 甲子五 | 甲子五 | fulltext.md L16740 |
 | HJ-Q5228 | ### 丙寅七 | 丙寅七 | fulltext.md L16744 |
 | HJ-Q5229 | ### 戊辰九 | 戊辰九 | fulltext.md L16748 |
-| HJ-Q5230 | 辛未東周〔平王〕 晉〔文侯〕 齊〔荘公〕 宋〔戴公〕 楚〔若敖〕 秦〔㐮公〕壬申二 十二 二十六 三十一 二十二 二癸酉三〔魯惠〕 十三 二十七 三十二 二十三 三甲戌四 十四 二十八 三 | 庚午十一 | fulltext.md L16754 |
-| HJ-Q5231 | 甲午二十四 三十四 四十八 宋〔宣公〕 十一 十二乙未二十五 三十五 四十九 二 十二 十三丙申二十六 晉〔昭侯〕 五十 三 十三 十四丁酉二十七 二 五十一 四 十四 十五戊戌二十八 三 五十二 | 經辰之丑二千二百一十 | fulltext.md L16758 |
-| HJ-Q5232 | 甲子三 晉〔哀侯〕 十四 三 二十四 四十二乙丑四 二 十五四 二十五 四十三丙寅五 三 十六 五 二十六 秦〔靈公〕丁邜六 四 十七 六 二十七 二戊辰七 五 十八 七 二十八 三己巳八 六 十九 八 二十 | 經辰之寅二千二百一十一 | fulltext.md L16763 |
-| HJ-Q5233 | 甲午十 二十 十一 五 三 十二乙未十一 二十一 齊〔無知〕 六 四 十三丙申十二 二十二 齊〔桓公〕 七 五 十四丁酉十三 二十三 二 八 六 十五戊戌十四 二十四 三 九 七 十六己亥十五 二十五 四 十 | 經辰之邜二千二百一十二 | fulltext.md L16768 |
-| HJ-Q5234 | 甲子二十 二十 二十九 二十五 十六 三乙丑二十一 二十一 三十 二十六 十七 四丙寅二十二 二十二 三十一 二十七 十八 五丁邜二十三 二十三 三十二 二十八 十九 六戊辰二十四 二十四 三十三 | 經辰之辰二千二百一十三 | fulltext.md L16773 |
-| HJ-Q5235 | 甲午二十五 晉〔襄公〕 六 十 楚〔穆王〕 三十三乙未二十六〔魯文〕 二 七 十一 二 三十四丙申二十七 三 八 十二 三 三十五丁酉二十八 四 九 十三 四 三十六戊戌二十九 五 十 十四 五 三十七 | 經辰之巳二千二百一十四 | fulltext.md L16782 |
-| HJ-Q5236 | 〔匡王〕 九 齊〔懿公〕 八 二 九 | 己酉周 | fulltext.md L16789 |
-| HJ-Q5237 | 〔定王〕 晉〔成公〕 三 六 八 三 | 乙邜周 | fulltext.md L16794 |
-| HJ-Q5238 | 甲子十 三 二 十五 十七 七乙丑十一 四 三 十六 十八 八丙寅十二 五 四 十七 十九 九丁邜十三 六 五 十八 二十 十戊辰十四 七 六 十九 二十一 十一己巳十五 八 七 二十 二十二 十二庚午十六 九 八 二 | 經辰之午二千二百一十五 | fulltext.md L16805 |
-| HJ-Q5239 | 甲午五 六 十五 九 二十四 十 十九乙未六 七 十六 十 二十五 十一 二十丙申七 八 十七 十一 二十六 十二 二十一丁酉八 九 十八 十二 二十七 十三 二十二戊戌九 十 十九 十三 二十八 十四 二十三己 | 經辰之未二千二百一十六 | fulltext.md L16811 |
-| HJ-Q5240 | 甲子八 二十一 十一 三十九 四 四十 十一乙丑九 二十二 十二 四十 五 秦〔襄公〕 十二丙寅十 二十三 十三 四十一 六 二 十三丁邜十一 二十四 十四 四十二 七 三 十四戊辰十二 二十五 十五 四十 | 經辰之申二千二百一十七 | fulltext.md L16816 |
-| HJ-Q5241 | 甲午十三 五 四十一 十 九 三十 八乙未十四 六 四十二 十一 十 三十一 九丙申十五 七 四十三 十二 十一 三十二 十丁酉十六 八 四十四 十三 十二 三十三 十一戊戌十七 九 四十五 十四 十三 三十四 | 經辰之酉二千二百一十八 | fulltext.md L16820 |
-| HJ-Q5242 | 甲子四十三 三十五 五 四十 十二 二 十九 二十乙丑四十四 三十六 六 四十一 十三 三 二十 二十一丙寅周〔元王〕 三十七 七 四十二 十四 四 二十一 二十二丁邜二 晉〔出公〕 八 四十三 十五 五 | 經辰之戌二千二百一十九 | fulltext.md L16824 |
+| HJ-Q5230 | 辛未东周〔平王〕 晋〔文侯〕 齐〔荘公〕 宋〔戴公〕 楚〔若敖〕 秦〔㐮公〕壬申二 十二 二十六 三十一 二十二 二癸酉三〔鲁惠〕 十三 二十七 三十二 二十三 三甲戌四 十四 二十八 三 | 庚午十一 | fulltext.md L16754 |
+| HJ-Q5231 | 甲午二十四 三十四 四十八 宋〔宣公〕 十一 十二乙未二十五 三十五 四十九 二 十二 十三丙申二十六 晋〔昭侯〕 五十 三 十三 十四丁酉二十七 二 五十一 四 十四 十五戊戌二十八 三 五十二 | 经辰之丑二千二百一十 | fulltext.md L16758 |
+| HJ-Q5232 | 甲子三 晋〔哀侯〕 十四 三 二十四 四十二乙丑四 二 十五四 二十五 四十三丙寅五 三 十六 五 二十六 秦〔灵公〕丁邜六 四 十七 六 二十七 二戊辰七 五 十八 七 二十八 三己巳八 六 十九 八 二十 | 经辰之寅二千二百一十一 | fulltext.md L16763 |
+| HJ-Q5233 | 甲午十 二十 十一 五 三 十二乙未十一 二十一 齐〔无知〕 六 四 十三丙申十二 二十二 齐〔桓公〕 七 五 十四丁酉十三 二十三 二 八 六 十五戊戌十四 二十四 三 九 七 十六己亥十五 二十五 四 十 | 经辰之邜二千二百一十二 | fulltext.md L16768 |
+| HJ-Q5234 | 甲子二十 二十 二十九 二十五 十六 三乙丑二十一 二十一 三十 二十六 十七 四丙寅二十二 二十二 三十一 二十七 十八 五丁邜二十三 二十三 三十二 二十八 十九 六戊辰二十四 二十四 三十三 | 经辰之辰二千二百一十三 | fulltext.md L16773 |
+| HJ-Q5235 | 甲午二十五 晋〔襄公〕 六 十 楚〔穆王〕 三十三乙未二十六〔鲁文〕 二 七 十一 二 三十四丙申二十七 三 八 十二 三 三十五丁酉二十八 四 九 十三 四 三十六戊戌二十九 五 十 十四 五 三十七 | 经辰之巳二千二百一十四 | fulltext.md L16782 |
+| HJ-Q5236 | 〔匡王〕 九 齐〔懿公〕 八 二 九 | 己酉周 | fulltext.md L16789 |
+| HJ-Q5237 | 〔定王〕 晋〔成公〕 三 六 八 三 | 乙邜周 | fulltext.md L16794 |
+| HJ-Q5238 | 甲子十 三 二 十五 十七 七乙丑十一 四 三 十六 十八 八丙寅十二 五 四 十七 十九 九丁邜十三 六 五 十八 二十 十戊辰十四 七 六 十九 二十一 十一己巳十五 八 七 二十 二十二 十二庚午十六 九 八 二 | 经辰之午二千二百一十五 | fulltext.md L16805 |
+| HJ-Q5239 | 甲午五 六 十五 九 二十四 十 十九乙未六 七 十六 十 二十五 十一 二十丙申七 八 十七 十一 二十六 十二 二十一丁酉八 九 十八 十二 二十七 十三 二十二戊戌九 十 十九 十三 二十八 十四 二十三己 | 经辰之未二千二百一十六 | fulltext.md L16811 |
+| HJ-Q5240 | 甲子八 二十一 十一 三十九 四 四十 十一乙丑九 二十二 十二 四十 五 秦〔襄公〕 十二丙寅十 二十三 十三 四十一 六 二 十三丁邜十一 二十四 十四 四十二 七 三 十四戊辰十二 二十五 十五 四十 | 经辰之申二千二百一十七 | fulltext.md L16816 |
+| HJ-Q5241 | 甲午十三 五 四十一 十 九 三十 八乙未十四 六 四十二 十一 十 三十一 九丙申十五 七 四十三 十二 十一 三十二 十丁酉十六 八 四十四 十三 十二 三十三 十一戊戌十七 九 四十五 十四 十三 三十四 | 经辰之酉二千二百一十八 | fulltext.md L16820 |
+| HJ-Q5242 | 甲子四十三 三十五 五 四十 十二 二 十九 二十乙丑四十四 三十六 六 四十一 十三 三 二十 二十一丙寅周〔元王〕 三十七 七 四十二 十四 四 二十一 二十二丁邜二 晋〔出公〕 八 四十三 十五 五 | 经辰之戌二千二百一十九 | fulltext.md L16824 |
 | HJ-Q5243 | 〔慎定〕 六 十三 四十八 二十 十 二十八癸酉二 七 十四 四十九 二十一 十一甲戌三 八 十五 五十 二十二 十二乙亥四 九 十六 五十一 二十三 十三丙子五 十 十七 五十二 二十四 十四丁丑六 十一 | 壬申周 | fulltext.md L16830 |
-| HJ-Q5244 | 甲午二十三 十二 九 六 四十二 三十二乙未二十四 十三 十 七 四十三 三十三丙申二十五 十四 十一 八 四十四 三十四丁酉二十六 十五 十二 九 四十五 秦〔桓公〕戊戌二十七 十六 十三 十 四十 | 經辰之亥二千二百二十 | fulltext.md L16834 |
-| HJ-Q5245 | 經星之巳一百八十六 | 經月之午七 | fulltext.md L16849 |
-| HJ-Q5246 | 甲子九 五 三十九三十六十五十二 | 經辰之子二千二百二十一 | fulltext.md L16853 |
-| HJ-Q5247 | 甲午十五 八 十八 十一 十六 十三 十三 三十八 十三乙未十六 九 後齊〔太公〕十二 十七 秦〔出子〕 韓〔文侯〕 魏〔武侯〕 趙〔敬侯〕丙申十七 十 二 十三 十八 秦〔獻公〕 二 二 二丁酉十 | 經辰之丑二千二百二十二 | fulltext.md L16858 |
+| HJ-Q5244 | 甲午二十三 十二 九 六 四十二 三十二乙未二十四 十三 十 七 四十三 三十三丙申二十五 十四 十一 八 四十四 三十四丁酉二十六 十五 十二 九 四十五 秦〔桓公〕戊戌二十七 十六 十三 十 四十 | 经辰之亥二千二百二十 | fulltext.md L16834 |
+| HJ-Q5245 | 经星之巳一百八十六 | 经月之午七 | fulltext.md L16849 |
+| HJ-Q5246 | 甲子九 五 三十九三十六十五十二 | 经辰之子二千二百二十一 | fulltext.md L16853 |
+| HJ-Q5247 | 甲午十五 八 十八 十一 十六 十三 十三 三十八 十三乙未十六 九 后齐〔太公〕十二 十七 秦〔出子〕 韩〔文侯〕 魏〔武侯〕 赵〔敬侯〕丙申十七 十 二 十三 十八 秦〔献公〕 二 二 二丁酉十 | 经辰之丑二千二百二十二 | fulltext.md L16858 |
 | HJ-Q5248 | 〔烈王〕 四 二十三 六 十一 二 十二 十二 | 丙午周 | fulltext.md L16861 |
-| HJ-Q5249 | 甲子十二 二十二 十五 十三 五 二 十四 十八乙丑十三 二十三 十六 十四 六 三 十五 十九丙寅十四 二十四 十七 十五 七 四 十六 二十丁卯十五 二十五 十八 十六 八 五 十七 二十一戊辰十六 二十六 | 經辰之寅二千二百二十三 | fulltext.md L16870 |
-| HJ-Q5250 | 甲午四十二 十六 四 二 十一 六 八 二十三乙未四十三 十七 五 三 十二 七 九 二十四丙申四十四 十八 六 四 十三 八 十 趙〔武靈〕丁酉四十五 十九 七 五 十四 九 十一 二戊戌四十六 齊〔湣王〕 八 | 經辰之卯二千二百二十四 | fulltext.md L16874 |
-| HJ-Q5251 | 甲子十八 二十七 三十四 二 十 十五 二十二 二 十六乙丑十九 二十八 三十五 三 十一 十六 二十三 三 十七丙寅二十 二十九 三十六 四 十二 韓〔釐王〕 魏〔昭王〕 四 十八丁卯二十一 三十 三十 | 經辰之辰二千二百二十五 | fulltext.md L16878 |
-| HJ-Q5252 | 〔襄王〕 十五 二十三 十二 十二 十五 二十九 | 丁丑三十一齊 | fulltext.md L16882 |
-| HJ-Q5253 | 甲午四十八 十八 三十二 四十 六 十 三十二 五乙未四十九 十九 三十三 四十一 七 十一 三十三 六丙申五十 二十 三十四 四十二 八 十二 趙〔孝成〕 七丁酉五十一 齊〔王建〕 三十五 四十三 九 | 經辰之巳二千二百二十六 | fulltext.md L16893 |
-| HJ-Q5254 | 甲子 二十八 楚〔幽王〕 十 二 六 八 十八乙丑 二十九 二 十一 三 七 九 十九丙寅 三十 三 十二 四 八 趙〔王遷〕 二十丁卯 三十一 四 十三 五 九 二 二十一戊辰 三十二 五 十四 六 十 三 二十二己巳 三 | 經辰之午二千二百二十七 | fulltext.md L16906 |
-| HJ-Q5255 | 〔先入關〕 楚〔項王後入關〕秦亡 | 甲午漢髙祖 | fulltext.md L16927 |
+| HJ-Q5249 | 甲子十二 二十二 十五 十三 五 二 十四 十八乙丑十三 二十三 十六 十四 六 三 十五 十九丙寅十四 二十四 十七 十五 七 四 十六 二十丁卯十五 二十五 十八 十六 八 五 十七 二十一戊辰十六 二十六 | 经辰之寅二千二百二十三 | fulltext.md L16870 |
+| HJ-Q5250 | 甲午四十二 十六 四 二 十一 六 八 二十三乙未四十三 十七 五 三 十二 七 九 二十四丙申四十四 十八 六 四 十三 八 十 赵〔武灵〕丁酉四十五 十九 七 五 十四 九 十一 二戊戌四十六 齐〔湣王〕 八 | 经辰之卯二千二百二十四 | fulltext.md L16874 |
+| HJ-Q5251 | 甲子十八 二十七 三十四 二 十 十五 二十二 二 十六乙丑十九 二十八 三十五 三 十一 十六 二十三 三 十七丙寅二十 二十九 三十六 四 十二 韩〔厘王〕 魏〔昭王〕 四 十八丁卯二十一 三十 三十 | 经辰之辰二千二百二十五 | fulltext.md L16878 |
+| HJ-Q5252 | 〔襄王〕 十五 二十三 十二 十二 十五 二十九 | 丁丑三十一齐 | fulltext.md L16882 |
+| HJ-Q5253 | 甲午四十八 十八 三十二 四十 六 十 三十二 五乙未四十九 十九 三十三 四十一 七 十一 三十三 六丙申五十 二十 三十四 四十二 八 十二 赵〔孝成〕 七丁酉五十一 齐〔王建〕 三十五 四十三 九 | 经辰之巳二千二百二十六 | fulltext.md L16893 |
+| HJ-Q5254 | 甲子 二十八 楚〔幽王〕 十 二 六 八 十八乙丑 二十九 二 十一 三 七 九 十九丙寅 三十 三 十二 四 八 赵〔王迁〕 二十丁卯 三十一 四 十三 五 九 二 二十一戊辰 三十二 五 十四 六 十 三 二十二己巳 三 | 经辰之午二千二百二十七 | fulltext.md L16906 |
+| HJ-Q5255 | 〔先入关〕 楚〔项王后入关〕秦亡 | 甲午汉髙祖 | fulltext.md L16927 |
 | HJ-Q5256 | ### 辛丑八 | 辛丑八 | fulltext.md L16935 |
 | HJ-Q5257 | ### 癸卯十 | 癸卯十 | fulltext.md L16939 |
 | HJ-Q5258 | ### 乙巳十二 | 乙巳十二 | fulltext.md L16943 |
-| HJ-Q5259 | ### 丁未漢惠帝 | 丁未漢惠帝 | fulltext.md L16947 |
+| HJ-Q5259 | ### 丁未汉惠帝 | 丁未汉惠帝 | fulltext.md L16947 |
 | HJ-Q5260 | ### 己酉三 | 己酉三 | fulltext.md L16951 |
 | HJ-Q5261 | ### 辛亥五 | 辛亥五 | fulltext.md L16955 |
-| HJ-Q5262 | 甲寅漢〔呂后立無名子〕 | 癸丑七 | fulltext.md L16961 |
+| HJ-Q5262 | 甲寅汉〔吕后立无名子〕 | 癸丑七 | fulltext.md L16961 |
 | HJ-Q5263 | ### 乙卯二 | 乙卯二 | fulltext.md L16963 |
-| HJ-Q5264 | 〔呂后立恒山王〕 | 丁巳漢 | fulltext.md L16968 |
+| HJ-Q5264 | 〔吕后立恒山王〕 | 丁巳汉 | fulltext.md L16968 |
 | HJ-Q5265 | ### 戊午二 | 戊午二 | fulltext.md L16970 |
-| HJ-Q5266 | 辛酉漢文帝 | 庚申四 | fulltext.md L16976 |
+| HJ-Q5266 | 辛酉汉文帝 | 庚申四 | fulltext.md L16976 |
 | HJ-Q5267 | ### 壬戌二 | 壬戌二 | fulltext.md L16978 |
-| HJ-Q5268 | ### 經辰之申二千二百二十九 | 經辰之申二千二百二十九 | fulltext.md L16982 |
+| HJ-Q5268 | ### 经辰之申二千二百二十九 | 经辰之申二千二百二十九 | fulltext.md L16982 |
 | HJ-Q5269 | ### 乙丑五 | 乙丑五 | fulltext.md L16986 |
 | HJ-Q5270 | ### 丁卯七 | 丁卯七 | fulltext.md L16990 |
 | HJ-Q5271 | ### 己巳九 | 己巳九 | fulltext.md L16994 |
 | HJ-Q5272 | ### 辛未十一 | 辛未十一 | fulltext.md L16998 |
 | HJ-Q5273 | ### 癸酉十三 | 癸酉十三 | fulltext.md L17002 |
 | HJ-Q5274 | ### 乙亥十五 | 乙亥十五 | fulltext.md L17006 |
-| HJ-Q5275 | 戊寅〔後元〕 | 丁丑十七 | fulltext.md L17012 |
+| HJ-Q5275 | 戊寅〔后元〕 | 丁丑十七 | fulltext.md L17012 |
 | HJ-Q5276 | ### 己卯二 | 己卯二 | fulltext.md L17014 |
 | HJ-Q5277 | ### 辛巳四 | 辛巳四 | fulltext.md L17018 |
 | HJ-Q5278 | ### 癸未六 | 癸未六 | fulltext.md L17022 |
-| HJ-Q5279 | ### 乙酉漢景帝 | 乙酉漢景帝 | fulltext.md L17026 |
+| HJ-Q5279 | ### 乙酉汉景帝 | 乙酉汉景帝 | fulltext.md L17026 |
 | HJ-Q5280 | ### 丁亥三 | 丁亥三 | fulltext.md L17030 |
 | HJ-Q5281 | ### 己丑五 | 己丑五 | fulltext.md L17034 |
 | HJ-Q5282 | 壬辰〔中元〕 | 辛卯七 | fulltext.md L17040 |
-| HJ-Q5283 | 經辰之酉二千二百三十 | 癸巳二 | fulltext.md L17044 |
+| HJ-Q5283 | 经辰之酉二千二百三十 | 癸巳二 | fulltext.md L17044 |
 | HJ-Q5284 | ### 甲午三 | 甲午三 | fulltext.md L17046 |
 | HJ-Q5285 | ### 丙申五 | 丙申五 | fulltext.md L17050 |
 | HJ-Q5286 | ### 戊戌 | 戊戌 | fulltext.md L17054 |
 | HJ-Q5287 | ### 己亥二 | 己亥二 | fulltext.md L17057 |
-| HJ-Q5288 | ### 辛丑漢武帝 | 辛丑漢武帝 | fulltext.md L17061 |
+| HJ-Q5288 | ### 辛丑汉武帝 | 辛丑汉武帝 | fulltext.md L17061 |
 | HJ-Q5289 | ### 壬寅二 | 壬寅二 | fulltext.md L17064 |
 | HJ-Q5290 | ### 甲辰四 | 甲辰四 | fulltext.md L17068 |
 | HJ-Q5291 | 丁未〔元光〕 | 丙午六 | fulltext.md L17074 |
@@ -5309,7 +5309,7 @@ last_updated: 2026-06-16
 | HJ-Q5297 | 己未〔元狩〕 | 戊午六 | fulltext.md L17098 |
 | HJ-Q5298 | ### 庚申二 | 庚申二 | fulltext.md L17100 |
 | HJ-Q5299 | ### 壬戌四 | 壬戌四 | fulltext.md L17104 |
-| HJ-Q5300 | ### 經辰之戌二千二百三十一 | 經辰之戌二千二百三十一 | fulltext.md L17108 |
+| HJ-Q5300 | ### 经辰之戌二千二百三十一 | 经辰之戌二千二百三十一 | fulltext.md L17108 |
 | HJ-Q5301 | ### 乙丑 | 乙丑 | fulltext.md L17112 |
 | HJ-Q5302 | ### 丙寅二 | 丙寅二 | fulltext.md L17115 |
 | HJ-Q5303 | ### 戊辰四 | 戊辰四 | fulltext.md L17119 |
@@ -5318,22 +5318,22 @@ last_updated: 2026-06-16
 | HJ-Q5306 | ### 甲戌四 | 甲戌四 | fulltext.md L17131 |
 | HJ-Q5307 | 丁丑〔太初〕 | 丙子六 | fulltext.md L17137 |
 | HJ-Q5308 | ### 戊寅二 | 戊寅二 | fulltext.md L17139 |
-| HJ-Q5309 | 辛巳〔天漢〕 | 庚辰四 | fulltext.md L17145 |
+| HJ-Q5309 | 辛巳〔天汉〕 | 庚辰四 | fulltext.md L17145 |
 | HJ-Q5310 | ### 壬午二 | 壬午二 | fulltext.md L17147 |
 | HJ-Q5311 | 乙酉〔太始〕 | 甲申四 | fulltext.md L17153 |
 | HJ-Q5312 | ### 丙戌二 | 丙戌二 | fulltext.md L17155 |
 | HJ-Q5313 | 己丑〔征和〕 | 戊子四 | fulltext.md L17161 |
 | HJ-Q5314 | ### 庚寅二 | 庚寅二 | fulltext.md L17163 |
-| HJ-Q5315 | 癸巳〔後元〕 | 壬辰四 | fulltext.md L17169 |
-| HJ-Q5316 | ### 經辰之亥二千二百三十二 | 經辰之亥二千二百三十二 | fulltext.md L17171 |
-| HJ-Q5317 | ### 乙未漢昭帝 | 乙未漢昭帝 | fulltext.md L17175 |
+| HJ-Q5315 | 癸巳〔后元〕 | 壬辰四 | fulltext.md L17169 |
+| HJ-Q5316 | ### 经辰之亥二千二百三十二 | 经辰之亥二千二百三十二 | fulltext.md L17171 |
+| HJ-Q5317 | ### 乙未汉昭帝 | 乙未汉昭帝 | fulltext.md L17175 |
 | HJ-Q5318 | ### 丙申二 | 丙申二 | fulltext.md L17178 |
 | HJ-Q5319 | ### 戊戌四 | 戊戌四 | fulltext.md L17182 |
 | HJ-Q5320 | 辛丑〔元鳯〕 | 庚子六 | fulltext.md L17188 |
 | HJ-Q5321 | ### 壬寅二 | 壬寅二 | fulltext.md L17190 |
 | HJ-Q5322 | ### 甲辰四 | 甲辰四 | fulltext.md L17194 |
 | HJ-Q5323 | 丁未〔元平〕 | 丙午六 | fulltext.md L17200 |
-| HJ-Q5324 | ### 戊申漢宣帝 | 戊申漢宣帝 | fulltext.md L17202 |
+| HJ-Q5324 | ### 戊申汉宣帝 | 戊申汉宣帝 | fulltext.md L17202 |
 | HJ-Q5325 | ### 己酉二 | 己酉二 | fulltext.md L17205 |
 | HJ-Q5326 | 壬子〔地莭〕 | 辛亥四 | fulltext.md L17211 |
 | HJ-Q5327 | ### 癸丑二 | 癸丑二 | fulltext.md L17213 |
@@ -5342,15 +5342,15 @@ last_updated: 2026-06-16
 | HJ-Q5330 | 庚申〔神爵〕 | 己未四 | fulltext.md L17227 |
 | HJ-Q5331 | ### 辛酉二 | 辛酉二 | fulltext.md L17229 |
 | HJ-Q5332 | ### 癸亥四 | 癸亥四 | fulltext.md L17233 |
-| HJ-Q5333 | 欽定四庫全書 | 皇極經世書巻四上 | fulltext.md L17237 |
-| HJ-Q5334 | 經月之午七 | 經日之甲一 | fulltext.md L17242 |
-| HJ-Q5335 | 經辰之子二千二百三十三 | 經星之庚一百八十七 | fulltext.md L17246 |
+| HJ-Q5333 | 钦定四库全书 | 皇极经世书巻四上 | fulltext.md L17237 |
+| HJ-Q5334 | 经月之午七 | 经日之甲一 | fulltext.md L17242 |
+| HJ-Q5335 | 经辰之子二千二百三十三 | 经星之庚一百八十七 | fulltext.md L17246 |
 | HJ-Q5336 | ### 甲子 | 甲子 | fulltext.md L17248 |
 | HJ-Q5337 | ### 乙丑二 | 乙丑二 | fulltext.md L17251 |
 | HJ-Q5338 | 戊辰〔甘露〕 | 丁卯四 | fulltext.md L17257 |
 | HJ-Q5339 | ### 己巳二 | 己巳二 | fulltext.md L17259 |
-| HJ-Q5340 | 壬申〔黄龍〕 | 辛未四 | fulltext.md L17265 |
-| HJ-Q5341 | ### 癸酉漢元帝 | 癸酉漢元帝 | fulltext.md L17267 |
+| HJ-Q5340 | 壬申〔黄龙〕 | 辛未四 | fulltext.md L17265 |
+| HJ-Q5341 | ### 癸酉汉元帝 | 癸酉汉元帝 | fulltext.md L17267 |
 | HJ-Q5342 | ### 甲戌二 | 甲戌二 | fulltext.md L17270 |
 | HJ-Q5343 | ### 丙子四 | 丙子四 | fulltext.md L17274 |
 | HJ-Q5344 | ### 戊寅 | 戊寅 | fulltext.md L17278 |
@@ -5360,29 +5360,29 @@ last_updated: 2026-06-16
 | HJ-Q5348 | ### 甲申二 | 甲申二 | fulltext.md L17292 |
 | HJ-Q5349 | ### 丙戌四 | 丙戌四 | fulltext.md L17296 |
 | HJ-Q5350 | ### 戊子 | 戊子 | fulltext.md L17300 |
-| HJ-Q5351 | ### 己丑漢成帝 | 己丑漢成帝 | fulltext.md L17303 |
+| HJ-Q5351 | ### 己丑汉成帝 | 己丑汉成帝 | fulltext.md L17303 |
 | HJ-Q5352 | ### 庚寅二 | 庚寅二 | fulltext.md L17306 |
 | HJ-Q5353 | 癸巳〔河平〕 | 壬辰四 | fulltext.md L17312 |
-| HJ-Q5354 | ### 經辰之丑二千二百三十四 | 經辰之丑二千二百三十四 | fulltext.md L17314 |
+| HJ-Q5354 | ### 经辰之丑二千二百三十四 | 经辰之丑二千二百三十四 | fulltext.md L17314 |
 | HJ-Q5355 | ### 乙未三 | 乙未三 | fulltext.md L17318 |
 | HJ-Q5356 | ### 丁酉 | 丁酉 | fulltext.md L17322 |
 | HJ-Q5357 | ### 戊戌二 | 戊戌二 | fulltext.md L17325 |
-| HJ-Q5358 | 辛丑〔鴻嘉〕 | 庚子四 | fulltext.md L17331 |
+| HJ-Q5358 | 辛丑〔鸿嘉〕 | 庚子四 | fulltext.md L17331 |
 | HJ-Q5359 | ### 壬寅二 | 壬寅二 | fulltext.md L17333 |
 | HJ-Q5360 | 乙巳〔永始〕 | 甲辰四 | fulltext.md L17339 |
 | HJ-Q5361 | ### 丙午二 | 丙午二 | fulltext.md L17341 |
 | HJ-Q5362 | 己酉〔元延〕 | 戊申四 | fulltext.md L17347 |
 | HJ-Q5363 | ### 庚戌二 | 庚戌二 | fulltext.md L17349 |
-| HJ-Q5364 | 癸丑〔綏和〕 | 壬子四 | fulltext.md L17355 |
-| HJ-Q5365 | 乙卯漢哀帝〔建平〕 | 甲寅二 | fulltext.md L17359 |
+| HJ-Q5364 | 癸丑〔绥和〕 | 壬子四 | fulltext.md L17355 |
+| HJ-Q5365 | 乙卯汉哀帝〔建平〕 | 甲寅二 | fulltext.md L17359 |
 | HJ-Q5366 | ### 丙辰二 | 丙辰二 | fulltext.md L17361 |
-| HJ-Q5367 | 己未五〔元壽〕 | 戊午四 | fulltext.md L17367 |
-| HJ-Q5368 | 辛酉漢平帝〔元始〕 | 庚申六 | fulltext.md L17371 |
+| HJ-Q5367 | 己未五〔元寿〕 | 戊午四 | fulltext.md L17367 |
+| HJ-Q5368 | 辛酉汉平帝〔元始〕 | 庚申六 | fulltext.md L17371 |
 | HJ-Q5369 | ### 壬戌二 | 壬戌二 | fulltext.md L17373 |
-| HJ-Q5370 | ### 經辰之寅二千二百三十五 | 經辰之寅二千二百三十五 | fulltext.md L17377 |
-| HJ-Q5371 | 丙寅漢〔孺子居攝〕 | 乙丑五 | fulltext.md L17383 |
+| HJ-Q5370 | ### 经辰之寅二千二百三十五 | 经辰之寅二千二百三十五 | fulltext.md L17377 |
+| HJ-Q5371 | 丙寅汉〔孺子居摄〕 | 乙丑五 | fulltext.md L17383 |
 | HJ-Q5372 | 戊辰〔初始〕 | 丁卯二 | fulltext.md L17387 |
-| HJ-Q5373 | 〔稱新室改〕 | 己巳漢王莾 | fulltext.md L17390 |
+| HJ-Q5373 | 〔称新室改〕 | 己巳汉王莾 | fulltext.md L17390 |
 | HJ-Q5374 | ### 庚午二 | 庚午二 | fulltext.md L17392 |
 | HJ-Q5375 | ### 壬申四 | 壬申四 | fulltext.md L17396 |
 | HJ-Q5376 | ### 甲戌 | 甲戌 | fulltext.md L17400 |
@@ -5390,14 +5390,14 @@ last_updated: 2026-06-16
 | HJ-Q5378 | ### 丁丑四 | 丁丑四 | fulltext.md L17407 |
 | HJ-Q5379 | 庚辰〔地皇〕 | 己卯六 | fulltext.md L17413 |
 | HJ-Q5380 | ### 辛巳二 | 辛巳二 | fulltext.md L17415 |
-| HJ-Q5381 | 〔稱更始〕 | 癸未劉𤣥 | fulltext.md L17420 |
-| HJ-Q5382 | 〔封蕭王〕 | 甲申漢光武帝 | fulltext.md L17423 |
-| HJ-Q5383 | 〔稱帝稱建武〕 | 乙酉二 | fulltext.md L17426 |
+| HJ-Q5381 | 〔称更始〕 | 癸未刘𤣥 | fulltext.md L17420 |
+| HJ-Q5382 | 〔封萧王〕 | 甲申汉光武帝 | fulltext.md L17423 |
+| HJ-Q5383 | 〔称帝称建武〕 | 乙酉二 | fulltext.md L17426 |
 | HJ-Q5384 | ### 丙戌三 | 丙戌三 | fulltext.md L17428 |
 | HJ-Q5385 | ### 戊子五 | 戊子五 | fulltext.md L17432 |
 | HJ-Q5386 | ### 庚寅七 | 庚寅七 | fulltext.md L17436 |
 | HJ-Q5387 | ### 壬辰九 | 壬辰九 | fulltext.md L17440 |
-| HJ-Q5388 | ### 經辰之卯二千二百三十六 | 經辰之卯二千二百三十六 | fulltext.md L17444 |
+| HJ-Q5388 | ### 经辰之卯二千二百三十六 | 经辰之卯二千二百三十六 | fulltext.md L17444 |
 | HJ-Q5389 | ### 乙未十二 | 乙未十二 | fulltext.md L17448 |
 | HJ-Q5390 | ### 丁酉十四 | 丁酉十四 | fulltext.md L17452 |
 | HJ-Q5391 | ### 己亥十六 | 己亥十六 | fulltext.md L17456 |
@@ -5409,64 +5409,64 @@ last_updated: 2026-06-16
 | HJ-Q5397 | 壬子二十九 | 辛亥二十八 | fulltext.md L17482 |
 | HJ-Q5398 | 甲寅三十一 | 癸丑三十 | fulltext.md L17486 |
 | HJ-Q5399 | 丙辰〔中元〕 | 乙卯三十二 | fulltext.md L17490 |
-| HJ-Q5400 | 戊午漢明帝〔永平〕 | 丁巳二 | fulltext.md L17494 |
+| HJ-Q5400 | 戊午汉明帝〔永平〕 | 丁巳二 | fulltext.md L17494 |
 | HJ-Q5401 | ### 己未二 | 己未二 | fulltext.md L17496 |
 | HJ-Q5402 | ### 辛酉四 | 辛酉四 | fulltext.md L17500 |
-| HJ-Q5403 | 經辰之辰二千二百三十七 | 癸亥六 | fulltext.md L17506 |
+| HJ-Q5403 | 经辰之辰二千二百三十七 | 癸亥六 | fulltext.md L17506 |
 | HJ-Q5404 | ### 甲子七 | 甲子七 | fulltext.md L17508 |
 | HJ-Q5405 | ### 丙寅九 | 丙寅九 | fulltext.md L17512 |
 | HJ-Q5406 | ### 戊辰十一 | 戊辰十一 | fulltext.md L17516 |
 | HJ-Q5407 | ### 庚午十三 | 庚午十三 | fulltext.md L17520 |
 | HJ-Q5408 | ### 壬申十五 | 壬申十五 | fulltext.md L17524 |
 | HJ-Q5409 | ### 甲戌十七 | 甲戌十七 | fulltext.md L17528 |
-| HJ-Q5410 | ### 丙子漢章帝 | 丙子漢章帝 | fulltext.md L17532 |
+| HJ-Q5410 | ### 丙子汉章帝 | 丙子汉章帝 | fulltext.md L17532 |
 | HJ-Q5411 | ### 丁丑二 | 丁丑二 | fulltext.md L17535 |
 | HJ-Q5412 | ### 己邜四 | 己邜四 | fulltext.md L17539 |
 | HJ-Q5413 | ### 辛巳六 | 辛巳六 | fulltext.md L17543 |
 | HJ-Q5414 | 甲申〔元和〕 | 癸未八 | fulltext.md L17549 |
 | HJ-Q5415 | ### 乙酉二 | 乙酉二 | fulltext.md L17551 |
 | HJ-Q5416 | ### 丁亥 | 丁亥 | fulltext.md L17555 |
-| HJ-Q5417 | 己丑漢和帝〔永元〕 | 戊子二 | fulltext.md L17560 |
+| HJ-Q5417 | 己丑汉和帝〔永元〕 | 戊子二 | fulltext.md L17560 |
 | HJ-Q5418 | ### 庚寅二 | 庚寅二 | fulltext.md L17562 |
 | HJ-Q5419 | ### 壬辰四 | 壬辰四 | fulltext.md L17566 |
-| HJ-Q5420 | ### 經辰之巳二千二百三十八 | 經辰之巳二千二百三十八 | fulltext.md L17570 |
+| HJ-Q5420 | ### 经辰之巳二千二百三十八 | 经辰之巳二千二百三十八 | fulltext.md L17570 |
 | HJ-Q5421 | ### 乙未七 | 乙未七 | fulltext.md L17574 |
 | HJ-Q5422 | ### 丁酉九 | 丁酉九 | fulltext.md L17578 |
 | HJ-Q5423 | ### 己亥十一 | 己亥十一 | fulltext.md L17582 |
 | HJ-Q5424 | ### 辛丑十三 | 辛丑十三 | fulltext.md L17586 |
 | HJ-Q5425 | ### 癸卯十五 | 癸卯十五 | fulltext.md L17590 |
 | HJ-Q5426 | ### 乙巳十七 | 乙巳十七 | fulltext.md L17594 |
-| HJ-Q5427 | ### 丙午漢殤帝 | 丙午漢殤帝 | fulltext.md L17597 |
-| HJ-Q5428 | ### 丁未漢安帝 | 丁未漢安帝 | fulltext.md L17600 |
+| HJ-Q5427 | ### 丙午汉殇帝 | 丙午汉殇帝 | fulltext.md L17597 |
+| HJ-Q5428 | ### 丁未汉安帝 | 丁未汉安帝 | fulltext.md L17600 |
 | HJ-Q5429 | ### 戊申二 | 戊申二 | fulltext.md L17603 |
 | HJ-Q5430 | ### 庚戌四 | 庚戌四 | fulltext.md L17607 |
 | HJ-Q5431 | ### 壬子六 | 壬子六 | fulltext.md L17611 |
 | HJ-Q5432 | ### 甲寅 | 甲寅 | fulltext.md L17615 |
 | HJ-Q5433 | ### 乙卯二 | 乙卯二 | fulltext.md L17618 |
 | HJ-Q5434 | ### 丁巳四 | 丁巳四 | fulltext.md L17622 |
-| HJ-Q5435 | 庚申〔永寧〕 | 己未六 | fulltext.md L17628 |
+| HJ-Q5435 | 庚申〔永宁〕 | 己未六 | fulltext.md L17628 |
 | HJ-Q5436 | ### 辛酉 | 辛酉 | fulltext.md L17630 |
 | HJ-Q5437 | ### 壬戌 | 壬戌 | fulltext.md L17633 |
-| HJ-Q5438 | 經辰之午二千二百三十九 | 癸亥二 | fulltext.md L17638 |
+| HJ-Q5438 | 经辰之午二千二百三十九 | 癸亥二 | fulltext.md L17638 |
 | HJ-Q5439 | ### 甲子三 | 甲子三 | fulltext.md L17640 |
-| HJ-Q5440 | ### 丙寅漢順帝 | 丙寅漢順帝 | fulltext.md L17644 |
+| HJ-Q5440 | ### 丙寅汉顺帝 | 丙寅汉顺帝 | fulltext.md L17644 |
 | HJ-Q5441 | ### 丁卯二 | 丁卯二 | fulltext.md L17647 |
 | HJ-Q5442 | ### 己巳四 | 己巳四 | fulltext.md L17651 |
-| HJ-Q5443 | 壬申〔陽嘉〕 | 辛未六 | fulltext.md L17657 |
+| HJ-Q5443 | 壬申〔阳嘉〕 | 辛未六 | fulltext.md L17657 |
 | HJ-Q5444 | ### 癸酉二 | 癸酉二 | fulltext.md L17659 |
 | HJ-Q5445 | 丙子〔永和〕 | 乙亥四 | fulltext.md L17665 |
 | HJ-Q5446 | ### 丁丑二 | 丁丑二 | fulltext.md L17667 |
 | HJ-Q5447 | ### 己卯四 | 己卯四 | fulltext.md L17671 |
-| HJ-Q5448 | 壬午〔漢安〕 | 辛巳六 | fulltext.md L17677 |
+| HJ-Q5448 | 壬午〔汉安〕 | 辛巳六 | fulltext.md L17677 |
 | HJ-Q5449 | 甲申〔建康〕 | 癸未二 | fulltext.md L17681 |
-| HJ-Q5450 | ### 乙酉漢冲帝 | 乙酉漢冲帝 | fulltext.md L17683 |
-| HJ-Q5451 | ### 丙戌漢質帝 | 丙戌漢質帝 | fulltext.md L17686 |
-| HJ-Q5452 | ### 丁亥漢桓帝 | 丁亥漢桓帝 | fulltext.md L17689 |
+| HJ-Q5450 | ### 乙酉汉冲帝 | 乙酉汉冲帝 | fulltext.md L17683 |
+| HJ-Q5451 | ### 丙戌汉质帝 | 丙戌汉质帝 | fulltext.md L17686 |
+| HJ-Q5452 | ### 丁亥汉桓帝 | 丁亥汉桓帝 | fulltext.md L17689 |
 | HJ-Q5453 | ### 戊子二 | 戊子二 | fulltext.md L17692 |
 | HJ-Q5454 | ### 庚寅 | 庚寅 | fulltext.md L17696 |
 | HJ-Q5455 | ### 辛卯 | 辛卯 | fulltext.md L17699 |
-| HJ-Q5456 | 癸巳〔永興〕 | 壬辰二 | fulltext.md L17704 |
-| HJ-Q5457 | ### 經辰之未二千二百四十 | 經辰之未二千二百四十 | fulltext.md L17706 |
+| HJ-Q5456 | 癸巳〔永兴〕 | 壬辰二 | fulltext.md L17704 |
+| HJ-Q5457 | ### 经辰之未二千二百四十 | 经辰之未二千二百四十 | fulltext.md L17706 |
 | HJ-Q5458 | ### 乙未 | 乙未 | fulltext.md L17710 |
 | HJ-Q5459 | ### 丙申二 | 丙申二 | fulltext.md L17713 |
 | HJ-Q5460 | ### 戊戌 | 戊戌 | fulltext.md L17717 |
@@ -5475,7 +5475,7 @@ last_updated: 2026-06-16
 | HJ-Q5463 | ### 癸卯六 | 癸卯六 | fulltext.md L17728 |
 | HJ-Q5464 | ### 乙巳八 | 乙巳八 | fulltext.md L17732 |
 | HJ-Q5465 | ### 丁未 | 丁未 | fulltext.md L17736 |
-| HJ-Q5466 | ### 戊申漢靈帝 | 戊申漢靈帝 | fulltext.md L17739 |
+| HJ-Q5466 | ### 戊申汉灵帝 | 戊申汉灵帝 | fulltext.md L17739 |
 | HJ-Q5467 | ### 己酉二 | 己酉二 | fulltext.md L17742 |
 | HJ-Q5468 | 壬子〔熹平〕 | 辛亥四 | fulltext.md L17748 |
 | HJ-Q5469 | ### 癸丑二 | 癸丑二 | fulltext.md L17750 |
@@ -5483,14 +5483,14 @@ last_updated: 2026-06-16
 | HJ-Q5471 | 戊午〔光和〕 | 丁巳六 | fulltext.md L17760 |
 | HJ-Q5472 | ### 己未二 | 己未二 | fulltext.md L17762 |
 | HJ-Q5473 | ### 辛酉四 | 辛酉四 | fulltext.md L17766 |
-| HJ-Q5474 | 經辰之申二千二百四十一 | 癸亥六 | fulltext.md L17772 |
+| HJ-Q5474 | 经辰之申二千二百四十一 | 癸亥六 | fulltext.md L17772 |
 | HJ-Q5475 | ### 甲子 | 甲子 | fulltext.md L17774 |
 | HJ-Q5476 | ### 乙丑二 | 乙丑二 | fulltext.md L17777 |
 | HJ-Q5477 | ### 丁卯四 | 丁卯四 | fulltext.md L17781 |
-| HJ-Q5478 | 〔光熹又昭又寜永漢〕 | 己巳 | fulltext.md L17786 |
-| HJ-Q5479 | ### 庚午漢獻帝 | 庚午漢獻帝 | fulltext.md L17788 |
+| HJ-Q5478 | 〔光熹又昭又寜永汉〕 | 己巳 | fulltext.md L17786 |
+| HJ-Q5479 | ### 庚午汉献帝 | 庚午汉献帝 | fulltext.md L17788 |
 | HJ-Q5480 | ### 辛未二 | 辛未二 | fulltext.md L17791 |
-| HJ-Q5481 | 甲戌〔興平〕 | 癸酉四 | fulltext.md L17797 |
+| HJ-Q5481 | 甲戌〔兴平〕 | 癸酉四 | fulltext.md L17797 |
 | HJ-Q5482 | 丙子〔建安〕 | 乙亥二 | fulltext.md L17801 |
 | HJ-Q5483 | ### 丁丑二 | 丁丑二 | fulltext.md L17803 |
 | HJ-Q5484 | ### 己卯四 | 己卯四 | fulltext.md L17807 |
@@ -5500,28 +5500,28 @@ last_updated: 2026-06-16
 | HJ-Q5488 | ### 丁亥十二 | 丁亥十二 | fulltext.md L17823 |
 | HJ-Q5489 | ### 己丑十四 | 己丑十四 | fulltext.md L17827 |
 | HJ-Q5490 | ### 辛卯十六 | 辛卯十六 | fulltext.md L17831 |
-| HJ-Q5491 | 經辰之酉二千二百四十二 | 癸巳十八 | fulltext.md L17837 |
+| HJ-Q5491 | 经辰之酉二千二百四十二 | 癸巳十八 | fulltext.md L17837 |
 | HJ-Q5492 | ### 甲午十九 | 甲午十九 | fulltext.md L17839 |
 | HJ-Q5493 | 丁酉二十二 | 丙申二十一 | fulltext.md L17845 |
 | HJ-Q5494 | 己亥二十四 | 戊戌二十三 | fulltext.md L17849 |
 | HJ-Q5495 | 辛丑二〔黄初〕 蜀先帝 | 庚子魏文帝 | fulltext.md L17853 |
 | HJ-Q5496 | 〔太和〕 五 六 | 丁未魏明帝 | fulltext.md L17861 |
-| HJ-Q5497 | 〔青龍〕 十一 二 | 癸丑 | fulltext.md L17869 |
+| HJ-Q5497 | 〔青龙〕 十一 二 | 癸丑 | fulltext.md L17869 |
 | HJ-Q5498 | 〔景初〕 十五 六 | 丁巳 | fulltext.md L17875 |
 | HJ-Q5499 | 〔帝芳正始〕 三 三 | 庚申魏 | fulltext.md L17880 |
-| HJ-Q5500 | 甲子五 七 七 | 經辰之戌二千二百四十三 | fulltext.md L17887 |
+| HJ-Q5500 | 甲子五 七 七 | 经辰之戌二千二百四十三 | fulltext.md L17887 |
 | HJ-Q5501 | 〔嘉平〕 十二 十二 | 己巳 | fulltext.md L17894 |
-| HJ-Q5502 | 〔髙貴正元〕 十七 〔五鳯〕 | 甲戌魏 | fulltext.md L17901 |
+| HJ-Q5502 | 〔髙贵正元〕 十七 〔五鳯〕 | 甲戌魏 | fulltext.md L17901 |
 | HJ-Q5503 | 〔甘露〕 十九 〔太平〕 | 丙子 | fulltext.md L17905 |
 | HJ-Q5504 | 〔帝道景元〕 三 三 | 庚辰魏 | fulltext.md L17911 |
-| HJ-Q5505 | 〔咸熈〕 吳〔帝始元興〕 | 甲申 | fulltext.md L17917 |
-| HJ-Q5506 | 〔泰始 甘露〕 | 乙酉晉武帝 | fulltext.md L17920 |
+| HJ-Q5505 | 〔咸熈〕 吴〔帝始元兴〕 | 甲申 | fulltext.md L17917 |
+| HJ-Q5506 | 〔泰始 甘露〕 | 乙酉晋武帝 | fulltext.md L17920 |
 | HJ-Q5507 | ### 辛丑二 | 辛丑二 | fulltext.md L17938 |
 | HJ-Q5508 | ### 癸卯四 | 癸卯四 | fulltext.md L17942 |
 | HJ-Q5509 | ### 乙巳六 | 乙巳六 | fulltext.md L17946 |
 | HJ-Q5510 | ### 丁未八 | 丁未八 | fulltext.md L17950 |
 | HJ-Q5511 | 庚戌〔太熈永熈〕 | 己酉十 | fulltext.md L17956 |
-| HJ-Q5512 | 〔永平元康〕 | 辛亥晉惠帝 | fulltext.md L17959 |
+| HJ-Q5512 | 〔永平元康〕 | 辛亥晋惠帝 | fulltext.md L17959 |
 | HJ-Q5513 | ### 壬子二 | 壬子二 | fulltext.md L17961 |
 | HJ-Q5514 | ### 甲寅四 | 甲寅四 | fulltext.md L17965 |
 | HJ-Q5515 | ### 丙辰六 | 丙辰六 | fulltext.md L17969 |
@@ -5529,63 +5529,63 @@ last_updated: 2026-06-16
 | HJ-Q5517 | ### 庚申十 | 庚申十 | fulltext.md L17977 |
 | HJ-Q5518 | ### 辛酉十一 | 辛酉十一 | fulltext.md L17980 |
 | HJ-Q5519 | ### 壬戌十二 | 壬戌十二 | fulltext.md L17983 |
-| HJ-Q5520 | 觀物篇二十二 以㑹經運十 | 癸亥十三 | fulltext.md L17988 |
-| HJ-Q5521 | 經月之午七 | 經日之甲一 | fulltext.md L17992 |
-| HJ-Q5522 | 經辰之子二千二百四十五 | 經星之辛一百八十八 | fulltext.md L17996 |
+| HJ-Q5520 | 观物篇二十二 以㑹经运十 | 癸亥十三 | fulltext.md L17988 |
+| HJ-Q5521 | 经月之午七 | 经日之甲一 | fulltext.md L17992 |
+| HJ-Q5522 | 经辰之子二千二百四十五 | 经星之辛一百八十八 | fulltext.md L17996 |
 | HJ-Q5523 | 〔永嘉〕 四 二 | 丁卯二 | fulltext.md L18002 |
-| HJ-Q5524 | 〔蒙塵平陽〕 二〔嘉平〕六 | 辛未六 | fulltext.md L18008 |
-| HJ-Q5525 | 〔蒙塵平陽〕 七 十一 三 | 丙子四 | fulltext.md L18015 |
-| HJ-Q5526 | 〔元帝建武〕八 十二 四 | 丁丑東晉 | fulltext.md L18018 |
-| HJ-Q5527 | 〔稱帝太興〕前趙〔劉曜光初〕十三 五 | 戊寅二 | fulltext.md L18021 |
-| HJ-Q5528 | 〔明帝太寧〕六 十八 四 五 | 癸未晉 | fulltext.md L18027 |
-| HJ-Q5529 | 〔成帝咸和〕九 二十一 三 八 | 丙戌晉 | fulltext.md L18032 |
-| HJ-Q5530 | 甲午九 蜀〔李期玉恒〕 十一 二 | 經辰之丑二千二百四十六 | fulltext.md L18043 |
-| HJ-Q5531 | 〔咸康〕 二 十二趙〔石虎建武〕 | 乙未十 | fulltext.md L18046 |
-| HJ-Q5532 | 〔康帝建元〕 漢〔李勢太和〕二十 九 | 癸卯晉 | fulltext.md L18056 |
-| HJ-Q5533 | 〔穆帝永和〕 三 二十二 十一 | 乙巳晉 | fulltext.md L18060 |
-| HJ-Q5534 | 〔㓕蜀〕 蜀漢亡凉〔張重 華永〕十三 | 丁未三 | fulltext.md L18064 |
-| HJ-Q5535 | 〔升平〕 三 九〔光壽〕 秦〔苻堅永興〕 | 丁巳十三 | fulltext.md L18076 |
-| HJ-Q5536 | 〔哀帝隆和〕 八 三 六 | 壬戌晉 | fulltext.md L18083 |
-| HJ-Q5537 | 〔興寧〕 凉〔天錫大清〕 四 七 | 癸亥二 | fulltext.md L18086 |
-| HJ-Q5538 | 甲子三 二 五 八 | 經辰之寅二千二百四十七 | fulltext.md L18090 |
-| HJ-Q5539 | 〔廢帝太和〕 四 七 十 | 丙寅晉 | fulltext.md L18094 |
-| HJ-Q5540 | 〔文帝咸安〕 九 十五 | 辛未晉 | fulltext.md L18101 |
-| HJ-Q5541 | 〔武帝寧康〕 十一 十七 | 癸酉晉 | fulltext.md L18105 |
+| HJ-Q5524 | 〔蒙尘平阳〕 二〔嘉平〕六 | 辛未六 | fulltext.md L18008 |
+| HJ-Q5525 | 〔蒙尘平阳〕 七 十一 三 | 丙子四 | fulltext.md L18015 |
+| HJ-Q5526 | 〔元帝建武〕八 十二 四 | 丁丑东晋 | fulltext.md L18018 |
+| HJ-Q5527 | 〔称帝太兴〕前赵〔刘曜光初〕十三 五 | 戊寅二 | fulltext.md L18021 |
+| HJ-Q5528 | 〔明帝太宁〕六 十八 四 五 | 癸未晋 | fulltext.md L18027 |
+| HJ-Q5529 | 〔成帝咸和〕九 二十一 三 八 | 丙戌晋 | fulltext.md L18032 |
+| HJ-Q5530 | 甲午九 蜀〔李期玉恒〕 十一 二 | 经辰之丑二千二百四十六 | fulltext.md L18043 |
+| HJ-Q5531 | 〔咸康〕 二 十二赵〔石虎建武〕 | 乙未十 | fulltext.md L18046 |
+| HJ-Q5532 | 〔康帝建元〕 汉〔李势太和〕二十 九 | 癸卯晋 | fulltext.md L18056 |
+| HJ-Q5533 | 〔穆帝永和〕 三 二十二 十一 | 乙巳晋 | fulltext.md L18060 |
+| HJ-Q5534 | 〔㓕蜀〕 蜀汉亡凉〔张重 华永〕十三 | 丁未三 | fulltext.md L18064 |
+| HJ-Q5535 | 〔升平〕 三 九〔光寿〕 秦〔苻坚永兴〕 | 丁巳十三 | fulltext.md L18076 |
+| HJ-Q5536 | 〔哀帝隆和〕 八 三 六 | 壬戌晋 | fulltext.md L18083 |
+| HJ-Q5537 | 〔兴宁〕 凉〔天锡大清〕 四 七 | 癸亥二 | fulltext.md L18086 |
+| HJ-Q5538 | 甲子三 二 五 八 | 经辰之寅二千二百四十七 | fulltext.md L18090 |
+| HJ-Q5539 | 〔废帝太和〕 四 七 十 | 丙寅晋 | fulltext.md L18094 |
+| HJ-Q5540 | 〔文帝咸安〕 九 十五 | 辛未晋 | fulltext.md L18101 |
+| HJ-Q5541 | 〔武帝宁康〕 十一 十七 | 癸酉晋 | fulltext.md L18105 |
 | HJ-Q5542 | 〔大元〕 凉亡 二十〔㓕凉〕 | 丙子四 | fulltext.md L18110 |
-| HJ-Q5543 | 甲午二十二 十二 秦〔姚興皇初〕十 七 九 前秦亡乙未二十三 十三 二 十一 八 十丙申二十四 燕〔寳 水康〕三〔皇始〕 十二 九 十一〔龍飛〕 | 經辰之卯二千二百四十八 | fulltext.md L18122 |
-| HJ-Q5544 | 〔㓕後秦〕九 後秦亡 十 八 十七 西凉〔李歆嘉興〕十二 | 丁巳二十一 | fulltext.md L18132 |
-| HJ-Q5545 | 〔徳文〕 十 十一 九 十八 二 十三〔昌武〕 | 戊午晉 | fulltext.md L18135 |
-| HJ-Q5546 | 〔元熈〕 十一 十二 十〔建𢎞〕 十九 三 十四〔真興〕庚申宋武帝〔永初〕 十二 十三 十一 二十 四 十五辛酉二 十三 十四 十二 二十一 五 十六壬戌三 十四 十五 十三 二十二 六 十七癸亥宋〔 | 己未二 | fulltext.md L18138 |
-| HJ-Q5547 | 甲子宋〔文帝元嘉〕 十六 魏〔太武始光〕十五 二十四 十九 | 經辰之辰二千二百四十九 | fulltext.md L18142 |
+| HJ-Q5543 | 甲午二十二 十二 秦〔姚兴皇初〕十 七 九 前秦亡乙未二十三 十三 二 十一 八 十丙申二十四 燕〔寳 水康〕三〔皇始〕 十二 九 十一〔龙飞〕 | 经辰之卯二千二百四十八 | fulltext.md L18122 |
+| HJ-Q5544 | 〔㓕后秦〕九 后秦亡 十 八 十七 西凉〔李歆嘉兴〕十二 | 丁巳二十一 | fulltext.md L18132 |
+| HJ-Q5545 | 〔徳文〕 十 十一 九 十八 二 十三〔昌武〕 | 戊午晋 | fulltext.md L18135 |
+| HJ-Q5546 | 〔元熈〕 十一 十二 十〔建𢎞〕 十九 三 十四〔真兴〕庚申宋武帝〔永初〕 十二 十三 十一 二十 四 十五辛酉二 十三 十四 十二 二十一 五 十六壬戌三 十四 十五 十三 二十二 六 十七癸亥宋〔 | 己未二 | fulltext.md L18138 |
+| HJ-Q5547 | 甲子宋〔文帝元嘉〕 十六 魏〔太武始光〕十五 二十四 十九 | 经辰之辰二千二百四十九 | fulltext.md L18142 |
 | HJ-Q5548 | 〔孝武〕 二 | 癸巳宋 | fulltext.md L18170 |
-| HJ-Q5549 | 甲午二〔孝元〕 三〔興光〕 | 經辰之巳二千二百五十 | fulltext.md L18174 |
+| HJ-Q5549 | 甲午二〔孝元〕 三〔兴光〕 | 经辰之巳二千二百五十 | fulltext.md L18174 |
 | HJ-Q5550 | 〔大明〕 六 | 丁酉五 | fulltext.md L18179 |
 | HJ-Q5551 | 〔明帝太始〕 十四 | 乙巳宋 | fulltext.md L18189 |
 | HJ-Q5552 | 〔大豫帝昱〕 二 | 壬子宋 | fulltext.md L18198 |
-| HJ-Q5553 | 甲子二 十四 | 經辰之午二千二百五十一 | fulltext.md L18213 |
-| HJ-Q5554 | 〔昭業隆昌〕 二十三 | 癸酉齊 | fulltext.md L18224 |
-| HJ-Q5555 | 〔明帝建武〕 二十四 | 甲戌齊 | fulltext.md L18227 |
-| HJ-Q5556 | 〔寶泰永元〕 二十九 | 己卯齊 | fulltext.md L18234 |
-| HJ-Q5557 | 〔寶融中興〕 二 | 辛巳齊 | fulltext.md L18238 |
-| HJ-Q5558 | 〔天監〕 三 | 壬午梁武帝 | fulltext.md L18241 |
-| HJ-Q5559 | 甲子四十三 十一 十一 | 經辰之申二千二百五十三 | fulltext.md L18287 |
+| HJ-Q5553 | 甲子二 十四 | 经辰之午二千二百五十一 | fulltext.md L18213 |
+| HJ-Q5554 | 〔昭业隆昌〕 二十三 | 癸酉齐 | fulltext.md L18224 |
+| HJ-Q5555 | 〔明帝建武〕 二十四 | 甲戌齐 | fulltext.md L18227 |
+| HJ-Q5556 | 〔宝泰永元〕 二十九 | 己卯齐 | fulltext.md L18234 |
+| HJ-Q5557 | 〔宝融中兴〕 二 | 辛巳齐 | fulltext.md L18238 |
+| HJ-Q5558 | 〔天监〕 三 | 壬午梁武帝 | fulltext.md L18241 |
+| HJ-Q5559 | 甲子四十三 十一 十一 | 经辰之申二千二百五十三 | fulltext.md L18287 |
 | HJ-Q5560 | 〔中大同〕 十三 十三 | 丙寅四十五 | fulltext.md L18291 |
 | HJ-Q5561 | 〔太清〕 十四 十四 | 丁卯四十六 | fulltext.md L18294 |
-| HJ-Q5562 | 〔簡文帝〕 十六 十六 | 己巳梁 | fulltext.md L18298 |
-| HJ-Q5563 | 〔大寶〕 十七 北齊〔宣帝洋天保〕 | 庚午二 | fulltext.md L18301 |
-| HJ-Q5564 | 〔棟 天正〕 十八 二 | 辛未梁 | fulltext.md L18304 |
-| HJ-Q5565 | 〔元帝承聖〕 西魏〔帝欽元年〕 三 | 壬申梁 | fulltext.md L18307 |
+| HJ-Q5562 | 〔简文帝〕 十六 十六 | 己巳梁 | fulltext.md L18298 |
+| HJ-Q5563 | 〔大宝〕 十七 北齐〔宣帝洋天保〕 | 庚午二 | fulltext.md L18301 |
+| HJ-Q5564 | 〔栋 天正〕 十八 二 | 辛未梁 | fulltext.md L18304 |
+| HJ-Q5565 | 〔元帝承圣〕 西魏〔帝钦元年〕 三 | 壬申梁 | fulltext.md L18307 |
 | HJ-Q5566 | 〔恭帝方智〕 西魏〔恭帝元年〕五 | 甲戌梁 | fulltext.md L18311 |
-| HJ-Q5567 | 〔紹泰〕後南凉〔蕭詧天定〕 六 | 乙亥二 | fulltext.md L18314 |
-| HJ-Q5568 | 〔太平〕二 周〔閔帝元年〕 七 | 丙子三 | fulltext.md L18317 |
-| HJ-Q5569 | 〔武帝永定〕三 周〔明帝元年〕 八 | 丁丑陳 | fulltext.md L18320 |
-| HJ-Q5570 | 〔文帝天嘉〕六 周〔武帝〕 齊〔昭帝皇建〕 | 庚辰陳 | fulltext.md L18325 |
+| HJ-Q5567 | 〔绍泰〕后南凉〔萧詧天定〕 六 | 乙亥二 | fulltext.md L18314 |
+| HJ-Q5568 | 〔太平〕二 周〔闵帝元年〕 七 | 丙子三 | fulltext.md L18317 |
+| HJ-Q5569 | 〔武帝永定〕三 周〔明帝元年〕 八 | 丁丑陈 | fulltext.md L18320 |
+| HJ-Q5570 | 〔文帝天嘉〕六 周〔武帝〕 齐〔昭帝皇建〕 | 庚辰陈 | fulltext.md L18325 |
 | HJ-Q5571 | 〔天康〕五 七〔天保〕 二 | 丙戌七 | fulltext.md L18333 |
-| HJ-Q5572 | 〔伯宗光天〕六 八 三 | 丁亥陳 | fulltext.md L18336 |
-| HJ-Q5573 | 〔宣帝〕七 九 四 | 戊子陳 | fulltext.md L18339 |
-| HJ-Q5574 | 甲午七 十三 十五 十 | 經辰之酉二千二百五十四 | fulltext.md L18348 |
-| HJ-Q5575 | 〔禎明〕 七 | 丁未五 | fulltext.md L18363 |
-| HJ-Q5576 | 甲子 隋煬帝 | 經辰之戌二千二百五十五 | fulltext.md L18383 |
+| HJ-Q5572 | 〔伯宗光天〕六 八 三 | 丁亥陈 | fulltext.md L18336 |
+| HJ-Q5573 | 〔宣帝〕七 九 四 | 戊子陈 | fulltext.md L18339 |
+| HJ-Q5574 | 甲午七 十三 十五 十 | 经辰之酉二千二百五十四 | fulltext.md L18348 |
+| HJ-Q5575 | 〔祯明〕 七 | 丁未五 | fulltext.md L18363 |
+| HJ-Q5576 | 甲子 隋炀帝 | 经辰之戌二千二百五十五 | fulltext.md L18383 |
 | HJ-Q5577 | ### 戊寅唐髙祖 | 戊寅唐髙祖 | fulltext.md L18398 |
 | HJ-Q5578 | ### 己卯二 | 己卯二 | fulltext.md L18401 |
 | HJ-Q5579 | ### 辛巳四 | 辛巳四 | fulltext.md L18405 |
@@ -5595,7 +5595,7 @@ last_updated: 2026-06-16
 | HJ-Q5583 | ### 戊子三 | 戊子三 | fulltext.md L18420 |
 | HJ-Q5584 | ### 庚寅五 | 庚寅五 | fulltext.md L18424 |
 | HJ-Q5585 | ### 壬辰七 | 壬辰七 | fulltext.md L18428 |
-| HJ-Q5586 | ### 經辰之亥二千二百五十六 | 經辰之亥二千二百五十六 | fulltext.md L18432 |
+| HJ-Q5586 | ### 经辰之亥二千二百五十六 | 经辰之亥二千二百五十六 | fulltext.md L18432 |
 | HJ-Q5587 | ### 乙未十 | 乙未十 | fulltext.md L18436 |
 | HJ-Q5588 | ### 丁酉十二 | 丁酉十二 | fulltext.md L18440 |
 | HJ-Q5589 | ### 己亥十四 | 己亥十四 | fulltext.md L18444 |
@@ -5606,43 +5606,43 @@ last_updated: 2026-06-16
 | HJ-Q5594 | 庚戌唐髙宗〔永徽〕 | 己酉二十四 | fulltext.md L18466 |
 | HJ-Q5595 | ### 辛亥二 | 辛亥二 | fulltext.md L18468 |
 | HJ-Q5596 | ### 癸丑四 | 癸丑四 | fulltext.md L18472 |
-| HJ-Q5597 | 丙辰七〔顕慶〕 | 乙卯六 | fulltext.md L18478 |
+| HJ-Q5597 | 丙辰七〔顕庆〕 | 乙卯六 | fulltext.md L18478 |
 | HJ-Q5598 | ### 丁巳八 | 丁巳八 | fulltext.md L18480 |
 | HJ-Q5599 | ### 己未十 | 己未十 | fulltext.md L18484 |
 | HJ-Q5600 | ### 辛酉十二 | 辛酉十二 | fulltext.md L18488 |
 | HJ-Q5601 | ### 壬戌十三 | 壬戌十三 | fulltext.md L18491 |
-| HJ-Q5602 | 欽定四庫全書 | 皇極經世書卷四中 | fulltext.md L18497 |
-| HJ-Q5603 | 經月之午七 | 經日之甲一 | fulltext.md L18502 |
-| HJ-Q5604 | 經辰之子二千二百五十七 | 經星之壬一百八十九 | fulltext.md L18506 |
+| HJ-Q5602 | 钦定四库全书 | 皇极经世书卷四中 | fulltext.md L18497 |
+| HJ-Q5603 | 经月之午七 | 经日之甲一 | fulltext.md L18502 |
+| HJ-Q5604 | 经辰之子二千二百五十七 | 经星之壬一百八十九 | fulltext.md L18506 |
 | HJ-Q5605 | ### 甲子十五 | 甲子十五 | fulltext.md L18508 |
-| HJ-Q5606 | 丙寅十七〔乾封〕 | 乙丑十六 | fulltext.md L18513 |
-| HJ-Q5607 | 戊辰十九〔總章〕 | 丁卯十八 | fulltext.md L18517 |
+| HJ-Q5606 | 丙寅十七〔干封〕 | 乙丑十六 | fulltext.md L18513 |
+| HJ-Q5607 | 戊辰十九〔总章〕 | 丁卯十八 | fulltext.md L18517 |
 | HJ-Q5608 | 庚午二十一〔咸亨〕 | 己巳二十 | fulltext.md L18521 |
 | HJ-Q5609 | 壬申二十三 | 辛未二十二 | fulltext.md L18525 |
 | HJ-Q5610 | 甲戌二十五〔上元〕 | 癸酉二十四 | fulltext.md L18529 |
-| HJ-Q5611 | 丙子二十七〔儀鳯〕 | 乙亥二十六 | fulltext.md L18533 |
+| HJ-Q5611 | 丙子二十七〔仪鳯〕 | 乙亥二十六 | fulltext.md L18533 |
 | HJ-Q5612 | 戊寅二十九 | 丁丑二十八 | fulltext.md L18537 |
 | HJ-Q5613 | ### 己卯三十 | 己卯三十 | fulltext.md L18539 |
 | HJ-Q5614 | ### 庚辰三十一 | 庚辰三十一 | fulltext.md L18542 |
 | HJ-Q5615 | ### 辛巳三十二 | 辛巳三十二 | fulltext.md L18545 |
 | HJ-Q5616 | ### 壬午三十三 | 壬午三十三 | fulltext.md L18548 |
 | HJ-Q5617 | ### 癸未三十四 | 癸未三十四 | fulltext.md L18551 |
-| HJ-Q5618 | 〔嗣聖武后廢帝為廬陵王遷之均立豫章王旦改元文明再改元光宅〕乙酉二〔武后徙帝于房陵改元垂拱〕 | 甲申唐中宗 | fulltext.md L18555 |
+| HJ-Q5618 | 〔嗣圣武后废帝为庐陵王迁之均立豫章王旦改元文明再改元光宅〕乙酉二〔武后徙帝于房陵改元垂拱〕 | 甲申唐中宗 | fulltext.md L18555 |
 | HJ-Q5619 | ### 丙戌三 | 丙戌三 | fulltext.md L18557 |
 | HJ-Q5620 | 己丑六〔武后改元永昌〕 | 戊子五 | fulltext.md L18563 |
-| HJ-Q5621 | 〔武后改元載初又改國為周元曰天授豫章王旦為皇嗣〕 | 庚寅七 | fulltext.md L18566 |
-| HJ-Q5622 | 壬辰九〔武后改元如意再改長壽〕 | 辛卯八 | fulltext.md L18570 |
-| HJ-Q5623 | 經辰之丑二千二百五十八 | 癸巳十 | fulltext.md L18574 |
-| HJ-Q5624 | 〔武后改元延載〕 | 甲午十一 | fulltext.md L18577 |
-| HJ-Q5625 | 〔武后改元證聖再改天冊萬歳〕 | 乙未十二 | fulltext.md L18580 |
-| HJ-Q5626 | 〔武后改元萬歳登封再改萬歳通天〕 | 丙申十三 | fulltext.md L18583 |
+| HJ-Q5621 | 〔武后改元载初又改国为周元曰天授豫章王旦为皇嗣〕 | 庚寅七 | fulltext.md L18566 |
+| HJ-Q5622 | 壬辰九〔武后改元如意再改长寿〕 | 辛卯八 | fulltext.md L18570 |
+| HJ-Q5623 | 经辰之丑二千二百五十八 | 癸巳十 | fulltext.md L18574 |
+| HJ-Q5624 | 〔武后改元延载〕 | 甲午十一 | fulltext.md L18577 |
+| HJ-Q5625 | 〔武后改元证圣再改天册万歳〕 | 乙未十二 | fulltext.md L18580 |
+| HJ-Q5626 | 〔武后改元万歳登封再改万歳通天〕 | 丙申十三 | fulltext.md L18583 |
 | HJ-Q5627 | 〔武后改元神功〕 | 丁酉十四 | fulltext.md L18586 |
-| HJ-Q5628 | 〔武后改元聖厯召帝房陵復政〕 | 戊戌十五 | fulltext.md L18589 |
-| HJ-Q5629 | 庚子十七〔武后改元久視〕 | 己亥十六 | fulltext.md L18593 |
-| HJ-Q5630 | 〔武后改元大足再改元長安〕 | 辛丑十八 | fulltext.md L18596 |
+| HJ-Q5628 | 〔武后改元圣厯召帝房陵复政〕 | 戊戌十五 | fulltext.md L18589 |
+| HJ-Q5629 | 庚子十七〔武后改元久视〕 | 己亥十六 | fulltext.md L18593 |
+| HJ-Q5630 | 〔武后改元大足再改元长安〕 | 辛丑十八 | fulltext.md L18596 |
 | HJ-Q5631 | ### 壬寅十九 | 壬寅十九 | fulltext.md L18598 |
-| HJ-Q5632 | 乙巳二十二〔武后改元神龍〕 | 甲辰二十一 | fulltext.md L18604 |
-| HJ-Q5633 | 丁未二十四〔景龍〕 | 丙午二十三 | fulltext.md L18608 |
+| HJ-Q5632 | 乙巳二十二〔武后改元神龙〕 | 甲辰二十一 | fulltext.md L18604 |
+| HJ-Q5633 | 丁未二十四〔景龙〕 | 丙午二十三 | fulltext.md L18608 |
 | HJ-Q5634 | 己酉二十六 | 戊申二十五 | fulltext.md L18612 |
 | HJ-Q5635 | ### 庚戌唐睿宗 | 庚戌唐睿宗 | fulltext.md L18614 |
 | HJ-Q5636 | 壬子唐𤣥宗〔先天〕 | 辛亥二 | fulltext.md L18619 |
@@ -5652,27 +5652,27 @@ last_updated: 2026-06-16
 | HJ-Q5640 | ### 戊午七 | 戊午七 | fulltext.md L18632 |
 | HJ-Q5641 | ### 庚申九 | 庚申九 | fulltext.md L18636 |
 | HJ-Q5642 | ### 壬戌十一 | 壬戌十一 | fulltext.md L18640 |
-| HJ-Q5643 | ### 經辰之寅二千二百五十九 | 經辰之寅二千二百五十九 | fulltext.md L18644 |
+| HJ-Q5643 | ### 经辰之寅二千二百五十九 | 经辰之寅二千二百五十九 | fulltext.md L18644 |
 | HJ-Q5644 | ### 乙丑十四 | 乙丑十四 | fulltext.md L18648 |
 | HJ-Q5645 | ### 丁卯十六 | 丁卯十六 | fulltext.md L18652 |
 | HJ-Q5646 | ### 己巳十八 | 己巳十八 | fulltext.md L18656 |
 | HJ-Q5647 | 壬申二十一 | 辛未二十 | fulltext.md L18662 |
 | HJ-Q5648 | 甲戌二十三 | 癸酉二十二 | fulltext.md L18666 |
-| HJ-Q5649 | 丙子二十五〔楊妃入宫〕 | 乙亥二十四 | fulltext.md L18670 |
+| HJ-Q5649 | 丙子二十五〔杨妃入宫〕 | 乙亥二十四 | fulltext.md L18670 |
 | HJ-Q5650 | 戊寅二十七 | 丁丑二十六 | fulltext.md L18674 |
 | HJ-Q5651 | 庚辰二十九 | 己卯二十八 | fulltext.md L18678 |
-| HJ-Q5652 | 壬午三十一〔天寶〕 | 辛巳三十 | fulltext.md L18682 |
+| HJ-Q5652 | 壬午三十一〔天宝〕 | 辛巳三十 | fulltext.md L18682 |
 | HJ-Q5653 | 甲申三十三 | 癸未三十二 | fulltext.md L18686 |
 | HJ-Q5654 | 丙戌三十五 | 乙酉三十四 | fulltext.md L18690 |
 | HJ-Q5655 | 戊子三十七 | 丁亥三十六 | fulltext.md L18694 |
 | HJ-Q5656 | 庚寅三十九 | 己丑三十八 | fulltext.md L18698 |
 | HJ-Q5657 | 壬辰四十一 | 辛卯四十 | fulltext.md L18702 |
-| HJ-Q5658 | 經辰之卯二千二百六十 | 癸巳四十二 | fulltext.md L18706 |
+| HJ-Q5658 | 经辰之卯二千二百六十 | 癸巳四十二 | fulltext.md L18706 |
 | HJ-Q5659 | 乙未四十四 | 甲午四十三 | fulltext.md L18710 |
-| HJ-Q5660 | ### 丙申唐肅宗 | 丙申唐肅宗 | fulltext.md L18712 |
+| HJ-Q5660 | ### 丙申唐肃宗 | 丙申唐肃宗 | fulltext.md L18712 |
 | HJ-Q5661 | 戊戌三〔乾元〕 | 丁酉二 | fulltext.md L18717 |
 | HJ-Q5662 | 庚子五〔上元〕 | 己亥四 | fulltext.md L18721 |
-| HJ-Q5663 | 壬寅七〔寶應〕 | 辛丑六 | fulltext.md L18725 |
+| HJ-Q5663 | 壬寅七〔宝应〕 | 辛丑六 | fulltext.md L18725 |
 | HJ-Q5664 | ### 癸卯唐代宗 | 癸卯唐代宗 | fulltext.md L18727 |
 | HJ-Q5665 | 乙巳三〔永泰〕 | 甲辰二 | fulltext.md L18732 |
 | HJ-Q5666 | ### 丙午四 | 丙午四 | fulltext.md L18734 |
@@ -5684,7 +5684,7 @@ last_updated: 2026-06-16
 | HJ-Q5672 | ### 丁巳十五 | 丁巳十五 | fulltext.md L18757 |
 | HJ-Q5673 | 庚申唐徳宗〔建中〕 | 己未十七 | fulltext.md L18763 |
 | HJ-Q5674 | ### 辛酉二 | 辛酉二 | fulltext.md L18765 |
-| HJ-Q5675 | 經辰之辰二千二百六十一 | 癸亥四 | fulltext.md L18771 |
+| HJ-Q5675 | 经辰之辰二千二百六十一 | 癸亥四 | fulltext.md L18771 |
 | HJ-Q5676 | ### 甲子五 | 甲子五 | fulltext.md L18773 |
 | HJ-Q5677 | ### 乙丑六 | 乙丑六 | fulltext.md L18776 |
 | HJ-Q5678 | ### 丙寅七 | 丙寅七 | fulltext.md L18779 |
@@ -5696,18 +5696,18 @@ last_updated: 2026-06-16
 | HJ-Q5684 | ### 戊寅十九 | 戊寅十九 | fulltext.md L18803 |
 | HJ-Q5685 | 辛巳二十二 | 庚辰二十一 | fulltext.md L18809 |
 | HJ-Q5686 | 癸未二十四 | 壬午二十三 | fulltext.md L18813 |
-| HJ-Q5687 | 乙酉二十六〔順宗不及年永貞〕 | 甲申二十五 | fulltext.md L18817 |
-| HJ-Q5688 | ### 丙戌唐憲宗 | 丙戌唐憲宗 | fulltext.md L18819 |
+| HJ-Q5687 | 乙酉二十六〔顺宗不及年永贞〕 | 甲申二十五 | fulltext.md L18817 |
+| HJ-Q5688 | ### 丙戌唐宪宗 | 丙戌唐宪宗 | fulltext.md L18819 |
 | HJ-Q5689 | ### 丁亥二 | 丁亥二 | fulltext.md L18822 |
 | HJ-Q5690 | ### 己丑四 | 己丑四 | fulltext.md L18826 |
 | HJ-Q5691 | ### 辛卯六 | 辛卯六 | fulltext.md L18830 |
-| HJ-Q5692 | 經辰之巳二千二百六十二 | 癸巳八 | fulltext.md L18836 |
+| HJ-Q5692 | 经辰之巳二千二百六十二 | 癸巳八 | fulltext.md L18836 |
 | HJ-Q5693 | ### 甲午九 | 甲午九 | fulltext.md L18838 |
 | HJ-Q5694 | ### 丙申十一 | 丙申十一 | fulltext.md L18842 |
 | HJ-Q5695 | ### 戊戌十三 | 戊戌十三 | fulltext.md L18846 |
-| HJ-Q5696 | 辛丑唐穆宗〔長慶〕 | 庚子十五 | fulltext.md L18852 |
+| HJ-Q5696 | 辛丑唐穆宗〔长庆〕 | 庚子十五 | fulltext.md L18852 |
 | HJ-Q5697 | ### 壬寅二 | 壬寅二 | fulltext.md L18854 |
-| HJ-Q5698 | 乙巳唐敬宗〔寶厯〕 | 甲辰四 | fulltext.md L18860 |
+| HJ-Q5698 | 乙巳唐敬宗〔宝厯〕 | 甲辰四 | fulltext.md L18860 |
 | HJ-Q5699 | 丁未唐文宗〔太和〕 | 丙午二 | fulltext.md L18864 |
 | HJ-Q5700 | ### 戊申二 | 戊申二 | fulltext.md L18866 |
 | HJ-Q5701 | ### 庚戌四 | 庚戌四 | fulltext.md L18870 |
@@ -5717,7 +5717,7 @@ last_updated: 2026-06-16
 | HJ-Q5705 | ### 戊午十二 | 戊午十二 | fulltext.md L18886 |
 | HJ-Q5706 | 辛酉唐武宗〔㑹昌〕 | 庚申十四 | fulltext.md L18892 |
 | HJ-Q5707 | ### 壬戌二 | 壬戌二 | fulltext.md L18894 |
-| HJ-Q5708 | ### 經辰之午二千二百六十三 | 經辰之午二千二百六十三 | fulltext.md L18898 |
+| HJ-Q5708 | ### 经辰之午二千二百六十三 | 经辰之午二千二百六十三 | fulltext.md L18898 |
 | HJ-Q5709 | ### 乙丑五 | 乙丑五 | fulltext.md L18902 |
 | HJ-Q5710 | ### 丁卯唐宣宗 | 丁卯唐宣宗 | fulltext.md L18906 |
 | HJ-Q5711 | ### 戊辰二 | 戊辰二 | fulltext.md L18909 |
@@ -5733,56 +5733,56 @@ last_updated: 2026-06-16
 | HJ-Q5721 | ### 丁亥八 | 丁亥八 | fulltext.md L18948 |
 | HJ-Q5722 | ### 己丑十 | 己丑十 | fulltext.md L18952 |
 | HJ-Q5723 | ### 辛卯十二 | 辛卯十二 | fulltext.md L18956 |
-| HJ-Q5724 | 經辰之未二千二百六十四 | 癸巳十四 | fulltext.md L18962 |
+| HJ-Q5724 | 经辰之未二千二百六十四 | 癸巳十四 | fulltext.md L18962 |
 | HJ-Q5725 | ### 甲午唐僖宗 | 甲午唐僖宗 | fulltext.md L18964 |
 | HJ-Q5726 | 丙申三〔王仙芝䧟淮南〕 | 乙未二 | fulltext.md L18969 |
-| HJ-Q5727 | 〔黄巢䧟沂鄆〕 | 丁酉四 | fulltext.md L18972 |
+| HJ-Q5727 | 〔黄巢䧟沂郓〕 | 丁酉四 | fulltext.md L18972 |
 | HJ-Q5728 | ### 戊戌五 | 戊戌五 | fulltext.md L18974 |
-| HJ-Q5729 | 〔廣明黄巢䧟两京稱齊全綂〕 | 庚子七 | fulltext.md L18979 |
+| HJ-Q5729 | 〔广明黄巢䧟两京称齐全綂〕 | 庚子七 | fulltext.md L18979 |
 | HJ-Q5730 | ### 辛丑八 | 辛丑八 | fulltext.md L18981 |
-| HJ-Q5731 | 癸卯十〔黄巢走藍關〕 | 壬寅九 | fulltext.md L18986 |
-| HJ-Q5732 | 乙巳十二〔光啓〕 | 甲辰十一 | fulltext.md L18990 |
-| HJ-Q5733 | 〔王潮據福州〕 | 丙午十三 | fulltext.md L18993 |
-| HJ-Q5734 | 〔紹宗龍紀〕四 〔錢鏐據 王建㨿杭州 成都〕 | 己酉唐 | fulltext.md L18998 |
-| HJ-Q5735 | 〔大順〕 五 二 二 | 庚戌二 | fulltext.md L19001 |
+| HJ-Q5731 | 癸卯十〔黄巢走蓝关〕 | 壬寅九 | fulltext.md L18986 |
+| HJ-Q5732 | 乙巳十二〔光启〕 | 甲辰十一 | fulltext.md L18990 |
+| HJ-Q5733 | 〔王潮据福州〕 | 丙午十三 | fulltext.md L18993 |
+| HJ-Q5734 | 〔绍宗龙纪〕四 〔钱镠据 王建㨿杭州 成都〕 | 己酉唐 | fulltext.md L18998 |
+| HJ-Q5735 | 〔大顺〕 五 二 二 | 庚戌二 | fulltext.md L19001 |
 | HJ-Q5736 | 〔景福〕 七 四 二 | 壬子四 | fulltext.md L19005 |
-| HJ-Q5737 | 〔乾寧〕 九 六 四 〔李茂貞㨿鳯翔〕 | 甲寅六 | fulltext.md L19009 |
-| HJ-Q5738 | 〔光化〕閩〔三審知〕 十 八 五 | 戊午十 | fulltext.md L19015 |
-| HJ-Q5739 | 〔天復〕四 十三 十一 八壬戌十四 五 十四〔封 越王〕十四 十二〔封 吳王〕九癸亥十五 六 十五 十五 十三 十 | 辛酉十三 | fulltext.md L19020 |
-| HJ-Q5740 | 甲子十六〔天祐〕 七 十六 十六 十四 十一乙丑唐哀帝 八 十七 十七 吳〔渥立〕 十二丙寅二 九 十八 十八 二 十三丁卯梁〔全忠□平〕 十 十九 十九 三 十四戊辰二 十一 二十 蜀〔王建稱帝〕 | 經辰之申二千二百六十五 | fulltext.md L19024 |
-| HJ-Q5741 | 〔滅蜀〕 閩〔延翰〕 三十七 蜀亡五 九〔白龍〕 | 乙酉三 | fulltext.md L19028 |
-| HJ-Q5742 | 〔明宗天成〕閩〔延鈎〕 三十八 六 十 | 丙戌後唐 | fulltext.md L19031 |
-| HJ-Q5743 | 〔長興〕 五 四十二 十 十四 四 | 庚寅五 | fulltext.md L19037 |
-| HJ-Q5744 | 〔閔帝〕 八 吳〔元〕 十三 十七 七 | 癸巳後唐 | fulltext.md L19042 |
-| HJ-Q5745 | 甲午後唐 九 二 蜀〔孟知祥明徳〕十四 十八 八乙未二 閩〔永和王昶〕 三 蜀〔孟昶明徳〕 十五〔天祚〕 十九 九丙申晉〔石塘天福〕二〔通文〕四 二 十六 二十 十丁酉 三 五 三 南唐〔李 | 經辰之酉二千二百六十六 | fulltext.md L19046 |
-| HJ-Q5746 | 〔開運〕閩〔延政天徳〕三 十 南唐〔璟 保大〕二 十八乙巳三 二 四 十一 二 三 十九丙午四 三 五 十二 三 四 二十丁未漢〔知逺〕閩〔留從孝〕六 十三 四 五 契丹〔兀欲天禄〕戊申二〔乾 | 甲辰二 | fulltext.md L19049 |
-| HJ-Q5747 | 甲子五 二 十七 三十 三 六 十四 九乙丑六〔㓕蜀〕 三 十八 蜀亡 四 七 十五 十 | 經辰之戌二千二百六十七 | fulltext.md L19053 |
-| HJ-Q5748 | 〔㓕北漢〕 十一 北漢亡 | 己卯四 | fulltext.md L19061 |
+| HJ-Q5737 | 〔干宁〕 九 六 四 〔李茂贞㨿鳯翔〕 | 甲寅六 | fulltext.md L19009 |
+| HJ-Q5738 | 〔光化〕闽〔三审知〕 十 八 五 | 戊午十 | fulltext.md L19015 |
+| HJ-Q5739 | 〔天复〕四 十三 十一 八壬戌十四 五 十四〔封 越王〕十四 十二〔封 吴王〕九癸亥十五 六 十五 十五 十三 十 | 辛酉十三 | fulltext.md L19020 |
+| HJ-Q5740 | 甲子十六〔天祐〕 七 十六 十六 十四 十一乙丑唐哀帝 八 十七 十七 吴〔渥立〕 十二丙寅二 九 十八 十八 二 十三丁卯梁〔全忠□平〕 十 十九 十九 三 十四戊辰二 十一 二十 蜀〔王建称帝〕 | 经辰之申二千二百六十五 | fulltext.md L19024 |
+| HJ-Q5741 | 〔灭蜀〕 闽〔延翰〕 三十七 蜀亡五 九〔白龙〕 | 乙酉三 | fulltext.md L19028 |
+| HJ-Q5742 | 〔明宗天成〕闽〔延钩〕 三十八 六 十 | 丙戌后唐 | fulltext.md L19031 |
+| HJ-Q5743 | 〔长兴〕 五 四十二 十 十四 四 | 庚寅五 | fulltext.md L19037 |
+| HJ-Q5744 | 〔闵帝〕 八 吴〔元〕 十三 十七 七 | 癸巳后唐 | fulltext.md L19042 |
+| HJ-Q5745 | 甲午后唐 九 二 蜀〔孟知祥明徳〕十四 十八 八乙未二 闽〔永和王昶〕 三 蜀〔孟昶明徳〕 十五〔天祚〕 十九 九丙申晋〔石塘天福〕二〔通文〕四 二 十六 二十 十丁酉 三 五 三 南唐〔李 | 经辰之酉二千二百六十六 | fulltext.md L19046 |
+| HJ-Q5746 | 〔开运〕闽〔延政天徳〕三 十 南唐〔璟 保大〕二 十八乙巳三 二 四 十一 二 三 十九丙午四 三 五 十二 三 四 二十丁未汉〔知逺〕闽〔留从孝〕六 十三 四 五 契丹〔兀欲天禄〕戊申二〔干 | 甲辰二 | fulltext.md L19049 |
+| HJ-Q5747 | 甲子五 二 十七 三十 三 六 十四 九乙丑六〔㓕蜀〕 三 十八 蜀亡 四 七 十五 十 | 经辰之戌二千二百六十七 | fulltext.md L19053 |
+| HJ-Q5748 | 〔㓕北汉〕 十一 北汉亡 | 己卯四 | fulltext.md L19061 |
 | HJ-Q5749 | 〔雍熈〕 二 | 甲申九 | fulltext.md L19068 |
 | HJ-Q5750 | 〔端拱〕 六 | 戊子十三 | fulltext.md L19074 |
 | HJ-Q5751 | 〔淳化〕 八 | 庚寅十五 | fulltext.md L19078 |
-| HJ-Q5752 | 甲午十九 十二 | 經辰之亥二千二百六十八 | fulltext.md L19085 |
+| HJ-Q5752 | 甲午十九 十二 | 经辰之亥二千二百六十八 | fulltext.md L19085 |
 | HJ-Q5753 | 〔孟道〕 十三 | 乙未二十 | fulltext.md L19088 |
 | HJ-Q5754 | 〔咸平〕 十六 | 戊戌宋真宗 | fulltext.md L19093 |
 | HJ-Q5755 | 〔景徳〕 二十二 | 甲辰七 | fulltext.md L19101 |
 | HJ-Q5756 | 〔大中祥符〕 二十六 | 戊申十一 | fulltext.md L19107 |
 | HJ-Q5757 | 〔天禧〕 三十五 | 丁巳二十 | fulltext.md L19118 |
-| HJ-Q5758 | 〔乾興〕 四十 | 壬戌二十五 | fulltext.md L19125 |
-| HJ-Q5759 | 經月之午七 | 經日之甲一 | fulltext.md L19131 |
-| HJ-Q5760 | 經辰之子二千二百六十九 | 經星之癸一百九十 | fulltext.md L19135 |
-| HJ-Q5761 | 〔明道〕 契丹〔宗真重熈〕西夏〔元吳顯道〕 | 壬申十 | fulltext.md L19146 |
-| HJ-Q5762 | 〔景祐〕 四 三〔開運廣運〕 | 甲戌十二 | fulltext.md L19150 |
+| HJ-Q5758 | 〔干兴〕 四十 | 壬戌二十五 | fulltext.md L19125 |
+| HJ-Q5759 | 经月之午七 | 经日之甲一 | fulltext.md L19131 |
+| HJ-Q5760 | 经辰之子二千二百六十九 | 经星之癸一百九十 | fulltext.md L19135 |
+| HJ-Q5761 | 〔明道〕 契丹〔宗真重熈〕西夏〔元吴显道〕 | 壬申十 | fulltext.md L19146 |
+| HJ-Q5762 | 〔景祐〕 四 三〔开运广运〕 | 甲戌十二 | fulltext.md L19150 |
 | HJ-Q5763 | 〔寳元〕 八 七〔天授理法延祚〕 | 戊寅十六 | fulltext.md L19156 |
 | HJ-Q5764 | 〔康定〕 十 九 | 庚辰十八 | fulltext.md L19160 |
-| HJ-Q5765 | 〔慶厯〕 十一 十 | 辛巳十九 | fulltext.md L19163 |
+| HJ-Q5765 | 〔庆厯〕 十一 十 | 辛巳十九 | fulltext.md L19163 |
 | HJ-Q5766 | 〔皇祐〕 十九 | 己丑二十七 | fulltext.md L19173 |
-| HJ-Q5767 | 甲午三十二〔至和〕 二十四 | 經辰之丑二千二百七十 | fulltext.md L19181 |
+| HJ-Q5767 | 甲午三十二〔至和〕 二十四 | 经辰之丑二千二百七十 | fulltext.md L19181 |
 | HJ-Q5768 | 〔嘉祐〕 二 | 丙申三十四 | fulltext.md L19185 |
-| HJ-Q5769 | 〔熈寧〕 十四 | 戊申今上 | fulltext.md L19199 |
+| HJ-Q5769 | 〔熈宁〕 十四 | 戊申今上 | fulltext.md L19199 |
 | HJ-Q5770 | ### 戊午 | 戊午 | fulltext.md L19210 |
 | HJ-Q5771 | ### 庚申 | 庚申 | fulltext.md L19214 |
 | HJ-Q5772 | ### 壬戌 | 壬戌 | fulltext.md L19218 |
-| HJ-Q5773 | ### 經辰之寅二千二百七十一 | 經辰之寅二千二百七十一 | fulltext.md L19222 |
+| HJ-Q5773 | ### 经辰之寅二千二百七十一 | 经辰之寅二千二百七十一 | fulltext.md L19222 |
 | HJ-Q5774 | ### 乙丑 | 乙丑 | fulltext.md L19226 |
 | HJ-Q5775 | ### 丁卯 | 丁卯 | fulltext.md L19230 |
 | HJ-Q5776 | ### 己巳 | 己巳 | fulltext.md L19234 |
@@ -5797,7 +5797,7 @@ last_updated: 2026-06-16
 | HJ-Q5785 | ### 丁亥 | 丁亥 | fulltext.md L19270 |
 | HJ-Q5786 | ### 己丑 | 己丑 | fulltext.md L19274 |
 | HJ-Q5787 | ### 辛卯 | 辛卯 | fulltext.md L19278 |
-| HJ-Q5788 | 經辰之卯二千二百七十二 | 癸巳 | fulltext.md L19284 |
+| HJ-Q5788 | 经辰之卯二千二百七十二 | 癸巳 | fulltext.md L19284 |
 | HJ-Q5789 | ### 甲午 | 甲午 | fulltext.md L19286 |
 | HJ-Q5790 | ### 丙申 | 丙申 | fulltext.md L19290 |
 | HJ-Q5791 | ### 戊戌 | 戊戌 | fulltext.md L19294 |
@@ -5813,7 +5813,7 @@ last_updated: 2026-06-16
 | HJ-Q5801 | ### 戊午 | 戊午 | fulltext.md L19334 |
 | HJ-Q5802 | ### 庚申 | 庚申 | fulltext.md L19338 |
 | HJ-Q5803 | ### 壬戌 | 壬戌 | fulltext.md L19342 |
-| HJ-Q5804 | ### 經辰之辰二千二百七十三 | 經辰之辰二千二百七十三 | fulltext.md L19346 |
+| HJ-Q5804 | ### 经辰之辰二千二百七十三 | 经辰之辰二千二百七十三 | fulltext.md L19346 |
 | HJ-Q5805 | ### 乙丑 | 乙丑 | fulltext.md L19350 |
 | HJ-Q5806 | ### 丁卯 | 丁卯 | fulltext.md L19354 |
 | HJ-Q5807 | ### 己巳 | 己巳 | fulltext.md L19358 |
@@ -5828,7 +5828,7 @@ last_updated: 2026-06-16
 | HJ-Q5816 | ### 丁亥 | 丁亥 | fulltext.md L19394 |
 | HJ-Q5817 | ### 己丑 | 己丑 | fulltext.md L19398 |
 | HJ-Q5818 | ### 辛卯 | 辛卯 | fulltext.md L19402 |
-| HJ-Q5819 | 經辰之己二千二百七十四 | 癸巳 | fulltext.md L19408 |
+| HJ-Q5819 | 经辰之己二千二百七十四 | 癸巳 | fulltext.md L19408 |
 | HJ-Q5820 | ### 甲午 | 甲午 | fulltext.md L19410 |
 | HJ-Q5821 | ### 丙申 | 丙申 | fulltext.md L19414 |
 | HJ-Q5822 | ### 戊戌 | 戊戌 | fulltext.md L19418 |
@@ -5844,7 +5844,7 @@ last_updated: 2026-06-16
 | HJ-Q5832 | ### 戊午 | 戊午 | fulltext.md L19458 |
 | HJ-Q5833 | ### 庚申 | 庚申 | fulltext.md L19462 |
 | HJ-Q5834 | ### 壬戌 | 壬戌 | fulltext.md L19466 |
-| HJ-Q5835 | ### 經辰之午二千二百七十五 | 經辰之午二千二百七十五 | fulltext.md L19470 |
+| HJ-Q5835 | ### 经辰之午二千二百七十五 | 经辰之午二千二百七十五 | fulltext.md L19470 |
 | HJ-Q5836 | ### 乙丑 | 乙丑 | fulltext.md L19474 |
 | HJ-Q5837 | ### 丁卯 | 丁卯 | fulltext.md L19478 |
 | HJ-Q5838 | ### 己巳 | 己巳 | fulltext.md L19482 |
@@ -5859,7 +5859,7 @@ last_updated: 2026-06-16
 | HJ-Q5847 | ### 丁亥 | 丁亥 | fulltext.md L19518 |
 | HJ-Q5848 | ### 己丑 | 己丑 | fulltext.md L19522 |
 | HJ-Q5849 | ### 辛卯 | 辛卯 | fulltext.md L19526 |
-| HJ-Q5850 | 經辰之未二千二百七十六 | 癸巳 | fulltext.md L19532 |
+| HJ-Q5850 | 经辰之未二千二百七十六 | 癸巳 | fulltext.md L19532 |
 | HJ-Q5851 | ### 甲午 | 甲午 | fulltext.md L19534 |
 | HJ-Q5852 | ### 丙申 | 丙申 | fulltext.md L19538 |
 | HJ-Q5853 | ### 戊戌 | 戊戌 | fulltext.md L19542 |
@@ -5875,7 +5875,7 @@ last_updated: 2026-06-16
 | HJ-Q5863 | ### 戊午 | 戊午 | fulltext.md L19582 |
 | HJ-Q5864 | ### 庚申 | 庚申 | fulltext.md L19586 |
 | HJ-Q5865 | ### 壬戌 | 壬戌 | fulltext.md L19590 |
-| HJ-Q5866 | ### 經辰之申二千二百七十七 | 經辰之申二千二百七十七 | fulltext.md L19594 |
+| HJ-Q5866 | ### 经辰之申二千二百七十七 | 经辰之申二千二百七十七 | fulltext.md L19594 |
 | HJ-Q5867 | ### 乙丑 | 乙丑 | fulltext.md L19598 |
 | HJ-Q5868 | ### 丁卯 | 丁卯 | fulltext.md L19602 |
 | HJ-Q5869 | ### 己巳 | 己巳 | fulltext.md L19606 |
@@ -5890,7 +5890,7 @@ last_updated: 2026-06-16
 | HJ-Q5878 | ### 丁亥 | 丁亥 | fulltext.md L19642 |
 | HJ-Q5879 | ### 己丑 | 己丑 | fulltext.md L19646 |
 | HJ-Q5880 | ### 辛卯 | 辛卯 | fulltext.md L19650 |
-| HJ-Q5881 | 經辰之酉二千二百七十八 | 癸巳 | fulltext.md L19656 |
+| HJ-Q5881 | 经辰之酉二千二百七十八 | 癸巳 | fulltext.md L19656 |
 | HJ-Q5882 | ### 甲午 | 甲午 | fulltext.md L19658 |
 | HJ-Q5883 | ### 丙申 | 丙申 | fulltext.md L19662 |
 | HJ-Q5884 | ### 戊戌 | 戊戌 | fulltext.md L19666 |
@@ -5906,7 +5906,7 @@ last_updated: 2026-06-16
 | HJ-Q5894 | ### 戊午 | 戊午 | fulltext.md L19706 |
 | HJ-Q5895 | ### 庚申 | 庚申 | fulltext.md L19710 |
 | HJ-Q5896 | ### 壬戌 | 壬戌 | fulltext.md L19714 |
-| HJ-Q5897 | ### 經辰之戌二千二百七十九 | 經辰之戌二千二百七十九 | fulltext.md L19718 |
+| HJ-Q5897 | ### 经辰之戌二千二百七十九 | 经辰之戌二千二百七十九 | fulltext.md L19718 |
 | HJ-Q5898 | ### 乙丑 | 乙丑 | fulltext.md L19722 |
 | HJ-Q5899 | ### 丁卯 | 丁卯 | fulltext.md L19726 |
 | HJ-Q5900 | ### 己巳 | 己巳 | fulltext.md L19730 |
@@ -5921,7 +5921,7 @@ last_updated: 2026-06-16
 | HJ-Q5909 | ### 丁亥 | 丁亥 | fulltext.md L19766 |
 | HJ-Q5910 | ### 己丑 | 己丑 | fulltext.md L19770 |
 | HJ-Q5911 | ### 辛卯 | 辛卯 | fulltext.md L19774 |
-| HJ-Q5912 | 經辰之亥二千二百八十 | 癸巳 | fulltext.md L19780 |
+| HJ-Q5912 | 经辰之亥二千二百八十 | 癸巳 | fulltext.md L19780 |
 | HJ-Q5913 | ### 甲午 | 甲午 | fulltext.md L19782 |
 | HJ-Q5914 | ### 丙申 | 丙申 | fulltext.md L19786 |
 | HJ-Q5915 | ### 戊戌 | 戊戌 | fulltext.md L19790 |
@@ -5937,85 +5937,85 @@ last_updated: 2026-06-16
 | HJ-Q5925 | ### 戊午 | 戊午 | fulltext.md L19830 |
 | HJ-Q5926 | ### 庚申 | 庚申 | fulltext.md L19834 |
 | HJ-Q5927 | ### 壬戌 | 壬戌 | fulltext.md L19838 |
-| HJ-Q5928 | 經星之乙一百九十二 | 經星之甲一百九十一 | fulltext.md L19844 |
-| HJ-Q5929 | 經星之丁一百九十四 | 經星之丙一百九十三 | fulltext.md L19848 |
-| HJ-Q5930 | 經星之己一百九十六 | 經星之戊一百九十五 | fulltext.md L19852 |
-| HJ-Q5931 | 經星之辛一百九十八 | 經星之庚一百九十七 | fulltext.md L19856 |
-| HJ-Q5932 | 經星之癸二百 | 經星之壬一百九十九 | fulltext.md L19860 |
-| HJ-Q5933 | 經星之乙二百二 | 經星之甲二百一 | fulltext.md L19864 |
-| HJ-Q5934 | 經星之丁二百四 | 經星之丙二百三 | fulltext.md L19868 |
-| HJ-Q5935 | 經星之己二百六 | 經星之戊二百五 | fulltext.md L19872 |
-| HJ-Q5936 | 經星之辛二百八 | 經星之庚二百七 | fulltext.md L19876 |
-| HJ-Q5937 | 經星之癸二百十 | 經星之壬二百九 | fulltext.md L19880 |
-| HJ-Q5938 | 經月之未八 | 經日之甲一 | fulltext.md L19884 |
-| HJ-Q5939 | 經星之乙二百一十二 | 經星之甲二百一十一 | fulltext.md L19888 |
-| HJ-Q5940 | 經星之丁二百一十四 | 經星之丙二百一十三 | fulltext.md L19892 |
-| HJ-Q5941 | 經星之己二百一十六 | 經星之戊二百一十五 | fulltext.md L19896 |
-| HJ-Q5942 | 經星之辛二百一十八 | 經星之庚二百一十七 | fulltext.md L19900 |
-| HJ-Q5943 | 經星之癸二百二十 | 經星之壬二百一十九 | fulltext.md L19904 |
-| HJ-Q5944 | 經星之乙二百二十二 | 經星之甲二百二十一 | fulltext.md L19908 |
-| HJ-Q5945 | 經星之丁二百二十四 | 經星之丙二百二十三 | fulltext.md L19912 |
-| HJ-Q5946 | 經星之己二百二十六 | 經星之戊二百二十五 | fulltext.md L19916 |
-| HJ-Q5947 | 經星之辛二百二十八 | 經星之庚二百二十七 | fulltext.md L19920 |
-| HJ-Q5948 | 經星之癸二百三十 | 經星之壬二百二十九 | fulltext.md L19924 |
-| HJ-Q5949 | 經星之乙二百三十二 | 經星之甲二百三十一 | fulltext.md L19928 |
-| HJ-Q5950 | 經星之丁二百三十四 | 經星之丙二百三十三 | fulltext.md L19932 |
-| HJ-Q5951 | 經星之己二百三十六 | 經星之戊二百三十五 | fulltext.md L19936 |
-| HJ-Q5952 | 經星之辛二百三十八 | 經星之庚二百三十七 | fulltext.md L19940 |
-| HJ-Q5953 | 經星之癸二百四十 | 經星之壬二百三十九 | fulltext.md L19944 |
-| HJ-Q5954 | 經月之申九 | 經日之甲一 | fulltext.md L19948 |
-| HJ-Q5955 | 經星之乙二百四十二 | 經星之甲二百四十一 | fulltext.md L19952 |
-| HJ-Q5956 | 經星之丁二百四十四 | 經星之丙二百四十三 | fulltext.md L19956 |
-| HJ-Q5957 | 經星之己二百四十六 | 經星之戊二百四十五 | fulltext.md L19960 |
-| HJ-Q5958 | 經星之辛二百四十八 | 經星之庚二百四十七 | fulltext.md L19964 |
-| HJ-Q5959 | 經星之癸二百五十 | 經星之壬二百四十九 | fulltext.md L19968 |
-| HJ-Q5960 | 經星之乙二百五十二 | 經星之甲二百五十一 | fulltext.md L19972 |
-| HJ-Q5961 | 經星之丁二百五十四 | 經星之丙二百五十三 | fulltext.md L19976 |
-| HJ-Q5962 | 經星之己二百五十六 | 經星之戊二百五十五 | fulltext.md L19980 |
-| HJ-Q5963 | 經星之辛二百五十八 | 經星之庚二百五十七 | fulltext.md L19984 |
-| HJ-Q5964 | 經星之癸二百六十 | 經星之壬二百五十九 | fulltext.md L19988 |
-| HJ-Q5965 | 經星之乙二百六十二 | 經星之甲二百六十一 | fulltext.md L19992 |
-| HJ-Q5966 | 經星之丁二百六十四 | 經星之丙二百六十三 | fulltext.md L19996 |
-| HJ-Q5967 | 經星之己二百六十六 | 經星之戊二百六十五 | fulltext.md L20000 |
-| HJ-Q5968 | 經星之辛二百六十八 | 經星之庚二百六十七 | fulltext.md L20004 |
-| HJ-Q5969 | 經星之癸二百七十 | 經星之壬二百六十九 | fulltext.md L20008 |
-| HJ-Q5970 | 經月之酉十 | 經日之甲一 | fulltext.md L20012 |
-| HJ-Q5971 | 經星之乙二百七十二 | 經星之甲二百七十一 | fulltext.md L20016 |
-| HJ-Q5972 | 經星之丁二百七十四 | 經星之丙二百七十三 | fulltext.md L20020 |
-| HJ-Q5973 | 經星之己二百七十六 | 經星之戊二百七十五 | fulltext.md L20024 |
-| HJ-Q5974 | 經星之辛二百七十八 | 經星之庚二百七十七 | fulltext.md L20028 |
-| HJ-Q5975 | 經星之癸二百八十 | 經星之壬二百七十九 | fulltext.md L20032 |
-| HJ-Q5976 | 經星之乙二百八十二 | 經星之甲二百八十一 | fulltext.md L20036 |
-| HJ-Q5977 | 經星之丁二百八十四 | 經星之丙二百八十三 | fulltext.md L20040 |
-| HJ-Q5978 | 經星之己二百八十六 | 經星之戊二百八十五 | fulltext.md L20044 |
-| HJ-Q5979 | 經星之辛二百八十八 | 經星之庚二百八十七 | fulltext.md L20048 |
-| HJ-Q5980 | 經星之癸二百九十 | 經星之壬二百八十九 | fulltext.md L20052 |
-| HJ-Q5981 | 經星之乙二百九十二 | 經星之甲二百九十一 | fulltext.md L20056 |
-| HJ-Q5982 | 經星之丁二百九十四 | 經星之丙二百九十三 | fulltext.md L20060 |
-| HJ-Q5983 | 經星之己二百九十六 | 經星之戊二百九十五 | fulltext.md L20064 |
-| HJ-Q5984 | 經星之辛二百九十八 | 經星之庚二百九十七 | fulltext.md L20068 |
-| HJ-Q5985 | 經星之癸三百 | 經星之壬二百九十九 | fulltext.md L20072 |
-| HJ-Q5986 | 經月之戌十一 | 經日之甲一 | fulltext.md L20076 |
-| HJ-Q5987 | 經星之乙三百二 | 經星之甲三百一 | fulltext.md L20080 |
-| HJ-Q5988 | 經星之丁三百四 | 經星之丙三百三 | fulltext.md L20084 |
-| HJ-Q5989 | 經星之己三百六 | 經星之戊三百五 | fulltext.md L20088 |
-| HJ-Q5990 | 經星之辛三百八 | 經星之庚三百七 | fulltext.md L20092 |
-| HJ-Q5991 | 經星之癸三百一十 | 經星之壬三百九 | fulltext.md L20096 |
-| HJ-Q5992 | 經星之乙三百一十二 | 經星之甲三百一十一 | fulltext.md L20100 |
-| HJ-Q5993 | 經星之丁三百一十四 | 經星之丙三百一十三 | fulltext.md L20104 |
-| HJ-Q5994 | 閉物經月戌之終 | 經星之戊三百一十五 | fulltext.md L20108 |
-| HJ-Q5995 | 欽定四庫全書 | 皇極經世書卷四下 | fulltext.md L20112 |
-| HJ-Q5996 | 經元之甲一 | 觀物篇二十五 | fulltext.md L20117 |
-| HJ-Q5997 | 經運之癸一百八十 | 經㑹之巳六 | fulltext.md L20121 |
-| HJ-Q5998 | 經世之丑二千一百五十 | 經世之子二千一百四十九 | fulltext.md L20125 |
-| HJ-Q5999 | 經世之卯二千一百五十二 | 經世之寅二千一百五十一 | fulltext.md L20129 |
-| HJ-Q6000 | 經世之巳二千一百五十四 | 經世之辰二千一百五十三 | fulltext.md L20133 |
-| HJ-Q6001 | 經世之未二千一百五十六 | 經世之午二千一百五十五 | fulltext.md L20137 |
+| HJ-Q5928 | 经星之乙一百九十二 | 经星之甲一百九十一 | fulltext.md L19844 |
+| HJ-Q5929 | 经星之丁一百九十四 | 经星之丙一百九十三 | fulltext.md L19848 |
+| HJ-Q5930 | 经星之己一百九十六 | 经星之戊一百九十五 | fulltext.md L19852 |
+| HJ-Q5931 | 经星之辛一百九十八 | 经星之庚一百九十七 | fulltext.md L19856 |
+| HJ-Q5932 | 经星之癸二百 | 经星之壬一百九十九 | fulltext.md L19860 |
+| HJ-Q5933 | 经星之乙二百二 | 经星之甲二百一 | fulltext.md L19864 |
+| HJ-Q5934 | 经星之丁二百四 | 经星之丙二百三 | fulltext.md L19868 |
+| HJ-Q5935 | 经星之己二百六 | 经星之戊二百五 | fulltext.md L19872 |
+| HJ-Q5936 | 经星之辛二百八 | 经星之庚二百七 | fulltext.md L19876 |
+| HJ-Q5937 | 经星之癸二百十 | 经星之壬二百九 | fulltext.md L19880 |
+| HJ-Q5938 | 经月之未八 | 经日之甲一 | fulltext.md L19884 |
+| HJ-Q5939 | 经星之乙二百一十二 | 经星之甲二百一十一 | fulltext.md L19888 |
+| HJ-Q5940 | 经星之丁二百一十四 | 经星之丙二百一十三 | fulltext.md L19892 |
+| HJ-Q5941 | 经星之己二百一十六 | 经星之戊二百一十五 | fulltext.md L19896 |
+| HJ-Q5942 | 经星之辛二百一十八 | 经星之庚二百一十七 | fulltext.md L19900 |
+| HJ-Q5943 | 经星之癸二百二十 | 经星之壬二百一十九 | fulltext.md L19904 |
+| HJ-Q5944 | 经星之乙二百二十二 | 经星之甲二百二十一 | fulltext.md L19908 |
+| HJ-Q5945 | 经星之丁二百二十四 | 经星之丙二百二十三 | fulltext.md L19912 |
+| HJ-Q5946 | 经星之己二百二十六 | 经星之戊二百二十五 | fulltext.md L19916 |
+| HJ-Q5947 | 经星之辛二百二十八 | 经星之庚二百二十七 | fulltext.md L19920 |
+| HJ-Q5948 | 经星之癸二百三十 | 经星之壬二百二十九 | fulltext.md L19924 |
+| HJ-Q5949 | 经星之乙二百三十二 | 经星之甲二百三十一 | fulltext.md L19928 |
+| HJ-Q5950 | 经星之丁二百三十四 | 经星之丙二百三十三 | fulltext.md L19932 |
+| HJ-Q5951 | 经星之己二百三十六 | 经星之戊二百三十五 | fulltext.md L19936 |
+| HJ-Q5952 | 经星之辛二百三十八 | 经星之庚二百三十七 | fulltext.md L19940 |
+| HJ-Q5953 | 经星之癸二百四十 | 经星之壬二百三十九 | fulltext.md L19944 |
+| HJ-Q5954 | 经月之申九 | 经日之甲一 | fulltext.md L19948 |
+| HJ-Q5955 | 经星之乙二百四十二 | 经星之甲二百四十一 | fulltext.md L19952 |
+| HJ-Q5956 | 经星之丁二百四十四 | 经星之丙二百四十三 | fulltext.md L19956 |
+| HJ-Q5957 | 经星之己二百四十六 | 经星之戊二百四十五 | fulltext.md L19960 |
+| HJ-Q5958 | 经星之辛二百四十八 | 经星之庚二百四十七 | fulltext.md L19964 |
+| HJ-Q5959 | 经星之癸二百五十 | 经星之壬二百四十九 | fulltext.md L19968 |
+| HJ-Q5960 | 经星之乙二百五十二 | 经星之甲二百五十一 | fulltext.md L19972 |
+| HJ-Q5961 | 经星之丁二百五十四 | 经星之丙二百五十三 | fulltext.md L19976 |
+| HJ-Q5962 | 经星之己二百五十六 | 经星之戊二百五十五 | fulltext.md L19980 |
+| HJ-Q5963 | 经星之辛二百五十八 | 经星之庚二百五十七 | fulltext.md L19984 |
+| HJ-Q5964 | 经星之癸二百六十 | 经星之壬二百五十九 | fulltext.md L19988 |
+| HJ-Q5965 | 经星之乙二百六十二 | 经星之甲二百六十一 | fulltext.md L19992 |
+| HJ-Q5966 | 经星之丁二百六十四 | 经星之丙二百六十三 | fulltext.md L19996 |
+| HJ-Q5967 | 经星之己二百六十六 | 经星之戊二百六十五 | fulltext.md L20000 |
+| HJ-Q5968 | 经星之辛二百六十八 | 经星之庚二百六十七 | fulltext.md L20004 |
+| HJ-Q5969 | 经星之癸二百七十 | 经星之壬二百六十九 | fulltext.md L20008 |
+| HJ-Q5970 | 经月之酉十 | 经日之甲一 | fulltext.md L20012 |
+| HJ-Q5971 | 经星之乙二百七十二 | 经星之甲二百七十一 | fulltext.md L20016 |
+| HJ-Q5972 | 经星之丁二百七十四 | 经星之丙二百七十三 | fulltext.md L20020 |
+| HJ-Q5973 | 经星之己二百七十六 | 经星之戊二百七十五 | fulltext.md L20024 |
+| HJ-Q5974 | 经星之辛二百七十八 | 经星之庚二百七十七 | fulltext.md L20028 |
+| HJ-Q5975 | 经星之癸二百八十 | 经星之壬二百七十九 | fulltext.md L20032 |
+| HJ-Q5976 | 经星之乙二百八十二 | 经星之甲二百八十一 | fulltext.md L20036 |
+| HJ-Q5977 | 经星之丁二百八十四 | 经星之丙二百八十三 | fulltext.md L20040 |
+| HJ-Q5978 | 经星之己二百八十六 | 经星之戊二百八十五 | fulltext.md L20044 |
+| HJ-Q5979 | 经星之辛二百八十八 | 经星之庚二百八十七 | fulltext.md L20048 |
+| HJ-Q5980 | 经星之癸二百九十 | 经星之壬二百八十九 | fulltext.md L20052 |
+| HJ-Q5981 | 经星之乙二百九十二 | 经星之甲二百九十一 | fulltext.md L20056 |
+| HJ-Q5982 | 经星之丁二百九十四 | 经星之丙二百九十三 | fulltext.md L20060 |
+| HJ-Q5983 | 经星之己二百九十六 | 经星之戊二百九十五 | fulltext.md L20064 |
+| HJ-Q5984 | 经星之辛二百九十八 | 经星之庚二百九十七 | fulltext.md L20068 |
+| HJ-Q5985 | 经星之癸三百 | 经星之壬二百九十九 | fulltext.md L20072 |
+| HJ-Q5986 | 经月之戌十一 | 经日之甲一 | fulltext.md L20076 |
+| HJ-Q5987 | 经星之乙三百二 | 经星之甲三百一 | fulltext.md L20080 |
+| HJ-Q5988 | 经星之丁三百四 | 经星之丙三百三 | fulltext.md L20084 |
+| HJ-Q5989 | 经星之己三百六 | 经星之戊三百五 | fulltext.md L20088 |
+| HJ-Q5990 | 经星之辛三百八 | 经星之庚三百七 | fulltext.md L20092 |
+| HJ-Q5991 | 经星之癸三百一十 | 经星之壬三百九 | fulltext.md L20096 |
+| HJ-Q5992 | 经星之乙三百一十二 | 经星之甲三百一十一 | fulltext.md L20100 |
+| HJ-Q5993 | 经星之丁三百一十四 | 经星之丙三百一十三 | fulltext.md L20104 |
+| HJ-Q5994 | 闭物经月戌之终 | 经星之戊三百一十五 | fulltext.md L20108 |
+| HJ-Q5995 | 钦定四库全书 | 皇极经世书卷四下 | fulltext.md L20112 |
+| HJ-Q5996 | 经元之甲一 | 观物篇二十五 | fulltext.md L20117 |
+| HJ-Q5997 | 经运之癸一百八十 | 经㑹之巳六 | fulltext.md L20121 |
+| HJ-Q5998 | 经世之丑二千一百五十 | 经世之子二千一百四十九 | fulltext.md L20125 |
+| HJ-Q5999 | 经世之卯二千一百五十二 | 经世之寅二千一百五十一 | fulltext.md L20129 |
+| HJ-Q6000 | 经世之巳二千一百五十四 | 经世之辰二千一百五十三 | fulltext.md L20133 |
+| HJ-Q6001 | 经世之未二千一百五十六 | 经世之午二千一百五十五 | fulltext.md L20137 |
 | HJ-Q6002 | ### 甲午 | 甲午 | fulltext.md L20139 |
 | HJ-Q6003 | ### 丙申 | 丙申 | fulltext.md L20143 |
 | HJ-Q6004 | ### 戊戌 | 戊戌 | fulltext.md L20147 |
 | HJ-Q6005 | ### 庚子 | 庚子 | fulltext.md L20151 |
-| HJ-Q6006 | 甲辰唐帝堯肇位于平陽號陶唐氏命羲和欽若昊天厯象日月星辰敬授人時朞三百六旬有六日以閏月定四時成嵗曰載建寅月為始允釐百工庻績咸熈 | 壬寅 | fulltext.md L20158 |
+| HJ-Q6006 | 甲辰唐帝尧肇位于平阳号陶唐氏命羲和钦若昊天厯象日月星辰敬授人时朞三百六旬有六日以闰月定四时成岁曰载建寅月为始允厘百工庻绩咸熈 | 壬寅 | fulltext.md L20158 |
 | HJ-Q6007 | ### 乙巳 | 乙巳 | fulltext.md L20160 |
 | HJ-Q6008 | ### 丁未 | 丁未 | fulltext.md L20164 |
 | HJ-Q6009 | ### 己酉 | 己酉 | fulltext.md L20168 |
@@ -6025,8 +6025,8 @@ last_updated: 2026-06-16
 | HJ-Q6013 | ### 丁巳 | 丁巳 | fulltext.md L20184 |
 | HJ-Q6014 | ### 己未 | 己未 | fulltext.md L20188 |
 | HJ-Q6015 | ### 辛酉 | 辛酉 | fulltext.md L20192 |
-| HJ-Q6016 | 經世之申二千一百五十七 | 癸亥 | fulltext.md L20198 |
-| HJ-Q6017 | ### 甲子唐帝堯二十一年 | 甲子唐帝堯二十一年 | fulltext.md L20200 |
+| HJ-Q6016 | 经世之申二千一百五十七 | 癸亥 | fulltext.md L20198 |
+| HJ-Q6017 | ### 甲子唐帝尧二十一年 | 甲子唐帝尧二十一年 | fulltext.md L20200 |
 | HJ-Q6018 | ### 丙寅 | 丙寅 | fulltext.md L20204 |
 | HJ-Q6019 | ### 戊辰 | 戊辰 | fulltext.md L20208 |
 | HJ-Q6020 | ### 庚午 | 庚午 | fulltext.md L20212 |
@@ -6041,7 +6041,7 @@ last_updated: 2026-06-16
 | HJ-Q6029 | ### 戊子 | 戊子 | fulltext.md L20248 |
 | HJ-Q6030 | ### 庚寅 | 庚寅 | fulltext.md L20252 |
 | HJ-Q6031 | ### 壬辰 | 壬辰 | fulltext.md L20256 |
-| HJ-Q6032 | 甲午唐帝堯五十一年 | 經世之酉二千一百五十八 | fulltext.md L20262 |
+| HJ-Q6032 | 甲午唐帝尧五十一年 | 经世之酉二千一百五十八 | fulltext.md L20262 |
 | HJ-Q6033 | ### 乙未 | 乙未 | fulltext.md L20264 |
 | HJ-Q6034 | ### 丁酉 | 丁酉 | fulltext.md L20268 |
 | HJ-Q6035 | ### 己亥 | 己亥 | fulltext.md L20272 |
@@ -6050,12 +6050,12 @@ last_updated: 2026-06-16
 | HJ-Q6038 | ### 乙巳 | 乙巳 | fulltext.md L20284 |
 | HJ-Q6039 | ### 丁未 | 丁未 | fulltext.md L20288 |
 | HJ-Q6040 | ### 己酉 | 己酉 | fulltext.md L20292 |
-| HJ-Q6041 | 壬子鯀治水績用弗成 | 辛亥 | fulltext.md L20298 |
-| HJ-Q6042 | 乙卯舜言底可績帝以徳薦于天而命之位 | 甲寅 | fulltext.md L20304 |
+| HJ-Q6041 | 壬子鲧治水绩用弗成 | 辛亥 | fulltext.md L20298 |
+| HJ-Q6042 | 乙卯舜言底可绩帝以徳荐于天而命之位 | 甲寅 | fulltext.md L20304 |
 | HJ-Q6043 | ### 丁巳 | 丁巳 | fulltext.md L20307 |
 | HJ-Q6044 | ### 己未 | 己未 | fulltext.md L20311 |
 | HJ-Q6045 | ### 辛酉 | 辛酉 | fulltext.md L20315 |
-| HJ-Q6046 | 經世之戌二千一百五十九 | 癸亥 | fulltext.md L20321 |
+| HJ-Q6046 | 经世之戌二千一百五十九 | 癸亥 | fulltext.md L20321 |
 | HJ-Q6047 | ### 甲子虞帝舜九年 | 甲子虞帝舜九年 | fulltext.md L20323 |
 | HJ-Q6048 | ### 丙寅 | 丙寅 | fulltext.md L20327 |
 | HJ-Q6049 | ### 戊辰 | 戊辰 | fulltext.md L20331 |
@@ -6066,11 +6066,11 @@ last_updated: 2026-06-16
 | HJ-Q6054 | ### 戊寅 | 戊寅 | fulltext.md L20351 |
 | HJ-Q6055 | ### 庚辰 | 庚辰 | fulltext.md L20355 |
 | HJ-Q6056 | ### 壬午 | 壬午 | fulltext.md L20359 |
-| HJ-Q6057 | 丙戌月正元日舜格于文祖號有虞氏都蒲坂詢四岳闢四門明四目達四聰咨十有二牧命九官以伯禹為司空稷司農契司徒臯陶司士垂司工益司虞夷司禮䕫典樂龍司言此九人使宅百揆 | 甲申 | fulltext.md L20366 |
+| HJ-Q6057 | 丙戌月正元日舜格于文祖号有虞氏都蒲坂询四岳辟四门明四目达四聪咨十有二牧命九官以伯禹为司空稷司农契司徒臯陶司士垂司工益司虞夷司礼䕫典乐龙司言此九人使宅百揆 | 甲申 | fulltext.md L20366 |
 | HJ-Q6058 | ### 丁亥 | 丁亥 | fulltext.md L20368 |
 | HJ-Q6059 | ### 己丑 | 己丑 | fulltext.md L20372 |
 | HJ-Q6060 | ### 辛卯 | 辛卯 | fulltext.md L20376 |
-| HJ-Q6061 | 經世之亥二千一百六十 | 癸巳 | fulltext.md L20382 |
+| HJ-Q6061 | 经世之亥二千一百六十 | 癸巳 | fulltext.md L20382 |
 | HJ-Q6062 | ### 甲午虞舜帝三十九年 | 甲午虞舜帝三十九年 | fulltext.md L20384 |
 | HJ-Q6063 | ### 丙申 | 丙申 | fulltext.md L20388 |
 | HJ-Q6064 | ### 戊戌 | 戊戌 | fulltext.md L20392 |
@@ -6081,29 +6081,29 @@ last_updated: 2026-06-16
 | HJ-Q6069 | ### 戊申 | 戊申 | fulltext.md L20412 |
 | HJ-Q6070 | ### 庚戌 | 庚戌 | fulltext.md L20416 |
 | HJ-Q6071 | ### 壬子 | 壬子 | fulltext.md L20420 |
-| HJ-Q6072 | 丙辰帝舜求代以功薦禹于天而命之位 | 甲寅 | fulltext.md L20427 |
+| HJ-Q6072 | 丙辰帝舜求代以功荐禹于天而命之位 | 甲寅 | fulltext.md L20427 |
 | HJ-Q6073 | ### 戊午 | 戊午 | fulltext.md L20430 |
 | HJ-Q6074 | ### 庚申 | 庚申 | fulltext.md L20434 |
 | HJ-Q6075 | ### 壬戌 | 壬戌 | fulltext.md L20438 |
-| HJ-Q6076 | 經元之甲乙 | 觀物篇二十六 | fulltext.md L20444 |
-| HJ-Q6077 | 經運之甲一百八十一 | 經㑹之午七 | fulltext.md L20448 |
-| HJ-Q6078 | 甲子夏王禹八年 | 經世之子二千一百六十一 | fulltext.md L20452 |
+| HJ-Q6076 | 经元之甲乙 | 观物篇二十六 | fulltext.md L20444 |
+| HJ-Q6077 | 经运之甲一百八十一 | 经㑹之午七 | fulltext.md L20448 |
+| HJ-Q6078 | 甲子夏王禹八年 | 经世之子二千一百六十一 | fulltext.md L20452 |
 | HJ-Q6079 | ### 乙丑 | 乙丑 | fulltext.md L20454 |
 | HJ-Q6080 | ### 丁卯 | 丁卯 | fulltext.md L20458 |
 | HJ-Q6081 | ### 己巳 | 己巳 | fulltext.md L20462 |
 | HJ-Q6082 | ### 辛未 | 辛未 | fulltext.md L20466 |
-| HJ-Q6083 | 甲戌禹都安邑徙居陽翟大㑹諸侯于塗山執玉帛者 | 癸酉帝舜陟方乃死 | fulltext.md L20472 |
-| HJ-Q6084 | ### 萬國防風氏後至戮焉 | 萬國防風氏後至戮焉 | fulltext.md L20474 |
+| HJ-Q6083 | 甲戌禹都安邑徙居阳翟大㑹诸侯于涂山执玉帛者 | 癸酉帝舜陟方乃死 | fulltext.md L20472 |
+| HJ-Q6084 | ### 万国防风氏后至戮焉 | 万国防风氏后至戮焉 | fulltext.md L20474 |
 | HJ-Q6085 | ### 丙子 | 丙子 | fulltext.md L20478 |
 | HJ-Q6086 | ### 戊寅 | 戊寅 | fulltext.md L20482 |
 | HJ-Q6087 | ### 庚辰 | 庚辰 | fulltext.md L20486 |
-| HJ-Q6088 | 癸未夏王禹東廵狩至于㑹稽崩元子啟踐位 | 壬午 | fulltext.md L20492 |
-| HJ-Q6089 | ### 甲申啟與有扈戰于甘之野 | 甲申啟與有扈戰于甘之野 | fulltext.md L20494 |
+| HJ-Q6088 | 癸未夏王禹东廵狩至于㑹稽崩元子启践位 | 壬午 | fulltext.md L20492 |
+| HJ-Q6089 | ### 甲申启与有扈战于甘之野 | 甲申启与有扈战于甘之野 | fulltext.md L20494 |
 | HJ-Q6090 | ### 丙戌 | 丙戌 | fulltext.md L20498 |
 | HJ-Q6091 | ### 戊子 | 戊子 | fulltext.md L20502 |
 | HJ-Q6092 | ### 庚寅 | 庚寅 | fulltext.md L20506 |
-| HJ-Q6093 | ### 壬辰夏王啟崩元子太康踐位 | 壬辰夏王啟崩元子太康踐位 | fulltext.md L20510 |
-| HJ-Q6094 | ### 經世之丑二千一百六十二 | 經世之丑二千一百六十二 | fulltext.md L20514 |
+| HJ-Q6093 | ### 壬辰夏王启崩元子太康践位 | 壬辰夏王启崩元子太康践位 | fulltext.md L20510 |
+| HJ-Q6094 | ### 经世之丑二千一百六十二 | 经世之丑二千一百六十二 | fulltext.md L20514 |
 | HJ-Q6095 | ### 乙未 | 乙未 | fulltext.md L20518 |
 | HJ-Q6096 | ### 丁酉 | 丁酉 | fulltext.md L20522 |
 | HJ-Q6097 | ### 己亥 | 己亥 | fulltext.md L20526 |
@@ -6116,13 +6116,13 @@ last_updated: 2026-06-16
 | HJ-Q6104 | ### 癸丑 | 癸丑 | fulltext.md L20554 |
 | HJ-Q6105 | ### 乙卯 | 乙卯 | fulltext.md L20558 |
 | HJ-Q6106 | ### 丁巳 | 丁巳 | fulltext.md L20562 |
-| HJ-Q6107 | 辛酉夏王太康失邦盤逰無度畋于有洛之表十旬不返有窮后羿因民不忍距于河而死子仲康立 | 己未 | fulltext.md L20569 |
-| HJ-Q6108 | 經世之寅二千一百六十三 | 癸亥 | fulltext.md L20574 |
+| HJ-Q6107 | 辛酉夏王太康失邦盘逰无度畋于有洛之表十旬不返有穷后羿因民不忍距于河而死子仲康立 | 己未 | fulltext.md L20569 |
+| HJ-Q6108 | 经世之寅二千一百六十三 | 癸亥 | fulltext.md L20574 |
 | HJ-Q6109 | ### 甲子夏王仲康三年 | 甲子夏王仲康三年 | fulltext.md L20576 |
 | HJ-Q6110 | ### 丙寅 | 丙寅 | fulltext.md L20580 |
 | HJ-Q6111 | ### 戊辰 | 戊辰 | fulltext.md L20584 |
 | HJ-Q6112 | ### 庚午 | 庚午 | fulltext.md L20588 |
-| HJ-Q6113 | 甲戌夏王仲康崩子相繼立依同姓諸侯斟灌斟鄩氏乙亥 | 壬申 | fulltext.md L20595 |
+| HJ-Q6113 | 甲戌夏王仲康崩子相继立依同姓诸侯斟灌斟𬩽氏乙亥 | 壬申 | fulltext.md L20595 |
 | HJ-Q6114 | ### 丙子 | 丙子 | fulltext.md L20597 |
 | HJ-Q6115 | ### 戊寅 | 戊寅 | fulltext.md L20601 |
 | HJ-Q6116 | ### 庚辰 | 庚辰 | fulltext.md L20605 |
@@ -6132,11 +6132,11 @@ last_updated: 2026-06-16
 | HJ-Q6120 | ### 戊子 | 戊子 | fulltext.md L20621 |
 | HJ-Q6121 | ### 庚寅 | 庚寅 | fulltext.md L20625 |
 | HJ-Q6122 | ### 壬辰 | 壬辰 | fulltext.md L20629 |
-| HJ-Q6123 | 甲午夏王相二十年 | 經世之卯二千一百六十四 | fulltext.md L20635 |
+| HJ-Q6123 | 甲午夏王相二十年 | 经世之卯二千一百六十四 | fulltext.md L20635 |
 | HJ-Q6124 | ### 乙未 | 乙未 | fulltext.md L20637 |
 | HJ-Q6125 | ### 丁酉 | 丁酉 | fulltext.md L20641 |
 | HJ-Q6126 | ### 己亥 | 己亥 | fulltext.md L20645 |
-| HJ-Q6127 | 壬寅寒浞殺有窮后羿使子澆及豷伐斟灌斟鄩氏以滅相相之臣靡逃于有鬲氏相之后還于有仍氏遂生少康 | 辛丑 | fulltext.md L20651 |
+| HJ-Q6127 | 壬寅寒浞杀有穷后羿使子浇及豷伐斟灌斟𬩽氏以灭相相之臣靡逃于有鬲氏相之后还于有仍氏遂生少康 | 辛丑 | fulltext.md L20651 |
 | HJ-Q6128 | ### 癸卯 | 癸卯 | fulltext.md L20653 |
 | HJ-Q6129 | ### 乙巳 | 乙巳 | fulltext.md L20657 |
 | HJ-Q6130 | ### 丁未 | 丁未 | fulltext.md L20661 |
@@ -6147,7 +6147,7 @@ last_updated: 2026-06-16
 | HJ-Q6135 | ### 丁巳 | 丁巳 | fulltext.md L20681 |
 | HJ-Q6136 | ### 己未 | 己未 | fulltext.md L20685 |
 | HJ-Q6137 | ### 辛酉 | 辛酉 | fulltext.md L20689 |
-| HJ-Q6138 | 經世之辰二千一百六十五 | 癸亥 | fulltext.md L20695 |
+| HJ-Q6138 | 经世之辰二千一百六十五 | 癸亥 | fulltext.md L20695 |
 | HJ-Q6139 | ### 甲子夏王少康生二十三年 | 甲子夏王少康生二十三年 | fulltext.md L20697 |
 | HJ-Q6140 | ### 丙寅 | 丙寅 | fulltext.md L20701 |
 | HJ-Q6141 | ### 戊辰 | 戊辰 | fulltext.md L20705 |
@@ -6156,18 +6156,18 @@ last_updated: 2026-06-16
 | HJ-Q6144 | ### 甲戌 | 甲戌 | fulltext.md L20717 |
 | HJ-Q6145 | ### 丙子 | 丙子 | fulltext.md L20721 |
 | HJ-Q6146 | ### 戊寅 | 戊寅 | fulltext.md L20725 |
-| HJ-Q6147 | 壬午夏之遺臣靡自有鬲氏收斟灌鄩二國之燼以滅寒浞而立少康少康立滅澆于過滅豷于戈以絶有窮氏之族 | 庚辰 | fulltext.md L20732 |
+| HJ-Q6147 | 壬午夏之遗臣靡自有鬲氏收斟灌𬩽二国之烬以灭寒浞而立少康少康立灭浇于过灭豷于戈以绝有穷氏之族 | 庚辰 | fulltext.md L20732 |
 | HJ-Q6148 | ### 癸未 | 癸未 | fulltext.md L20734 |
 | HJ-Q6149 | ### 乙酉 | 乙酉 | fulltext.md L20738 |
 | HJ-Q6150 | ### 丁亥 | 丁亥 | fulltext.md L20742 |
 | HJ-Q6151 | ### 己丑 | 己丑 | fulltext.md L20746 |
 | HJ-Q6152 | ### 卒卯 | 卒卯 | fulltext.md L20750 |
-| HJ-Q6153 | 經世之巳二千一百六十六 | 癸巳 | fulltext.md L20756 |
+| HJ-Q6153 | 经世之巳二千一百六十六 | 癸巳 | fulltext.md L20756 |
 | HJ-Q6154 | ### 甲午夏王少康五十三年 | 甲午夏王少康五十三年 | fulltext.md L20758 |
 | HJ-Q6155 | ### 丙申 | 丙申 | fulltext.md L20762 |
 | HJ-Q6156 | ### 戊戌 | 戊戌 | fulltext.md L20766 |
 | HJ-Q6157 | ### 庚子 | 庚子 | fulltext.md L20770 |
-| HJ-Q6158 | 癸卯夏王少康崩子杼踐位 | 壬寅 | fulltext.md L20776 |
+| HJ-Q6158 | 癸卯夏王少康崩子杼践位 | 壬寅 | fulltext.md L20776 |
 | HJ-Q6159 | ### 甲辰 | 甲辰 | fulltext.md L20778 |
 | HJ-Q6160 | ### 丙午 | 丙午 | fulltext.md L20782 |
 | HJ-Q6161 | ### 戊申 | 戊申 | fulltext.md L20786 |
@@ -6176,9 +6176,9 @@ last_updated: 2026-06-16
 | HJ-Q6164 | ### 甲寅 | 甲寅 | fulltext.md L20798 |
 | HJ-Q6165 | ### 丙辰 | 丙辰 | fulltext.md L20802 |
 | HJ-Q6166 | ### 戊午 | 戊午 | fulltext.md L20806 |
-| HJ-Q6167 | ### 庚申夏王杼崩子槐踐位 | 庚申夏王杼崩子槐踐位 | fulltext.md L20810 |
+| HJ-Q6167 | ### 庚申夏王杼崩子槐践位 | 庚申夏王杼崩子槐践位 | fulltext.md L20810 |
 | HJ-Q6168 | ### 壬戌 | 壬戌 | fulltext.md L20814 |
-| HJ-Q6169 | 甲子夏王槐四年 | 經世之午二千一百六十七 | fulltext.md L20820 |
+| HJ-Q6169 | 甲子夏王槐四年 | 经世之午二千一百六十七 | fulltext.md L20820 |
 | HJ-Q6170 | ### 乙丑 | 乙丑 | fulltext.md L20822 |
 | HJ-Q6171 | ### 丁卯 | 丁卯 | fulltext.md L20826 |
 | HJ-Q6172 | ### 己巳 | 己巳 | fulltext.md L20830 |
@@ -6189,17 +6189,17 @@ last_updated: 2026-06-16
 | HJ-Q6177 | ### 己卯 | 己卯 | fulltext.md L20850 |
 | HJ-Q6178 | ### 辛巳 | 辛巳 | fulltext.md L20854 |
 | HJ-Q6179 | ### 癸未 | 癸未 | fulltext.md L20858 |
-| HJ-Q6180 | 丙戌夏王槐崩子芒踐位 | 乙酉 | fulltext.md L20864 |
+| HJ-Q6180 | 丙戌夏王槐崩子芒践位 | 乙酉 | fulltext.md L20864 |
 | HJ-Q6181 | ### 丁亥 | 丁亥 | fulltext.md L20866 |
 | HJ-Q6182 | ### 己丑 | 己丑 | fulltext.md L20870 |
 | HJ-Q6183 | ### 辛卯 | 辛卯 | fulltext.md L20874 |
-| HJ-Q6184 | 經世之未二千一百六十八 | 癸巳 | fulltext.md L20880 |
+| HJ-Q6184 | 经世之未二千一百六十八 | 癸巳 | fulltext.md L20880 |
 | HJ-Q6185 | ### 甲午夏王芒八年 | 甲午夏王芒八年 | fulltext.md L20882 |
 | HJ-Q6186 | ### 丙申 | 丙申 | fulltext.md L20886 |
 | HJ-Q6187 | ### 戊戌 | 戊戌 | fulltext.md L20890 |
 | HJ-Q6188 | ### 庚子 | 庚子 | fulltext.md L20894 |
 | HJ-Q6189 | ### 壬寅 | 壬寅 | fulltext.md L20898 |
-| HJ-Q6190 | ### 甲辰夏王芒崩子泄踐位 | 甲辰夏王芒崩子泄踐位 | fulltext.md L20902 |
+| HJ-Q6190 | ### 甲辰夏王芒崩子泄践位 | 甲辰夏王芒崩子泄践位 | fulltext.md L20902 |
 | HJ-Q6191 | ### 丙午 | 丙午 | fulltext.md L20906 |
 | HJ-Q6192 | ### 戊申 | 戊申 | fulltext.md L20910 |
 | HJ-Q6193 | ### 庚戌 | 庚戌 | fulltext.md L20914 |
@@ -6207,9 +6207,9 @@ last_updated: 2026-06-16
 | HJ-Q6195 | ### 甲寅 | 甲寅 | fulltext.md L20922 |
 | HJ-Q6196 | ### 丙辰 | 丙辰 | fulltext.md L20926 |
 | HJ-Q6197 | ### 戊午 | 戊午 | fulltext.md L20930 |
-| HJ-Q6198 | ### 庚申夏王泄崩子不降踐位 | 庚申夏王泄崩子不降踐位 | fulltext.md L20934 |
+| HJ-Q6198 | ### 庚申夏王泄崩子不降践位 | 庚申夏王泄崩子不降践位 | fulltext.md L20934 |
 | HJ-Q6199 | ### 壬戊 | 壬戊 | fulltext.md L20938 |
-| HJ-Q6200 | 甲子夏王不降四年 | 經世之申二千一百六十九 | fulltext.md L20944 |
+| HJ-Q6200 | 甲子夏王不降四年 | 经世之申二千一百六十九 | fulltext.md L20944 |
 | HJ-Q6201 | ### 乙丑 | 乙丑 | fulltext.md L20946 |
 | HJ-Q6202 | ### 丁卯 | 丁卯 | fulltext.md L20950 |
 | HJ-Q6203 | ### 己巳 | 己巳 | fulltext.md L20954 |
@@ -6224,7 +6224,7 @@ last_updated: 2026-06-16
 | HJ-Q6212 | ### 丁亥 | 丁亥 | fulltext.md L20990 |
 | HJ-Q6213 | ### 己丑 | 己丑 | fulltext.md L20994 |
 | HJ-Q6214 | ### 辛卯 | 辛卯 | fulltext.md L20998 |
-| HJ-Q6215 | 經世之酉二千一百七十 | 癸巳 | fulltext.md L21004 |
+| HJ-Q6215 | 经世之酉二千一百七十 | 癸巳 | fulltext.md L21004 |
 | HJ-Q6216 | ### 甲午夏王不降三十四年 | 甲午夏王不降三十四年 | fulltext.md L21006 |
 | HJ-Q6217 | ### 丙申 | 丙申 | fulltext.md L21010 |
 | HJ-Q6218 | ### 戊戌 | 戊戌 | fulltext.md L21014 |
@@ -6240,7 +6240,7 @@ last_updated: 2026-06-16
 | HJ-Q6228 | 己未夏王不降崩弟扃立 | 戊午 | fulltext.md L21056 |
 | HJ-Q6229 | ### 庚申 | 庚申 | fulltext.md L21058 |
 | HJ-Q6230 | ### 壬戌 | 壬戌 | fulltext.md L21062 |
-| HJ-Q6231 | 甲子夏王扃五年 | 經世之戌二千一百七十一 | fulltext.md L21068 |
+| HJ-Q6231 | 甲子夏王扃五年 | 经世之戌二千一百七十一 | fulltext.md L21068 |
 | HJ-Q6232 | ### 乙丑 | 乙丑 | fulltext.md L21070 |
 | HJ-Q6233 | ### 丁卯 | 丁卯 | fulltext.md L21074 |
 | HJ-Q6234 | ### 己巳 | 己巳 | fulltext.md L21078 |
@@ -6248,14 +6248,14 @@ last_updated: 2026-06-16
 | HJ-Q6236 | ### 癸酉 | 癸酉 | fulltext.md L21086 |
 | HJ-Q6237 | ### 乙亥 | 乙亥 | fulltext.md L21090 |
 | HJ-Q6238 | ### 丁丑 | 丁丑 | fulltext.md L21094 |
-| HJ-Q6239 | 庚辰夏王扃崩子厪踐位 | 己卯 | fulltext.md L21100 |
+| HJ-Q6239 | 庚辰夏王扃崩子厪践位 | 己卯 | fulltext.md L21100 |
 | HJ-Q6240 | ### 辛巳 | 辛巳 | fulltext.md L21102 |
 | HJ-Q6241 | ### 癸未 | 癸未 | fulltext.md L21106 |
 | HJ-Q6242 | ### 乙酉 | 乙酉 | fulltext.md L21110 |
 | HJ-Q6243 | ### 丁亥 | 丁亥 | fulltext.md L21114 |
 | HJ-Q6244 | ### 己丑 | 己丑 | fulltext.md L21118 |
 | HJ-Q6245 | ### 辛卯 | 辛卯 | fulltext.md L21122 |
-| HJ-Q6246 | 經世之亥二千一百七十二 | 癸巳 | fulltext.md L21128 |
+| HJ-Q6246 | 经世之亥二千一百七十二 | 癸巳 | fulltext.md L21128 |
 | HJ-Q6247 | ### 甲午夏王厪十四年 | 甲午夏王厪十四年 | fulltext.md L21130 |
 | HJ-Q6248 | ### 丙申 | 丙申 | fulltext.md L21134 |
 | HJ-Q6249 | ### 戊戌 | 戊戌 | fulltext.md L21138 |
@@ -6271,28 +6271,28 @@ last_updated: 2026-06-16
 | HJ-Q6259 | ### 戊午 | 戊午 | fulltext.md L21178 |
 | HJ-Q6260 | ### 庚申 | 庚申 | fulltext.md L21182 |
 | HJ-Q6261 | ### 壬戊 | 壬戊 | fulltext.md L21186 |
-| HJ-Q6262 | 經元之甲一 | 觀物篇二十七 | fulltext.md L21192 |
-| HJ-Q6263 | 經運之乙一百八十二 | 經㑹之午七 | fulltext.md L21196 |
-| HJ-Q6264 | 甲子夏王孔甲二十三年 | 經世之子二千一百七十三 | fulltext.md L21200 |
+| HJ-Q6262 | 经元之甲一 | 观物篇二十七 | fulltext.md L21192 |
+| HJ-Q6263 | 经运之乙一百八十二 | 经㑹之午七 | fulltext.md L21196 |
+| HJ-Q6264 | 甲子夏王孔甲二十三年 | 经世之子二千一百七十三 | fulltext.md L21200 |
 | HJ-Q6265 | ### 乙丑 | 乙丑 | fulltext.md L21202 |
 | HJ-Q6266 | ### 丁卯 | 丁卯 | fulltext.md L21206 |
 | HJ-Q6267 | ### 已巳 | 已巳 | fulltext.md L21210 |
-| HJ-Q6268 | 壬申夏王孔甲崩子臯踐位 | 辛未 | fulltext.md L21216 |
+| HJ-Q6268 | 壬申夏王孔甲崩子臯践位 | 辛未 | fulltext.md L21216 |
 | HJ-Q6269 | ### 癸酉 | 癸酉 | fulltext.md L21218 |
 | HJ-Q6270 | ### 乙亥 | 乙亥 | fulltext.md L21222 |
 | HJ-Q6271 | ### 丁丑 | 丁丑 | fulltext.md L21226 |
 | HJ-Q6272 | ### 己卯 | 己卯 | fulltext.md L21230 |
 | HJ-Q6273 | ### 辛巳 | 辛巳 | fulltext.md L21234 |
-| HJ-Q6274 | ### 癸未夏王臯崩子發踐位 | 癸未夏王臯崩子發踐位 | fulltext.md L21238 |
+| HJ-Q6274 | ### 癸未夏王臯崩子发践位 | 癸未夏王臯崩子发践位 | fulltext.md L21238 |
 | HJ-Q6275 | ### 乙酉 | 乙酉 | fulltext.md L21242 |
 | HJ-Q6276 | ### 丁亥 | 丁亥 | fulltext.md L21246 |
 | HJ-Q6277 | ### 己丑 | 己丑 | fulltext.md L21250 |
 | HJ-Q6278 | ### 辛卯 | 辛卯 | fulltext.md L21254 |
-| HJ-Q6279 | 經世之丑二千一百七十四 | 癸巳 | fulltext.md L21260 |
-| HJ-Q6280 | ### 甲午夏王發十一年 | 甲午夏王發十一年 | fulltext.md L21262 |
+| HJ-Q6279 | 经世之丑二千一百七十四 | 癸巳 | fulltext.md L21260 |
+| HJ-Q6280 | ### 甲午夏王发十一年 | 甲午夏王发十一年 | fulltext.md L21262 |
 | HJ-Q6281 | ### 丙申 | 丙申 | fulltext.md L21266 |
 | HJ-Q6282 | ### 戊戌 | 戊戌 | fulltext.md L21270 |
-| HJ-Q6283 | 壬寅夏王發崩子癸踐位是謂之桀 | 庚子 | fulltext.md L21277 |
+| HJ-Q6283 | 壬寅夏王发崩子癸践位是谓之桀 | 庚子 | fulltext.md L21277 |
 | HJ-Q6284 | ### 癸卯 | 癸卯 | fulltext.md L21279 |
 | HJ-Q6285 | ### 乙巳 | 乙巳 | fulltext.md L21283 |
 | HJ-Q6286 | ### 丁未 | 丁未 | fulltext.md L21287 |
@@ -6303,29 +6303,29 @@ last_updated: 2026-06-16
 | HJ-Q6291 | ### 丁巳 | 丁巳 | fulltext.md L21307 |
 | HJ-Q6292 | ### 巳未 | 巳未 | fulltext.md L21311 |
 | HJ-Q6293 | ### 辛酉 | 辛酉 | fulltext.md L21315 |
-| HJ-Q6294 | 經世之寅二千一百七十五 | 癸亥 | fulltext.md L21321 |
+| HJ-Q6294 | 经世之寅二千一百七十五 | 癸亥 | fulltext.md L21321 |
 | HJ-Q6295 | ### 甲子夏王癸二十二年 | 甲子夏王癸二十二年 | fulltext.md L21323 |
 | HJ-Q6296 | ### 丙寅 | 丙寅 | fulltext.md L21327 |
 | HJ-Q6297 | ### 戊辰 | 戊辰 | fulltext.md L21331 |
 | HJ-Q6298 | ### 庚午 | 庚午 | fulltext.md L21335 |
 | HJ-Q6299 | ### 壬申 | 壬申 | fulltext.md L21339 |
 | HJ-Q6300 | 乙亥始嬖妺喜 | 甲戊 | fulltext.md L21345 |
-| HJ-Q6301 | 丁丑成湯即諸侯位自商丘徙至亳始用伊尹 | 丙子 | fulltext.md L21349 |
-| HJ-Q6302 | 己卯成湯薦伊尹於夏王 | 戊寅成湯征葛 | fulltext.md L21353 |
+| HJ-Q6301 | 丁丑成汤即诸侯位自商丘徙至亳始用伊尹 | 丙子 | fulltext.md L21349 |
+| HJ-Q6302 | 己卯成汤荐伊尹于夏王 | 戊寅成汤征葛 | fulltext.md L21353 |
 | HJ-Q6303 | ### 庚辰 | 庚辰 | fulltext.md L21355 |
-| HJ-Q6304 | ### 壬午伊尹醜復歸于亳 | 壬午伊尹醜復歸于亳 | fulltext.md L21359 |
-| HJ-Q6305 | ### 甲申桀囚成湯于夏臺 | 甲申桀囚成湯于夏臺 | fulltext.md L21363 |
+| HJ-Q6304 | ### 壬午伊尹丑复归于亳 | 壬午伊尹丑复归于亳 | fulltext.md L21359 |
+| HJ-Q6305 | ### 甲申桀囚成汤于夏台 | 甲申桀囚成汤于夏台 | fulltext.md L21363 |
 | HJ-Q6306 | ### 丙戌 | 丙戌 | fulltext.md L21367 |
 | HJ-Q6307 | ### 戊子 | 戊子 | fulltext.md L21371 |
 | HJ-Q6308 | ### 庚寅 | 庚寅 | fulltext.md L21375 |
 | HJ-Q6309 | ### 壬辰 | 壬辰 | fulltext.md L21379 |
-| HJ-Q6310 | 甲午夏王癸五十二年 | 經世之卯二千一百七十六 | fulltext.md L21385 |
+| HJ-Q6310 | 甲午夏王癸五十二年 | 经世之卯二千一百七十六 | fulltext.md L21385 |
 | HJ-Q6311 | ### 丙申 | 丙申 | fulltext.md L21388 |
 | HJ-Q6312 | ### 戊戌 | 戊戌 | fulltext.md L21392 |
 | HJ-Q6313 | ### 庚子 | 庚子 | fulltext.md L21396 |
 | HJ-Q6314 | ### 壬寅 | 壬寅 | fulltext.md L21400 |
 | HJ-Q6315 | ### 甲辰 | 甲辰 | fulltext.md L21404 |
-| HJ-Q6316 | 丁未商王成湯崩元子太甲踐位不明伊尹放之桐宫戊申 | 丙午 | fulltext.md L21410 |
+| HJ-Q6316 | 丁未商王成汤崩元子太甲践位不明伊尹放之桐宫戊申 | 丙午 | fulltext.md L21410 |
 | HJ-Q6317 | 庚戌商王太甲思庸伊尹冕服奉嗣王于亳返政辛亥 | 己酉 | fulltext.md L21414 |
 | HJ-Q6318 | ### 壬子 | 壬子 | fulltext.md L21416 |
 | HJ-Q6319 | ### 甲寅 | 甲寅 | fulltext.md L21420 |
@@ -6333,7 +6333,7 @@ last_updated: 2026-06-16
 | HJ-Q6321 | ### 戊午 | 戊午 | fulltext.md L21428 |
 | HJ-Q6322 | ### 庚申 | 庚申 | fulltext.md L21432 |
 | HJ-Q6323 | ### 壬戌 | 壬戌 | fulltext.md L21436 |
-| HJ-Q6324 | 甲子商王太甲十七年 | 經世之辰二千一百七十七 | fulltext.md L21442 |
+| HJ-Q6324 | 甲子商王太甲十七年 | 经世之辰二千一百七十七 | fulltext.md L21442 |
 | HJ-Q6325 | ### 乙丑 | 乙丑 | fulltext.md L21444 |
 | HJ-Q6326 | ### 丁卯 | 丁卯 | fulltext.md L21448 |
 | HJ-Q6327 | ### 己巳 | 己巳 | fulltext.md L21452 |
@@ -6341,14 +6341,14 @@ last_updated: 2026-06-16
 | HJ-Q6329 | ### 癸酉 | 癸酉 | fulltext.md L21460 |
 | HJ-Q6330 | ### 乙亥 | 乙亥 | fulltext.md L21464 |
 | HJ-Q6331 | ### 丁丑 | 丁丑 | fulltext.md L21468 |
-| HJ-Q6332 | 庚辰商王太甲崩子沃丁踐位 | 己卯 | fulltext.md L21474 |
+| HJ-Q6332 | 庚辰商王太甲崩子沃丁践位 | 己卯 | fulltext.md L21474 |
 | HJ-Q6333 | ### 辛巳 | 辛巳 | fulltext.md L21476 |
 | HJ-Q6334 | ### 癸未 | 癸未 | fulltext.md L21480 |
 | HJ-Q6335 | ### 乙酉 | 乙酉 | fulltext.md L21484 |
 | HJ-Q6336 | ### 丁亥 | 丁亥 | fulltext.md L21488 |
 | HJ-Q6337 | ### 己丑 | 己丑 | fulltext.md L21492 |
 | HJ-Q6338 | ### 辛卯 | 辛卯 | fulltext.md L21496 |
-| HJ-Q6339 | 經世之巳二千一百七十八 | 癸巳 | fulltext.md L21502 |
+| HJ-Q6339 | 经世之巳二千一百七十八 | 癸巳 | fulltext.md L21502 |
 | HJ-Q6340 | ### 甲午商王沃丁十四年 | 甲午商王沃丁十四年 | fulltext.md L21504 |
 | HJ-Q6341 | ### 丙申 | 丙申 | fulltext.md L21508 |
 | HJ-Q6342 | ### 戊戌 | 戊戌 | fulltext.md L21512 |
@@ -6364,12 +6364,12 @@ last_updated: 2026-06-16
 | HJ-Q6352 | ### 戊午 | 戊午 | fulltext.md L21552 |
 | HJ-Q6353 | ### 庚申 | 庚申 | fulltext.md L21556 |
 | HJ-Q6354 | ### 壬戌 | 壬戌 | fulltext.md L21560 |
-| HJ-Q6355 | 甲子商王太庚十五年 | 經世之午二千一百七十九 | fulltext.md L21566 |
+| HJ-Q6355 | 甲子商王太庚十五年 | 经世之午二千一百七十九 | fulltext.md L21566 |
 | HJ-Q6356 | ### 乙丑 | 乙丑 | fulltext.md L21568 |
 | HJ-Q6357 | ### 丁卯 | 丁卯 | fulltext.md L21572 |
 | HJ-Q6358 | ### 己巳 | 己巳 | fulltext.md L21576 |
 | HJ-Q6359 | ### 辛未 | 辛未 | fulltext.md L21580 |
-| HJ-Q6360 | 甲戌商王太庚崩子小甲踐位 | 癸酉 | fulltext.md L21586 |
+| HJ-Q6360 | 甲戌商王太庚崩子小甲践位 | 癸酉 | fulltext.md L21586 |
 | HJ-Q6361 | ### 乙亥 | 乙亥 | fulltext.md L21588 |
 | HJ-Q6362 | ### 丁丑 | 丁丑 | fulltext.md L21592 |
 | HJ-Q6363 | ### 己卯 | 己卯 | fulltext.md L21596 |
@@ -6379,12 +6379,12 @@ last_updated: 2026-06-16
 | HJ-Q6367 | ### 丁亥 | 丁亥 | fulltext.md L21612 |
 | HJ-Q6368 | ### 己丑 | 己丑 | fulltext.md L21616 |
 | HJ-Q6369 | ### 辛卯商王小甲崩弟雍已立 | 辛卯商王小甲崩弟雍已立 | fulltext.md L21620 |
-| HJ-Q6370 | 經世之未二千一百八十 | 癸巳 | fulltext.md L21626 |
+| HJ-Q6370 | 经世之未二千一百八十 | 癸巳 | fulltext.md L21626 |
 | HJ-Q6371 | ### 甲午商王雍已三年 | 甲午商王雍已三年 | fulltext.md L21628 |
 | HJ-Q6372 | ### 丙申 | 丙申 | fulltext.md L21632 |
 | HJ-Q6373 | ### 戊戌 | 戊戌 | fulltext.md L21636 |
 | HJ-Q6374 | ### 庚子 | 庚子 | fulltext.md L21640 |
-| HJ-Q6375 | 癸卯商王雍已崩弟太戊立是謂中宗伊陟臣扈格于 | 壬寅 | fulltext.md L21646 |
+| HJ-Q6375 | 癸卯商王雍已崩弟太戊立是谓中宗伊陟臣扈格于 | 壬寅 | fulltext.md L21646 |
 | HJ-Q6376 | ### 甲辰 | 甲辰 | fulltext.md L21649 |
 | HJ-Q6377 | ### 丙午 | 丙午 | fulltext.md L21653 |
 | HJ-Q6378 | ### 戊申 | 戊申 | fulltext.md L21657 |
@@ -6395,7 +6395,7 @@ last_updated: 2026-06-16
 | HJ-Q6383 | ### 戊午 | 戊午 | fulltext.md L21677 |
 | HJ-Q6384 | ### 庚申 | 庚申 | fulltext.md L21681 |
 | HJ-Q6385 | ### 壬戌 | 壬戌 | fulltext.md L21685 |
-| HJ-Q6386 | 甲子商王太戊二十一年 | 經世之申二千一百八十一 | fulltext.md L21691 |
+| HJ-Q6386 | 甲子商王太戊二十一年 | 经世之申二千一百八十一 | fulltext.md L21691 |
 | HJ-Q6387 | ### 乙丑 | 乙丑 | fulltext.md L21693 |
 | HJ-Q6388 | ### 丁卯 | 丁卯 | fulltext.md L21697 |
 | HJ-Q6389 | ### 己巳 | 己巳 | fulltext.md L21701 |
@@ -6410,7 +6410,7 @@ last_updated: 2026-06-16
 | HJ-Q6398 | ### 丁亥 | 丁亥 | fulltext.md L21737 |
 | HJ-Q6399 | ### 己丑 | 己丑 | fulltext.md L21741 |
 | HJ-Q6400 | ### 辛卯 | 辛卯 | fulltext.md L21745 |
-| HJ-Q6401 | 經世之酉二千一百八十二 | 癸巳 | fulltext.md L21751 |
+| HJ-Q6401 | 经世之酉二千一百八十二 | 癸巳 | fulltext.md L21751 |
 | HJ-Q6402 | ### 甲午商王太戊五十一年 | 甲午商王太戊五十一年 | fulltext.md L21753 |
 | HJ-Q6403 | ### 丙申 | 丙申 | fulltext.md L21757 |
 | HJ-Q6404 | ### 戊戌 | 戊戌 | fulltext.md L21761 |
@@ -6422,27 +6422,27 @@ last_updated: 2026-06-16
 | HJ-Q6410 | ### 庚戌 | 庚戌 | fulltext.md L21785 |
 | HJ-Q6411 | ### 壬子 | 壬子 | fulltext.md L21789 |
 | HJ-Q6412 | ### 甲寅 | 甲寅 | fulltext.md L21793 |
-| HJ-Q6413 | 戊午商王中宗崩子仲丁踐位遷于囂 | 丙辰 | fulltext.md L21800 |
+| HJ-Q6413 | 戊午商王中宗崩子仲丁践位迁于嚣 | 丙辰 | fulltext.md L21800 |
 | HJ-Q6414 | ### 己未 | 己未 | fulltext.md L21802 |
 | HJ-Q6415 | ### 辛酉 | 辛酉 | fulltext.md L21806 |
-| HJ-Q6416 | 經世之戌二千一百八十三 | 癸亥 | fulltext.md L21812 |
+| HJ-Q6416 | 经世之戌二千一百八十三 | 癸亥 | fulltext.md L21812 |
 | HJ-Q6417 | ### 甲子商王仲丁六年 | 甲子商王仲丁六年 | fulltext.md L21814 |
 | HJ-Q6418 | ### 丙寅 | 丙寅 | fulltext.md L21818 |
 | HJ-Q6419 | ### 戊辰 | 戊辰 | fulltext.md L21822 |
-| HJ-Q6420 | 辛未商王仲丁崩國亂弟外壬立 | 庚午 | fulltext.md L21828 |
+| HJ-Q6420 | 辛未商王仲丁崩国乱弟外壬立 | 庚午 | fulltext.md L21828 |
 | HJ-Q6421 | ### 壬申 | 壬申 | fulltext.md L21830 |
 | HJ-Q6422 | ### 甲戌 | 甲戌 | fulltext.md L21834 |
 | HJ-Q6423 | ### 丙子 | 丙子 | fulltext.md L21838 |
 | HJ-Q6424 | ### 戊寅 | 戊寅 | fulltext.md L21842 |
 | HJ-Q6425 | ### 庚辰 | 庚辰 | fulltext.md L21846 |
 | HJ-Q6426 | ### 壬午 | 壬午 | fulltext.md L21850 |
-| HJ-Q6427 | 丙戌商王外壬崩國復亂弟河亶甲立徙居相 | 甲申 | fulltext.md L21857 |
+| HJ-Q6427 | 丙戌商王外壬崩国复乱弟河亶甲立徙居相 | 甲申 | fulltext.md L21857 |
 | HJ-Q6428 | ### 丁亥 | 丁亥 | fulltext.md L21859 |
 | HJ-Q6429 | ### 己丑 | 己丑 | fulltext.md L21863 |
 | HJ-Q6430 | ### 辛卯 | 辛卯 | fulltext.md L21867 |
-| HJ-Q6431 | 經世之亥二千一百八十四 | 癸巳 | fulltext.md L21873 |
-| HJ-Q6432 | 乙未商王河亶甲崩子祖乙踐位圯于耿徙居邢巫賢 | 甲午商王河亶甲八年 | fulltext.md L21877 |
-| HJ-Q6433 | ### 為相 | 為相 | fulltext.md L21879 |
+| HJ-Q6431 | 经世之亥二千一百八十四 | 癸巳 | fulltext.md L21873 |
+| HJ-Q6432 | 乙未商王河亶甲崩子祖乙践位圯于耿徙居邢巫贤 | 甲午商王河亶甲八年 | fulltext.md L21877 |
+| HJ-Q6433 | ### 为相 | 为相 | fulltext.md L21879 |
 | HJ-Q6434 | ### 丁酉 | 丁酉 | fulltext.md L21883 |
 | HJ-Q6435 | ### 己亥 | 己亥 | fulltext.md L21887 |
 | HJ-Q6436 | ### 辛丑 | 辛丑 | fulltext.md L21891 |
@@ -6456,9 +6456,9 @@ last_updated: 2026-06-16
 | HJ-Q6444 | ### 丁巳 | 丁巳 | fulltext.md L21923 |
 | HJ-Q6445 | ### 己未 | 己未 | fulltext.md L21927 |
 | HJ-Q6446 | ### 辛酉 | 辛酉 | fulltext.md L21931 |
-| HJ-Q6447 | 觀物篇二十八 | 癸亥 | fulltext.md L21937 |
-| HJ-Q6448 | 經㑹之午七 | 經元之甲一 | fulltext.md L21941 |
-| HJ-Q6449 | 經世之子二千一百八十五 | 經運之丙一百八十三 | fulltext.md L21945 |
+| HJ-Q6447 | 观物篇二十八 | 癸亥 | fulltext.md L21937 |
+| HJ-Q6448 | 经㑹之午七 | 经元之甲一 | fulltext.md L21941 |
+| HJ-Q6449 | 经世之子二千一百八十五 | 经运之丙一百八十三 | fulltext.md L21945 |
 | HJ-Q6450 | ### 甲子商王祖辛十年 | 甲子商王祖辛十年 | fulltext.md L21947 |
 | HJ-Q6451 | ### 丙寅 | 丙寅 | fulltext.md L21951 |
 | HJ-Q6452 | ### 戊辰 | 戊辰 | fulltext.md L21955 |
@@ -6474,7 +6474,7 @@ last_updated: 2026-06-16
 | HJ-Q6462 | ### 戊子 | 戊子 | fulltext.md L21995 |
 | HJ-Q6463 | ### 庚寅 | 庚寅 | fulltext.md L21999 |
 | HJ-Q6464 | ### 壬辰 | 壬辰 | fulltext.md L22003 |
-| HJ-Q6465 | ### 經世之丑二千一百八十六 | 經世之丑二千一百八十六 | fulltext.md L22007 |
+| HJ-Q6465 | ### 经世之丑二千一百八十六 | 经世之丑二千一百八十六 | fulltext.md L22007 |
 | HJ-Q6466 | ### 乙未 | 乙未 | fulltext.md L22011 |
 | HJ-Q6467 | ### 丁酉 | 丁酉 | fulltext.md L22015 |
 | HJ-Q6468 | ### 己亥 | 己亥 | fulltext.md L22019 |
@@ -6489,9 +6489,9 @@ last_updated: 2026-06-16
 | HJ-Q6477 | ### 丁巳 | 丁巳 | fulltext.md L22055 |
 | HJ-Q6478 | ### 己未 | 己未 | fulltext.md L22059 |
 | HJ-Q6479 | ### 辛酉 | 辛酉 | fulltext.md L22063 |
-| HJ-Q6480 | 經世之寅二千一百八十七 | 癸亥 | fulltext.md L22069 |
+| HJ-Q6480 | 经世之寅二千一百八十七 | 癸亥 | fulltext.md L22069 |
 | HJ-Q6481 | ### 甲子商王祖丁二十九年 | 甲子商王祖丁二十九年 | fulltext.md L22071 |
-| HJ-Q6482 | 丁卯商王祖丁崩國亂沃甲之子南庚立 | 丙寅 | fulltext.md L22077 |
+| HJ-Q6482 | 丁卯商王祖丁崩国乱沃甲之子南庚立 | 丙寅 | fulltext.md L22077 |
 | HJ-Q6483 | ### 戊辰 | 戊辰 | fulltext.md L22079 |
 | HJ-Q6484 | ### 庚午 | 庚午 | fulltext.md L22083 |
 | HJ-Q6485 | ### 壬申 | 壬申 | fulltext.md L22087 |
@@ -6504,10 +6504,10 @@ last_updated: 2026-06-16
 | HJ-Q6492 | ### 丙戌 | 丙戌 | fulltext.md L22115 |
 | HJ-Q6493 | ### 戊子 | 戊子 | fulltext.md L22119 |
 | HJ-Q6494 | ### 庚寅 | 庚寅 | fulltext.md L22123 |
-| HJ-Q6495 | 癸巳商王南庚崩亂祖丁之子陽甲立諸侯不朝 | 壬辰 | fulltext.md L22129 |
-| HJ-Q6496 | 甲午商王陽甲二年 | 經世之卯二千一百八十八 | fulltext.md L22133 |
+| HJ-Q6495 | 癸巳商王南庚崩乱祖丁之子阳甲立诸侯不朝 | 壬辰 | fulltext.md L22129 |
+| HJ-Q6496 | 甲午商王阳甲二年 | 经世之卯二千一百八十八 | fulltext.md L22133 |
 | HJ-Q6497 | ### 乙未 | 乙未 | fulltext.md L22135 |
-| HJ-Q6498 | 己亥商王陽甲崩弟盤庚立復歸于亳改號曰殷庚子 | 丁酉 | fulltext.md L22142 |
+| HJ-Q6498 | 己亥商王阳甲崩弟盘庚立复归于亳改号曰殷庚子 | 丁酉 | fulltext.md L22142 |
 | HJ-Q6499 | ### 辛丑 | 辛丑 | fulltext.md L22144 |
 | HJ-Q6500 | ### 癸卯 | 癸卯 | fulltext.md L22148 |
 | HJ-Q6501 | ### 乙巳 | 乙巳 | fulltext.md L22152 |
@@ -6519,9 +6519,9 @@ last_updated: 2026-06-16
 | HJ-Q6507 | ### 丁巳 | 丁巳 | fulltext.md L22176 |
 | HJ-Q6508 | ### 己未 | 己未 | fulltext.md L22180 |
 | HJ-Q6509 | ### 辛酉 | 辛酉 | fulltext.md L22184 |
-| HJ-Q6510 | 經世之辰二千一百八十九 | 癸亥 | fulltext.md L22190 |
-| HJ-Q6511 | ### 甲子商王盤庚二十五年 | 甲子商王盤庚二十五年 | fulltext.md L22192 |
-| HJ-Q6512 | 丁卯商王盤庚崩弟小辛立 | 丙寅 | fulltext.md L22198 |
+| HJ-Q6510 | 经世之辰二千一百八十九 | 癸亥 | fulltext.md L22190 |
+| HJ-Q6511 | ### 甲子商王盘庚二十五年 | 甲子商王盘庚二十五年 | fulltext.md L22192 |
+| HJ-Q6512 | 丁卯商王盘庚崩弟小辛立 | 丙寅 | fulltext.md L22198 |
 | HJ-Q6513 | ### 戊辰 | 戊辰 | fulltext.md L22200 |
 | HJ-Q6514 | ### 庚午 | 庚午 | fulltext.md L22204 |
 | HJ-Q6515 | ### 壬申 | 壬申 | fulltext.md L22208 |
@@ -6535,7 +6535,7 @@ last_updated: 2026-06-16
 | HJ-Q6523 | ### 戊子商王小辛崩弟小乙立 | 戊子商王小辛崩弟小乙立 | fulltext.md L22240 |
 | HJ-Q6524 | ### 庚寅 | 庚寅 | fulltext.md L22244 |
 | HJ-Q6525 | ### 壬辰 | 壬辰 | fulltext.md L22248 |
-| HJ-Q6526 | 甲午商王小乙六年 | 經世之己二千一百九十 | fulltext.md L22254 |
+| HJ-Q6526 | 甲午商王小乙六年 | 经世之己二千一百九十 | fulltext.md L22254 |
 | HJ-Q6527 | ### 乙未 | 乙未 | fulltext.md L22256 |
 | HJ-Q6528 | ### 丁酉 | 丁酉 | fulltext.md L22260 |
 | HJ-Q6529 | ### 己亥 | 己亥 | fulltext.md L22264 |
@@ -6546,12 +6546,12 @@ last_updated: 2026-06-16
 | HJ-Q6534 | ### 己酉 | 己酉 | fulltext.md L22284 |
 | HJ-Q6535 | ### 辛亥 | 辛亥 | fulltext.md L22288 |
 | HJ-Q6536 | ### 癸丑 | 癸丑 | fulltext.md L22292 |
-| HJ-Q6537 | 丙辰商王小乙崩子武丁踐位是謂髙宗甘盤為相以 | 乙卯 | fulltext.md L22298 |
-| HJ-Q6538 | ### 夢求傅説得之于傅巖 | 夢求傅説得之于傅巖 | fulltext.md L22300 |
+| HJ-Q6537 | 丙辰商王小乙崩子武丁践位是谓髙宗甘盘为相以 | 乙卯 | fulltext.md L22298 |
+| HJ-Q6538 | ### 梦求傅说得之于傅岩 | 梦求傅说得之于傅岩 | fulltext.md L22300 |
 | HJ-Q6539 | ### 戊午 | 戊午 | fulltext.md L22304 |
 | HJ-Q6540 | ### 庚申 | 庚申 | fulltext.md L22308 |
 | HJ-Q6541 | ### 壬戌 | 壬戌 | fulltext.md L22312 |
-| HJ-Q6542 | 甲子商王武丁八年 | 經世之午二千一百九十一 | fulltext.md L22318 |
+| HJ-Q6542 | 甲子商王武丁八年 | 经世之午二千一百九十一 | fulltext.md L22318 |
 | HJ-Q6543 | ### 乙丑 | 乙丑 | fulltext.md L22320 |
 | HJ-Q6544 | ### 丁卯 | 丁卯 | fulltext.md L22324 |
 | HJ-Q6545 | ### 己巳 | 己巳 | fulltext.md L22328 |
@@ -6566,7 +6566,7 @@ last_updated: 2026-06-16
 | HJ-Q6554 | ### 丁亥 | 丁亥 | fulltext.md L22364 |
 | HJ-Q6555 | ### 己丑 | 己丑 | fulltext.md L22368 |
 | HJ-Q6556 | ### 辛卯 | 辛卯 | fulltext.md L22372 |
-| HJ-Q6557 | 經世之未二千一百九十二 | 癸巳 | fulltext.md L22378 |
+| HJ-Q6557 | 经世之未二千一百九十二 | 癸巳 | fulltext.md L22378 |
 | HJ-Q6558 | ### 甲午商王武丁三十八年 | 甲午商王武丁三十八年 | fulltext.md L22380 |
 | HJ-Q6559 | ### 丙申 | 丙申 | fulltext.md L22384 |
 | HJ-Q6560 | ### 戊戌 | 戊戌 | fulltext.md L22388 |
@@ -6582,7 +6582,7 @@ last_updated: 2026-06-16
 | HJ-Q6570 | ### 戊午 | 戊午 | fulltext.md L22428 |
 | HJ-Q6571 | ### 庚申 | 庚申 | fulltext.md L22432 |
 | HJ-Q6572 | ### 壬戌商王祖庚崩弟祖甲立 | 壬戌商王祖庚崩弟祖甲立 | fulltext.md L22436 |
-| HJ-Q6573 | 甲子商王祖甲二年 | 經世之申二千一百九十三 | fulltext.md L22442 |
+| HJ-Q6573 | 甲子商王祖甲二年 | 经世之申二千一百九十三 | fulltext.md L22442 |
 | HJ-Q6574 | ### 乙丑 | 乙丑 | fulltext.md L22444 |
 | HJ-Q6575 | ### 丁卯 | 丁卯 | fulltext.md L22448 |
 | HJ-Q6576 | ### 己巳 | 己巳 | fulltext.md L22452 |
@@ -6597,11 +6597,11 @@ last_updated: 2026-06-16
 | HJ-Q6585 | ### 丁亥 | 丁亥 | fulltext.md L22488 |
 | HJ-Q6586 | ### 己丑 | 己丑 | fulltext.md L22492 |
 | HJ-Q6587 | ### 辛卯 | 辛卯 | fulltext.md L22496 |
-| HJ-Q6588 | 經世之酉二千一百九十四 | 癸巳周文王生 | fulltext.md L22502 |
-| HJ-Q6589 | 乙未商王祖甲崩子廩辛踐位 | 甲午商王祖甲三十二年 | fulltext.md L22506 |
+| HJ-Q6588 | 经世之酉二千一百九十四 | 癸巳周文王生 | fulltext.md L22502 |
+| HJ-Q6589 | 乙未商王祖甲崩子廪辛践位 | 甲午商王祖甲三十二年 | fulltext.md L22506 |
 | HJ-Q6590 | ### 丙申 | 丙申 | fulltext.md L22508 |
 | HJ-Q6591 | ### 戊戌 | 戊戌 | fulltext.md L22512 |
-| HJ-Q6592 | 辛丑商王廩辛崩弟庚丁立 | 庚子 | fulltext.md L22518 |
+| HJ-Q6592 | 辛丑商王廪辛崩弟庚丁立 | 庚子 | fulltext.md L22518 |
 | HJ-Q6593 | ### 壬寅 | 壬寅 | fulltext.md L22520 |
 | HJ-Q6594 | ### 甲辰 | 甲辰 | fulltext.md L22524 |
 | HJ-Q6595 | ### 丙午 | 丙午 | fulltext.md L22528 |
@@ -6611,16 +6611,16 @@ last_updated: 2026-06-16
 | HJ-Q6599 | ### 甲寅 | 甲寅 | fulltext.md L22544 |
 | HJ-Q6600 | ### 丙辰 | 丙辰 | fulltext.md L22548 |
 | HJ-Q6601 | ### 戊午 | 戊午 | fulltext.md L22552 |
-| HJ-Q6602 | 壬戌商王庚丁崩子武乙踐位徙居河北 | 庚申 | fulltext.md L22559 |
-| HJ-Q6603 | 經世之戌二千一百九十五 | 癸亥 | fulltext.md L22563 |
+| HJ-Q6602 | 壬戌商王庚丁崩子武乙践位徙居河北 | 庚申 | fulltext.md L22559 |
+| HJ-Q6603 | 经世之戌二千一百九十五 | 癸亥 | fulltext.md L22563 |
 | HJ-Q6604 | ### 甲子商王武乙二年 | 甲子商王武乙二年 | fulltext.md L22565 |
 | HJ-Q6605 | ### 丙寅商王武乙震死子太丁立 | 丙寅商王武乙震死子太丁立 | fulltext.md L22569 |
-| HJ-Q6606 | 己巳商王太丁崩子帝乙踐位 | 戊辰 | fulltext.md L22575 |
+| HJ-Q6606 | 己巳商王太丁崩子帝乙践位 | 戊辰 | fulltext.md L22575 |
 | HJ-Q6607 | ### 庚午 | 庚午 | fulltext.md L22577 |
 | HJ-Q6608 | ### 壬申 | 壬申 | fulltext.md L22581 |
 | HJ-Q6609 | ### 甲戌 | 甲戌 | fulltext.md L22585 |
 | HJ-Q6610 | ### 丙子 | 丙子 | fulltext.md L22589 |
-| HJ-Q6611 | 己卯周文王始即諸侯位 | 戊寅 | fulltext.md L22595 |
+| HJ-Q6611 | 己卯周文王始即诸侯位 | 戊寅 | fulltext.md L22595 |
 | HJ-Q6612 | ### 庚辰 | 庚辰 | fulltext.md L22597 |
 | HJ-Q6613 | ### 壬午 | 壬午 | fulltext.md L22601 |
 | HJ-Q6614 | ### 甲申 | 甲申 | fulltext.md L22605 |
@@ -6628,13 +6628,13 @@ last_updated: 2026-06-16
 | HJ-Q6616 | ### 戊子 | 戊子 | fulltext.md L22613 |
 | HJ-Q6617 | ### 庚寅 | 庚寅 | fulltext.md L22617 |
 | HJ-Q6618 | ### 壬辰 | 壬辰 | fulltext.md L22621 |
-| HJ-Q6619 | 甲午商王帝乙二十五年 | 經世之亥二千一百九十六 | fulltext.md L22627 |
+| HJ-Q6619 | 甲午商王帝乙二十五年 | 经世之亥二千一百九十六 | fulltext.md L22627 |
 | HJ-Q6620 | ### 乙未 | 乙未 | fulltext.md L22629 |
 | HJ-Q6621 | ### 丁酉 | 丁酉 | fulltext.md L22633 |
 | HJ-Q6622 | ### 己亥 | 己亥 | fulltext.md L22637 |
 | HJ-Q6623 | ### 辛丑 | 辛丑 | fulltext.md L22641 |
 | HJ-Q6624 | ### 癸卯 | 癸卯 | fulltext.md L22645 |
-| HJ-Q6625 | 丙午商王帝乙崩次子受辛立是謂之紂 | 乙巳 | fulltext.md L22651 |
+| HJ-Q6625 | 丙午商王帝乙崩次子受辛立是谓之纣 | 乙巳 | fulltext.md L22651 |
 | HJ-Q6626 | ### 丁未 | 丁未 | fulltext.md L22653 |
 | HJ-Q6627 | ### 己酉 | 己酉 | fulltext.md L22657 |
 | HJ-Q6628 | ### 辛亥 | 辛亥 | fulltext.md L22661 |
@@ -6642,24 +6642,24 @@ last_updated: 2026-06-16
 | HJ-Q6630 | ### 乙卯 | 乙卯 | fulltext.md L22669 |
 | HJ-Q6631 | ### 丁巳 | 丁巳 | fulltext.md L22673 |
 | HJ-Q6632 | ### 己未 | 己未 | fulltext.md L22677 |
-| HJ-Q6633 | 癸亥商王紂放文王歸于國錫命為西方諸侯伯 | 辛酉商囚文王于羑里 | fulltext.md L22684 |
-| HJ-Q6634 | 欽定四庫全書 | 皇極經世書卷五上 | fulltext.md L22688 |
-| HJ-Q6635 | 經元之甲一 | 觀物篇二十九 | fulltext.md L22693 |
-| HJ-Q6636 | 經運之丁一百八十四 | 經㑹之午七 | fulltext.md L22697 |
-| HJ-Q6637 | 甲子商王受辛十八年西伯伐崇自岐徙居豐 | 經世之子二千一百九十七 | fulltext.md L22701 |
+| HJ-Q6633 | 癸亥商王纣放文王归于国锡命为西方诸侯伯 | 辛酉商囚文王于羑里 | fulltext.md L22684 |
+| HJ-Q6634 | 钦定四库全书 | 皇极经世书卷五上 | fulltext.md L22688 |
+| HJ-Q6635 | 经元之甲一 | 观物篇二十九 | fulltext.md L22693 |
+| HJ-Q6636 | 经运之丁一百八十四 | 经㑹之午七 | fulltext.md L22697 |
+| HJ-Q6637 | 甲子商王受辛十八年西伯伐崇自岐徙居丰 | 经世之子二千一百九十七 | fulltext.md L22701 |
 | HJ-Q6638 | 丙寅周西伯戡黎 | 乙丑周西伯伐密湏 | fulltext.md L22705 |
-| HJ-Q6639 | 己巳周文王没元子發踐位是謂武王葬文王于畢庚午 | 丁卯周西伯伐邘 | fulltext.md L22710 |
+| HJ-Q6639 | 己巳周文王没元子发践位是谓武王葬文王于毕庚午 | 丁卯周西伯伐邘 | fulltext.md L22710 |
 | HJ-Q6640 | ### 辛未 | 辛未 | fulltext.md L22712 |
 | HJ-Q6641 | ### 癸酉 | 癸酉 | fulltext.md L22716 |
 | HJ-Q6642 | ### 乙亥 | 乙亥 | fulltext.md L22720 |
-| HJ-Q6643 | 戊寅商王紂殺太師比干囚箕子微子以祭器奔周己卯吕尚相武王伐商師逾孟津大陳兵于商郊敗之于牧野殺紂立其子武庚為後還師在豐踐天子位南面朝諸侯大誥天下以子月為嵗始 | 丁丑周武王東觀兵于孟津 | fulltext.md L22726 |
+| HJ-Q6643 | 戊寅商王纣杀太师比干囚箕子微子以祭器奔周己卯吕尚相武王伐商师逾孟津大陈兵于商郊败之于牧野杀纣立其子武庚为后还师在丰践天子位南面朝诸侯大诰天下以子月为岁始 | 丁丑周武王东观兵于孟津 | fulltext.md L22726 |
 | HJ-Q6644 | ### 壬午 | 壬午 | fulltext.md L22729 |
-| HJ-Q6645 | 乙酉周武王崩元子誦踐位是謂成王周公為太師召公為太保二公分治陜洛受顧命率天下諸侯夾輔王室葬武王于畢 | 甲申 | fulltext.md L22735 |
-| HJ-Q6646 | 戊子三監平治黜商命殺武庚命微子啟于宋代商侯封康叔于衛以保商民命箕子于髙麗辟管叔于商囚蔡叔于郭鄰降霍叔為庶人不齒東征淮夷魯侯伯禽誓師于費淮夷平遂踐奄肅慎来 | 丁亥 | fulltext.md L22740 |
-| HJ-Q6647 | 庚寅徃營成周命召公相宅 | 己丑 | fulltext.md L22744 |
-| HJ-Q6648 | 壬辰成周既成周公分正成周東郊以王命誥多士癸巳 | 辛卯 | fulltext.md L22748 |
-| HJ-Q6649 | 甲午周成王九年 | 經世之丑二千一百九十八 | fulltext.md L22752 |
-| HJ-Q6650 | 丙申周公没命君陳分正成周東郊葬周公于畢丁酉 | 乙未 | fulltext.md L22756 |
+| HJ-Q6645 | 乙酉周武王崩元子诵践位是谓成王周公为太师召公为太保二公分治陜洛受顾命率天下诸侯夹辅王室葬武王于毕 | 甲申 | fulltext.md L22735 |
+| HJ-Q6646 | 戊子三监平治黜商命杀武庚命微子启于宋代商侯封康叔于卫以保商民命箕子于髙丽辟管叔于商囚蔡叔于郭邻降霍叔为庶人不齿东征淮夷鲁侯伯禽誓师于费淮夷平遂践奄肃慎来 | 丁亥 | fulltext.md L22740 |
+| HJ-Q6647 | 庚寅徃营成周命召公相宅 | 己丑 | fulltext.md L22744 |
+| HJ-Q6648 | 壬辰成周既成周公分正成周东郊以王命诰多士癸巳 | 辛卯 | fulltext.md L22748 |
+| HJ-Q6649 | 甲午周成王九年 | 经世之丑二千一百九十八 | fulltext.md L22752 |
+| HJ-Q6650 | 丙申周公没命君陈分正成周东郊葬周公于毕丁酉 | 乙未 | fulltext.md L22756 |
 | HJ-Q6651 | ### 戊戌 | 戊戌 | fulltext.md L22758 |
 | HJ-Q6652 | ### 庚子 | 庚子 | fulltext.md L22762 |
 | HJ-Q6653 | ### 壬寅 | 壬寅 | fulltext.md L22766 |
@@ -6671,9 +6671,9 @@ last_updated: 2026-06-16
 | HJ-Q6659 | ### 甲寅 | 甲寅 | fulltext.md L22790 |
 | HJ-Q6660 | ### 丙辰 | 丙辰 | fulltext.md L22794 |
 | HJ-Q6661 | ### 戊午 | 戊午 | fulltext.md L22798 |
-| HJ-Q6662 | 壬戌周成王崩召公畢公受顧命輔元子釗踐位是謂 | 庚申 | fulltext.md L22805 |
-| HJ-Q6663 | 癸亥周康王元年命畢公代君陳分正成周東郊 | 康王 | fulltext.md L22809 |
-| HJ-Q6664 | 甲子周康王二年 | 經世之寅二千一百九十九 | fulltext.md L22813 |
+| HJ-Q6662 | 壬戌周成王崩召公毕公受顾命辅元子钊践位是谓 | 庚申 | fulltext.md L22805 |
+| HJ-Q6663 | 癸亥周康王元年命毕公代君陈分正成周东郊 | 康王 | fulltext.md L22809 |
+| HJ-Q6664 | 甲子周康王二年 | 经世之寅二千一百九十九 | fulltext.md L22813 |
 | HJ-Q6665 | ### 乙丑 | 乙丑 | fulltext.md L22815 |
 | HJ-Q6666 | ### 丁卯 | 丁卯 | fulltext.md L22819 |
 | HJ-Q6667 | ### 己巳 | 己巳 | fulltext.md L22823 |
@@ -6685,10 +6685,10 @@ last_updated: 2026-06-16
 | HJ-Q6673 | ### 辛巳 | 辛巳 | fulltext.md L22847 |
 | HJ-Q6674 | ### 癸未 | 癸未 | fulltext.md L22851 |
 | HJ-Q6675 | ### 乙酉 | 乙酉 | fulltext.md L22855 |
-| HJ-Q6676 | 戊子周康王崩子瑕踐位是謂昭王 | 丁亥 | fulltext.md L22861 |
+| HJ-Q6676 | 戊子周康王崩子瑕践位是谓昭王 | 丁亥 | fulltext.md L22861 |
 | HJ-Q6677 | ### 己丑 | 己丑 | fulltext.md L22863 |
 | HJ-Q6678 | ### 辛卯 | 辛卯 | fulltext.md L22867 |
-| HJ-Q6679 | 經世之卯二千二百 | 癸巳 | fulltext.md L22873 |
+| HJ-Q6679 | 经世之卯二千二百 | 癸巳 | fulltext.md L22873 |
 | HJ-Q6680 | ### 甲午周昭王六年 | 甲午周昭王六年 | fulltext.md L22875 |
 | HJ-Q6681 | ### 丙申 | 丙申 | fulltext.md L22879 |
 | HJ-Q6682 | ### 戊戌 | 戊戌 | fulltext.md L22883 |
@@ -6704,14 +6704,14 @@ last_updated: 2026-06-16
 | HJ-Q6692 | ### 戊午 | 戊午 | fulltext.md L22923 |
 | HJ-Q6693 | ### 庚申 | 庚申 | fulltext.md L22927 |
 | HJ-Q6694 | ### 壬戌 | 壬戌 | fulltext.md L22931 |
-| HJ-Q6695 | ### 經世之辰二千二百一 | 經世之辰二千二百一 | fulltext.md L22935 |
+| HJ-Q6695 | ### 经世之辰二千二百一 | 经世之辰二千二百一 | fulltext.md L22935 |
 | HJ-Q6696 | ### 乙丑 | 乙丑 | fulltext.md L22939 |
 | HJ-Q6697 | ### 丁卯 | 丁卯 | fulltext.md L22943 |
 | HJ-Q6698 | ### 己巳 | 己巳 | fulltext.md L22947 |
 | HJ-Q6699 | ### 辛未 | 辛未 | fulltext.md L22951 |
 | HJ-Q6700 | ### 癸酉 | 癸酉 | fulltext.md L22955 |
 | HJ-Q6701 | ### 乙亥 | 乙亥 | fulltext.md L22959 |
-| HJ-Q6702 | 己卯周昭王南廵不返子滿立是謂穆王 | 丁丑 | fulltext.md L22966 |
+| HJ-Q6702 | 己卯周昭王南廵不返子满立是谓穆王 | 丁丑 | fulltext.md L22966 |
 | HJ-Q6703 | ### 庚辰 | 庚辰 | fulltext.md L22968 |
 | HJ-Q6704 | ### 壬午 | 壬午 | fulltext.md L22972 |
 | HJ-Q6705 | ### 甲申 | 甲申 | fulltext.md L22976 |
@@ -6719,7 +6719,7 @@ last_updated: 2026-06-16
 | HJ-Q6707 | ### 戊子 | 戊子 | fulltext.md L22984 |
 | HJ-Q6708 | ### 庚寅 | 庚寅 | fulltext.md L22988 |
 | HJ-Q6709 | ### 壬辰 | 壬辰 | fulltext.md L22992 |
-| HJ-Q6710 | 甲午周穆王十五年 | 經世之已二千二百二 | fulltext.md L22998 |
+| HJ-Q6710 | 甲午周穆王十五年 | 经世之已二千二百二 | fulltext.md L22998 |
 | HJ-Q6711 | ### 乙未 | 乙未 | fulltext.md L23000 |
 | HJ-Q6712 | ### 丁酉 | 丁酉 | fulltext.md L23004 |
 | HJ-Q6713 | ### 己亥 | 己亥 | fulltext.md L23008 |
@@ -6734,22 +6734,22 @@ last_updated: 2026-06-16
 | HJ-Q6722 | ### 丁巳 | 丁巳 | fulltext.md L23044 |
 | HJ-Q6723 | ### 己未 | 己未 | fulltext.md L23048 |
 | HJ-Q6724 | ### 辛酉 | 辛酉 | fulltext.md L23052 |
-| HJ-Q6725 | 經世之午二千二百三 | 癸亥 | fulltext.md L23058 |
+| HJ-Q6725 | 经世之午二千二百三 | 癸亥 | fulltext.md L23058 |
 | HJ-Q6726 | ### 甲子周穆王四十五年 | 甲子周穆王四十五年 | fulltext.md L23060 |
 | HJ-Q6727 | ### 丙寅 | 丙寅 | fulltext.md L23064 |
 | HJ-Q6728 | ### 戊辰 | 戊辰 | fulltext.md L23068 |
 | HJ-Q6729 | ### 庚午 | 庚午 | fulltext.md L23072 |
-| HJ-Q6730 | 甲戌周穆王崩子繄扈踐位是謂共王 | 壬申 | fulltext.md L23079 |
+| HJ-Q6730 | 甲戌周穆王崩子繄扈践位是谓共王 | 壬申 | fulltext.md L23079 |
 | HJ-Q6731 | ### 乙亥 | 乙亥 | fulltext.md L23081 |
 | HJ-Q6732 | ### 丁丑 | 丁丑 | fulltext.md L23085 |
 | HJ-Q6733 | ### 己卯 | 己卯 | fulltext.md L23089 |
 | HJ-Q6734 | ### 辛巳 | 辛巳 | fulltext.md L23093 |
 | HJ-Q6735 | ### 癸未 | 癸未 | fulltext.md L23097 |
-| HJ-Q6736 | 丙戌周共王崩子囏踐位是謂懿王 | 乙酉 | fulltext.md L23103 |
+| HJ-Q6736 | 丙戌周共王崩子囏践位是谓懿王 | 乙酉 | fulltext.md L23103 |
 | HJ-Q6737 | ### 丁亥 | 丁亥 | fulltext.md L23105 |
 | HJ-Q6738 | ### 己丑 | 己丑 | fulltext.md L23109 |
 | HJ-Q6739 | ### 辛卯 | 辛卯 | fulltext.md L23113 |
-| HJ-Q6740 | 經世之未二千二百四 | 癸巳 | fulltext.md L23119 |
+| HJ-Q6740 | 经世之未二千二百四 | 癸巳 | fulltext.md L23119 |
 | HJ-Q6741 | ### 甲午 | 甲午 | fulltext.md L23121 |
 | HJ-Q6742 | ### 丙申 | 丙申 | fulltext.md L23125 |
 | HJ-Q6743 | ### 戊戌 | 戊戌 | fulltext.md L23129 |
@@ -6758,29 +6758,29 @@ last_updated: 2026-06-16
 | HJ-Q6746 | ### 甲辰 | 甲辰 | fulltext.md L23141 |
 | HJ-Q6747 | ### 丙午 | 丙午 | fulltext.md L23145 |
 | HJ-Q6748 | ### 戊申 | 戊申 | fulltext.md L23149 |
-| HJ-Q6749 | 辛亥周懿王崩穆王子辟方立是謂孝王 | 庚戌 | fulltext.md L23155 |
+| HJ-Q6749 | 辛亥周懿王崩穆王子辟方立是谓孝王 | 庚戌 | fulltext.md L23155 |
 | HJ-Q6750 | ### 壬子 | 壬子 | fulltext.md L23157 |
 | HJ-Q6751 | ### 甲寅 | 甲寅 | fulltext.md L23161 |
 | HJ-Q6752 | ### 丙辰 | 丙辰 | fulltext.md L23165 |
 | HJ-Q6753 | ### 戊午 | 戊午 | fulltext.md L23169 |
 | HJ-Q6754 | ### 庚申 | 庚申 | fulltext.md L23173 |
 | HJ-Q6755 | ### 壬戌 | 壬戌 | fulltext.md L23177 |
-| HJ-Q6756 | 甲子周孝王十三年 | 經世之申二千二百五 | fulltext.md L23183 |
-| HJ-Q6757 | 丙寅周孝王崩懿王子燮立是謂夷王周自此衰矣丁卯 | 乙丑 | fulltext.md L23187 |
+| HJ-Q6756 | 甲子周孝王十三年 | 经世之申二千二百五 | fulltext.md L23183 |
+| HJ-Q6757 | 丙寅周孝王崩懿王子燮立是谓夷王周自此衰矣丁卯 | 乙丑 | fulltext.md L23187 |
 | HJ-Q6758 | ### 戊辰 | 戊辰 | fulltext.md L23189 |
 | HJ-Q6759 | ### 庚午 | 庚午 | fulltext.md L23193 |
 | HJ-Q6760 | ### 壬申 | 壬申 | fulltext.md L23197 |
 | HJ-Q6761 | ### 甲戌 | 甲戌 | fulltext.md L23201 |
 | HJ-Q6762 | ### 丙子 | 丙子 | fulltext.md L23205 |
 | HJ-Q6763 | ### 戊寅 | 戊寅 | fulltext.md L23209 |
-| HJ-Q6764 | 壬午周夷王崩子胡踐位是謂厲王 | 庚辰 | fulltext.md L23216 |
+| HJ-Q6764 | 壬午周夷王崩子胡践位是谓厉王 | 庚辰 | fulltext.md L23216 |
 | HJ-Q6765 | ### 癸未 | 癸未 | fulltext.md L23218 |
 | HJ-Q6766 | ### 乙酉 | 乙酉 | fulltext.md L23222 |
 | HJ-Q6767 | ### 丁亥 | 丁亥 | fulltext.md L23226 |
 | HJ-Q6768 | ### 己丑 | 己丑 | fulltext.md L23230 |
 | HJ-Q6769 | ### 辛卯 | 辛卯 | fulltext.md L23234 |
-| HJ-Q6770 | 經世之酉二千二百六 | 癸巳 | fulltext.md L23240 |
-| HJ-Q6771 | ### 甲午周厲王十二年 | 甲午周厲王十二年 | fulltext.md L23242 |
+| HJ-Q6770 | 经世之酉二千二百六 | 癸巳 | fulltext.md L23240 |
+| HJ-Q6771 | ### 甲午周厉王十二年 | 甲午周厉王十二年 | fulltext.md L23242 |
 | HJ-Q6772 | ### 丙申 | 丙申 | fulltext.md L23246 |
 | HJ-Q6773 | ### 戊戌 | 戊戌 | fulltext.md L23250 |
 | HJ-Q6774 | ### 庚子 | 庚子 | fulltext.md L23254 |
@@ -6789,17 +6789,17 @@ last_updated: 2026-06-16
 | HJ-Q6777 | ### 丙午 | 丙午 | fulltext.md L23266 |
 | HJ-Q6778 | ### 戊申 | 戊申 | fulltext.md L23270 |
 | HJ-Q6779 | ### 庚戌 | 庚戌 | fulltext.md L23274 |
-| HJ-Q6780 | 癸丑厲王好利以榮公為卿 | 壬子 | fulltext.md L23280 |
+| HJ-Q6780 | 癸丑厉王好利以荣公为卿 | 壬子 | fulltext.md L23280 |
 | HJ-Q6781 | ### 甲寅 | 甲寅 | fulltext.md L23282 |
-| HJ-Q6782 | ### 丙辰殺諫臣以為謗己者 | 丙辰殺諫臣以為謗己者 | fulltext.md L23286 |
-| HJ-Q6783 | 己未周厲王為國人所逐出奔彘周召二伯行政謂之共和太子靖匿于召公家文武之徳自此盡矣 | 戊午 | fulltext.md L23292 |
+| HJ-Q6782 | ### 丙辰杀谏臣以为谤己者 | 丙辰杀谏臣以为谤己者 | fulltext.md L23286 |
+| HJ-Q6783 | 己未周厉王为国人所逐出奔彘周召二伯行政谓之共和太子靖匿于召公家文武之徳自此尽矣 | 戊午 | fulltext.md L23292 |
 | HJ-Q6784 | ### 庚申 | 庚申 | fulltext.md L23294 |
 | HJ-Q6785 | ### 壬戌 | 壬戌 | fulltext.md L23298 |
-| HJ-Q6786 | 甲子周厲王四十二年在彘 | 經世之戌二千二百七 | fulltext.md L23304 |
+| HJ-Q6786 | 甲子周厉王四十二年在彘 | 经世之戌二千二百七 | fulltext.md L23304 |
 | HJ-Q6787 | ### 乙丑 | 乙丑 | fulltext.md L23306 |
 | HJ-Q6788 | ### 丁卯 | 丁卯 | fulltext.md L23310 |
 | HJ-Q6789 | ### 己巳 | 己巳 | fulltext.md L23314 |
-| HJ-Q6790 | 癸酉周厲王死于彘周召二伯立太子靖是謂宣王有仲山甫尹吉甫方叔申伯為輔大修文武之功 | 辛未 | fulltext.md L23321 |
+| HJ-Q6790 | 癸酉周厉王死于彘周召二伯立太子靖是谓宣王有仲山甫尹吉甫方叔申伯为辅大修文武之功 | 辛未 | fulltext.md L23321 |
 | HJ-Q6791 | ### 丙子 | 丙子 | fulltext.md L23325 |
 | HJ-Q6792 | ### 戊寅 | 戊寅 | fulltext.md L23329 |
 | HJ-Q6793 | ### 庚辰 | 庚辰 | fulltext.md L23333 |
@@ -6809,1336 +6809,1336 @@ last_updated: 2026-06-16
 | HJ-Q6797 | ### 戊子 | 戊子 | fulltext.md L23349 |
 | HJ-Q6798 | ### 庚寅 | 庚寅 | fulltext.md L23353 |
 | HJ-Q6799 | ### 壬辰 | 壬辰 | fulltext.md L23357 |
-| HJ-Q6800 | 甲午周宣王二十一年 | 經世之亥二千二百八 | fulltext.md L23363 |
+| HJ-Q6800 | 甲午周宣王二十一年 | 经世之亥二千二百八 | fulltext.md L23363 |
 | HJ-Q6801 | ### 乙未 | 乙未 | fulltext.md L23365 |
 | HJ-Q6802 | ### 丁酉 | 丁酉 | fulltext.md L23369 |
 | HJ-Q6803 | ### 己亥 | 己亥 | fulltext.md L23373 |
 | HJ-Q6804 | ### 辛丑 | 辛丑 | fulltext.md L23377 |
 | HJ-Q6805 | ### 癸卯 | 癸卯 | fulltext.md L23381 |
-| HJ-Q6806 | ### 乙巳伐魯立孝公 | 乙巳伐魯立孝公 | fulltext.md L23385 |
+| HJ-Q6806 | ### 乙巳伐鲁立孝公 | 乙巳伐鲁立孝公 | fulltext.md L23385 |
 | HJ-Q6807 | ### 丁未 | 丁未 | fulltext.md L23389 |
 | HJ-Q6808 | ### 己酉 | 己酉 | fulltext.md L23393 |
-| HJ-Q6809 | 壬子伐姜戎師敗于千畝遂失南國 | 辛亥 | fulltext.md L23399 |
+| HJ-Q6809 | 壬子伐姜戎师败于千亩遂失南国 | 辛亥 | fulltext.md L23399 |
 | HJ-Q6810 | ### 癸丑料民于太原 | 癸丑料民于太原 | fulltext.md L23401 |
 | HJ-Q6811 | ### 乙卯 | 乙卯 | fulltext.md L23405 |
-| HJ-Q6812 | 己未周宣王崩太子湼踐位是謂幽王 | 丁巳 | fulltext.md L23412 |
+| HJ-Q6812 | 己未周宣王崩太子湼践位是谓幽王 | 丁巳 | fulltext.md L23412 |
 | HJ-Q6813 | ### 庚申 | 庚申 | fulltext.md L23414 |
 | HJ-Q6814 | ### 壬戌始嬖褒姒 | 壬戌始嬖褒姒 | fulltext.md L23418 |
-| HJ-Q6815 | 經元之甲一 | 觀物篇三十 | fulltext.md L23424 |
-| HJ-Q6816 | 經運之戌一百八十五 | 經㑹之午七 | fulltext.md L23428 |
-| HJ-Q6817 | 甲子周幽王五年廢申后及太子宜臼以褒姒為后伯 | 經世之子二千二百九 | fulltext.md L23432 |
-| HJ-Q6818 | ### 服為太子虢石父為卿 | 服為太子虢石父為卿 | fulltext.md L23434 |
+| HJ-Q6815 | 经元之甲一 | 观物篇三十 | fulltext.md L23424 |
+| HJ-Q6816 | 经运之戌一百八十五 | 经㑹之午七 | fulltext.md L23428 |
+| HJ-Q6817 | 甲子周幽王五年废申后及太子宜臼以褒姒为后伯 | 经世之子二千二百九 | fulltext.md L23432 |
+| HJ-Q6818 | ### 服为太子虢石父为卿 | 服为太子虢石父为卿 | fulltext.md L23434 |
 | HJ-Q6819 | ### 丙寅 | 丙寅 | fulltext.md L23438 |
-| HJ-Q6820 | 庚午申侯以犬戎伐周敗幽王于驪山殺之晉秦率鄭衛之君逐犬戎立太子宜臼是謂平王東徙居洛邑是謂東周 | 戊辰 | fulltext.md L23445 |
+| HJ-Q6820 | 庚午申侯以犬戎伐周败幽王于骊山杀之晋秦率郑卫之君逐犬戎立太子宜臼是谓平王东徙居洛邑是谓东周 | 戊辰 | fulltext.md L23445 |
 | HJ-Q6821 | ### 癸酉 | 癸酉 | fulltext.md L23448 |
 | HJ-Q6822 | ### 乙亥秦文公即位 | 乙亥秦文公即位 | fulltext.md L23452 |
 | HJ-Q6823 | ### 丁丑 | 丁丑 | fulltext.md L23456 |
-| HJ-Q6824 | ### 己卯秦東徙居汧渭之間 | 己卯秦東徙居汧渭之間 | fulltext.md L23460 |
+| HJ-Q6824 | ### 己卯秦东徙居汧渭之间 | 己卯秦东徙居汧渭之间 | fulltext.md L23460 |
 | HJ-Q6825 | ### 辛巳 | 辛巳 | fulltext.md L23464 |
-| HJ-Q6826 | ### 癸未衛荘公即位 | 癸未衛荘公即位 | fulltext.md L23468 |
+| HJ-Q6826 | ### 癸未卫荘公即位 | 癸未卫荘公即位 | fulltext.md L23468 |
 | HJ-Q6827 | ### 乙酉秦作鄜畤 | 乙酉秦作鄜畤 | fulltext.md L23472 |
 | HJ-Q6828 | ### 丁亥 | 丁亥 | fulltext.md L23476 |
 | HJ-Q6829 | ### 己丑 | 己丑 | fulltext.md L23480 |
 | HJ-Q6830 | ### 辛卯 | 辛卯 | fulltext.md L23484 |
-| HJ-Q6831 | 經世之丑二千二百十 | 癸巳 | fulltext.md L23490 |
-| HJ-Q6832 | 乙未晉昭侯即位 | 甲午周平王二十四年 | fulltext.md L23494 |
-| HJ-Q6833 | 丁酉鄭荘公即位 | 丙申晉昭侯封弟成師于曲沃 | fulltext.md L23498 |
-| HJ-Q6834 | ### 戊戌鄭荘公封弟段于京城 | 戊戌鄭荘公封弟段于京城 | fulltext.md L23500 |
-| HJ-Q6835 | 辛丑楚亂熊通弑其君代立 | 庚子衛公子州吁阻兵 | fulltext.md L23506 |
+| HJ-Q6831 | 经世之丑二千二百十 | 癸巳 | fulltext.md L23490 |
+| HJ-Q6832 | 乙未晋昭侯即位 | 甲午周平王二十四年 | fulltext.md L23494 |
+| HJ-Q6833 | 丁酉郑荘公即位 | 丙申晋昭侯封弟成师于曲沃 | fulltext.md L23498 |
+| HJ-Q6834 | ### 戊戌郑荘公封弟段于京城 | 戊戌郑荘公封弟段于京城 | fulltext.md L23500 |
+| HJ-Q6835 | 辛丑楚乱熊通弑其君代立 | 庚子卫公子州吁阻兵 | fulltext.md L23506 |
 | HJ-Q6836 | ### 癸卯 | 癸卯 | fulltext.md L23510 |
 | HJ-Q6837 | ### 乙巳 | 乙巳 | fulltext.md L23514 |
-| HJ-Q6838 | 戊申衛州吁出奔 | 丁未 | fulltext.md L23520 |
-| HJ-Q6839 | 庚戌晉曲沃桓叔卒子荘伯繼齊莊公卒子釐公立辛亥 | 己酉 | fulltext.md L23524 |
-| HJ-Q6840 | ### 壬子宋桓公卒讓其弟穆公 | 壬子宋桓公卒讓其弟穆公 | fulltext.md L23526 |
+| HJ-Q6838 | 戊申卫州吁出奔 | 丁未 | fulltext.md L23520 |
+| HJ-Q6839 | 庚戌晋曲沃桓叔卒子荘伯继齐庄公卒子厘公立辛亥 | 己酉 | fulltext.md L23524 |
+| HJ-Q6840 | ### 壬子宋桓公卒让其弟穆公 | 壬子宋桓公卒让其弟穆公 | fulltext.md L23526 |
 | HJ-Q6841 | ### 甲寅 | 甲寅 | fulltext.md L23530 |
-| HJ-Q6842 | 丁巳晉曲沃荘伯入翼殺其君孝侯國人逐荘伯立孝 | 丙辰 | fulltext.md L23536 |
-| HJ-Q6843 | ### 侯子是謂鄂侯 | 侯子是謂鄂侯 | fulltext.md L23538 |
-| HJ-Q6844 | 辛酉周平王崩其孫林立是謂桓王與鄭交惡宋穆公 | 己未魯隠公立 | fulltext.md L23545 |
-| HJ-Q6845 | 甲子周桓王三年晉翼侯自随入于鄂是謂鄂侯乙丑晉曲沃荘伯卒子稱繼是謂武公 | 經世之寅二千二百一十一 | fulltext.md L23552 |
-| HJ-Q6846 | 丁卯秦自汧渭之間徙居郿 | 丙寅宋齊衛之君盟于瓦屋 | fulltext.md L23556 |
-| HJ-Q6847 | 己巳魯亂公子翬殺其君隠公立惠公之子是謂桓公 | 戊辰齊㑹魯鄭之師伐宋 | fulltext.md L23560 |
-| HJ-Q6848 | 辛未宋亂太宰華督殺司馬孔父及弑其君殤公迎穆 | 翬為之輔 | fulltext.md L23565 |
-| HJ-Q6849 | 壬申晉曲沃武公敗晉師于汾旁獲哀侯晉人立其子 | 公子馮于鄭而立之是謂荘公 | fulltext.md L23569 |
-| HJ-Q6850 | 癸酉晉曲沃武公弑其君哀侯于曲沃 | 是謂小子侯 | fulltext.md L23573 |
-| HJ-Q6851 | 丙子晉曲沃武公入翼殺小子侯王使虢仲伐稱稱復 | 俾請王之號于周 | fulltext.md L23578 |
-| HJ-Q6852 | 丁丑秦亂寧公卒三父廢世子而庚立出子是年楚熊通伐随東開地至濮上遂稱王是謂武王 | 歸曲沃虢仲立哀侯弟緍 | fulltext.md L23582 |
-| HJ-Q6853 | 庚辰鄭荘公卒世子忽繼宋執鄭祭仲立突是謂厲公忽奔衛祭仲専政衛宣公殺其二子伋壽 | 戊寅 | fulltext.md L23587 |
-| HJ-Q6854 | 癸未秦三父殺出子而立世子是謂武公齊釐公卒世子諸兒繼是謂襄公宋㑹齊蔡陳伐鄭 | 壬午齊㑹宋衛燕伐魯不利 | fulltext.md L23592 |
-| HJ-Q6855 | 丙戌秦夷三父族鄭髙渠彌弑其君昭公立其弟子亹 | 宋㑹魯衛陳蔡伐鄭 | fulltext.md L23598 |
-| HJ-Q6856 | 丁亥周有黒肩之難齊襄公殺魯桓公于濼立其子同是謂荘公又㑹諸侯于首止殺鄭子亹髙渠彌逃歸與祭仲迎公子嬰于陳立之 | 彌専政 | fulltext.md L23602 |
-| HJ-Q6857 | 己丑周塟桓王 | 戊子周王姬下嫁于齊 | fulltext.md L23606 |
-| HJ-Q6858 | 辛卯周伐随責尊楚也齊伐紀紀侯大去其國楚王卒 | 庚寅 | fulltext.md L23610 |
-| HJ-Q6859 | 甲午周荘王十年秦滅小虢 | 經世之卯二千二百一十二 | fulltext.md L23617 |
-| HJ-Q6860 | 丙申齊人殺無知公子小白入是謂桓公紏後入不克齊伐魯殺紏其傅召忽死之管仲請囚又相桓公 | 糾奔魯小白奔莒 | fulltext.md L23622 |
-| HJ-Q6861 | 己亥周荘王崩太子胡齊嗣位是謂釐王宋亂南宫萬弑其君湣公及其大夫仇牧太宰華督立公子㳺羣公子奔蕭攻萬及殺游立公弟御説是謂桓公 | 戊戌 | fulltext.md L23627 |
-| HJ-Q6862 | 辛丑齊㑹陳曹及王人伐宋楚師入蔡 | 柯遂復其侵地曹沫刼盟故也 | fulltext.md L23632 |
-| HJ-Q6863 | 癸卯齊桓公㑹陳宋魯衛鄭許滕之君盟于幽秦武 | 翼以重寳入周得請為諸侯 | fulltext.md L23637 |
-| HJ-Q6864 | 甲辰周釐王崩太子閔嗣位是謂恵王晉武公卒子獻公詭諸繼秦徙居雍楚文王卒世子囏繼是謂杜敖 | 公卒弟徳公立楚滅鄧 | fulltext.md L23641 |
-| HJ-Q6865 | 丁未周有五大夫之難邊伯石速蒍國以蔡衛之師攻 | 乙巳秦徳公卒子宣公繼 | fulltext.md L23646 |
-| HJ-Q6866 | 戊申鄭厲公及虢叔入王于成周殺頽而執仲父及五 | 王立弟頽王出居鄭之櫟 | fulltext.md L23650 |
-| HJ-Q6867 | 己酉秦作密畤敗晉師于河晉伐驪獲女以為姬陳公子完奔齊楚亂弟惲殺其君囏代立是謂成王 | 大夫難遂平 | fulltext.md L23654 |
-| HJ-Q6868 | 辛亥魏惠公卒子懿公繼 | 庚戌楚脩好于周及諸侯 | fulltext.md L23658 |
-| HJ-Q6869 | 甲寅周惠王錫齊桓公命為伯 | 癸丑晉伐虢責内羣公子也 | fulltext.md L23663 |
-| HJ-Q6870 | 丁巳齊伐山戎至于孤竹以救燕俾脩貢天子秦宣公卒弟成公立楚殺令尹子元以鬭榖於菟為令尹 | 乙卯晉城曲沃及蒲楚伐鄭 | fulltext.md L23668 |
-| HJ-Q6871 | 己未魯亂叔牙弑其君荘公開立是謂湣公季友立世 | 戊午 | fulltext.md L23672 |
-| HJ-Q6872 | 庚申晉滅霍魏耿以耿封趙夙以魏封畢萬 | 子班不克奔陳 | fulltext.md L23676 |
-| HJ-Q6873 | 甲子齊㑹江黄之君于陽榖 | 經世之辰二千二百一十三 | fulltext.md L23683 |
-| HJ-Q6874 | 己巳周惠王崩太子鄭嗣位是謂襄王太叔作難齊師宋衛許曹陳㑹王人于洮晉伐翟不利于齧桑 | 丁卯齊伐鄭晉伐屈夷吾奔梁 | fulltext.md L23690 |
-| HJ-Q6875 | 甲戌齊桓公㑹宋陳魯衛鄭許曹之君盟于鹹晉饑秦 | 癸酉齊使管仲平周難楚滅黄 | fulltext.md L23697 |
-| HJ-Q6876 | 乙亥秦饑晉閉之糴而又伐之楚滅英 | 輸之粟 | fulltext.md L23701 |
-| HJ-Q6877 | 戊寅齊桓公卒五公子争國公子無詭立易牙專政世 | 之君于淮以全鄫 | fulltext.md L23707 |
-| HJ-Q6878 | 己卯宋㑹曹衛邾伐齊無詭子敗四公子立世子昭是 | 子昭出奔宋 | fulltext.md L23711 |
-| HJ-Q6879 | 庚辰秦滅梁 | 謂孝侯狄伐衛 | fulltext.md L23715 |
-| HJ-Q6880 | 壬午宋襄公㑹楚陳蔡鄭許曹六國之君于盂楚成王 | 辛巳 | fulltext.md L23719 |
-| HJ-Q6881 | 己丑周襄王狩于河陽晉㑹齊宋蔡秦之師伐衛大敗楚師于城濮遂㑹齊宋蔡鄭魯衛之君盟于踐土楚救鄭不利殺令尹子玉得臣 | 作三軍楚使子玉伐宋 | fulltext.md L23730 |
-| HJ-Q6882 | 辛卯衛成公自陳如周周請晉納成公于衛而誅大夫 | 庚寅晉㑹王人及諸侯于翟泉 | fulltext.md L23734 |
-| HJ-Q6883 | 壬辰魯取濟西田衛徙居帝丘 | 元咺及公子瑕秦晉圍鄭 | fulltext.md L23738 |
-| HJ-Q6884 | 甲午秦穆公伐鄭晉敗秦師于殽獲其帥孟明視西乞術白乙丙魯僖公卒世子興繼是謂文公 | 經世之巳二千二百一十四 | fulltext.md L23743 |
-| HJ-Q6885 | 丙申秦伐晉不利于彭衙 | 穆王 | fulltext.md L23748 |
-| HJ-Q6886 | 辛丑晉世子夷臯繼是謂靈公宋成公卒國亂弟禦殺世代立國人殺禦公立子杵臼是謂昭公齊率宋衛陳鄭許曹之君㑹趙盾于扈 | 晉襄公卒 | fulltext.md L23756 |
-| HJ-Q6887 | 丙午秦伐晉取覊馬 | 乙巳魯敗狄于鹹獲其帥喬如 | fulltext.md L23762 |
-| HJ-Q6888 | 庚戌齊脩郪丘之盟宋人弑其君昭公弟鮑立是謂文 | 己酉秦伐蔡齊伐魯 | fulltext.md L23768 |
-| HJ-Q6889 | 辛亥晉㑹衛陳鄭伐宋 | 公楚滅庸 | fulltext.md L23772 |
-| HJ-Q6890 | 丁巳晉伐陳以救鄭秦共公卒子繼是為桓公 | 丙辰鄭亂公子作難 | fulltext.md L23780 |
-| HJ-Q6891 | 己未晉㑹諸侯于黒壤 | 戊午晉趙盾衛孫免侵陳 | fulltext.md L23784 |
-| HJ-Q6892 | 辛酉晉侯㑹宋衛陳鄭于扈陳不至遂伐陳晉成公卒于扈公子據立是謂景公趙盾卒子朔繼事 | 庚申晉伐秦楚滅舒蓼 | fulltext.md L23788 |
-| HJ-Q6893 | 甲子楚伐鄭大敗晉師于河上晉屠岸賈作難于下宫殺趙朔及其族朔妻匿于公宫生武 | 經世之午二千二百一十五 | fulltext.md L23794 |
-| HJ-Q6894 | 丙寅楚圍宋 | 乙丑楚伐宋 | fulltext.md L23798 |
-| HJ-Q6895 | 庚午魯宣公卒世子黒肱繼是謂成公晉伐齊楚荘王 | 己巳晉㑹諸侯之君于斷道 | fulltext.md L23804 |
-| HJ-Q6896 | 辛未周伐茅戎不利 | 卒世子審繼是謂共王 | fulltext.md L23808 |
-| HJ-Q6897 | 乙亥周定王崩太子夷嗣位是謂簡王晉㑹齊宋衛魯鄭曹邾杞八國之君盟于蟲牢楚伐鄭 | 甲戌晉伐楚救鄭 | fulltext.md L23814 |
-| HJ-Q6898 | 戊寅晉殺大夫趙同趙括 | 吳王壽夢始通好中國 | fulltext.md L23820 |
-| HJ-Q6899 | 壬午晉楚同盟于宋晉敗狄于交剛 | 辛巳秦晉脩夾河之盟 | fulltext.md L23826 |
-| HJ-Q6900 | 甲申秦桓公卒子景公繼 | 師伐秦敗之麻隧 | fulltext.md L23831 |
-| HJ-Q6901 | 丁亥晉㑹諸侯盟于柯陵是年晉殺三郤 | 誅令尹側 | fulltext.md L23837 |
-| HJ-Q6902 | 庚寅周葬簡王晉伐鄭㑹諸侯之師于戚以城虎牢辛卯晉㑹八國之君盟于雞澤楚伐吴至于衡山壬辰晉用魏絳楚伐陳 | 師伐宋圍彭城 | fulltext.md L23843 |
-| HJ-Q6903 | 經世之未二千二百一十六 | 善道 | fulltext.md L23848 |
-| HJ-Q6904 | 戊戌晉率十一國之君㑹吴壽夢于柤以滅偪陽又㑹十一國之師伐鄭又伐秦楚伐宋又救鄭 | 楚 | fulltext.md L23856 |
-| HJ-Q6905 | 壬寅晉率齊宋魯衛鄭曹莒邾滕薛杞小邾十二國之君㑹吴諸樊于向又㑹諸侯之師伐秦衛亂孫林父殖作難衛侯出奔齊楚伐吴有功 | 利 | fulltext.md L23864 |
-| HJ-Q6906 | 丙午晉用范中行㑹宋衛魯鄭曹莒邾滕薛杞小邾十一國之師伐齊敗之于靡下進圍臨淄齊靈公奔莒 | 乙巳 | fulltext.md L23870 |
-| HJ-Q6907 | 辛亥欒盈自齊復入于晉不克死范中行滅欒氏之族 | 盈自楚適齊 | fulltext.md L23878 |
-| HJ-Q6908 | 壬子晉㑹十一國之君于夷儀楚伐吴又㑹諸侯伐鄭癸丑齊亂崔杼弑其君荘公立異母弟杵臼是謂景公崔杼為右相慶封為左相晉敗齊師于髙堂楚㑹陳伐鄭及滅舒鳩吴伐楚不利諸樊死 | 齊伐晉取朝歌 | fulltext.md L23882 |
-| HJ-Q6909 | 己未魯襄公卒世子又卒國人立齊歸之子禂是謂昭 | 㑹諸侯人于澶淵 | fulltext.md L23891 |
-| HJ-Q6910 | 庚申晉趙武㑹諸侯之大夫于虢楚亂令尹圍弑其君麋代立是謂靈王公子比奔晉薳罷為令尹 | 公季武子專政 | fulltext.md L23895 |
-| HJ-Q6911 | 壬戌魯昭公朝晉齊晏嬰使晉鄭伯朝晉又朝楚癸亥楚㑹十一國之君于申執徐子于㑹又㑹七國諸侯伐吴之朱方以誅齊慶封吴㧞楚三邑 | 辛酉晉韓宣子起使魯 | fulltext.md L23899 |
-| HJ-Q6912 | 甲子周楚㑹諸侯伐吴秦景公卒世子繼是 | 經世之申二千二百一十七 | fulltext.md L23903 |
-| HJ-Q6913 | 己丑齊北伐燕楚東伐吴敗楚師于乾谿 | 謂哀公 | fulltext.md L23907 |
-| HJ-Q6914 | 丁卯楚滅陳執其公子招放之于越 | 丙寅楚起章華臺 | fulltext.md L23911 |
-| HJ-Q6915 | 己巳晉平公卒世子夷繼是謂昭公齊陳鮑逐欒髙氏 | 戊辰 | fulltext.md L23915 |
-| HJ-Q6916 | 庚午晉韓起㑹齊宋魯衛鄭曹杞之大夫于厥愸楚誘蔡侯于申殺之公子棄疾滅蔡守之執其世子有歸用之 | 于魯分其室 | fulltext.md L23919 |
-| HJ-Q6917 | 壬申晉昭公㑹齊衛鄭曹莒邾滕薛杞小邾之君盟于平丘魯不得與執季孫意如以歸楚公子比代立是謂平王釋陳蔡二君歸國吴滅州来 | 辛未魯朝晉楚伐徐 | fulltext.md L23923 |
-| HJ-Q6918 | 甲戌晉伐鮮虞楚費無忌為太子建逆婦于秦吴餘昧 | 癸酉楚復諸侯侵地觀從用政 | fulltext.md L23927 |
-| HJ-Q6919 | 乙亥晉昭公卒子去疾立是謂頃公楚誘戎蠻子殺之丙子晉滅陸渾之戎吴伐楚 | 卒季札逃國人立餘昧子僚 | fulltext.md L23931 |
-| HJ-Q6920 | 癸未楚城郢吴公子光伐楚㧞巢及鍾離二子争桑故 | 勝啟之也 | fulltext.md L23941 |
-| HJ-Q6921 | 甲申魯有二王之難昭公奔齊齊景公唁之于野井晉趙鞅㑹宋魯衛曹邾滕薛小邾之人于冀父 | 也 | fulltext.md L23945 |
-| HJ-Q6922 | 癸巳吴敗楚師于豫章 | 章 | fulltext.md L23954 |
-| HJ-Q6923 | 乙未晉定公㑹劉子宋蔡魯衛陳鄭許曹莒邾頓胡滕薛杞小邾之君及齊大夫于召陵以伐楚楚昭公北伐蔡吴師入郢令尹子常奔鄭昭王奔鄖又奔随使申包胥求救于秦許徙君容城吴子闔 | 經世之酉二千二百一十八 | fulltext.md L23959 |
-| HJ-Q6924 | 戊戌晉師入周敬王于成周齊取鄆為陽虎邑 | 許 | fulltext.md L23965 |
-| HJ-Q6925 | 壬寅宋公之弟辰及大夫仲陀石彄公子地自陳入于 | 魯侵地晏嬰在㑹 | fulltext.md L23971 |
-| HJ-Q6926 | 癸卯孔子去魯適衛 | 蕭以叛鄭子産卒 | fulltext.md L23975 |
-| HJ-Q6927 | 乙巳衛世子蒯聵奔宋魯孔子自衛之宋又如陳楚㑹吴伐陳滅頓吴王闔廬伐越不利死子夫差立以伯嚭為太宰是年於越句踐敗吴師于檇李稱王于㑹稽 | 甲辰魯孔子在衛晉六卿相攻 | fulltext.md L23979 |
-| HJ-Q6928 | 辛亥齊伐宋晉伐衛齊景公卒子荼繼是謂孺子晉韓 | 庚戌魯孔子之蔡 | fulltext.md L23987 |
-| HJ-Q6929 | 壬子齊亂田乞弑其君孺子迎公子陽生于魯而立之是謂悼公髙昭子死國惠子奔莒魯孔子復至陳楚昭王救陳軍于城父卒于師世子章繼是謂惠王吴伐陳魯伐邾宋伐曹 | 趙魏敗范中行氏于邯鄲 | fulltext.md L23991 |
-| HJ-Q6930 | 丙辰齊田乞卒子常繼事是謂成子齊亂鮑子弑其君悼公立其子壬是謂簡公田常專國魯孔子自陳復至于衛楚伐陳吴㑹魯伐齊以救陳殺大夫伍員 | 乙卯宋伐鄭楚伐陳吴伐齊 | fulltext.md L23997 |
-| HJ-Q6931 | 戊午楚白公勝復奔吴子西復召之吴㑹魯衛之君于 | 魯敗齊師于艾陵越朝吴 | fulltext.md L24002 |
-| HJ-Q6932 | 己未晉定公及諸侯㑹吴夫差于黄池越伐吴入其郛 | 槖臯移兵攻晉 | fulltext.md L24006 |
-| HJ-Q6933 | 庚申魯西狩獲麟齊田常殺相闞止及弑其君簡公于舒州立其弟驁是謂平公割安平以東自為封邑孔子請討不克秦悼公卒子厲公繼晉伐鄭宋桓魋出奔衛又奔齊楚巢大夫白公勝殺令尹 | 執其世子友而還 | fulltext.md L24010 |
-| HJ-Q6934 | 癸亥晉伐衛荘公出奔國人立公子班師齊伐衛執班 | 壬戌魯孔子卒 | fulltext.md L24015 |
-| HJ-Q6935 | 甲子衛石圃逐其君起而迎輒復位 | 經世之戌二千二百一十九 | fulltext.md L24020 |
-| HJ-Q6936 | 乙丑周敬王崩太子嗣位是謂元王齊田常卒子盤繼事是謂襄子吴㑹齊晉之師伐楚越伐吴 | 起奔齊 | fulltext.md L24024 |
-| HJ-Q6937 | 辛未周元王崩太子介嗣位是謂貞定王 | 己巳 | fulltext.md L24031 |
-| HJ-Q6938 | 癸酉魯季康子卒三桓作難弑其君哀公立其子寧是 | 壬申 | fulltext.md L24035 |
-| HJ-Q6939 | ### 謂悼公 | 謂悼公 | fulltext.md L24037 |
+| HJ-Q6842 | 丁巳晋曲沃荘伯入翼杀其君孝侯国人逐荘伯立孝 | 丙辰 | fulltext.md L23536 |
+| HJ-Q6843 | ### 侯子是谓鄂侯 | 侯子是谓鄂侯 | fulltext.md L23538 |
+| HJ-Q6844 | 辛酉周平王崩其孙林立是谓桓王与郑交恶宋穆公 | 己未鲁隠公立 | fulltext.md L23545 |
+| HJ-Q6845 | 甲子周桓王三年晋翼侯自随入于鄂是谓鄂侯乙丑晋曲沃荘伯卒子称继是谓武公 | 经世之寅二千二百一十一 | fulltext.md L23552 |
+| HJ-Q6846 | 丁卯秦自汧渭之间徙居郿 | 丙寅宋齐卫之君盟于瓦屋 | fulltext.md L23556 |
+| HJ-Q6847 | 己巳鲁乱公子翚杀其君隠公立惠公之子是谓桓公 | 戊辰齐㑹鲁郑之师伐宋 | fulltext.md L23560 |
+| HJ-Q6848 | 辛未宋乱太宰华督杀司马孔父及弑其君殇公迎穆 | 翚为之辅 | fulltext.md L23565 |
+| HJ-Q6849 | 壬申晋曲沃武公败晋师于汾旁获哀侯晋人立其子 | 公子冯于郑而立之是谓荘公 | fulltext.md L23569 |
+| HJ-Q6850 | 癸酉晋曲沃武公弑其君哀侯于曲沃 | 是谓小子侯 | fulltext.md L23573 |
+| HJ-Q6851 | 丙子晋曲沃武公入翼杀小子侯王使虢仲伐称称复 | 俾请王之号于周 | fulltext.md L23578 |
+| HJ-Q6852 | 丁丑秦乱宁公卒三父废世子而庚立出子是年楚熊通伐随东开地至濮上遂称王是谓武王 | 归曲沃虢仲立哀侯弟𦈏 | fulltext.md L23582 |
+| HJ-Q6853 | 庚辰郑荘公卒世子忽继宋执郑祭仲立突是谓厉公忽奔卫祭仲専政卫宣公杀其二子伋寿 | 戊寅 | fulltext.md L23587 |
+| HJ-Q6854 | 癸未秦三父杀出子而立世子是谓武公齐厘公卒世子诸儿继是谓襄公宋㑹齐蔡陈伐郑 | 壬午齐㑹宋卫燕伐鲁不利 | fulltext.md L23592 |
+| HJ-Q6855 | 丙戌秦夷三父族郑髙渠弥弑其君昭公立其弟子亹 | 宋㑹鲁卫陈蔡伐郑 | fulltext.md L23598 |
+| HJ-Q6856 | 丁亥周有黒肩之难齐襄公杀鲁桓公于泺立其子同是谓荘公又㑹诸侯于首止杀郑子亹髙渠弥逃归与祭仲迎公子婴于陈立之 | 弥専政 | fulltext.md L23602 |
+| HJ-Q6857 | 己丑周塟桓王 | 戊子周王姬下嫁于齐 | fulltext.md L23606 |
+| HJ-Q6858 | 辛卯周伐随责尊楚也齐伐纪纪侯大去其国楚王卒 | 庚寅 | fulltext.md L23610 |
+| HJ-Q6859 | 甲午周荘王十年秦灭小虢 | 经世之卯二千二百一十二 | fulltext.md L23617 |
+| HJ-Q6860 | 丙申齐人杀无知公子小白入是谓桓公紏后入不克齐伐鲁杀紏其傅召忽死之管仲请囚又相桓公 | 纠奔鲁小白奔莒 | fulltext.md L23622 |
+| HJ-Q6861 | 己亥周荘王崩太子胡齐嗣位是谓厘王宋乱南宫万弑其君湣公及其大夫仇牧太宰华督立公子㳺群公子奔萧攻万及杀游立公弟御说是谓桓公 | 戊戌 | fulltext.md L23627 |
+| HJ-Q6862 | 辛丑齐㑹陈曹及王人伐宋楚师入蔡 | 柯遂复其侵地曹沫刼盟故也 | fulltext.md L23632 |
+| HJ-Q6863 | 癸卯齐桓公㑹陈宋鲁卫郑许滕之君盟于幽秦武 | 翼以重寳入周得请为诸侯 | fulltext.md L23637 |
+| HJ-Q6864 | 甲辰周厘王崩太子闵嗣位是谓恵王晋武公卒子献公诡诸继秦徙居雍楚文王卒世子囏继是谓杜敖 | 公卒弟徳公立楚灭邓 | fulltext.md L23641 |
+| HJ-Q6865 | 丁未周有五大夫之难边伯石速𫇭国以蔡卫之师攻 | 乙巳秦徳公卒子宣公继 | fulltext.md L23646 |
+| HJ-Q6866 | 戊申郑厉公及虢叔入王于成周杀颓而执仲父及五 | 王立弟颓王出居郑之栎 | fulltext.md L23650 |
+| HJ-Q6867 | 己酉秦作密畤败晋师于河晋伐骊获女以为姬陈公子完奔齐楚乱弟恽杀其君囏代立是谓成王 | 大夫难遂平 | fulltext.md L23654 |
+| HJ-Q6868 | 辛亥魏惠公卒子懿公继 | 庚戌楚修好于周及诸侯 | fulltext.md L23658 |
+| HJ-Q6869 | 甲寅周惠王锡齐桓公命为伯 | 癸丑晋伐虢责内群公子也 | fulltext.md L23663 |
+| HJ-Q6870 | 丁巳齐伐山戎至于孤竹以救燕俾修贡天子秦宣公卒弟成公立楚杀令尹子元以鬭榖於菟为令尹 | 乙卯晋城曲沃及蒲楚伐郑 | fulltext.md L23668 |
+| HJ-Q6871 | 己未鲁乱叔牙弑其君荘公开立是谓湣公季友立世 | 戊午 | fulltext.md L23672 |
+| HJ-Q6872 | 庚申晋灭霍魏耿以耿封赵夙以魏封毕万 | 子班不克奔陈 | fulltext.md L23676 |
+| HJ-Q6873 | 甲子齐㑹江黄之君于阳榖 | 经世之辰二千二百一十三 | fulltext.md L23683 |
+| HJ-Q6874 | 己巳周惠王崩太子郑嗣位是谓襄王太叔作难齐师宋卫许曹陈㑹王人于洮晋伐翟不利于啮桑 | 丁卯齐伐郑晋伐屈夷吾奔梁 | fulltext.md L23690 |
+| HJ-Q6875 | 甲戌齐桓公㑹宋陈鲁卫郑许曹之君盟于咸晋饥秦 | 癸酉齐使管仲平周难楚灭黄 | fulltext.md L23697 |
+| HJ-Q6876 | 乙亥秦饥晋闭之籴而又伐之楚灭英 | 输之粟 | fulltext.md L23701 |
+| HJ-Q6877 | 戊寅齐桓公卒五公子争国公子无诡立易牙专政世 | 之君于淮以全鄫 | fulltext.md L23707 |
+| HJ-Q6878 | 己卯宋㑹曹卫邾伐齐无诡子败四公子立世子昭是 | 子昭出奔宋 | fulltext.md L23711 |
+| HJ-Q6879 | 庚辰秦灭梁 | 谓孝侯狄伐卫 | fulltext.md L23715 |
+| HJ-Q6880 | 壬午宋襄公㑹楚陈蔡郑许曹六国之君于盂楚成王 | 辛巳 | fulltext.md L23719 |
+| HJ-Q6881 | 己丑周襄王狩于河阳晋㑹齐宋蔡秦之师伐卫大败楚师于城濮遂㑹齐宋蔡郑鲁卫之君盟于践土楚救郑不利杀令尹子玉得臣 | 作三军楚使子玉伐宋 | fulltext.md L23730 |
+| HJ-Q6882 | 辛卯卫成公自陈如周周请晋纳成公于卫而诛大夫 | 庚寅晋㑹王人及诸侯于翟泉 | fulltext.md L23734 |
+| HJ-Q6883 | 壬辰鲁取济西田卫徙居帝丘 | 元咺及公子瑕秦晋围郑 | fulltext.md L23738 |
+| HJ-Q6884 | 甲午秦穆公伐郑晋败秦师于殽获其帅孟明视西乞术白乙丙鲁僖公卒世子兴继是谓文公 | 经世之巳二千二百一十四 | fulltext.md L23743 |
+| HJ-Q6885 | 丙申秦伐晋不利于彭衙 | 穆王 | fulltext.md L23748 |
+| HJ-Q6886 | 辛丑晋世子夷臯继是谓灵公宋成公卒国乱弟御杀世代立国人杀御公立子杵臼是谓昭公齐率宋卫陈郑许曹之君㑹赵盾于扈 | 晋襄公卒 | fulltext.md L23756 |
+| HJ-Q6887 | 丙午秦伐晋取覊马 | 乙巳鲁败狄于咸获其帅乔如 | fulltext.md L23762 |
+| HJ-Q6888 | 庚戌齐修郪丘之盟宋人弑其君昭公弟鲍立是谓文 | 己酉秦伐蔡齐伐鲁 | fulltext.md L23768 |
+| HJ-Q6889 | 辛亥晋㑹卫陈郑伐宋 | 公楚灭庸 | fulltext.md L23772 |
+| HJ-Q6890 | 丁巳晋伐陈以救郑秦共公卒子继是为桓公 | 丙辰郑乱公子作难 | fulltext.md L23780 |
+| HJ-Q6891 | 己未晋㑹诸侯于黒壤 | 戊午晋赵盾卫孙免侵陈 | fulltext.md L23784 |
+| HJ-Q6892 | 辛酉晋侯㑹宋卫陈郑于扈陈不至遂伐陈晋成公卒于扈公子据立是谓景公赵盾卒子朔继事 | 庚申晋伐秦楚灭舒蓼 | fulltext.md L23788 |
+| HJ-Q6893 | 甲子楚伐郑大败晋师于河上晋屠岸贾作难于下宫杀赵朔及其族朔妻匿于公宫生武 | 经世之午二千二百一十五 | fulltext.md L23794 |
+| HJ-Q6894 | 丙寅楚围宋 | 乙丑楚伐宋 | fulltext.md L23798 |
+| HJ-Q6895 | 庚午鲁宣公卒世子黒肱继是谓成公晋伐齐楚荘王 | 己巳晋㑹诸侯之君于断道 | fulltext.md L23804 |
+| HJ-Q6896 | 辛未周伐茅戎不利 | 卒世子审继是谓共王 | fulltext.md L23808 |
+| HJ-Q6897 | 乙亥周定王崩太子夷嗣位是谓简王晋㑹齐宋卫鲁郑曹邾杞八国之君盟于虫牢楚伐郑 | 甲戌晋伐楚救郑 | fulltext.md L23814 |
+| HJ-Q6898 | 戊寅晋杀大夫赵同赵括 | 吴王寿梦始通好中国 | fulltext.md L23820 |
+| HJ-Q6899 | 壬午晋楚同盟于宋晋败狄于交刚 | 辛巳秦晋修夹河之盟 | fulltext.md L23826 |
+| HJ-Q6900 | 甲申秦桓公卒子景公继 | 师伐秦败之麻隧 | fulltext.md L23831 |
+| HJ-Q6901 | 丁亥晋㑹诸侯盟于柯陵是年晋杀三郤 | 诛令尹侧 | fulltext.md L23837 |
+| HJ-Q6902 | 庚寅周葬简王晋伐郑㑹诸侯之师于戚以城虎牢辛卯晋㑹八国之君盟于鸡泽楚伐吴至于衡山壬辰晋用魏绛楚伐陈 | 师伐宋围彭城 | fulltext.md L23843 |
+| HJ-Q6903 | 经世之未二千二百一十六 | 善道 | fulltext.md L23848 |
+| HJ-Q6904 | 戊戌晋率十一国之君㑹吴寿梦于柤以灭偪阳又㑹十一国之师伐郑又伐秦楚伐宋又救郑 | 楚 | fulltext.md L23856 |
+| HJ-Q6905 | 壬寅晋率齐宋鲁卫郑曹莒邾滕薛杞小邾十二国之君㑹吴诸樊于向又㑹诸侯之师伐秦卫乱孙林父殖作难卫侯出奔齐楚伐吴有功 | 利 | fulltext.md L23864 |
+| HJ-Q6906 | 丙午晋用范中行㑹宋卫鲁郑曹莒邾滕薛杞小邾十一国之师伐齐败之于靡下进围临淄齐灵公奔莒 | 乙巳 | fulltext.md L23870 |
+| HJ-Q6907 | 辛亥栾盈自齐复入于晋不克死范中行灭栾氏之族 | 盈自楚适齐 | fulltext.md L23878 |
+| HJ-Q6908 | 壬子晋㑹十一国之君于夷仪楚伐吴又㑹诸侯伐郑癸丑齐乱崔杼弑其君荘公立异母弟杵臼是谓景公崔杼为右相庆封为左相晋败齐师于髙堂楚㑹陈伐郑及灭舒鸠吴伐楚不利诸樊死 | 齐伐晋取朝歌 | fulltext.md L23882 |
+| HJ-Q6909 | 己未鲁襄公卒世子又卒国人立齐归之子禂是谓昭 | 㑹诸侯人于澶渊 | fulltext.md L23891 |
+| HJ-Q6910 | 庚申晋赵武㑹诸侯之大夫于虢楚乱令尹围弑其君麋代立是谓灵王公子比奔晋䓕罢为令尹 | 公季武子专政 | fulltext.md L23895 |
+| HJ-Q6911 | 壬戌鲁昭公朝晋齐晏婴使晋郑伯朝晋又朝楚癸亥楚㑹十一国之君于申执徐子于㑹又㑹七国诸侯伐吴之朱方以诛齐庆封吴㧞楚三邑 | 辛酉晋韩宣子起使鲁 | fulltext.md L23899 |
+| HJ-Q6912 | 甲子周楚㑹诸侯伐吴秦景公卒世子继是 | 经世之申二千二百一十七 | fulltext.md L23903 |
+| HJ-Q6913 | 己丑齐北伐燕楚东伐吴败楚师于干溪 | 谓哀公 | fulltext.md L23907 |
+| HJ-Q6914 | 丁卯楚灭陈执其公子招放之于越 | 丙寅楚起章华台 | fulltext.md L23911 |
+| HJ-Q6915 | 己巳晋平公卒世子夷继是谓昭公齐陈鲍逐栾髙氏 | 戊辰 | fulltext.md L23915 |
+| HJ-Q6916 | 庚午晋韩起㑹齐宋鲁卫郑曹杞之大夫于厥愸楚诱蔡侯于申杀之公子弃疾灭蔡守之执其世子有归用之 | 于鲁分其室 | fulltext.md L23919 |
+| HJ-Q6917 | 壬申晋昭公㑹齐卫郑曹莒邾滕薛杞小邾之君盟于平丘鲁不得与执季孙意如以归楚公子比代立是谓平王释陈蔡二君归国吴灭州来 | 辛未鲁朝晋楚伐徐 | fulltext.md L23923 |
+| HJ-Q6918 | 甲戌晋伐鲜虞楚费无忌为太子建逆妇于秦吴余昧 | 癸酉楚复诸侯侵地观从用政 | fulltext.md L23927 |
+| HJ-Q6919 | 乙亥晋昭公卒子去疾立是谓顷公楚诱戎蛮子杀之丙子晋灭陆浑之戎吴伐楚 | 卒季札逃国人立余昧子僚 | fulltext.md L23931 |
+| HJ-Q6920 | 癸未楚城郢吴公子光伐楚㧞巢及钟离二子争桑故 | 胜启之也 | fulltext.md L23941 |
+| HJ-Q6921 | 甲申鲁有二王之难昭公奔齐齐景公唁之于野井晋赵鞅㑹宋鲁卫曹邾滕薛小邾之人于冀父 | 也 | fulltext.md L23945 |
+| HJ-Q6922 | 癸巳吴败楚师于豫章 | 章 | fulltext.md L23954 |
+| HJ-Q6923 | 乙未晋定公㑹刘子宋蔡鲁卫陈郑许曹莒邾顿胡滕薛杞小邾之君及齐大夫于召陵以伐楚楚昭公北伐蔡吴师入郢令尹子常奔郑昭王奔郧又奔随使申包胥求救于秦许徙君容城吴子阖 | 经世之酉二千二百一十八 | fulltext.md L23959 |
+| HJ-Q6924 | 戊戌晋师入周敬王于成周齐取郓为阳虎邑 | 许 | fulltext.md L23965 |
+| HJ-Q6925 | 壬寅宋公之弟辰及大夫仲陀石𫸩公子地自陈入于 | 鲁侵地晏婴在㑹 | fulltext.md L23971 |
+| HJ-Q6926 | 癸卯孔子去鲁适卫 | 萧以叛郑子产卒 | fulltext.md L23975 |
+| HJ-Q6927 | 乙巳卫世子蒯聩奔宋鲁孔子自卫之宋又如陈楚㑹吴伐陈灭顿吴王阖庐伐越不利死子夫差立以伯嚭为太宰是年于越句践败吴师于檇李称王于㑹稽 | 甲辰鲁孔子在卫晋六卿相攻 | fulltext.md L23979 |
+| HJ-Q6928 | 辛亥齐伐宋晋伐卫齐景公卒子荼继是谓孺子晋韩 | 庚戌鲁孔子之蔡 | fulltext.md L23987 |
+| HJ-Q6929 | 壬子齐乱田乞弑其君孺子迎公子阳生于鲁而立之是谓悼公髙昭子死国惠子奔莒鲁孔子复至陈楚昭王救陈军于城父卒于师世子章继是谓惠王吴伐陈鲁伐邾宋伐曹 | 赵魏败范中行氏于邯郸 | fulltext.md L23991 |
+| HJ-Q6930 | 丙辰齐田乞卒子常继事是谓成子齐乱鲍子弑其君悼公立其子壬是谓简公田常专国鲁孔子自陈复至于卫楚伐陈吴㑹鲁伐齐以救陈杀大夫伍员 | 乙卯宋伐郑楚伐陈吴伐齐 | fulltext.md L23997 |
+| HJ-Q6931 | 戊午楚白公胜复奔吴子西复召之吴㑹鲁卫之君于 | 鲁败齐师于艾陵越朝吴 | fulltext.md L24002 |
+| HJ-Q6932 | 己未晋定公及诸侯㑹吴夫差于黄池越伐吴入其郛 | 槖臯移兵攻晋 | fulltext.md L24006 |
+| HJ-Q6933 | 庚申鲁西狩获麟齐田常杀相阚止及弑其君简公于舒州立其弟骜是谓平公割安平以东自为封邑孔子请讨不克秦悼公卒子厉公继晋伐郑宋桓魋出奔卫又奔齐楚巢大夫白公胜杀令尹 | 执其世子友而还 | fulltext.md L24010 |
+| HJ-Q6934 | 癸亥晋伐卫荘公出奔国人立公子班师齐伐卫执班 | 壬戌鲁孔子卒 | fulltext.md L24015 |
+| HJ-Q6935 | 甲子卫石圃逐其君起而迎辄复位 | 经世之戌二千二百一十九 | fulltext.md L24020 |
+| HJ-Q6936 | 乙丑周敬王崩太子嗣位是谓元王齐田常卒子盘继事是谓襄子吴㑹齐晋之师伐楚越伐吴 | 起奔齐 | fulltext.md L24024 |
+| HJ-Q6937 | 辛未周元王崩太子介嗣位是谓贞定王 | 己巳 | fulltext.md L24031 |
+| HJ-Q6938 | 癸酉鲁季康子卒三桓作难弑其君哀公立其子宁是 | 壬申 | fulltext.md L24035 |
+| HJ-Q6939 | ### 谓悼公 | 谓悼公 | fulltext.md L24037 |
 | HJ-Q6940 | ### 乙亥 | 乙亥 | fulltext.md L24041 |
-| HJ-Q6941 | ### 丁丑晉伐鄭 | 丁丑晉伐鄭 | fulltext.md L24045 |
+| HJ-Q6941 | ### 丁丑晋伐郑 | 丁丑晋伐郑 | fulltext.md L24045 |
 | HJ-Q6942 | 庚辰秦伐大荔 | 己卯 | fulltext.md L24051 |
-| HJ-Q6943 | 癸未晉趙簡子鞅卒子母䘏繼是謂襄子同知伯韓康子魏桓子滅范中行氏四分其地及逐其君立公孫驕是謂哀公秦取晉武城 | 辛巳 | fulltext.md L24056 |
-| HJ-Q6944 | 乙酉齊平公卒子積繼是謂靈公晉知伯及韓魏二家 | 甲申晉伐秦復武城 | fulltext.md L24060 |
-| HJ-Q6945 | 丙戌晉三家兵圍晉陽 | 兵攻趙襄子于晉陽 | fulltext.md L24064 |
+| HJ-Q6943 | 癸未晋赵简子鞅卒子母䘏继是谓襄子同知伯韩康子魏桓子灭范中行氏四分其地及逐其君立公孙骄是谓哀公秦取晋武城 | 辛巳 | fulltext.md L24056 |
+| HJ-Q6944 | 乙酉齐平公卒子积继是谓灵公晋知伯及韩魏二家 | 甲申晋伐秦复武城 | fulltext.md L24060 |
+| HJ-Q6945 | 丙戌晋三家兵围晋阳 | 兵攻赵襄子于晋阳 | fulltext.md L24064 |
 | HJ-Q6946 | ### 戊子 | 戊子 | fulltext.md L24067 |
 | HJ-Q6947 | ### 庚寅 | 庚寅 | fulltext.md L24071 |
 | HJ-Q6948 | ### 壬辰 | 壬辰 | fulltext.md L24075 |
-| HJ-Q6949 | 甲午楚滅蔡 | 經世之亥二千二百二十 | fulltext.md L24081 |
-| HJ-Q6950 | 丙申秦伐義渠獲其王以歸楚滅杞東開地至泗上丁酉 | 乙未秦厲公卒子躁公繼 | fulltext.md L24085 |
-| HJ-Q6951 | 己亥周貞定王崩太子去疾嗣位是謂哀王王叔襲殺 | 戊戌 | fulltext.md L24089 |
-| HJ-Q6952 | 庚子周亂少弟嵬殺其王叔代立是謂考王 | 哀王代立是謂思王 | fulltext.md L24093 |
+| HJ-Q6949 | 甲午楚灭蔡 | 经世之亥二千二百二十 | fulltext.md L24081 |
+| HJ-Q6950 | 丙申秦伐义渠获其王以归楚灭杞东开地至泗上丁酉 | 乙未秦厉公卒子躁公继 | fulltext.md L24085 |
+| HJ-Q6951 | 己亥周贞定王崩太子去疾嗣位是谓哀王王叔袭杀 | 戊戌 | fulltext.md L24089 |
+| HJ-Q6952 | 庚子周乱少弟嵬杀其王叔代立是谓考王 | 哀王代立是谓思王 | fulltext.md L24093 |
 | HJ-Q6953 | ### 癸卯 | 癸卯 | fulltext.md L24096 |
 | HJ-Q6954 | ### 乙巳 | 乙巳 | fulltext.md L24100 |
-| HJ-Q6955 | 己酉秦躁公卒弟懐王立楚惠王卒子中繼是謂簡王庚戌魯悼公卒子元公繼楚滅莒 | 丁未 | fulltext.md L24107 |
-| HJ-Q6956 | 癸丑秦庻長黽弑其君懐公立躁公孫是謂靈公甲寅 | 辛亥 | fulltext.md L24112 |
-| HJ-Q6957 | 丙辰晉趙襄子卒兄之子浣繼事是謂獻子治中牟魏 | 其少子于鞏稱東周君 | fulltext.md L24117 |
-| HJ-Q6958 | 丁巳趙桓子卒國人殺其子而迎獻子復位 | 桓子卒子斯繼事是謂文侯 | fulltext.md L24121 |
+| HJ-Q6955 | 己酉秦躁公卒弟懐王立楚惠王卒子中继是谓简王庚戌鲁悼公卒子元公继楚灭莒 | 丁未 | fulltext.md L24107 |
+| HJ-Q6956 | 癸丑秦庻长黾弑其君懐公立躁公孙是谓灵公甲寅 | 辛亥 | fulltext.md L24112 |
+| HJ-Q6957 | 丙辰晋赵襄子卒兄之子浣继事是谓献子治中牟魏 | 其少子于巩称东周君 | fulltext.md L24117 |
+| HJ-Q6958 | 丁巳赵桓子卒国人杀其子而迎献子复位 | 桓子卒子斯继事是谓文侯 | fulltext.md L24121 |
 | HJ-Q6959 | 己未秦作上下畤 | 戊午秦攻魏少梁 | fulltext.md L24125 |
-| HJ-Q6960 | 辛酉魏文侯殺晉幽公立其弟止是謂烈公 | 庚申 | fulltext.md L24129 |
+| HJ-Q6960 | 辛酉魏文侯杀晋幽公立其弟止是谓烈公 | 庚申 | fulltext.md L24129 |
 | HJ-Q6961 | ### 壬戌 | 壬戌 | fulltext.md L24131 |
-| HJ-Q6962 | 欽定四庫全書 | 皇極經世書卷五下 | fulltext.md L24137 |
-| HJ-Q6963 | 經㑹之午七 | 經元之甲一 | fulltext.md L24142 |
-| HJ-Q6964 | 經世之子二千二百二十一 | 經運之巳一百八十六 | fulltext.md L24146 |
-| HJ-Q6965 | 丁卯魏伐秦韓伐鄭 | 丙寅 | fulltext.md L24152 |
-| HJ-Q6966 | 庚午齊田莊子卒子太公和繼趙城平城 | 戊辰齊伐晉魏伐中山 | fulltext.md L24157 |
-| HJ-Q6967 | 癸酉韓伐鄭取雍邱魏滅中山楚簡王卒子當繼是謂 | 魏伐秦 | fulltext.md L24163 |
-| HJ-Q6968 | 甲戌鄭伐韓取負黍 | 聲王 | fulltext.md L24167 |
-| HJ-Q6969 | 戊寅晉韓趙魏求為諸侯于周 | 丁丑 | fulltext.md L24173 |
-| HJ-Q6970 | 庚辰秦攻魏陽狐 | 卒子疑立是謂悼王 | fulltext.md L24178 |
+| HJ-Q6962 | 钦定四库全书 | 皇极经世书卷五下 | fulltext.md L24137 |
+| HJ-Q6963 | 经㑹之午七 | 经元之甲一 | fulltext.md L24142 |
+| HJ-Q6964 | 经世之子二千二百二十一 | 经运之巳一百八十六 | fulltext.md L24146 |
+| HJ-Q6965 | 丁卯魏伐秦韩伐郑 | 丙寅 | fulltext.md L24152 |
+| HJ-Q6966 | 庚午齐田庄子卒子太公和继赵城平城 | 戊辰齐伐晋魏伐中山 | fulltext.md L24157 |
+| HJ-Q6967 | 癸酉韩伐郑取雍邱魏灭中山楚简王卒子当继是谓 | 魏伐秦 | fulltext.md L24163 |
+| HJ-Q6968 | 甲戌郑伐韩取负黍 | 声王 | fulltext.md L24167 |
+| HJ-Q6969 | 戊寅晋韩赵魏求为诸侯于周 | 丁丑 | fulltext.md L24173 |
+| HJ-Q6970 | 庚辰秦攻魏阳狐 | 卒子疑立是谓悼王 | fulltext.md L24178 |
 | HJ-Q6971 | ### 壬午 | 壬午 | fulltext.md L24181 |
-| HJ-Q6972 | ### 甲申韓盜殺相俠累 | 甲申韓盜殺相俠累 | fulltext.md L24185 |
-| HJ-Q6973 | 戊子魏伐鄭取酸棗又敗秦軍于注楚伐韓取負黍己丑 | 丙戌晉烈公卒子孝公繼 | fulltext.md L24192 |
-| HJ-Q6974 | 辛卯魯敗齊于平陸齊伐魏取襄陵 | 㧞六城韓趙大敗楚師于大梁 | fulltext.md L24197 |
-| HJ-Q6975 | 癸巳齊田和㑹魏文侯于濁澤求為諸侯魏請于周及 | 壬辰秦伐魏侵晉 | fulltext.md L24201 |
-| HJ-Q6976 | 經世之丑二千二百二十二 | 諸侯皆許之 | fulltext.md L24205 |
-| HJ-Q6977 | 戊戌魏敗趙師于兎臺 | 丁酉趙破齊師于廪丘 | fulltext.md L24212 |
-| HJ-Q6978 | 庚子趙㑹楚伐魏取棘蒲楚悼王卒盗殺相呉起王子 | 己亥齊魏以衛伐趙取剛平 | fulltext.md L24216 |
-| HJ-Q6979 | 壬寅齊康公死于海上齊桓侯卒子因齊立是謂威王癸卯晉孝公卒子静公俱酒繼韓趙魏伐齊至于靈丘甲辰韓文侯卒子哀侯繼趙攻中山戰于房子魯穆公 | 辛丑齊伐燕取桑丘 | fulltext.md L24221 |
-| HJ-Q6980 | 乙巳周安王崩太子喜嗣位是謂烈王魏武侯韓哀侯趙敬侯同滅晉而三分其地以靜公爲家人食端氏一城 | 卒子共公繼 | fulltext.md L24225 |
-| HJ-Q6981 | 戊申魯伐齊入陽關趙伐齊至博陵 | 辟公繼 | fulltext.md L24231 |
-| HJ-Q6982 | 庚戌韓嚴弑其君哀侯立其子懿侯魏武侯卒公子争國趙伐魏立公子罃是謂惠王趙敗秦軍于鄗安 | 公卒子剔成繼 | fulltext.md L24236 |
-| HJ-Q6983 | 甲寅趙韓分周為二 | 癸丑韓魏攻周 | fulltext.md L24242 |
-| HJ-Q6984 | 丙辰齊攻秦不利于石門魏伐宋取儀臺 | 乙卯魏㑹趙攻秦不利于洛陽 | fulltext.md L24246 |
-| HJ-Q6985 | 己未秦獻公卒子孝公繼敗魏師于少梁魏敗韓師于 | 戊午 | fulltext.md L24251 |
-| HJ-Q6986 | 庚申魏㧞趙皮牢 | 澮 | fulltext.md L24255 |
-| HJ-Q6987 | 壬戌秦用衛鞅韓懿侯卒子昭侯繼 | 魏伐齊 | fulltext.md L24260 |
-| HJ-Q6988 | 經世之寅二千二百二十三 | 癸亥 | fulltext.md L24264 |
-| HJ-Q6989 | 丁卯秦攻魏師于元里取少梁魏圍趙邯鄲 | 秦于杜平 | fulltext.md L24269 |
-| HJ-Q6990 | 己巳秦大良造衛鞅㑹韓趙之師圍魏襄陵 | 魏于桂陵是年齊始稱王 | fulltext.md L24274 |
-| HJ-Q6991 | 辛未趙成侯卒世子繼是謂肅侯秦開阡陌大築冀闕 | 水之上 | fulltext.md L24279 |
-| HJ-Q6992 | 癸酉趙奪晉君端氏徙之屯留秦初為賦 | 于咸陽自雍徙都之 | fulltext.md L24284 |
-| HJ-Q6993 | 乙亥魯康公卒子景公繼 | 甲戌 | fulltext.md L24288 |
-| HJ-Q6994 | 戊寅周顯王錫秦孝公命為伯齊威王卒子宣王辟疆 | 丙子 | fulltext.md L24293 |
-| HJ-Q6995 | 己卯諸侯西賀秦 | 繼 | fulltext.md L24297 |
-| HJ-Q6996 | 辛巳楚宣王卒子威王繼秦奪魏河西七百里魏去安 | 龎㳙及世子申 | fulltext.md L24302 |
-| HJ-Q6997 | 癸未秦孝公卒子惠文君繼是謂惠王商鞅奔魏魏不 | 邑徙都大梁 | fulltext.md L24307 |
-| HJ-Q6998 | 甲申秦惠文君夷商鞅族蘇秦入秦秦不受 | 受入于秦 | fulltext.md L24311 |
-| HJ-Q6999 | 丁亥蘇秦㑹趙燕韓魏齊楚六國之師盟于洹水之上以攻秦至于凾谷韓作高門是年楚滅越獲王無疆盡取其地東地至浙江魏始稱王田嬰為相 | 王于鄄 | fulltext.md L24317 |
-| HJ-Q7000 | 己丑齊㑹魏伐趙又伐燕取十城 | 師于徐州齊田嬰詐楚故不利 | fulltext.md L24322 |
-| HJ-Q7001 | 辛卯宋亂公弟偃弑其君代立是謂元王 | 庚寅秦伐魏 | fulltext.md L24326 |
-| HJ-Q7002 | 癸巳秦用張儀為相陳軫適楚楚滅蜀魏輸秦上郡 | 汾隂 | fulltext.md L24331 |
-| HJ-Q7003 | 甲午齊㑹魏攻韓之桑邱 | 經世之卯二千二百二十四 | fulltext.md L24335 |
-| HJ-Q7004 | 己亥秦張儀出相魏燕㑹韓魏二君于區鼠 | 齊楚執政于齧桑 | fulltext.md L24341 |
-| HJ-Q7005 | 丁未楚齊和親燕亂將市被攻子之不克返攻世子又 | 渠二十五城又取韓之石章 | fulltext.md L24352 |
-| HJ-Q7006 | 戊申楚攻秦不利秦伐齊楚救不至秦張儀結楚樗里 | 不克死 | fulltext.md L24356 |
-| HJ-Q7007 | 己酉楚懷王大伐秦不利又伐又不利秦庶長魏章㑹齊韓之師大敗楚師于藍田又敗之于丹水之陽獲其將屈丐遂取漢中地置黔中郡韓宣王卒世子蒼繼是謂襄王齊以五都兵攻燕燕亂國 | 疾攻趙 | fulltext.md L24360 |
-| HJ-Q7008 | 丁巳秦昭王與楚懷王會于黃棘復之上庸 | 丙辰楚絶齊以善秦 | fulltext.md L24369 |
-| HJ-Q7009 | 己未秦復魏蒲坂㑹韓于武遂 | 秦取韓武遂㧞魏蒲坂 | fulltext.md L24374 |
-| HJ-Q7010 | 辛酉齊孟嘗君入秦為質 | 邱 | fulltext.md L24379 |
-| HJ-Q7011 | 甲子楚懷王于秦逃歸不克 | 經世之辰二千二百二十五 | fulltext.md L24385 |
-| HJ-Q7012 | 戊辰楚與秦復和韓伐秦不利秦左庶長白起大敗韓及諸侯之師于伊闕取城五坑軍二十四萬獲將公孫喜 | 丁卯秦向夀伐韓㧞武始 | fulltext.md L24391 |
-| HJ-Q7013 | 庚午秦魏冉復相封陶邑司馬錯伐韓軹及鄧 | 攻楚㧞宛 | fulltext.md L24396 |
-| HJ-Q7014 | 甲戌齊孟嘗君謝病秦昭襄王廵漢中及上郡河北㧞 | 癸酉齊秦約稱東西帝復罷 | fulltext.md L24402 |
-| HJ-Q7015 | 乙亥齊滅宋至于泗上十二諸侯鄒魯之君皆稱臣南取楚之淮北西侵韓趙魏魏獻秦安邑秦伐魏之河内攻韓之夏山 | 魏新垣及曲陽 | fulltext.md L24406 |
-| HJ-Q7016 | 庚辰楚㑹魏趙伐秦秦伐楚魏冉復相趙使藺相如入 | 趙㧞二城伐韓取六邑 | fulltext.md L24414 |
-| HJ-Q7017 | 辛巳楚割上庸及漢中請和于秦秦白起㧞趙二城司馬錯㧞楚上庸燕昭王卒子惠王繼以騎刼代樂毅樂毅奔趙趙惠文王與秦昭襄王㑹于澠池藺相如相 | 秦獻璧 | fulltext.md L24418 |
-| HJ-Q7018 | 乙酉楚東取江旁十五邑以扞秦魏㧞秦二城封無忌 | 繼 | fulltext.md L24426 |
-| HJ-Q7019 | 丙戌秦兵圍大梁魏入温請和秦以穰侯為相國韓暴 | 信陵君 | fulltext.md L24430 |
-| HJ-Q7020 | 癸巳秦㧞魏懷義 | 與亷頗同位秦人為之少懼 | fulltext.md L24440 |
-| HJ-Q7021 | 甲午秦太子卒于魏 | 經世之巳二千二百二十六 | fulltext.md L24444 |
-| HJ-Q7022 | 乙巳周赧王㑹齊韓趙魏兵出伊闕攻秦不利西奔秦秦昭王滅周盡入其地三十六城徙其王于狐楚滅魯以齊荀卿為蘭陵令 | 殺之于杜郵 | fulltext.md L24459 |
-| HJ-Q7023 | 丁未楚齊韓燕趙皆服于秦魏獨後秦使將軍樛伐之 | 相燕孝王卒子喜繼 | fulltext.md L24464 |
-| HJ-Q7024 | 戊申秦郊上帝于雍邱趙徙都鉅鹿 | 取呉城 | fulltext.md L24468 |
-| HJ-Q7025 | 庚戌秦昭襄王卒太子安國繼是謂孝王立三日又卒子楚立是謂莊襄王以華陽夫人為后子政為太子吕不韋為丞相封文信侯食河南十萬户楚春申君入弔于秦燕將栗腹攻趙不利趙亷頗 | 己酉趙平原君卒 | fulltext.md L24472 |
-| HJ-Q7026 | 甲寅秦莊襄王卒太子政繼是謂始皇帝以吕不韋為相國號仲父同太后專政李斯為舍人齊田單屠城魏無忌自趙歸國率楚齊韓趙燕五國之師敗秦軍于河外走蒙驁追至函谷 | 攻秦不利 | fulltext.md L24479 |
-| HJ-Q7027 | 丙辰趙孝成王卒子偃繼是謂悼襄王以樂乗代亷頗 | 乙卯秦蒙驁平晉陽 | fulltext.md L24483 |
-| HJ-Q7028 | 丁巳秦蒙驁攻魏㧞二城攻韓㧞十二城 | 將頗奔魏 | fulltext.md L24487 |
-| HJ-Q7029 | 己未秦㧞魏二十城置東郡趙伐燕獲將劇辛 | 燕二城 | fulltext.md L24492 |
-| HJ-Q7030 | 壬戌秦封嫪毒長信侯關政于内韓桓惠王卒子安繼癸亥長信侯嫪毒作難攻鄿年宮不克伏誅徙太后于雍流蜀者四千家楚考烈王卒子幽王悍繼經世之午二千二百二十七 | 辛酉秦㧞魏之汲趙㧞魏之鄴 | fulltext.md L24497 |
-| HJ-Q7031 | 丙寅秦㑹魏伐楚及韓文信侯呂不韋自殺 | 攻鄴 | fulltext.md L24504 |
-| HJ-Q7032 | 戊辰秦桓齮破趙宜安及赤巖韓王安朝秦 | 還 | fulltext.md L24509 |
-| HJ-Q7033 | 庚午魏獻秦麗邑 | 歸趙李牧扞秦有功 | fulltext.md L24514 |
-| HJ-Q7034 | 癸酉秦王翦滅趙獲其王以其地為趙郡楚幽王卒母弟猶立庶兄負芻殺猶代立魏景湣王卒子假繼趙亡太子喜稱王于代㑹燕軍于上谷 | 李牧顔聚代司馬尚將 | fulltext.md L24520 |
-| HJ-Q7035 | 庚辰秦王翦滅齊獲其王以其地為齊郡東至海及朝鮮西至臨洮羌中南至北嚮户北至隂山遼東分天下地為三十六郡罷侯置守鑄天下兵為十二金人徙天下豪富十二萬户于咸陽大建宮 | 以其地為㑹稽郡 | fulltext.md L24528 |
-| HJ-Q7036 | ### 由上黨乃復 | 由上黨乃復 | fulltext.md L24533 |
-| HJ-Q7037 | 丙戌北廵狩至于碣石由上郡乃復使蒙恬擊胡取河 | 乙酉 | fulltext.md L24539 |
-| HJ-Q7038 | 丁亥南取陸梁地為桂林象郡又北斥匃奴自榆中並河以東属之隂山為三十四縣城河上為塞又使蒙恬渡河取高闕陶山北假中築亭障 | 南地 | fulltext.md L24543 |
-| HJ-Q7039 | 辛卯南廵狩至于雲夢左丞相馮去疾留守右丞相李斯從行少子胡亥請行至九疑浮江東至于㑹稽又北至于琅邪由平原達沙丘崩左丞相李斯宦氏趙高假帝書更立少子胡亥賜上郡太子 | 渭南 | fulltext.md L24550 |
-| HJ-Q7040 | 甲午中郎令趙高稱丞相殺李斯及弑其君胡亥于望夷宮代立不克立二世兄之子嬰為王嬰立夷趙高三族沛公兵十萬由武關入至咸陽秦子嬰降于軹道收圖籍封宮室府庫示衆人以約法 | 經世之未二千二百二十八 | fulltext.md L24556 |
-| HJ-Q7041 | 癸卯大朝諸侯于未央宮趙相貫高事覺 | 陳豨為代王 | fulltext.md L24568 |
-| HJ-Q7042 | 丙午帝征淮南平之夷英布三族周勃平代獲陳豨于當城帝崩太子盈踐位是謂惠帝太后呂氏臨朝稱制蕭何曹參陳平周勃輔政葬高祖于長陵盧綰以燕叛 | 廣陵叛兼有淮東西地 | fulltext.md L24575 |
-| HJ-Q7043 | 戊申相國蕭何卒曹參為相國 | 城為魯元公主湯沐邑 | fulltext.md L24580 |
-| HJ-Q7044 | 庚戌除挾書律 | 己酉城長安 | fulltext.md L24584 |
+| HJ-Q6972 | ### 甲申韩盗杀相侠累 | 甲申韩盗杀相侠累 | fulltext.md L24185 |
+| HJ-Q6973 | 戊子魏伐郑取酸枣又败秦军于注楚伐韩取负黍己丑 | 丙戌晋烈公卒子孝公继 | fulltext.md L24192 |
+| HJ-Q6974 | 辛卯鲁败齐于平陆齐伐魏取襄陵 | 㧞六城韩赵大败楚师于大梁 | fulltext.md L24197 |
+| HJ-Q6975 | 癸巳齐田和㑹魏文侯于浊泽求为诸侯魏请于周及 | 壬辰秦伐魏侵晋 | fulltext.md L24201 |
+| HJ-Q6976 | 经世之丑二千二百二十二 | 诸侯皆许之 | fulltext.md L24205 |
+| HJ-Q6977 | 戊戌魏败赵师于兎台 | 丁酉赵破齐师于廪丘 | fulltext.md L24212 |
+| HJ-Q6978 | 庚子赵㑹楚伐魏取棘蒲楚悼王卒盗杀相呉起王子 | 己亥齐魏以卫伐赵取刚平 | fulltext.md L24216 |
+| HJ-Q6979 | 壬寅齐康公死于海上齐桓侯卒子因齐立是谓威王癸卯晋孝公卒子静公俱酒继韩赵魏伐齐至于灵丘甲辰韩文侯卒子哀侯继赵攻中山战于房子鲁穆公 | 辛丑齐伐燕取桑丘 | fulltext.md L24221 |
+| HJ-Q6980 | 乙巳周安王崩太子喜嗣位是谓烈王魏武侯韩哀侯赵敬侯同灭晋而三分其地以静公为家人食端氏一城 | 卒子共公继 | fulltext.md L24225 |
+| HJ-Q6981 | 戊申鲁伐齐入阳关赵伐齐至博陵 | 辟公继 | fulltext.md L24231 |
+| HJ-Q6982 | 庚戌韩严弑其君哀侯立其子懿侯魏武侯卒公子争国赵伐魏立公子䓨是谓惠王赵败秦军于鄗安 | 公卒子剔成继 | fulltext.md L24236 |
+| HJ-Q6983 | 甲寅赵韩分周为二 | 癸丑韩魏攻周 | fulltext.md L24242 |
+| HJ-Q6984 | 丙辰齐攻秦不利于石门魏伐宋取仪台 | 乙卯魏㑹赵攻秦不利于洛阳 | fulltext.md L24246 |
+| HJ-Q6985 | 己未秦献公卒子孝公继败魏师于少梁魏败韩师于 | 戊午 | fulltext.md L24251 |
+| HJ-Q6986 | 庚申魏㧞赵皮牢 | 浍 | fulltext.md L24255 |
+| HJ-Q6987 | 壬戌秦用卫鞅韩懿侯卒子昭侯继 | 魏伐齐 | fulltext.md L24260 |
+| HJ-Q6988 | 经世之寅二千二百二十三 | 癸亥 | fulltext.md L24264 |
+| HJ-Q6989 | 丁卯秦攻魏师于元里取少梁魏围赵邯郸 | 秦于杜平 | fulltext.md L24269 |
+| HJ-Q6990 | 己巳秦大良造卫鞅㑹韩赵之师围魏襄陵 | 魏于桂陵是年齐始称王 | fulltext.md L24274 |
+| HJ-Q6991 | 辛未赵成侯卒世子继是谓肃侯秦开阡陌大筑冀阙 | 水之上 | fulltext.md L24279 |
+| HJ-Q6992 | 癸酉赵夺晋君端氏徙之屯留秦初为赋 | 于咸阳自雍徙都之 | fulltext.md L24284 |
+| HJ-Q6993 | 乙亥鲁康公卒子景公继 | 甲戌 | fulltext.md L24288 |
+| HJ-Q6994 | 戊寅周显王锡秦孝公命为伯齐威王卒子宣王辟疆 | 丙子 | fulltext.md L24293 |
+| HJ-Q6995 | 己卯诸侯西贺秦 | 继 | fulltext.md L24297 |
+| HJ-Q6996 | 辛巳楚宣王卒子威王继秦夺魏河西七百里魏去安 | 厐㳙及世子申 | fulltext.md L24302 |
+| HJ-Q6997 | 癸未秦孝公卒子惠文君继是谓惠王商鞅奔魏魏不 | 邑徙都大梁 | fulltext.md L24307 |
+| HJ-Q6998 | 甲申秦惠文君夷商鞅族苏秦入秦秦不受 | 受入于秦 | fulltext.md L24311 |
+| HJ-Q6999 | 丁亥苏秦㑹赵燕韩魏齐楚六国之师盟于洹水之上以攻秦至于凾谷韩作高门是年楚灭越获王无疆尽取其地东地至浙江魏始称王田婴为相 | 王于鄄 | fulltext.md L24317 |
+| HJ-Q7000 | 己丑齐㑹魏伐赵又伐燕取十城 | 师于徐州齐田婴诈楚故不利 | fulltext.md L24322 |
+| HJ-Q7001 | 辛卯宋乱公弟偃弑其君代立是谓元王 | 庚寅秦伐魏 | fulltext.md L24326 |
+| HJ-Q7002 | 癸巳秦用张仪为相陈轸适楚楚灭蜀魏输秦上郡 | 汾隂 | fulltext.md L24331 |
+| HJ-Q7003 | 甲午齐㑹魏攻韩之桑邱 | 经世之卯二千二百二十四 | fulltext.md L24335 |
+| HJ-Q7004 | 己亥秦张仪出相魏燕㑹韩魏二君于区鼠 | 齐楚执政于啮桑 | fulltext.md L24341 |
+| HJ-Q7005 | 丁未楚齐和亲燕乱将市被攻子之不克返攻世子又 | 渠二十五城又取韩之石章 | fulltext.md L24352 |
+| HJ-Q7006 | 戊申楚攻秦不利秦伐齐楚救不至秦张仪结楚樗里 | 不克死 | fulltext.md L24356 |
+| HJ-Q7007 | 己酉楚怀王大伐秦不利又伐又不利秦庶长魏章㑹齐韩之师大败楚师于蓝田又败之于丹水之阳获其将屈丐遂取汉中地置黔中郡韩宣王卒世子苍继是谓襄王齐以五都兵攻燕燕乱国 | 疾攻赵 | fulltext.md L24360 |
+| HJ-Q7008 | 丁巳秦昭王与楚怀王会于黄棘复之上庸 | 丙辰楚绝齐以善秦 | fulltext.md L24369 |
+| HJ-Q7009 | 己未秦复魏蒲坂㑹韩于武遂 | 秦取韩武遂㧞魏蒲坂 | fulltext.md L24374 |
+| HJ-Q7010 | 辛酉齐孟尝君入秦为质 | 邱 | fulltext.md L24379 |
+| HJ-Q7011 | 甲子楚怀王于秦逃归不克 | 经世之辰二千二百二十五 | fulltext.md L24385 |
+| HJ-Q7012 | 戊辰楚与秦复和韩伐秦不利秦左庶长白起大败韩及诸侯之师于伊阙取城五坑军二十四万获将公孙喜 | 丁卯秦向夀伐韩㧞武始 | fulltext.md L24391 |
+| HJ-Q7013 | 庚午秦魏冉复相封陶邑司马错伐韩轵及邓 | 攻楚㧞宛 | fulltext.md L24396 |
+| HJ-Q7014 | 甲戌齐孟尝君谢病秦昭襄王廵汉中及上郡河北㧞 | 癸酉齐秦约称东西帝复罢 | fulltext.md L24402 |
+| HJ-Q7015 | 乙亥齐灭宋至于泗上十二诸侯邹鲁之君皆称臣南取楚之淮北西侵韩赵魏魏献秦安邑秦伐魏之河内攻韩之夏山 | 魏新垣及曲阳 | fulltext.md L24406 |
+| HJ-Q7016 | 庚辰楚㑹魏赵伐秦秦伐楚魏冉复相赵使蔺相如入 | 赵㧞二城伐韩取六邑 | fulltext.md L24414 |
+| HJ-Q7017 | 辛巳楚割上庸及汉中请和于秦秦白起㧞赵二城司马错㧞楚上庸燕昭王卒子惠王继以骑刼代乐毅乐毅奔赵赵惠文王与秦昭襄王㑹于渑池蔺相如相 | 秦献璧 | fulltext.md L24418 |
+| HJ-Q7018 | 乙酉楚东取江旁十五邑以捍秦魏㧞秦二城封无忌 | 继 | fulltext.md L24426 |
+| HJ-Q7019 | 丙戌秦兵围大梁魏入温请和秦以穰侯为相国韩暴 | 信陵君 | fulltext.md L24430 |
+| HJ-Q7020 | 癸巳秦㧞魏怀义 | 与亷颇同位秦人为之少惧 | fulltext.md L24440 |
+| HJ-Q7021 | 甲午秦太子卒于魏 | 经世之巳二千二百二十六 | fulltext.md L24444 |
+| HJ-Q7022 | 乙巳周赧王㑹齐韩赵魏兵出伊阙攻秦不利西奔秦秦昭王灭周尽入其地三十六城徙其王于狐楚灭鲁以齐荀卿为兰陵令 | 杀之于杜邮 | fulltext.md L24459 |
+| HJ-Q7023 | 丁未楚齐韩燕赵皆服于秦魏独后秦使将军樛伐之 | 相燕孝王卒子喜继 | fulltext.md L24464 |
+| HJ-Q7024 | 戊申秦郊上帝于雍邱赵徙都巨鹿 | 取呉城 | fulltext.md L24468 |
+| HJ-Q7025 | 庚戌秦昭襄王卒太子安国继是谓孝王立三日又卒子楚立是谓庄襄王以华阳夫人为后子政为太子吕不韦为丞相封文信侯食河南十万户楚春申君入吊于秦燕将栗腹攻赵不利赵亷颇 | 己酉赵平原君卒 | fulltext.md L24472 |
+| HJ-Q7026 | 甲寅秦庄襄王卒太子政继是谓始皇帝以吕不韦为相国号仲父同太后专政李斯为舍人齐田单屠城魏无忌自赵归国率楚齐韩赵燕五国之师败秦军于河外走蒙骜追至函谷 | 攻秦不利 | fulltext.md L24479 |
+| HJ-Q7027 | 丙辰赵孝成王卒子偃继是谓悼襄王以乐乗代亷颇 | 乙卯秦蒙骜平晋阳 | fulltext.md L24483 |
+| HJ-Q7028 | 丁巳秦蒙骜攻魏㧞二城攻韩㧞十二城 | 将颇奔魏 | fulltext.md L24487 |
+| HJ-Q7029 | 己未秦㧞魏二十城置东郡赵伐燕获将剧辛 | 燕二城 | fulltext.md L24492 |
+| HJ-Q7030 | 壬戌秦封嫪毒长信侯关政于内韩桓惠王卒子安继癸亥长信侯嫪毒作难攻鄿年宫不克伏诛徙太后于雍流蜀者四千家楚考烈王卒子幽王悍继经世之午二千二百二十七 | 辛酉秦㧞魏之汲赵㧞魏之邺 | fulltext.md L24497 |
+| HJ-Q7031 | 丙寅秦㑹魏伐楚及韩文信侯吕不韦自杀 | 攻邺 | fulltext.md L24504 |
+| HJ-Q7032 | 戊辰秦桓𬺈破赵宜安及赤岩韩王安朝秦 | 还 | fulltext.md L24509 |
+| HJ-Q7033 | 庚午魏献秦丽邑 | 归赵李牧捍秦有功 | fulltext.md L24514 |
+| HJ-Q7034 | 癸酉秦王翦灭赵获其王以其地为赵郡楚幽王卒母弟犹立庶兄负刍杀犹代立魏景湣王卒子假继赵亡太子喜称王于代㑹燕军于上谷 | 李牧颜聚代司马尚将 | fulltext.md L24520 |
+| HJ-Q7035 | 庚辰秦王翦灭齐获其王以其地为齐郡东至海及朝鲜西至临洮羌中南至北向户北至隂山辽东分天下地为三十六郡罢侯置守铸天下兵为十二金人徙天下豪富十二万户于咸阳大建宫 | 以其地为㑹稽郡 | fulltext.md L24528 |
+| HJ-Q7036 | ### 由上党乃复 | 由上党乃复 | fulltext.md L24533 |
+| HJ-Q7037 | 丙戌北廵狩至于碣石由上郡乃复使蒙恬击胡取河 | 乙酉 | fulltext.md L24539 |
+| HJ-Q7038 | 丁亥南取陆梁地为桂林象郡又北斥匃奴自榆中并河以东属之隂山为三十四县城河上为塞又使蒙恬渡河取高阙陶山北假中筑亭障 | 南地 | fulltext.md L24543 |
+| HJ-Q7039 | 辛卯南廵狩至于云梦左丞相冯去疾留守右丞相李斯从行少子胡亥请行至九疑浮江东至于㑹稽又北至于琅邪由平原达沙丘崩左丞相李斯宦氏赵高假帝书更立少子胡亥赐上郡太子 | 渭南 | fulltext.md L24550 |
+| HJ-Q7040 | 甲午中郎令赵高称丞相杀李斯及弑其君胡亥于望夷宫代立不克立二世兄之子婴为王婴立夷赵高三族沛公兵十万由武关入至咸阳秦子婴降于轵道收图籍封宫室府库示众人以约法 | 经世之未二千二百二十八 | fulltext.md L24556 |
+| HJ-Q7041 | 癸卯大朝诸侯于未央宫赵相贯高事觉 | 陈豨为代王 | fulltext.md L24568 |
+| HJ-Q7042 | 丙午帝征淮南平之夷英布三族周勃平代获陈豨于当城帝崩太子盈践位是谓惠帝太后吕氏临朝称制萧何曹参陈平周勃辅政葬高祖于长陵卢绾以燕叛 | 广陵叛兼有淮东西地 | fulltext.md L24575 |
+| HJ-Q7043 | 戊申相国萧何卒曹参为相国 | 城为鲁元公主汤沐邑 | fulltext.md L24580 |
+| HJ-Q7044 | 庚戌除挟书律 | 己酉城长安 | fulltext.md L24584 |
 | HJ-Q7045 | ### 申寅 | 申寅 | fulltext.md L24588 |
-| HJ-Q7046 | 丁巳幽無名子于永巷殺之立恒山王義為帝 | 丙辰 | fulltext.md L24594 |
-| HJ-Q7047 | 己未匈奴冦狄道 | 戊午尉它稱帝南越 | fulltext.md L24598 |
-| HJ-Q7048 | 辛酉太后呂氏崩丞相陳平太尉周勃朱虛侯劉章曲周侯酈商及子寄誅呂禄呂産獲南北軍夷呂氏三族廢恒山王義迎高祖中子代王恒于鴈門立之是謂文帝以宋昌為衛將軍專南北軍丞 | 上將軍分綂南北軍 | fulltext.md L24603 |
-| HJ-Q7049 | 甲子漢孝文皇帝三年免周勃相以灌嬰為相王興居 | 經世之申二千二百二十九 | fulltext.md L24608 |
-| HJ-Q7050 | 乙丑絳侯周勃下廷尉 | 以濟北叛平之匃奴冦北地 | fulltext.md L24612 |
-| HJ-Q7051 | 丁卯王長以淮南叛徙之蜀放賈誼于長沙 | 丙寅 | fulltext.md L24616 |
+| HJ-Q7046 | 丁巳幽无名子于永巷杀之立恒山王义为帝 | 丙辰 | fulltext.md L24594 |
+| HJ-Q7047 | 己未匈奴冦狄道 | 戊午尉它称帝南越 | fulltext.md L24598 |
+| HJ-Q7048 | 辛酉太后吕氏崩丞相陈平太尉周勃朱虚侯刘章曲周侯郦商及子寄诛吕禄吕产获南北军夷吕氏三族废恒山王义迎高祖中子代王恒于鴈门立之是谓文帝以宋昌为卫将军专南北军丞 | 上将军分綂南北军 | fulltext.md L24603 |
+| HJ-Q7049 | 甲子汉孝文皇帝三年免周勃相以灌婴为相王兴居 | 经世之申二千二百二十九 | fulltext.md L24608 |
+| HJ-Q7050 | 乙丑绛侯周勃下廷尉 | 以济北叛平之匃奴冦北地 | fulltext.md L24612 |
+| HJ-Q7051 | 丁卯王长以淮南叛徙之蜀放贾谊于长沙 | 丙寅 | fulltext.md L24616 |
 | HJ-Q7052 | ### 戊辰 | 戊辰 | fulltext.md L24618 |
 | HJ-Q7053 | ### 庚午 | 庚午 | fulltext.md L24622 |
 | HJ-Q7054 | ### 壬申 | 壬申 | fulltext.md L24626 |
 | HJ-Q7055 | ### 甲戌除肉刑 | 甲戌除肉刑 | fulltext.md L24630 |
 | HJ-Q7056 | ### 丙子祀上帝 | 丙子祀上帝 | fulltext.md L24634 |
-| HJ-Q7057 | ### 戊寅改稱元年是謂後元 | 戊寅改稱元年是謂後元 | fulltext.md L24638 |
+| HJ-Q7057 | ### 戊寅改称元年是谓后元 | 戊寅改称元年是谓后元 | fulltext.md L24638 |
 | HJ-Q7058 | ### 庚辰 | 庚辰 | fulltext.md L24642 |
-| HJ-Q7059 | 癸未匈奴冦雲中上郡命六將屯備周亞夫軍細柳甲申文帝崩太子啓踐位是謂孝景皇帝葬太宗于灞 | 壬午 | fulltext.md L24648 |
-| HJ-Q7060 | 乙酉與匈奴約和親 | 陵 | fulltext.md L24652 |
-| HJ-Q7061 | 丁亥呉王濞膠西王卬楚王戊趙王遂濟南王辟光菑川王賢膠東王雄渠七國連叛誅御史大夫晁錯七國平梁孝王霸有東土 | 丙戌 | fulltext.md L24656 |
-| HJ-Q7062 | 己丑以公主嬪于匃奴 | 戊子以皇子榮為皇太子 | fulltext.md L24660 |
-| HJ-Q7063 | 辛卯廢皇太子榮以膠東王徹為皇太子太尉周亞夫 | 庚寅 | fulltext.md L24664 |
-| HJ-Q7064 | 壬辰改稱元年是謂中元 | 為丞相 | fulltext.md L24668 |
-| HJ-Q7065 | 經世之酉二千二百三十 | 癸巳 | fulltext.md L24672 |
+| HJ-Q7059 | 癸未匈奴冦云中上郡命六将屯备周亚夫军细柳甲申文帝崩太子启践位是谓孝景皇帝葬太宗于灞 | 壬午 | fulltext.md L24648 |
+| HJ-Q7060 | 乙酉与匈奴约和亲 | 陵 | fulltext.md L24652 |
+| HJ-Q7061 | 丁亥呉王濞胶西王卬楚王戊赵王遂济南王辟光菑川王贤胶东王雄渠七国连叛诛御史大夫晁错七国平梁孝王霸有东土 | 丙戌 | fulltext.md L24656 |
+| HJ-Q7062 | 己丑以公主嫔于匃奴 | 戊子以皇子荣为皇太子 | fulltext.md L24660 |
+| HJ-Q7063 | 辛卯废皇太子荣以胶东王彻为皇太子太尉周亚夫 | 庚寅 | fulltext.md L24664 |
+| HJ-Q7064 | 壬辰改称元年是谓中元 | 为丞相 | fulltext.md L24668 |
+| HJ-Q7065 | 经世之酉二千二百三十 | 癸巳 | fulltext.md L24672 |
 | HJ-Q7066 | ### 乙未 | 乙未 | fulltext.md L24675 |
-| HJ-Q7067 | 戊戌再改元年是謂後元周亞夫下獄死 | 丁酉 | fulltext.md L24681 |
-| HJ-Q7068 | 庚子景帝崩皇太子徹踐位是謂孝武皇帝葬景帝于 | 己亥 | fulltext.md L24685 |
-| HJ-Q7069 | ### 陽陵 | 陽陵 | fulltext.md L24687 |
-| HJ-Q7070 | ### 壬寅竇嬰免相田蚡免太尉 | 壬寅竇嬰免相田蚡免太尉 | fulltext.md L24691 |
+| HJ-Q7067 | 戊戌再改元年是谓后元周亚夫下狱死 | 丁酉 | fulltext.md L24681 |
+| HJ-Q7068 | 庚子景帝崩皇太子彻践位是谓孝武皇帝葬景帝于 | 己亥 | fulltext.md L24685 |
+| HJ-Q7069 | ### 阳陵 | 阳陵 | fulltext.md L24687 |
+| HJ-Q7070 | ### 壬寅窦婴免相田蚡免太尉 | 壬寅窦婴免相田蚡免太尉 | fulltext.md L24691 |
 | HJ-Q7071 | ### 甲辰 | 甲辰 | fulltext.md L24695 |
-| HJ-Q7072 | 丁未改元元光始令郡國貢孝亷董仲舒起焉 | 丙午 | fulltext.md L24701 |
-| HJ-Q7073 | 庚戌竇嬰棄市田蚡卒 | 己酉 | fulltext.md L24706 |
-| HJ-Q7074 | 甲寅衛青伐匃奴有功收河南置朔方五原郡 | 癸丑改元元朔 | fulltext.md L24711 |
+| HJ-Q7072 | 丁未改元元光始令郡国贡孝亷董仲舒起焉 | 丙午 | fulltext.md L24701 |
+| HJ-Q7073 | 庚戌窦婴弃市田蚡卒 | 己酉 | fulltext.md L24706 |
+| HJ-Q7074 | 甲寅卫青伐匃奴有功收河南置朔方五原郡 | 癸丑改元元朔 | fulltext.md L24711 |
 | HJ-Q7075 | 丙辰匈奴冦上郡 | 乙卯 | fulltext.md L24715 |
-| HJ-Q7076 | 戊午衛青征匃奴大有功霍去病為嫖姚校尉張騫通 | 丞相封平津侯 | fulltext.md L24720 |
-| HJ-Q7077 | 己未改元元狩獲白麟故也淮南王安衡山王賜二國 | 西域有功封博望侯 | fulltext.md L24724 |
-| HJ-Q7078 | 庚申霍去病征匈奴至于居延拜驃騎將軍李廣征匃 | 叛平之册據為皇太子 | fulltext.md L24728 |
-| HJ-Q7079 | 壬戌衛青霍去病李廣大伐匈奴李廣自殺 | 奴無功謫為庶人 | fulltext.md L24733 |
-| HJ-Q7080 | 經世之戌二千二百三十一 | 癸亥丞相李蔡自殺 | fulltext.md L24737 |
-| HJ-Q7081 | 丙寅丞相翟青下獄死 | 乙丑改元元鼎 | fulltext.md L24742 |
-| HJ-Q7082 | 戊辰封方士欒大為樂通侯 | 丁卯徙函谷關于新安 | fulltext.md L24746 |
-| HJ-Q7083 | 乙亥南廵狩至于盛唐大司馬衛青卒 | 甲戌 | fulltext.md L24755 |
-| HJ-Q7084 | 丁丑改元太初東廵太山更以建寅月為歳首西伐大 | 丙子西幸回中及祀汾隂后土 | fulltext.md L24759 |
-| HJ-Q7085 | 戊寅北幸河東祀后土騎二萬征匈奴不復 | 宛起建章 | fulltext.md L24763 |
-| HJ-Q7086 | 癸未東廵太山又北幸常山匈奴寇鴈門 | 還 | fulltext.md L24771 |
+| HJ-Q7076 | 戊午卫青征匃奴大有功霍去病为嫖姚校尉张骞通 | 丞相封平津侯 | fulltext.md L24720 |
+| HJ-Q7077 | 己未改元元狩获白麟故也淮南王安衡山王赐二国 | 西域有功封博望侯 | fulltext.md L24724 |
+| HJ-Q7078 | 庚申霍去病征匈奴至于居延拜骠骑将军李广征匃 | 叛平之册据为皇太子 | fulltext.md L24728 |
+| HJ-Q7079 | 壬戌卫青霍去病李广大伐匈奴李广自杀 | 奴无功谪为庶人 | fulltext.md L24733 |
+| HJ-Q7080 | 经世之戌二千二百三十一 | 癸亥丞相李蔡自杀 | fulltext.md L24737 |
+| HJ-Q7081 | 丙寅丞相翟青下狱死 | 乙丑改元元鼎 | fulltext.md L24742 |
+| HJ-Q7082 | 戊辰封方士栾大为乐通侯 | 丁卯徙函谷关于新安 | fulltext.md L24746 |
+| HJ-Q7083 | 乙亥南廵狩至于盛唐大司马卫青卒 | 甲戌 | fulltext.md L24755 |
+| HJ-Q7084 | 丁丑改元太初东廵太山更以建寅月为歳首西伐大 | 丙子西幸回中及祀汾隂后土 | fulltext.md L24759 |
+| HJ-Q7085 | 戊寅北幸河东祀后土骑二万征匈奴不复 | 宛起建章 | fulltext.md L24763 |
+| HJ-Q7086 | 癸未东廵太山又北幸常山匈奴寇鴈门 | 还 | fulltext.md L24771 |
 | HJ-Q7087 | 丙戌西幸回中 | 乙酉改元太始 | fulltext.md L24776 |
-| HJ-Q7088 | 戊子東廵太山 | 丁亥東廵海上 | fulltext.md L24780 |
-| HJ-Q7089 | 庚寅太子殺江充丞相劉屈氂攻太子戰于長安太子敗死皇后自殺諸邑公主皆坐巫蠱死 | 己丑改元征和巫蠱事起 | fulltext.md L24784 |
-| HJ-Q7090 | 癸巳改元後元重合侯馬通叛 | 壬辰東廵海上天下疲于兵革 | fulltext.md L24789 |
-| HJ-Q7091 | 甲午漢孝武皇帝五十四年冊皇子弗陵為皇太子帝幸盩厔五柞宮崩太司馬霍光受顧命太子弗陵嗣皇帝位是謂昭帝葬世宗于茂陵大將軍霍光專政 | 經世之亥二千二百三十二 | fulltext.md L24793 |
+| HJ-Q7088 | 戊子东廵太山 | 丁亥东廵海上 | fulltext.md L24780 |
+| HJ-Q7089 | 庚寅太子杀江充丞相刘屈牦攻太子战于长安太子败死皇后自杀诸邑公主皆坐巫蛊死 | 己丑改元征和巫蛊事起 | fulltext.md L24784 |
+| HJ-Q7090 | 癸巳改元后元重合侯马通叛 | 壬辰东廵海上天下疲于兵革 | fulltext.md L24789 |
+| HJ-Q7091 | 甲午汉孝武皇帝五十四年册皇子弗陵为皇太子帝幸盩厔五柞宫崩太司马霍光受顾命太子弗陵嗣皇帝位是谓昭帝葬世宗于茂陵大将军霍光专政 | 经世之亥二千二百三十二 | fulltext.md L24793 |
 | HJ-Q7092 | ### 乙未改元始元 | 乙未改元始元 | fulltext.md L24795 |
 | HJ-Q7093 | ### 丁酉 | 丁酉 | fulltext.md L24799 |
-| HJ-Q7094 | 辛丑改元元鳯誅鄂邑長公主及燕王旦左將軍上官 | 己亥 | fulltext.md L24806 |
-| HJ-Q7095 | ### 桀謀害霍光事覺故也 | 桀謀害霍光事覺故也 | fulltext.md L24808 |
+| HJ-Q7094 | 辛丑改元元鳯诛鄂邑长公主及燕王旦左将军上官 | 己亥 | fulltext.md L24806 |
+| HJ-Q7095 | ### 桀谋害霍光事觉故也 | 桀谋害霍光事觉故也 | fulltext.md L24808 |
 | HJ-Q7096 | 甲辰丞相田千秋卒 | 癸卯 | fulltext.md L24814 |
-| HJ-Q7097 | 丁未改元元平帝崩昌邑王賀立葬昭帝于平陵賀立不明大將軍霍光廢之迎戾太子孫詢立之是為孝宣皇帝丙吉為相 | 乙巳丞相王訢卒 | fulltext.md L24819 |
-| HJ-Q7098 | 己酉命將五兵十五萬大伐匈奴 | 戊申改元本始 | fulltext.md L24823 |
-| HJ-Q7099 | 辛亥皇后許氏遇毒崩霍光以女上皇后 | 庚戌 | fulltext.md L24827 |
-| HJ-Q7100 | 癸丑大司馬大將軍霍光卒子禹繼事 | 壬子改元地節 | fulltext.md L24831 |
-| HJ-Q7101 | 乙卯大司馬霍禹謀逆事覺夷三族廢皇后霍氏丙辰改元元康 | 甲寅冊皇子奭為皇太子 | fulltext.md L24835 |
-| HJ-Q7102 | 戊午太子太傅䟽廣太子少傅䟽受謝病歸東海己未 | 丁巳冊王氏為皇后 | fulltext.md L24839 |
-| HJ-Q7103 | ### 庚申改元神雀趙充國伐西羌 | 庚申改元神雀趙充國伐西羌 | fulltext.md L24841 |
-| HJ-Q7104 | 癸亥潁川太守黃霸賜爵關内侯河南太守嚴延年棄 | 壬戌蕭望之為御史大夫 | fulltext.md L24847 |
-| HJ-Q7105 | 觀物篇三十二 以運經世八 | 市 | fulltext.md L24851 |
-| HJ-Q7106 | 經㑹之午七 | 經元之甲一 | fulltext.md L24855 |
-| HJ-Q7107 | 經世之子二千二百三十三 | 經運之庚一百八十七 | fulltext.md L24859 |
-| HJ-Q7108 | 丙寅丞相邴吉卒黃霸為相 | 乙丑 | fulltext.md L24864 |
+| HJ-Q7097 | 丁未改元元平帝崩昌邑王贺立葬昭帝于平陵贺立不明大将军霍光废之迎戾太子孙询立之是为孝宣皇帝丙吉为相 | 乙巳丞相王䜣卒 | fulltext.md L24819 |
+| HJ-Q7098 | 己酉命将五兵十五万大伐匈奴 | 戊申改元本始 | fulltext.md L24823 |
+| HJ-Q7099 | 辛亥皇后许氏遇毒崩霍光以女上皇后 | 庚戌 | fulltext.md L24827 |
+| HJ-Q7100 | 癸丑大司马大将军霍光卒子禹继事 | 壬子改元地节 | fulltext.md L24831 |
+| HJ-Q7101 | 乙卯大司马霍禹谋逆事觉夷三族废皇后霍氏丙辰改元元康 | 甲寅册皇子奭为皇太子 | fulltext.md L24835 |
+| HJ-Q7102 | 戊午太子太傅䟽广太子少傅䟽受谢病归东海己未 | 丁巳册王氏为皇后 | fulltext.md L24839 |
+| HJ-Q7103 | ### 庚申改元神雀赵充国伐西羌 | 庚申改元神雀赵充国伐西羌 | fulltext.md L24841 |
+| HJ-Q7104 | 癸亥颍川太守黄霸赐爵关内侯河南太守严延年弃 | 壬戌萧望之为御史大夫 | fulltext.md L24847 |
+| HJ-Q7105 | 观物篇三十二 以运经世八 | 市 | fulltext.md L24851 |
+| HJ-Q7106 | 经㑹之午七 | 经元之甲一 | fulltext.md L24855 |
+| HJ-Q7107 | 经世之子二千二百三十三 | 经运之庚一百八十七 | fulltext.md L24859 |
+| HJ-Q7108 | 丙寅丞相邴吉卒黄霸为相 | 乙丑 | fulltext.md L24864 |
 | HJ-Q7109 | 戊辰改元甘露 | 丁卯 | fulltext.md L24868 |
-| HJ-Q7110 | 庚午匈奴呼韓邪單于來朝于定國為相 | 己巳 | fulltext.md L24872 |
-| HJ-Q7111 | 壬申改元黃龍宣帝崩于未央宮皇太子奭之踐位是 | 辛未 | fulltext.md L24876 |
-| HJ-Q7112 | 癸酉改元初元葬中宗于杜陵 | 謂孝元皇帝 | fulltext.md L24880 |
-| HJ-Q7113 | 丙子幸河東 | 乙亥 | fulltext.md L24885 |
+| HJ-Q7110 | 庚午匈奴呼韩邪单于来朝于定国为相 | 己巳 | fulltext.md L24872 |
+| HJ-Q7111 | 壬申改元黄龙宣帝崩于未央宫皇太子奭之践位是 | 辛未 | fulltext.md L24876 |
+| HJ-Q7112 | 癸酉改元初元葬中宗于杜陵 | 谓孝元皇帝 | fulltext.md L24880 |
+| HJ-Q7113 | 丙子幸河东 | 乙亥 | fulltext.md L24885 |
 | HJ-Q7114 | 戊寅改元永光 | 丁丑 | fulltext.md L24889 |
-| HJ-Q7115 | 庚辰西羌平 | 己卯西羌叛韋元成為相 | fulltext.md L24893 |
+| HJ-Q7115 | 庚辰西羌平 | 己卯西羌叛韦元成为相 | fulltext.md L24893 |
 | HJ-Q7116 | ### 辛巳 | 辛巳 | fulltext.md L24895 |
 | HJ-Q7117 | ### 癸未改元建昭 | 癸未改元建昭 | fulltext.md L24899 |
-| HJ-Q7118 | ### 乙酉匡衡為相 | 乙酉匡衡為相 | fulltext.md L24903 |
-| HJ-Q7119 | 戊子改元竟寧帝崩皇太子驁踐位是謂孝成皇帝葬高宗于渭陵王鳯為大司馬大將軍專政 | 丁亥 | fulltext.md L24909 |
-| HJ-Q7120 | 辛卯王商薛宣免相匡衡為庶人 | 己丑改元建始 | fulltext.md L24914 |
-| HJ-Q7121 | 癸巳改元河平 | 壬辰河大決王商為相 | fulltext.md L24918 |
-| HJ-Q7122 | 甲午漢孝成皇帝六年 | 經世之丑二千二百三十四 | fulltext.md L24922 |
-| HJ-Q7123 | 丁酉改元陽朔京兆尹王章下獄死張禹為相 | 乙未 | fulltext.md L24927 |
-| HJ-Q7124 | 己亥大司馬王鳯卒弟音繼事 | 戊戌王音為御史大夫 | fulltext.md L24931 |
-| HJ-Q7125 | 辛丑改元鴻嘉 | 庚子 | fulltext.md L24935 |
-| HJ-Q7126 | 癸卯廢皇后許氏 | 壬寅幸雲陽 | fulltext.md L24939 |
-| HJ-Q7127 | 乙巳改元永始封王莽新都侯冊趙飛燕為皇后丙午大司馬王音卒王商為大司馬翟方進為相孔光 | 甲辰 | fulltext.md L24943 |
-| HJ-Q7128 | 戊申大司馬王商免王根為大司馬 | 為御史大夫 | fulltext.md L24948 |
+| HJ-Q7118 | ### 乙酉匡衡为相 | 乙酉匡衡为相 | fulltext.md L24903 |
+| HJ-Q7119 | 戊子改元竟宁帝崩皇太子骜践位是谓孝成皇帝葬高宗于渭陵王鳯为大司马大将军专政 | 丁亥 | fulltext.md L24909 |
+| HJ-Q7120 | 辛卯王商薛宣免相匡衡为庶人 | 己丑改元建始 | fulltext.md L24914 |
+| HJ-Q7121 | 癸巳改元河平 | 壬辰河大决王商为相 | fulltext.md L24918 |
+| HJ-Q7122 | 甲午汉孝成皇帝六年 | 经世之丑二千二百三十四 | fulltext.md L24922 |
+| HJ-Q7123 | 丁酉改元阳朔京兆尹王章下狱死张禹为相 | 乙未 | fulltext.md L24927 |
+| HJ-Q7124 | 己亥大司马王鳯卒弟音继事 | 戊戌王音为御史大夫 | fulltext.md L24931 |
+| HJ-Q7125 | 辛丑改元鸿嘉 | 庚子 | fulltext.md L24935 |
+| HJ-Q7126 | 癸卯废皇后许氏 | 壬寅幸云阳 | fulltext.md L24939 |
+| HJ-Q7127 | 乙巳改元永始封王莽新都侯册赵飞燕为皇后丙午大司马王音卒王商为大司马翟方进为相孔光 | 甲辰 | fulltext.md L24943 |
+| HJ-Q7128 | 戊申大司马王商免王根为大司马 | 为御史大夫 | fulltext.md L24948 |
 | HJ-Q7129 | ### 己酉改元元延 | 己酉改元元延 | fulltext.md L24950 |
 | HJ-Q7130 | ### 辛亥 | 辛亥 | fulltext.md L24954 |
-| HJ-Q7131 | 甲寅成帝崩皇太子欣踐位是謂孝哀皇帝太后王氏臨朝稱制大司馬王根專政葬成帝于延陵王根罪免丁明為大司馬孔光為丞相 | 癸丑改元綏和 | fulltext.md L24960 |
-| HJ-Q7132 | 丙辰傅喜免丁明復為大司馬孔光免朱博自殺丁巳相王商薨王嘉為相 | 大司空 | fulltext.md L24965 |
-| HJ-Q7133 | 己未改元元壽相王嘉下獄死大司馬丁明免 | 戊午息夫躬下獄死 | fulltext.md L24969 |
+| HJ-Q7131 | 甲寅成帝崩皇太子欣践位是谓孝哀皇帝太后王氏临朝称制大司马王根专政葬成帝于延陵王根罪免丁明为大司马孔光为丞相 | 癸丑改元绥和 | fulltext.md L24960 |
+| HJ-Q7132 | 丙辰傅喜免丁明复为大司马孔光免朱博自杀丁巳相王商薨王嘉为相 | 大司空 | fulltext.md L24965 |
+| HJ-Q7133 | 己未改元元寿相王嘉下狱死大司马丁明免 | 戊午息夫躬下狱死 | fulltext.md L24969 |
 | HJ-Q7134 | ### 壬戌 | 壬戌 | fulltext.md L24973 |
-| HJ-Q7135 | 甲子漢孝平皇帝四年王莽以女上皇后 | 經世之寅二千二百三十五 | fulltext.md L24979 |
-| HJ-Q7136 | 戊辰王莽改元初始 | 邑滅之 | fulltext.md L24985 |
-| HJ-Q7137 | 庚午王莽大殺宗室校書郎雄投天禄閣不克死辛未 | 為定安公 | fulltext.md L24990 |
-| HJ-Q7138 | 甲戌王莽改元天鳯四夷交侵中國 | 壬申 | fulltext.md L24995 |
+| HJ-Q7135 | 甲子汉孝平皇帝四年王莽以女上皇后 | 经世之寅二千二百三十五 | fulltext.md L24979 |
+| HJ-Q7136 | 戊辰王莽改元初始 | 邑灭之 | fulltext.md L24985 |
+| HJ-Q7137 | 庚午王莽大杀宗室校书郎雄投天禄阁不克死辛未 | 为定安公 | fulltext.md L24990 |
+| HJ-Q7138 | 甲戌王莽改元天鳯四夷交侵中国 | 壬申 | fulltext.md L24995 |
 | HJ-Q7139 | ### 乙亥 | 乙亥 | fulltext.md L24997 |
-| HJ-Q7140 | 己卯校書郎雄卒 | 丁丑羣盜起 | fulltext.md L25004 |
-| HJ-Q7141 | 壬午劉𤣥稱兵宛鄴劉秀及兄伯升稱兵舂陵 | 庚辰王莽改元地皇兵起緑林 | fulltext.md L25009 |
-| HJ-Q7142 | 丁亥赤眉降漢于宜陽長安平蓋延平劉永于睢陽隗 | 帝于上郡其將樂方殺之 | fulltext.md L25017 |
-| HJ-Q7143 | 己丑彭寵為家奴所殺來降封不義侯薊門平朱祐平秦豐于黎邱滅張歩于臨淄盧芳稱帝五原帝徴嚴光不起 | 囂以西州格命李憲稱帝淮南 | fulltext.md L25022 |
-| HJ-Q7144 | 壬辰西征馮異竇融破隗囂于隴右 | 入西州入于蜀 | fulltext.md L25028 |
-| HJ-Q7145 | 甲午漢光武皇帝十年西征滅隗純于隴右 | 經世之卯二千二百三十六 | fulltext.md L25033 |
-| HJ-Q7146 | 戊戌天下平 | 丁酉盧芳自五原亡入匈奴 | fulltext.md L25038 |
-| HJ-Q7147 | 庚子交阯女徵側叛青徐幽冀盜起 | 己亥大司徒歐陽歙下獄死 | fulltext.md L25042 |
-| HJ-Q7148 | 壬寅西廵史歆以成都叛呉漢復平之馬援伐交阯幸 | 后 | fulltext.md L25047 |
-| HJ-Q7149 | 癸卯南廵馬援平交阯封新息侯廢皇太子疆為東海 | 長安 | fulltext.md L25051 |
-| HJ-Q7150 | ### 甲辰大司徒戴渉下獄死 | 甲辰大司徒戴渉下獄死 | fulltext.md L25054 |
+| HJ-Q7140 | 己卯校书郎雄卒 | 丁丑群盗起 | fulltext.md L25004 |
+| HJ-Q7141 | 壬午刘𤣥称兵宛邺刘秀及兄伯升称兵舂陵 | 庚辰王莽改元地皇兵起绿林 | fulltext.md L25009 |
+| HJ-Q7142 | 丁亥赤眉降汉于宜阳长安平盖延平刘永于睢阳隗 | 帝于上郡其将乐方杀之 | fulltext.md L25017 |
+| HJ-Q7143 | 己丑彭宠为家奴所杀来降封不义侯蓟门平朱祐平秦丰于黎邱灭张歩于临淄卢芳称帝五原帝徴严光不起 | 嚣以西州格命李宪称帝淮南 | fulltext.md L25022 |
+| HJ-Q7144 | 壬辰西征冯异窦融破隗嚣于陇右 | 入西州入于蜀 | fulltext.md L25028 |
+| HJ-Q7145 | 甲午汉光武皇帝十年西征灭隗纯于陇右 | 经世之卯二千二百三十六 | fulltext.md L25033 |
+| HJ-Q7146 | 戊戌天下平 | 丁酉卢芳自五原亡入匈奴 | fulltext.md L25038 |
+| HJ-Q7147 | 庚子交阯女征侧叛青徐幽冀盗起 | 己亥大司徒欧阳歙下狱死 | fulltext.md L25042 |
+| HJ-Q7148 | 壬寅西廵史歆以成都叛呉汉复平之马援伐交阯幸 | 后 | fulltext.md L25047 |
+| HJ-Q7149 | 癸卯南廵马援平交阯封新息侯废皇太子疆为东海 | 长安 | fulltext.md L25051 |
+| HJ-Q7150 | ### 甲辰大司徒戴渉下狱死 | 甲辰大司徒戴渉下狱死 | fulltext.md L25054 |
 | HJ-Q7151 | ### 丙午 | 丙午 | fulltext.md L25058 |
-| HJ-Q7152 | 己酉馬援破武陵蠻 | 戊申 | fulltext.md L25064 |
-| HJ-Q7153 | ### 庚戌作壽陵 | 庚戌作壽陵 | fulltext.md L25066 |
+| HJ-Q7152 | 己酉马援破武陵蛮 | 戊申 | fulltext.md L25064 |
+| HJ-Q7153 | ### 庚戌作寿陵 | 庚戌作寿陵 | fulltext.md L25066 |
 | HJ-Q7154 | ### 壬子 | 壬子 | fulltext.md L25070 |
-| HJ-Q7155 | 丙辰東封太山禪梁甫改元中元西幸長安馮魴為司 | 甲寅東廵狩 | fulltext.md L25077 |
-| HJ-Q7156 | 丁巳帝崩皇太子莊踐位是謂孝明皇帝葬世祖于原 | 空 | fulltext.md L25081 |
+| HJ-Q7155 | 丙辰东封太山禅梁甫改元中元西幸长安冯鲂为司 | 甲寅东廵狩 | fulltext.md L25077 |
+| HJ-Q7156 | 丁巳帝崩皇太子庄践位是谓孝明皇帝葬世祖于原 | 空 | fulltext.md L25081 |
 | HJ-Q7157 | 戊午改元永平 | 陵 | fulltext.md L25085 |
 | HJ-Q7158 | ### 己未 | 己未 | fulltext.md L25087 |
-| HJ-Q7159 | 壬戌北廵至于鄴 | 辛酉 | fulltext.md L25093 |
-| HJ-Q7160 | 經世之辰二千二百三十七 | 癸亥東廵至于岱 | fulltext.md L25097 |
-| HJ-Q7161 | ### 甲子漢孝明皇帝七年 | 甲子漢孝明皇帝七年 | fulltext.md L25099 |
+| HJ-Q7159 | 壬戌北廵至于邺 | 辛酉 | fulltext.md L25093 |
+| HJ-Q7160 | 经世之辰二千二百三十七 | 癸亥东廵至于岱 | fulltext.md L25097 |
+| HJ-Q7161 | ### 甲子汉孝明皇帝七年 | 甲子汉孝明皇帝七年 | fulltext.md L25099 |
 | HJ-Q7162 | 丁卯南廵狩 | 丙寅 | fulltext.md L25105 |
-| HJ-Q7163 | 己巳牟融為司空 | 戊辰 | fulltext.md L25109 |
-| HJ-Q7164 | ### 庚午河大決 | 庚午河大決 | fulltext.md L25111 |
-| HJ-Q7165 | 癸酉司徒邢穆駙馬都尉韓光下獄死 | 壬申東廵狩 | fulltext.md L25117 |
-| HJ-Q7166 | 乙亥帝崩皇太子炟踐位是謂孝章皇帝葬顯宗于節 | 甲戌 | fulltext.md L25121 |
+| HJ-Q7163 | 己巳牟融为司空 | 戊辰 | fulltext.md L25109 |
+| HJ-Q7164 | ### 庚午河大决 | 庚午河大决 | fulltext.md L25111 |
+| HJ-Q7165 | 癸酉司徒邢穆驸马都尉韩光下狱死 | 壬申东廵狩 | fulltext.md L25117 |
+| HJ-Q7166 | 乙亥帝崩皇太子炟践位是谓孝章皇帝葬显宗于节 | 甲戌 | fulltext.md L25121 |
 | HJ-Q7167 | 丙子改元建初 | 陵 | fulltext.md L25125 |
-| HJ-Q7168 | 己卯鮑昱為太尉桓虞為司徒詔于白虎觀議五經異 | 丁丑 | fulltext.md L25130 |
+| HJ-Q7168 | 己卯鲍昱为太尉桓虞为司徒诏于白虎观议五经异 | 丁丑 | fulltext.md L25130 |
 | HJ-Q7169 | ### 同 | 同 | fulltext.md L25132 |
-| HJ-Q7170 | 壬午廢皇太子慶為清河王冊皇子肇為皇太子北幸 | 辛巳 | fulltext.md L25138 |
-| HJ-Q7171 | 癸未東廵狩 | 鄴西幸長安 | fulltext.md L25142 |
-| HJ-Q7172 | 丙戌北廵狩 | 乙酉東廵狩 | fulltext.md L25147 |
-| HJ-Q7173 | 戊子帝崩皇太子肇踐位是謂孝和皇帝太后竇氏臨朝稱制竇憲為車騎將軍專政葬肅宗于敬陵鄧彪為太尉録尚書事 | 丁亥改元章和南廵狩 | fulltext.md L25151 |
-| HJ-Q7174 | ### 將軍 | 將軍 | fulltext.md L25154 |
-| HJ-Q7175 | 壬辰竇憲作逆事覺伏誅帝始親萬機 | 辛卯帝加元服班超平西域 | fulltext.md L25160 |
-| HJ-Q7176 | 經世之已二千二百三十八 | 癸巳 | fulltext.md L25164 |
-| HJ-Q7177 | ### 甲午漢孝和皇帝六年 | 甲午漢孝和皇帝六年 | fulltext.md L25166 |
-| HJ-Q7178 | 丁酉司徒劉方有罪自殺 | 丙申 | fulltext.md L25172 |
+| HJ-Q7170 | 壬午废皇太子庆为清河王册皇子肇为皇太子北幸 | 辛巳 | fulltext.md L25138 |
+| HJ-Q7171 | 癸未东廵狩 | 邺西幸长安 | fulltext.md L25142 |
+| HJ-Q7172 | 丙戌北廵狩 | 乙酉东廵狩 | fulltext.md L25147 |
+| HJ-Q7173 | 戊子帝崩皇太子肇践位是谓孝和皇帝太后窦氏临朝称制窦宪为车骑将军专政葬肃宗于敬陵邓彪为太尉录尚书事 | 丁亥改元章和南廵狩 | fulltext.md L25151 |
+| HJ-Q7174 | ### 将军 | 将军 | fulltext.md L25154 |
+| HJ-Q7175 | 壬辰窦宪作逆事觉伏诛帝始亲万机 | 辛卯帝加元服班超平西域 | fulltext.md L25160 |
+| HJ-Q7176 | 经世之已二千二百三十八 | 癸巳 | fulltext.md L25164 |
+| HJ-Q7177 | ### 甲午汉孝和皇帝六年 | 甲午汉孝和皇帝六年 | fulltext.md L25166 |
+| HJ-Q7178 | 丁酉司徒刘方有罪自杀 | 丙申 | fulltext.md L25172 |
 | HJ-Q7179 | ### 戊戌 | 戊戌 | fulltext.md L25174 |
-| HJ-Q7180 | 辛丑魯恭為司徒 | 庚子張酺罷太尉張禹為太尉 | fulltext.md L25180 |
-| HJ-Q7181 | 丙午改元延平葬穆宗于慎陵帝又崩鄧隲迎章帝孫祐立之是謂孝安皇帝葬殤帝于康陵尹勤為司空 | 朝稱制車騎將軍鄧隲專政 | fulltext.md L25187 |
-| HJ-Q7182 | 戊申鄧隲為大將軍 | 周章謀廢立不克自殺 | fulltext.md L25192 |
-| HJ-Q7183 | 庚戌海寇亂 | 己酉帝加元服 | fulltext.md L25196 |
-| HJ-Q7184 | 壬子太后鄧氏有事于太廟劉愷為司空 | 辛亥西羌入寇張禹免太尉 | fulltext.md L25200 |
-| HJ-Q7185 | 甲寅改元元初司馬苞為太尉 | 癸丑 | fulltext.md L25204 |
-| HJ-Q7186 | ### 丙辰李咸為司空 | 丙辰李咸為司空 | fulltext.md L25207 |
+| HJ-Q7180 | 辛丑鲁恭为司徒 | 庚子张酺罢太尉张禹为太尉 | fulltext.md L25180 |
+| HJ-Q7181 | 丙午改元延平葬穆宗于慎陵帝又崩邓隲迎章帝孙祐立之是谓孝安皇帝葬殇帝于康陵尹勤为司空 | 朝称制车骑将军邓隲专政 | fulltext.md L25187 |
+| HJ-Q7182 | 戊申邓隲为大将军 | 周章谋废立不克自杀 | fulltext.md L25192 |
+| HJ-Q7183 | 庚戌海寇乱 | 己酉帝加元服 | fulltext.md L25196 |
+| HJ-Q7184 | 壬子太后邓氏有事于太庙刘恺为司空 | 辛亥西羌入寇张禹免太尉 | fulltext.md L25200 |
+| HJ-Q7185 | 甲寅改元元初司马苞为太尉 | 癸丑 | fulltext.md L25204 |
+| HJ-Q7186 | ### 丙辰李咸为司空 | 丙辰李咸为司空 | fulltext.md L25207 |
 | HJ-Q7187 | ### 戊午 | 戊午 | fulltext.md L25211 |
-| HJ-Q7188 | 辛酉改元建光太后鄧氏崩帝始親政事特進鄧隲度 | 庚申改元永寧楊震為司徒 | fulltext.md L25217 |
-| HJ-Q7189 | 壬戌改元延光 | 遼將軍鄧遵下獄死 | fulltext.md L25221 |
-| HJ-Q7190 | 經世之午二千二百三十九 | 癸亥司徒楊震為太尉 | fulltext.md L25225 |
-| HJ-Q7191 | 乙丑帝南廵崩于葉太后閻氏臨朝稱制閻顯為車騎將軍專政立章帝𤣥孫北鄉侯懿誅大將軍耿寳葬恭宗于恭陵懿又卒車騎將軍閻顯及大長秋江京閉宮門擇立它子中黃門孫程十九人 | 楊震罷太尉馮石為太尉 | fulltext.md L25230 |
-| HJ-Q7192 | ### 尉朱倀為司徒 | 尉朱倀為司徒 | fulltext.md L25233 |
-| HJ-Q7193 | 己巳帝加元服龎叅為太尉王龔為司空劉俊為司徒庚午班勇棄市 | 戊辰 | fulltext.md L25239 |
-| HJ-Q7194 | 壬申改元陽嘉冊梁氏為皇后 | 辛未 | fulltext.md L25243 |
-| HJ-Q7195 | 甲戌黃尚為司徒王卓為司空 | 癸酉施延為太尉 | fulltext.md L25247 |
-| HJ-Q7196 | 丙子改元永和王龔為太尉 | 乙亥 | fulltext.md L25251 |
-| HJ-Q7197 | 戊寅劉壽為司徒 | 丁丑郭䖍為司空 | fulltext.md L25255 |
-| HJ-Q7198 | 辛巳趙誠為司空梁冀為大將軍 | 己卯誅中常侍張逵 | fulltext.md L25260 |
-| HJ-Q7199 | 癸未彭門㓂亂 | 亂趙峻為太尉胡廣為司徒 | fulltext.md L25265 |
-| HJ-Q7200 | 丁亥改元建和梁冀以女上皇后杜喬為太尉胡廣罷 | 帝李固罷免梁冀專政 | fulltext.md L25272 |
-| HJ-Q7201 | 戊子帝加元服趙戒為太尉袁湯為司徒 | 免李固杜喬下獄死 | fulltext.md L25276 |
+| HJ-Q7188 | 辛酉改元建光太后邓氏崩帝始亲政事特进邓隲度 | 庚申改元永宁杨震为司徒 | fulltext.md L25217 |
+| HJ-Q7189 | 壬戌改元延光 | 辽将军邓遵下狱死 | fulltext.md L25221 |
+| HJ-Q7190 | 经世之午二千二百三十九 | 癸亥司徒杨震为太尉 | fulltext.md L25225 |
+| HJ-Q7191 | 乙丑帝南廵崩于叶太后阎氏临朝称制阎显为车骑将军专政立章帝𤣥孙北乡侯懿诛大将军耿寳葬恭宗于恭陵懿又卒车骑将军阎显及大长秋江京闭宫门择立它子中黄门孙程十九人 | 杨震罢太尉冯石为太尉 | fulltext.md L25230 |
+| HJ-Q7192 | ### 尉朱伥为司徒 | 尉朱伥为司徒 | fulltext.md L25233 |
+| HJ-Q7193 | 己巳帝加元服厐叅为太尉王龚为司空刘俊为司徒庚午班勇弃市 | 戊辰 | fulltext.md L25239 |
+| HJ-Q7194 | 壬申改元阳嘉册梁氏为皇后 | 辛未 | fulltext.md L25243 |
+| HJ-Q7195 | 甲戌黄尚为司徒王卓为司空 | 癸酉施延为太尉 | fulltext.md L25247 |
+| HJ-Q7196 | 丙子改元永和王龚为太尉 | 乙亥 | fulltext.md L25251 |
+| HJ-Q7197 | 戊寅刘寿为司徒 | 丁丑郭䖍为司空 | fulltext.md L25255 |
+| HJ-Q7198 | 辛巳赵诚为司空梁冀为大将军 | 己卯诛中常侍张逵 | fulltext.md L25260 |
+| HJ-Q7199 | 癸未彭门㓂乱 | 乱赵峻为太尉胡广为司徒 | fulltext.md L25265 |
+| HJ-Q7200 | 丁亥改元建和梁冀以女上皇后杜乔为太尉胡广罢 | 帝李固罢免梁冀专政 | fulltext.md L25272 |
+| HJ-Q7201 | 戊子帝加元服赵戒为太尉袁汤为司徒 | 免李固杜乔下狱死 | fulltext.md L25276 |
 | HJ-Q7202 | 庚寅改元和平太后梁氏崩 | 己丑 | fulltext.md L25280 |
-| HJ-Q7203 | 癸巳改元永興袁成逢隗為三公 | 壬辰 | fulltext.md L25285 |
-| HJ-Q7204 | 甲午漢孝桓帝八年黃為太尉尹頌為司徒 | 經世之未二千二百四十 | fulltext.md L25289 |
-| HJ-Q7205 | ### 乙未改元永壽韓縯為司空 | 乙未改元永壽韓縯為司空 | fulltext.md L25291 |
+| HJ-Q7203 | 癸巳改元永兴袁成逢隗为三公 | 壬辰 | fulltext.md L25285 |
+| HJ-Q7204 | 甲午汉孝桓帝八年黄为太尉尹颂为司徒 | 经世之未二千二百四十 | fulltext.md L25289 |
+| HJ-Q7205 | ### 乙未改元永寿韩𬙂为司空 | 乙未改元永寿韩𬙂为司空 | fulltext.md L25291 |
 | HJ-Q7206 | 戊戌改元延熹 | 丁酉 | fulltext.md L25297 |
-| HJ-Q7207 | 庚子白馬令李雲直諌死于獄太山及長沙寇亂辛丑武庫火 | 單超擅命胡廣韓縯減死 | fulltext.md L25302 |
+| HJ-Q7207 | 庚子白马令李云直諌死于狱太山及长沙寇乱辛丑武库火 | 单超擅命胡广韩𬙂减死 | fulltext.md L25302 |
 | HJ-Q7208 | ### 壬寅 | 壬寅 | fulltext.md L25304 |
-| HJ-Q7209 | 乙巳廢皇后鄧氏冊貴人竇氏為皇后陳蕃為太尉竇 | 甲辰南廵楊秉為太尉 | fulltext.md L25310 |
-| HJ-Q7210 | 丙午黨錮事起司李膺等三百人下獄 | 武為大將軍 | fulltext.md L25314 |
-| HJ-Q7211 | 辛亥帝加元服冊宋氏為皇后 | 庚戌 | fulltext.md L25321 |
-| HJ-Q7212 | 甲寅李咸為太尉 | 癸丑段熲為太尉楊賜為司空 | fulltext.md L25326 |
-| HJ-Q7213 | 丁巳大伐鮮卑孟為太尉陳耽為司空 | 丙辰劉寛為太尉楊賜為司徒 | fulltext.md L25331 |
-| HJ-Q7214 | 己未諸貴臣下獄死者相繼宦氏誣故也劉郃為司徒 | 三公袁滂為司徒 | fulltext.md L25336 |
-| HJ-Q7215 | 庚申陳耽為司徒冊何氏為皇后 | 段熲為太尉張濟為司空 | fulltext.md L25340 |
-| HJ-Q7216 | ### 辛酉作宮市帝遊以驢為駕 | 辛酉作宮市帝遊以驢為駕 | fulltext.md L25342 |
-| HJ-Q7217 | 經世之申二千二百四十一 | 癸亥 | fulltext.md L25348 |
-| HJ-Q7218 | 丙寅張温為太尉江夏兵起前太尉張延下獄死丁卯賣官至關内侯曹嵩為太尉三輔盜起漁陽賊稱 | 三輔冦亂陳耽劉陶坐直言死 | fulltext.md L25354 |
-| HJ-Q7219 | 戊辰天下羣盜起黄巾賊復寇羣國稱帝置八校尉以捕天下羣盜馬日磾為太尉曹操為典軍校尉袁紹為中軍校尉董重為驃騎將軍 | 帝 | fulltext.md L25358 |
-| HJ-Q7220 | 甲戌改元興平帝加元服楊彪為太尉孫策據有江南乙亥李傕郭汜争權相攻于長安楊定楊奉董承以帝東還曹操破呂布于定陶遂有兖州布走劉備 | 袁術交兵東方 | fulltext.md L25367 |
-| HJ-Q7221 | 庚辰曹操大敗袁紹于官渡劉備去曹操奔劉表于荆 | 勲于廬江 | fulltext.md L25376 |
-| HJ-Q7222 | 壬午袁紹卒子尚繼事以弟譚為將軍 | 州江南孫䇿卒弟權繼事 | fulltext.md L25381 |
-| HJ-Q7223 | 庚寅曹操起銅爵臺于鄴孫權南牧交州 | 表劉備為荆州牧 | fulltext.md L25391 |
-| HJ-Q7224 | 壬辰曹操割河以北屬鄴孫權城石頭改秣陵為建業癸巳曹操以冀之十郡稱魏國公加九錫劉備攻劉璋 | 口徙治秣陵 | fulltext.md L25396 |
-| HJ-Q7225 | 經世之酉二千二百四十二 | 于成都孫權捍曹操于濡須 | fulltext.md L25400 |
-| HJ-Q7226 | 丙申曹操進爵為魏王南伐呉 | 兵攻曹操 | fulltext.md L25406 |
-| HJ-Q7227 | 己亥劉備取曹操漢中稱王孫權取劉備荆州稱牧關 | 進攻漢中 | fulltext.md L25411 |
-| HJ-Q7228 | 庚子改元建康曹操卒子丕繼事是年丕代漢命于鄴是謂文帝改國曰魏元曰黃初降帝為山陽公葬太祖曹操于西陵自鄴徙都洛陽 | 羽死之 | fulltext.md L25415 |
-| HJ-Q7229 | 甲辰魏伐呉 | 興魏與蜀和親 | fulltext.md L25422 |
-| HJ-Q7230 | 丁未魏改元太和有事于南郊及明堂蜀諸葛亮出師 | 大將軍 | fulltext.md L25428 |
-| HJ-Q7231 | 戊申蜀諸葛亮圍魏陳倉呉破魏石亭 | 漢中 | fulltext.md L25432 |
-| HJ-Q7232 | 庚戌魏伐蜀假司馬懿黃鉞蜀諸葛亮攻魏天水辛亥蜀圍魏祁山 | 都建業 | fulltext.md L25437 |
-| HJ-Q7233 | 癸丑魏改元青龍蜀伐魏師出褒斜 | 壬子蜀息軍黄沙呉改元嘉和 | fulltext.md L25441 |
-| HJ-Q7234 | 丁巳魏改元景初公孫淵以遼東叛稱王 | 將軍專國事 | fulltext.md L25448 |
-| HJ-Q7235 | 壬戌蜀姜維伐魏軍出漢中 | 辛酉呉全琮伐魏軍出淮南 | fulltext.md L25453 |
-| HJ-Q7236 | 經世之戌二千二百四十三 | 出漢中呉伐魏軍出六安 | fulltext.md L25458 |
-| HJ-Q7237 | 乙丑蜀伐魏費褘師出漢中呉將馬茂作難夷三族丙寅 | 魏曹爽伐蜀無功 | fulltext.md L25463 |
-| HJ-Q7238 | 己巳魏曹爽奉其君謁高平陵太傅司馬宣王稱兵于内夷大將軍曹爽及其支黨曹義曹訓曹彦何晏丁謐鄧颺畢軌李勝桓範張當三族迎帝還宮改元嘉平復皇太后懿加九錫專國事 | 戊辰蜀伐魏費禕師出漢中 | fulltext.md L25468 |
-| HJ-Q7239 | 辛未魏司馬懿宣王卒子師繼事呉改元太元 | 庚午魏伐呉南郡 | fulltext.md L25472 |
-| HJ-Q7240 | 戊寅魏司馬昭伐呉㧞壽春誅諸葛誕蜀改元景耀宦氏黄皓專政呉亂大將軍孫綝廢其君亮立亮弟休改元永安綝作逆伏誅 | 師出駱谷呉主亮始親政事 | fulltext.md L25481 |
-| HJ-Q7241 | 庚辰魏亂司馬昭弑其君髦立常道鄉公璜改元景元 | 己卯 | fulltext.md L25485 |
-| HJ-Q7242 | ### 昭加九錫稱晉國公專制 | 昭加九錫稱晉國公專制 | fulltext.md L25487 |
-| HJ-Q7243 | 癸未魏滅蜀徙其君于洛陽蜀改元炎興是年國亡呉 | 壬午魏鄧艾鍾㑹伐蜀 | fulltext.md L25493 |
-| HJ-Q7244 | 甲申司馬昭進爵為晉王增郡二十用天子服器改元咸熈以檻車徵鄧艾鍾㑹以蜀叛呉孫休卒濮陽王興中軍張布廢休子而立權廢子和之子皓改元元興皓立誅興及布 | 出軍壽春救蜀不克 | fulltext.md L25497 |
-| HJ-Q7245 | 丁亥晉立子衷為皇太子 | 丙戌呉改元寳鼎復還建業 | fulltext.md L25502 |
-| HJ-Q7246 | 己丑呉改元建衡南伐交趾 | 戊子呉伐晉 | fulltext.md L25506 |
-| HJ-Q7247 | 辛卯呉平交趾蜀劉禪卒于晉 | 庚寅呉孫秀奔晉 | fulltext.md L25510 |
-| HJ-Q7248 | 甲午晉武帝十年呉王皓十年晉分幽州城平州乙未晉改元咸寧呉改元天璽 | 經世之亥二千二百四十四 | fulltext.md L25515 |
-| HJ-Q7249 | 丁酉晉四夷内附呉改元天紀將邵凱夏祥逃入于晉戊戌呉將劉翻祖始逃入于晉 | 丙申晉東西夷十七國内附 | fulltext.md L25519 |
-| HJ-Q7250 | 壬寅東西夷二十九國脩貢山濤為司徒衛瓘為司空 | 辛丑 | fulltext.md L25525 |
-| HJ-Q7251 | 癸卯孫皓卒魏舒為司徒 | 賈充卒 | fulltext.md L25529 |
+| HJ-Q7209 | 乙巳废皇后邓氏册贵人窦氏为皇后陈蕃为太尉窦 | 甲辰南廵杨秉为太尉 | fulltext.md L25310 |
+| HJ-Q7210 | 丙午党锢事起司李膺等三百人下狱 | 武为大将军 | fulltext.md L25314 |
+| HJ-Q7211 | 辛亥帝加元服册宋氏为皇后 | 庚戌 | fulltext.md L25321 |
+| HJ-Q7212 | 甲寅李咸为太尉 | 癸丑段颎为太尉杨赐为司空 | fulltext.md L25326 |
+| HJ-Q7213 | 丁巳大伐鲜卑孟为太尉陈耽为司空 | 丙辰刘寛为太尉杨赐为司徒 | fulltext.md L25331 |
+| HJ-Q7214 | 己未诸贵臣下狱死者相继宦氏诬故也刘郃为司徒 | 三公袁滂为司徒 | fulltext.md L25336 |
+| HJ-Q7215 | 庚申陈耽为司徒册何氏为皇后 | 段颎为太尉张济为司空 | fulltext.md L25340 |
+| HJ-Q7216 | ### 辛酉作宫市帝游以驴为驾 | 辛酉作宫市帝游以驴为驾 | fulltext.md L25342 |
+| HJ-Q7217 | 经世之申二千二百四十一 | 癸亥 | fulltext.md L25348 |
+| HJ-Q7218 | 丙寅张温为太尉江夏兵起前太尉张延下狱死丁卯卖官至关内侯曹嵩为太尉三辅盗起渔阳贼称 | 三辅冦乱陈耽刘陶坐直言死 | fulltext.md L25354 |
+| HJ-Q7219 | 戊辰天下群盗起黄巾贼复寇群国称帝置八校尉以捕天下群盗马日䃅为太尉曹操为典军校尉袁绍为中军校尉董重为骠骑将军 | 帝 | fulltext.md L25358 |
+| HJ-Q7220 | 甲戌改元兴平帝加元服杨彪为太尉孙策据有江南乙亥李傕郭汜争权相攻于长安杨定杨奉董承以帝东还曹操破吕布于定陶遂有兖州布走刘备 | 袁术交兵东方 | fulltext.md L25367 |
+| HJ-Q7221 | 庚辰曹操大败袁绍于官渡刘备去曹操奔刘表于荆 | 勲于庐江 | fulltext.md L25376 |
+| HJ-Q7222 | 壬午袁绍卒子尚继事以弟谭为将军 | 州江南孙䇿卒弟权继事 | fulltext.md L25381 |
+| HJ-Q7223 | 庚寅曹操起铜爵台于邺孙权南牧交州 | 表刘备为荆州牧 | fulltext.md L25391 |
+| HJ-Q7224 | 壬辰曹操割河以北属邺孙权城石头改秣陵为建业癸巳曹操以冀之十郡称魏国公加九锡刘备攻刘璋 | 口徙治秣陵 | fulltext.md L25396 |
+| HJ-Q7225 | 经世之酉二千二百四十二 | 于成都孙权捍曹操于濡须 | fulltext.md L25400 |
+| HJ-Q7226 | 丙申曹操进爵为魏王南伐呉 | 兵攻曹操 | fulltext.md L25406 |
+| HJ-Q7227 | 己亥刘备取曹操汉中称王孙权取刘备荆州称牧关 | 进攻汉中 | fulltext.md L25411 |
+| HJ-Q7228 | 庚子改元建康曹操卒子丕继事是年丕代汉命于邺是谓文帝改国曰魏元曰黄初降帝为山阳公葬太祖曹操于西陵自邺徙都洛阳 | 羽死之 | fulltext.md L25415 |
+| HJ-Q7229 | 甲辰魏伐呉 | 兴魏与蜀和亲 | fulltext.md L25422 |
+| HJ-Q7230 | 丁未魏改元太和有事于南郊及明堂蜀诸葛亮出师 | 大将军 | fulltext.md L25428 |
+| HJ-Q7231 | 戊申蜀诸葛亮围魏陈仓呉破魏石亭 | 汉中 | fulltext.md L25432 |
+| HJ-Q7232 | 庚戌魏伐蜀假司马懿黄钺蜀诸葛亮攻魏天水辛亥蜀围魏祁山 | 都建业 | fulltext.md L25437 |
+| HJ-Q7233 | 癸丑魏改元青龙蜀伐魏师出褒斜 | 壬子蜀息军黄沙呉改元嘉和 | fulltext.md L25441 |
+| HJ-Q7234 | 丁巳魏改元景初公孙渊以辽东叛称王 | 将军专国事 | fulltext.md L25448 |
+| HJ-Q7235 | 壬戌蜀姜维伐魏军出汉中 | 辛酉呉全琮伐魏军出淮南 | fulltext.md L25453 |
+| HJ-Q7236 | 经世之戌二千二百四十三 | 出汉中呉伐魏军出六安 | fulltext.md L25458 |
+| HJ-Q7237 | 乙丑蜀伐魏费袆师出汉中呉将马茂作难夷三族丙寅 | 魏曹爽伐蜀无功 | fulltext.md L25463 |
+| HJ-Q7238 | 己巳魏曹爽奉其君谒高平陵太傅司马宣王称兵于内夷大将军曹爽及其支党曹义曹训曹彦何晏丁谧邓飏毕轨李胜桓范张当三族迎帝还宫改元嘉平复皇太后懿加九锡专国事 | 戊辰蜀伐魏费祎师出汉中 | fulltext.md L25468 |
+| HJ-Q7239 | 辛未魏司马懿宣王卒子师继事呉改元太元 | 庚午魏伐呉南郡 | fulltext.md L25472 |
+| HJ-Q7240 | 戊寅魏司马昭伐呉㧞寿春诛诸葛诞蜀改元景耀宦氏黄皓专政呉乱大将军孙𬘭废其君亮立亮弟休改元永安𬘭作逆伏诛 | 师出骆谷呉主亮始亲政事 | fulltext.md L25481 |
+| HJ-Q7241 | 庚辰魏乱司马昭弑其君髦立常道乡公璜改元景元 | 己卯 | fulltext.md L25485 |
+| HJ-Q7242 | ### 昭加九锡称晋国公专制 | 昭加九锡称晋国公专制 | fulltext.md L25487 |
+| HJ-Q7243 | 癸未魏灭蜀徙其君于洛阳蜀改元炎兴是年国亡呉 | 壬午魏邓艾钟㑹伐蜀 | fulltext.md L25493 |
+| HJ-Q7244 | 甲申司马昭进爵为晋王增郡二十用天子服器改元咸熈以槛车征邓艾钟㑹以蜀叛呉孙休卒濮阳王兴中军张布废休子而立权废子和之子皓改元元兴皓立诛兴及布 | 出军寿春救蜀不克 | fulltext.md L25497 |
+| HJ-Q7245 | 丁亥晋立子衷为皇太子 | 丙戌呉改元寳鼎复还建业 | fulltext.md L25502 |
+| HJ-Q7246 | 己丑呉改元建衡南伐交趾 | 戊子呉伐晋 | fulltext.md L25506 |
+| HJ-Q7247 | 辛卯呉平交趾蜀刘禅卒于晋 | 庚寅呉孙秀奔晋 | fulltext.md L25510 |
+| HJ-Q7248 | 甲午晋武帝十年呉王皓十年晋分幽州城平州乙未晋改元咸宁呉改元天玺 | 经世之亥二千二百四十四 | fulltext.md L25515 |
+| HJ-Q7249 | 丁酉晋四夷内附呉改元天纪将邵凯夏祥逃入于晋戊戌呉将刘翻祖始逃入于晋 | 丙申晋东西夷十七国内附 | fulltext.md L25519 |
+| HJ-Q7250 | 壬寅东西夷二十九国修贡山涛为司徒卫瓘为司空 | 辛丑 | fulltext.md L25525 |
+| HJ-Q7251 | 癸卯孙皓卒魏舒为司徒 | 贾充卒 | fulltext.md L25529 |
 | HJ-Q7252 | ### 甲辰 | 甲辰 | fulltext.md L25531 |
 | HJ-Q7253 | ### 丙午 | 丙午 | fulltext.md L25535 |
-| HJ-Q7254 | 己酉汝南王亮為司馬假黃鉞 | 戊申 | fulltext.md L25541 |
+| HJ-Q7254 | 己酉汝南王亮为司马假黄钺 | 戊申 | fulltext.md L25541 |
 | HJ-Q7255 | ### 癸丑 | 癸丑 | fulltext.md L25546 |
-| HJ-Q7256 | 丙辰張華為司空秦雍寇亂齊萬年稱兵涇陽楊茂搜 | 乙卯武庫火 | fulltext.md L25552 |
-| HJ-Q7257 | 丁巳王戎為司徒何劭為僕射 | 稱兵百頃 | fulltext.md L25556 |
-| HJ-Q7258 | 己未賈后廢皇太子遹為庶人及其二子送之金墉裴 | 戊午 | fulltext.md L25560 |
-| HJ-Q7259 | 庚申改元永康皇后賈氏徙皇庶人于許昌殺之趙王倫梁王彤廢皇后賈氏為庶人送金墉殺之誅宰相張華及僕射裴頠侍中賈謐又誅嵇康呂安石崇潘岳于東市倫假黄鉞稱國相專制以彤 | 頠為僕射 | fulltext.md L25564 |
-| HJ-Q7260 | 欽定四庫全書 | 皇極經世書卷六上 | fulltext.md L25571 |
-| HJ-Q7261 | 經㑹之午七 | 經元之甲一 | fulltext.md L25576 |
-| HJ-Q7262 | 經世之子二千二百四十五 | 經運之辛一百八十八 | fulltext.md L25580 |
-| HJ-Q7263 | 辛巳晉王導為司空録尚書事幽州陷段匹磾没于石勒鮮卑慕容廆受晉持節都督遼東遼西 | 其衆 | fulltext.md L25601 |
-| HJ-Q7264 | 壬辰晉徙居新宫進太尉陶侃大將軍趙石勒卒子宏繼改元延熈加石虎九錫專政稱丞相魏〔闕〕殺中書令徐光及右長史程遐 | 辛卯晉以陸玩為尚書令 | fulltext.md L25616 |
-| HJ-Q7265 | 甲午東晉成帝九年蜀李班為庶兄越所殺立雄子期改元玉恒越專政涼張駿受晉大將軍命 | 經世之丑二千二百四十六 | fulltext.md L25621 |
-| HJ-Q7266 | 丁酉鮮卑慕容皝稱王遼東趙石虎稱趙天王 | 丙申 | fulltext.md L25626 |
-| HJ-Q7267 | 庚子晉陸玩為司空遼東慕容皝獻伐石虎之㨗漢李 | 己亥晉王導卒伐蜀 | fulltext.md L25631 |
-| HJ-Q7268 | 辛丑晉慕容皝求為假燕王徙居和龍 | 壽㧞晉丹州 | fulltext.md L25635 |
-| HJ-Q7269 | 甲辰晉康帝崩太子耼繼是謂穆帝太后稱制趙石虎 | 癸卯晉改元建元 | fulltext.md L25640 |
-| HJ-Q7270 | 乙巳晉改元永和㑹稽王昱為撫軍大將軍録尚書六 | 伐涼不利伐燕有功 | fulltext.md L25644 |
-| HJ-Q7271 | 丙午晉桓温伐蜀漢李勢平李弈改元嘉寧涼張駿卒子重華繼改元永樂趙石虎攻涼金城 | 條事專政 | fulltext.md L25648 |
-| HJ-Q7272 | 戊申晉桓温為征西大將軍入長安至于灞上遼東慕 | 都涼張重華敗石虎于枹罕 | fulltext.md L25653 |
-| HJ-Q7273 | 甲寅晉太尉桓温伐秦至灞上秦苻健敗晉軍于白鹿 | 代立改元和平 | fulltext.md L25663 |
-| HJ-Q7274 | 乙卯晉將叚龕敗燕軍于狼山右軍王羲之辭官歸涼宋混張瓘殺張祚立曜靈弟元靚改元大始燕南攻晉不利秦苻健卒子生繼 | 原又敗之于子午谷 | fulltext.md L25667 |
-| HJ-Q7275 | 丁巳晉改元升平帝加元服王彪之為左僕射燕改元光壽自中山徙都鄴秦苻生虐用其人雄子堅殺生代立去帝號稱天王改元永興以王猛呂婆樓強汪梁平老為之輔 | 壽元 | fulltext.md L25672 |
-| HJ-Q7276 | 庚申晉仇池公楊駿卒子世繼燕慕容雋卒子暐繼改元建熙慕容恪為太宰專政慕容評為太傅慕容根為太師慕容垂為河南大都督根作逆伏誅 | 為中書令尹京兆 | fulltext.md L25678 |
-| HJ-Q7277 | 甲子東晉哀帝三年餌丹有疾太后稱制燕秦入㓂洛 | 經世之寅二千二百四十七 | fulltext.md L25685 |
-| HJ-Q7278 | 乙丑晉哀帝終于餌丹母弟瑯琊王弈立洛陽陷于燕司馬勲以梁州叛稱成都王秦改元建元匈奴左右賢王以朔方叛平之 | 陽 | fulltext.md L25689 |
-| HJ-Q7279 | 戊辰秦苻雙以上邽苻栁以蒲阪叛王猛悉平之己巳晉大司馬桓温北伐燕不利歸罪袁真袁真以壽陽入于燕燕大將慕容垂敗晉師于枋頭以衆降秦評害功故也秦救燕有功取燕之金墉責 | 丁卯燕攻晉竟陵秦攻晉涼州 | fulltext.md L25694 |
-| HJ-Q7280 | 戊寅晉作新宮 | 丁丑晉秦二國抗衡天下 | fulltext.md L25704 |
-| HJ-Q7281 | 癸未晉伐蜀敗秦軍于武當秦苻堅舉國南伐晉謝安帥謝琰謝元桓冲桓伊大敗秦師于肥水進圍洛陽秦苻堅䘮師壽陽秦苻融没于戰諸將咸叛慕容垂稱王滎陽北居中山國曰燕元曰燕元 | 國脩貢于秦 | fulltext.md L25712 |
-| HJ-Q7282 | 戊子秦苻登攻姚萇不利秦乞伏國仁卒弟乾歸立稱 | 姚萇封乞伏國仁為苑川王 | fulltext.md L25720 |
-| HJ-Q7283 | 己丑晉陸納為尚書令彭城妖賊亂翟遼圍滎陽秦姚萇西攻苻登凉呂光稱三河王改元麟嘉 | 河南王改元太初徙都金城 | fulltext.md L25724 |
-| HJ-Q7284 | 甲午東晉孝武帝二十二年後魏道武皇帝十年秦苻登攻姚興不利戰死子崇立奔湟中稱帝改元延初為乞伏乾歸所滅燕慕容垂平慕容永于長子秦姚興復稱帝魏里改元皇初凉呂光徙居 | 經世之卯二千二百四十八 | fulltext.md L25732 |
-| HJ-Q7285 | ### 丁未魏改元皇興 | 丁未魏改元皇興 | fulltext.md L25757 |
-| HJ-Q7286 | 辛亥魏獻文授太子宏位是謂孝文皇帝𢎞稱太上皇 | 巳酉魏㧞宋青州 | fulltext.md L25764 |
-| HJ-Q7287 | 壬子宋改元太豫明帝大道死太子昱立 | 改元延興 | fulltext.md L25768 |
-| HJ-Q7288 | 甲寅宋桂陽王休範以江州叛兵犯建業右衛將軍蕭 | 癸丑宋改元元徽 | fulltext.md L25772 |
+| HJ-Q7256 | 丙辰张华为司空秦雍寇乱齐万年称兵泾阳杨茂搜 | 乙卯武库火 | fulltext.md L25552 |
+| HJ-Q7257 | 丁巳王戎为司徒何劭为仆射 | 称兵百顷 | fulltext.md L25556 |
+| HJ-Q7258 | 己未贾后废皇太子遹为庶人及其二子送之金墉裴 | 戊午 | fulltext.md L25560 |
+| HJ-Q7259 | 庚申改元永康皇后贾氏徙皇庶人于许昌杀之赵王伦梁王彤废皇后贾氏为庶人送金墉杀之诛宰相张华及仆射裴𬱟侍中贾谧又诛嵇康吕安石崇潘岳于东市伦假黄钺称国相专制以彤 | 𬱟为仆射 | fulltext.md L25564 |
+| HJ-Q7260 | 钦定四库全书 | 皇极经世书卷六上 | fulltext.md L25571 |
+| HJ-Q7261 | 经㑹之午七 | 经元之甲一 | fulltext.md L25576 |
+| HJ-Q7262 | 经世之子二千二百四十五 | 经运之辛一百八十八 | fulltext.md L25580 |
+| HJ-Q7263 | 辛巳晋王导为司空录尚书事幽州陷段匹䃅没于石勒鲜卑慕容廆受晋持节都督辽东辽西 | 其众 | fulltext.md L25601 |
+| HJ-Q7264 | 壬辰晋徙居新宫进太尉陶侃大将军赵石勒卒子宏继改元延熈加石虎九锡专政称丞相魏〔阙〕杀中书令徐光及右长史程遐 | 辛卯晋以陆玩为尚书令 | fulltext.md L25616 |
+| HJ-Q7265 | 甲午东晋成帝九年蜀李班为庶兄越所杀立雄子期改元玉恒越专政凉张骏受晋大将军命 | 经世之丑二千二百四十六 | fulltext.md L25621 |
+| HJ-Q7266 | 丁酉鲜卑慕容皝称王辽东赵石虎称赵天王 | 丙申 | fulltext.md L25626 |
+| HJ-Q7267 | 庚子晋陆玩为司空辽东慕容皝献伐石虎之㨗汉李 | 己亥晋王导卒伐蜀 | fulltext.md L25631 |
+| HJ-Q7268 | 辛丑晋慕容皝求为假燕王徙居和龙 | 寿㧞晋丹州 | fulltext.md L25635 |
+| HJ-Q7269 | 甲辰晋康帝崩太子耼继是谓穆帝太后称制赵石虎 | 癸卯晋改元建元 | fulltext.md L25640 |
+| HJ-Q7270 | 乙巳晋改元永和㑹稽王昱为抚军大将军录尚书六 | 伐凉不利伐燕有功 | fulltext.md L25644 |
+| HJ-Q7271 | 丙午晋桓温伐蜀汉李势平李弈改元嘉宁凉张骏卒子重华继改元永乐赵石虎攻凉金城 | 条事专政 | fulltext.md L25648 |
+| HJ-Q7272 | 戊申晋桓温为征西大将军入长安至于灞上辽东慕 | 都凉张重华败石虎于枹罕 | fulltext.md L25653 |
+| HJ-Q7273 | 甲寅晋太尉桓温伐秦至灞上秦苻健败晋军于白鹿 | 代立改元和平 | fulltext.md L25663 |
+| HJ-Q7274 | 乙卯晋将叚龛败燕军于狼山右军王羲之辞官归凉宋混张瓘杀张祚立曜灵弟元靓改元大始燕南攻晋不利秦苻健卒子生继 | 原又败之于子午谷 | fulltext.md L25667 |
+| HJ-Q7275 | 丁巳晋改元升平帝加元服王彪之为左仆射燕改元光寿自中山徙都邺秦苻生虐用其人雄子坚杀生代立去帝号称天王改元永兴以王猛吕婆楼强汪梁平老为之辅 | 寿元 | fulltext.md L25672 |
+| HJ-Q7276 | 庚申晋仇池公杨骏卒子世继燕慕容隽卒子𬀩继改元建熙慕容恪为太宰专政慕容评为太傅慕容根为太师慕容垂为河南大都督根作逆伏诛 | 为中书令尹京兆 | fulltext.md L25678 |
+| HJ-Q7277 | 甲子东晋哀帝三年饵丹有疾太后称制燕秦入㓂洛 | 经世之寅二千二百四十七 | fulltext.md L25685 |
+| HJ-Q7278 | 乙丑晋哀帝终于饵丹母弟瑯琊王弈立洛阳陷于燕司马勲以梁州叛称成都王秦改元建元匈奴左右贤王以朔方叛平之 | 阳 | fulltext.md L25689 |
+| HJ-Q7279 | 戊辰秦苻双以上邽苻栁以蒲阪叛王猛悉平之己巳晋大司马桓温北伐燕不利归罪袁真袁真以寿阳入于燕燕大将慕容垂败晋师于枋头以众降秦评害功故也秦救燕有功取燕之金墉责 | 丁卯燕攻晋竟陵秦攻晋凉州 | fulltext.md L25694 |
+| HJ-Q7280 | 戊寅晋作新宫 | 丁丑晋秦二国抗衡天下 | fulltext.md L25704 |
+| HJ-Q7281 | 癸未晋伐蜀败秦军于武当秦苻坚举国南伐晋谢安帅谢琰谢元桓冲桓伊大败秦师于肥水进围洛阳秦苻坚䘮师寿阳秦苻融没于战诸将咸叛慕容垂称王荥阳北居中山国曰燕元曰燕元 | 国修贡于秦 | fulltext.md L25712 |
+| HJ-Q7282 | 戊子秦苻登攻姚苌不利秦乞伏国仁卒弟干归立称 | 姚苌封乞伏国仁为苑川王 | fulltext.md L25720 |
+| HJ-Q7283 | 己丑晋陆纳为尚书令彭城妖贼乱翟辽围荥阳秦姚苌西攻苻登凉吕光称三河王改元麟嘉 | 河南王改元太初徙都金城 | fulltext.md L25724 |
+| HJ-Q7284 | 甲午东晋孝武帝二十二年后魏道武皇帝十年秦苻登攻姚兴不利战死子崇立奔湟中称帝改元延初为乞伏干归所灭燕慕容垂平慕容永于长子秦姚兴复称帝魏里改元皇初凉吕光徙居 | 经世之卯二千二百四十八 | fulltext.md L25732 |
+| HJ-Q7285 | ### 丁未魏改元皇兴 | 丁未魏改元皇兴 | fulltext.md L25757 |
+| HJ-Q7286 | 辛亥魏献文授太子宏位是谓孝文皇帝𢎞称太上皇 | 巳酉魏㧞宋青州 | fulltext.md L25764 |
+| HJ-Q7287 | 壬子宋改元太豫明帝大道死太子昱立 | 改元延兴 | fulltext.md L25768 |
+| HJ-Q7288 | 甲寅宋桂阳王休范以江州叛兵犯建业右卫将军萧 | 癸丑宋改元元徽 | fulltext.md L25772 |
 | HJ-Q7289 | 乙卯魏改元承明 | 道成平之 | fulltext.md L25776 |
-| HJ-Q7290 | 丁巳宋國亂蕭道成殺其君昱廢為蒼梧王立明帝子凖改元昇明道成假黃鉞稱齊國公專制改元太和 | 尚書事魏太后馮氏弑太上皇 | fulltext.md L25781 |
-| HJ-Q7291 | 己未宋相國蕭道成稱王是年代宋命于建業改國曰齊元曰建元是謂太祖以子賾為皇太子降其君凖為汝隂君殺之 | 戊午 | fulltext.md L25785 |
-| HJ-Q7292 | 壬戌齊高帝道成終太子賾嗣位是謂武帝以子懋為 | 庚申 | fulltext.md L25790 |
-| HJ-Q7293 | 癸亥齊改元永明 | 太子攻魏淮南 | fulltext.md L25794 |
-| HJ-Q7294 | 甲子齊武帝二年魏孝文帝十三年 | 經世之午二千二百五十一 | fulltext.md L25798 |
+| HJ-Q7290 | 丁巳宋国乱萧道成杀其君昱废为苍梧王立明帝子凖改元升明道成假黄钺称齐国公专制改元太和 | 尚书事魏太后冯氏弑太上皇 | fulltext.md L25781 |
+| HJ-Q7291 | 己未宋相国萧道成称王是年代宋命于建业改国曰齐元曰建元是谓太祖以子赜为皇太子降其君凖为汝隂君杀之 | 戊午 | fulltext.md L25785 |
+| HJ-Q7292 | 壬戌齐高帝道成终太子赜嗣位是谓武帝以子懋为 | 庚申 | fulltext.md L25790 |
+| HJ-Q7293 | 癸亥齐改元永明 | 太子攻魏淮南 | fulltext.md L25794 |
+| HJ-Q7294 | 甲子齐武帝二年魏孝文帝十三年 | 经世之午二千二百五十一 | fulltext.md L25798 |
 | HJ-Q7295 | ### 乙丑 | 乙丑 | fulltext.md L25800 |
 | HJ-Q7296 | ### 丁卯 | 丁卯 | fulltext.md L25804 |
 | HJ-Q7297 | ### 己巳 | 己巳 | fulltext.md L25808 |
 | HJ-Q7298 | 壬申魏伐蠕蠕 | 辛未 | fulltext.md L25814 |
-| HJ-Q7299 | 丙子魏改姓元氏 | 樂 | fulltext.md L25821 |
-| HJ-Q7300 | 戊寅齊改元永泰明帝鸞終太子寳卷嗣位魏伐齊㧞 | 丁丑 | fulltext.md L25825 |
-| HJ-Q7301 | 己卯齊改元永元以子誦為太子魏孝文帝終太子恪嗣位是謂宣武皇帝彭城王勰受顧命輔政 | 新野 | fulltext.md L25829 |
+| HJ-Q7299 | 丙子魏改姓元氏 | 乐 | fulltext.md L25821 |
+| HJ-Q7300 | 戊寅齐改元永泰明帝鸾终太子寳卷嗣位魏伐齐㧞 | 丁丑 | fulltext.md L25825 |
+| HJ-Q7301 | 己卯齐改元永元以子诵为太子魏孝文帝终太子恪嗣位是谓宣武皇帝彭城王勰受顾命辅政 | 新野 | fulltext.md L25829 |
 | HJ-Q7302 | 甲申魏改元正始 | 癸未 | fulltext.md L25836 |
 | HJ-Q7303 | ### 乙酉 | 乙酉 | fulltext.md L25838 |
-| HJ-Q7304 | 戊子魏改元永平殺太師元勰 | 丁亥東西夷四十國脩貢于魏 | fulltext.md L25844 |
-| HJ-Q7305 | 辛卯東西夷二十九國脩貢于魏 | 己丑戎夷二十四國脩貢于魏 | fulltext.md L25849 |
+| HJ-Q7304 | 戊子魏改元永平杀太师元勰 | 丁亥东西夷四十国修贡于魏 | fulltext.md L25844 |
+| HJ-Q7305 | 辛卯东西夷二十九国修贡于魏 | 己丑戎夷二十四国修贡于魏 | fulltext.md L25849 |
 | HJ-Q7306 | ### 壬辰魏改元延昌 | 壬辰魏改元延昌 | fulltext.md L25851 |
-| HJ-Q7307 | 甲午梁武帝十三年魏武帝十五年 | 經世之未二千二百五十二 | fulltext.md L25857 |
-| HJ-Q7308 | 丙申魏改元熈平 | 稱制劉騰元义為輔相 | fulltext.md L25862 |
-| HJ-Q7309 | 戊戌魏改元神龜 | 丁酉 | fulltext.md L25866 |
-| HJ-Q7310 | 庚子梁改元普通魏改元正光幽靈太后胡氏于北宮辛丑 | 己亥 | fulltext.md L25870 |
+| HJ-Q7307 | 甲午梁武帝十三年魏武帝十五年 | 经世之未二千二百五十二 | fulltext.md L25857 |
+| HJ-Q7308 | 丙申魏改元熈平 | 称制刘腾元义为辅相 | fulltext.md L25862 |
+| HJ-Q7309 | 戊戌魏改元神龟 | 丁酉 | fulltext.md L25866 |
+| HJ-Q7310 | 庚子梁改元普通魏改元正光幽灵太后胡氏于北宫辛丑 | 己亥 | fulltext.md L25870 |
 | HJ-Q7311 | ### 壬寅 | 壬寅 | fulltext.md L25872 |
-| HJ-Q7312 | 乙巳魏改元孝昌相劉騰元义罪免為庶人迎太后胡 | 甲辰 | fulltext.md L25878 |
-| HJ-Q7313 | 丁未梁帝闡没身于同泰寺改元大通魏諸都寇亂戊申魏改元武泰太后胡氏殺其帝詡立無名子大都督爾朱榮自太原入殺無名子及太后胡氏諸王貴臣于河隂得長樂王攸是謂莊帝改元 | 丙午 | fulltext.md L25883 |
-| HJ-Q7314 | 甲寅魏高歡之洛帝脩西走長安歡立清河王子善見是謂静帝改元天平徙洛陽四十萬户于鄴都之是謂東魏歡鎮太原都督中外專制宇文泰廢脩于長安殺之立南陽王寳炬是謂文帝改元 | 癸丑魏高歡平爾朱氏 | fulltext.md L25891 |
-| HJ-Q7315 | 丙辰侯景為東魏右僕射南行臺 | 乙卯梁改元大同 | fulltext.md L25895 |
+| HJ-Q7312 | 乙巳魏改元孝昌相刘腾元义罪免为庶人迎太后胡 | 甲辰 | fulltext.md L25878 |
+| HJ-Q7313 | 丁未梁帝阐没身于同泰寺改元大通魏诸都寇乱戊申魏改元武泰太后胡氏杀其帝诩立无名子大都督尔朱荣自太原入杀无名子及太后胡氏诸王贵臣于河隂得长乐王攸是谓庄帝改元 | 丙午 | fulltext.md L25883 |
+| HJ-Q7314 | 甲寅魏高欢之洛帝修西走长安欢立清河王子善见是谓静帝改元天平徙洛阳四十万户于邺都之是谓东魏欢镇太原都督中外专制宇文泰废修于长安杀之立南阳王寳炬是谓文帝改元 | 癸丑魏高欢平尔朱氏 | fulltext.md L25891 |
+| HJ-Q7315 | 丙辰侯景为东魏右仆射南行台 | 乙卯梁改元大同 | fulltext.md L25895 |
 | HJ-Q7316 | ### 庚申 | 庚申 | fulltext.md L25899 |
-| HJ-Q7317 | 癸亥東魏改元武定高歡大破西魏宇文泰軍于邙山 | 壬戌 | fulltext.md L25905 |
-| HJ-Q7318 | 經世之申二千二百五十三 | 遂㧞洛陽 | fulltext.md L25909 |
-| HJ-Q7319 | 丙寅梁武帝三失身于同泰改元中大同羣臣及皇太 | 一年 | fulltext.md L25915 |
-| HJ-Q7320 | 丁卯梁改元太清東魏渤海王高歡卒于晉陽子澄繼事侯景以河南十三州叛慕容紹宗敗侯景于長社景南走夀春附于梁封為河南王 | 子畢㑹于同泰是夜同泰大火 | fulltext.md L25919 |
-| HJ-Q7321 | 壬午齊改元清河還都鄴後南凉蕭詧卒子巋繼改元 | 大寧是謂武成 | fulltext.md L25936 |
+| HJ-Q7317 | 癸亥东魏改元武定高欢大破西魏宇文泰军于邙山 | 壬戌 | fulltext.md L25905 |
+| HJ-Q7318 | 经世之申二千二百五十三 | 遂㧞洛阳 | fulltext.md L25909 |
+| HJ-Q7319 | 丙寅梁武帝三失身于同泰改元中大同群臣及皇太 | 一年 | fulltext.md L25915 |
+| HJ-Q7320 | 丁卯梁改元太清东魏渤海王高欢卒于晋阳子澄继事侯景以河南十三州叛慕容绍宗败侯景于长社景南走夀春附于梁封为河南王 | 子毕㑹于同泰是夜同泰大火 | fulltext.md L25919 |
+| HJ-Q7321 | 壬午齐改元清河还都邺后南凉萧詧卒子岿继改元 | 大宁是谓武成 | fulltext.md L25936 |
 | HJ-Q7322 | ### 天保 | 天保 | fulltext.md L25938 |
-| HJ-Q7323 | 乙酉齊高湛傳子緯位改元天統 | 甲申周齊戰于洛陽 | fulltext.md L25944 |
-| HJ-Q7324 | 戊子陳亂安成王陳頊弑其君伯宗代立是謂宣帝己丑陳改元太建以子叔寳為太子 | 丁亥陳改元光大 | fulltext.md L25949 |
-| HJ-Q7325 | 壬辰陳將呉明徹伐齊有功周襲封李淵為唐國公誅 | 庚寅齊改元武平 | fulltext.md L25954 |
-| HJ-Q7326 | 癸巳陳代齊有功 | 太宰晉公䕶改元建徳 | fulltext.md L25958 |
-| HJ-Q7327 | 甲午陳宣帝頊七年周武帝邕十五年齊武帝緯十年 | 經世之酉二千二百五十四 | fulltext.md L25962 |
-| HJ-Q7328 | 乙未周大伐齊圍其晉州及洛陽 | 後南梁蕭巋十二年 | fulltext.md L25966 |
-| HJ-Q7329 | 癸卯陳改元至德隋徙居新宮 | 首崗 | fulltext.md L25977 |
-| HJ-Q7330 | 乙巳後南梁蕭巋卒子琮繼 | 甲辰後南梁蕭巋朝隋 | fulltext.md L25981 |
-| HJ-Q7331 | 戊申隋命晉王廣秦王俊清河公楊素督總管九十兵五十一萬為八路大伐陳以壽春為行臺府 | 荆州刺史蕭瓛降于陳 | fulltext.md L25988 |
+| HJ-Q7323 | 乙酉齐高湛传子纬位改元天统 | 甲申周齐战于洛阳 | fulltext.md L25944 |
+| HJ-Q7324 | 戊子陈乱安成王陈顼弑其君伯宗代立是谓宣帝己丑陈改元太建以子叔寳为太子 | 丁亥陈改元光大 | fulltext.md L25949 |
+| HJ-Q7325 | 壬辰陈将呉明彻伐齐有功周袭封李渊为唐国公诛 | 庚寅齐改元武平 | fulltext.md L25954 |
+| HJ-Q7326 | 癸巳陈代齐有功 | 太宰晋公䕶改元建徳 | fulltext.md L25958 |
+| HJ-Q7327 | 甲午陈宣帝顼七年周武帝邕十五年齐武帝纬十年 | 经世之酉二千二百五十四 | fulltext.md L25962 |
+| HJ-Q7328 | 乙未周大伐齐围其晋州及洛阳 | 后南梁萧岿十二年 | fulltext.md L25966 |
+| HJ-Q7329 | 癸卯陈改元至德隋徙居新宫 | 首岗 | fulltext.md L25977 |
+| HJ-Q7330 | 乙巳后南梁萧岿卒子琮继 | 甲辰后南梁萧岿朝隋 | fulltext.md L25981 |
+| HJ-Q7331 | 戊申隋命晋王广秦王俊清河公杨素督总管九十兵五十一万为八路大伐陈以寿春为行台府 | 荆州刺史萧𤩽降于陈 | fulltext.md L25988 |
 | HJ-Q7332 | ### 悉平之 | 悉平之 | fulltext.md L25992 |
 | HJ-Q7333 | ### 壬子 | 壬子 | fulltext.md L25996 |
-| HJ-Q7334 | ### 甲寅東廵封泰山 | 甲寅東廵封泰山 | fulltext.md L26000 |
+| HJ-Q7334 | ### 甲寅东廵封泰山 | 甲寅东廵封泰山 | fulltext.md L26000 |
 | HJ-Q7335 | ### 丙辰 | 丙辰 | fulltext.md L26004 |
-| HJ-Q7336 | 庚申廢太子勇冊晉王廣為皇太子 | 戊午伐高麗無功 | fulltext.md L26011 |
-| HJ-Q7337 | ### 壬戌命七大臣定禮 | 壬戌命七大臣定禮 | fulltext.md L26014 |
-| HJ-Q7338 | 甲子隋文帝二十四年皇太子廣行弑于仁壽宮代立是謂煬帝是年幸洛陽建東都于郟鄏以洛州為豫州 | 經世之戌二千二百五十五 | fulltext.md L26020 |
-| HJ-Q7339 | 丁卯還長安北廵榆林作宮于晉陽光禄賀若弼禮部郎宇文㢸太常卿高熲伏誅西北大築亭障 | 代王浩為秦王 | fulltext.md L26026 |
+| HJ-Q7336 | 庚申废太子勇册晋王广为皇太子 | 戊午伐高丽无功 | fulltext.md L26011 |
+| HJ-Q7337 | ### 壬戌命七大臣定礼 | 壬戌命七大臣定礼 | fulltext.md L26014 |
+| HJ-Q7338 | 甲子隋文帝二十四年皇太子广行弑于仁寿宫代立是谓炀帝是年幸洛阳建东都于郏鄏以洛州为豫州 | 经世之戌二千二百五十五 | fulltext.md L26020 |
+| HJ-Q7339 | 丁卯还长安北廵榆林作宫于晋阳光禄贺若弼礼部郎宇文㢸太常卿高颎伏诛西北大筑亭障 | 代王浩为秦王 | fulltext.md L26026 |
 | HJ-Q7340 | 辛未北幸涿郡 | 庚午南幸江都 | fulltext.md L26033 |
-| HJ-Q7341 | 癸酉以代王侑留守長安越王侗留守東都秦王浩從駕征遼東復大集兵于涿郡天下羣盜起楊𤣥感以本兵叛于黎陽 | 道大伐遼東不利全陷九軍 | fulltext.md L26038 |
-| HJ-Q7342 | 乙亥北廵至于雁門為突厥所圍 | 賊稱天子 | fulltext.md L26043 |
-| HJ-Q7343 | 乙酉唐加秦王中書令 | 甲申唐李靖平輔公祏于江淮 | fulltext.md L26055 |
-| HJ-Q7344 | 戊子平梁師都于朔方 | 為右僕射 | fulltext.md L26061 |
-| HJ-Q7345 | 辛卯春大蒐于昆明冬幸温湯 | 彦博為中書令 | fulltext.md L26067 |
-| HJ-Q7346 | 癸巳魏徵為侍中頒新定五經于天下 | 壬辰祀南郊 | fulltext.md L26071 |
-| HJ-Q7347 | 甲午唐廣孝皇帝九年 | 經世之亥二千二百五十六 | fulltext.md L26075 |
-| HJ-Q7348 | 〔闕〕 太上皇崩于太 | 乙未李靖平吐谷渾獲其王放 | fulltext.md L26078 |
-| HJ-Q7349 | 丙申魏徵遷特進温彦博遷右僕射 | 安宮葬高祖于獻陵 | fulltext.md L26082 |
-| HJ-Q7350 | 戊戌高士亷為右僕射 | 丁酉幸洛陽宮 | fulltext.md L26086 |
-| HJ-Q7351 | 辛丑幸洛陽文成公主嬪于吐蕃 | 渾至日圓丘祀昊天上帝 | fulltext.md L26092 |
-| HJ-Q7352 | 癸卯圖二十四功臣于凌烟閣内難作皇子齊王祐以齊叛廢太子承乾為庶人徙之黔幽魏王泰于北苑役之均以晉王治為皇太子誅侯君集至日祀南郊 | 壬寅幸岐陽 | fulltext.md L26096 |
-| HJ-Q7353 | 戊申阿史郍平兹獲其王以歸征松外蠻司空房𤣥 | 丁未起翠微宫于終南山 | fulltext.md L26102 |
-| HJ-Q7354 | 辛亥征賀魯至于金嶺至日有事于南郊 | 庚戌改元永徽禇遂良罷政 | fulltext.md L26108 |
-| HJ-Q7355 | 癸丑駙馬都尉房遺愛柴令武薛萬徹荆王元景及二公主以謀逆伏誅遂殺呉王恪禇遂良復為右僕射睦州女㓂亂 | 中栁爽為中書令 | fulltext.md L26113 |
-| HJ-Q7356 | 乙卯廢皇后王氏良姊蕭氏為庶人冊昭儀武氏為皇后罷長孫無忌禇遂良政事以許敬宗李義府為相武后殺庶人王氏蕭氏崔敦禮為中書令 | 甲寅築長安羅城親謁昭陵 | fulltext.md L26117 |
-| HJ-Q7357 | 丁巳幸許洛以洛陽為東都李義府進中書令許敬宗 | 慶杜正倫為相 | fulltext.md L26122 |
-| HJ-Q7358 | 己未殺長孫無忌禇遂良于流所幸東都 | 戊午蘇定方平賀魯獲其王 | fulltext.md L26127 |
-| HJ-Q7359 | ### 死改來年為麟徳 | 死改來年為麟徳 | fulltext.md L26132 |
-| HJ-Q7360 | 欽定四庫全書 | 皇極經世書卷六中 | fulltext.md L26136 |
-| HJ-Q7361 | 經㑹之午七 | 經元之甲一 | fulltext.md L26141 |
-| HJ-Q7362 | 經世之子二千二百五十七 | 經運之壬一百八十九 | fulltext.md L26145 |
-| HJ-Q7363 | 戊辰李勣平高麗獲其王祀明堂改元總章 | 三品 | fulltext.md L26152 |
-| HJ-Q7364 | 庚午改元咸亨薛仁貴征吐蕃不利 | 卒 | fulltext.md L26157 |
-| HJ-Q7365 | 壬申帝及皇后至自東都 | 閻立本黃門侍郎郝處俊從行 | fulltext.md L26162 |
-| HJ-Q7366 | 甲戌皇后稱天后以帝為天皇改元上元帝同皇后幸 | 癸酉帝及皇后幸九成宮 | fulltext.md L26166 |
-| HJ-Q7367 | 乙亥皇太子𢎞卒以雍王賢為皇太子 | 東都帝有疾 | fulltext.md L26170 |
-| HJ-Q7368 | 戊寅改來年為通乾 | 丁丑 | fulltext.md L26175 |
-| HJ-Q7369 | 庚辰廢皇太子賢為庶人以英王哲為皇太子帝皇后幸汝陽及嵩岳裴炎崔知温王德真並同中書門下三品改元永隆帝及皇后至自東都 | 突厥 | fulltext.md L26180 |
-| HJ-Q7370 | 壬午改元永淳帝及皇后幸東都起奉天宫于嵩之陽劉景先郭待舉郭正一岑長倩魏元同並同中書門下平章事 | 中崔知温薛元超進中書令 | fulltext.md L26185 |
-| HJ-Q7371 | 丁亥武后賜宰相劉禕之死張光輔為鳯閣侍郎戊子武后稱聖母關東八王謀興復博州瑯琊王冲及父蔡州越王貞先發悉平之大夷王室 | 閣鸞臺三品 | fulltext.md L26192 |
-| HJ-Q7372 | 經世之丑二千二百五十八 | 元方為相婁師徳亦相 | fulltext.md L26201 |
-| HJ-Q7373 | 壬寅武后祀南郊 | 逺顧琮李迥秀為相 | fulltext.md L26213 |
-| HJ-Q7374 | 甲辰韋嗣立宗楚客崔元暐張東之同平章事韋安石 | 癸卯武后幸東都朱敬則為相 | fulltext.md L26217 |
-| HJ-Q7375 | 乙巳武后改元神龍張柬之崔元暐桓彦範敬暉袁恕已平張易之及昌宗之亂徙武后于上陽宮除周國號以相王旦為安國王太平公主為鎮國公主賞定亂功也韋氏復正皇后位武三思進位 | 納言李嶠内史 | fulltext.md L26221 |
-| HJ-Q7376 | 庚戌殺諌臣燕欽融于殿庭皇后韋氏及安樂公主行弑于内寢立温王重茂為嗣改元唐隆以裴談張錫張嘉福岑羲為相臨淄王隆基以劉幽求薛崇簡鍾紹京麻嗣元兵入誅韋温紀處訥宗楚 | 為相李嶠為特進 | fulltext.md L26228 |
-| HJ-Q7377 | 壬子祀南郊改元太極祀北郊改元延和帝傳位于皇太子隆基是謂明孝皇帝既踐位改元先天黜劉幽求鍾紹京張暉官 | 知古為相劉幽求進侍中相 | fulltext.md L26233 |
-| HJ-Q7378 | 乙卯冊郢王嗣謙為皇太子 | 甲寅 | fulltext.md L26238 |
-| HJ-Q7379 | 丁巳幸洛陽嬪永樂公主于契丹 | 讓宋璟為相 | fulltext.md L26243 |
-| HJ-Q7380 | ### 戊午至自東都 | 戊午至自東都 | fulltext.md L26245 |
-| HJ-Q7381 | 辛酉相姚崇卒 | 庚申張嘉貞為相 | fulltext.md L26251 |
-| HJ-Q7382 | ### 壬戌幸東都長安竊發 | 壬戌幸東都長安竊發 | fulltext.md L26253 |
-| HJ-Q7383 | 甲子唐明孝皇帝十三年廢皇后王氏為庶人幸東都 | 經世之寅二千二百五十九 | fulltext.md L26259 |
-| HJ-Q7384 | 乙丑封泰山用源乾曜張説為左右相 | 宋璟守長安 | fulltext.md L26263 |
-| HJ-Q7385 | 丁卯至自東都 | 丙寅李元紘杜暹為相還東都 | fulltext.md L26267 |
-| HJ-Q7386 | 己巳張説宋璟為左右相謁喬定獻昭乾五陵裴光庭 | 戊辰蕭嵩為相 | fulltext.md L26271 |
-| HJ-Q7387 | 庚午北討契丹 | 為相 | fulltext.md L26275 |
-| HJ-Q7388 | 壬申至自東都宋璟免相 | 辛未幸東都 | fulltext.md L26279 |
-| HJ-Q7389 | 甲戌幸東都李林甫為相 | 癸酉韓休張九齡裴耀卿為相 | fulltext.md L26283 |
-| HJ-Q7390 | 丙子至自東都牛仙客為相是年太真楊氏入宮李林 | 乙亥 | fulltext.md L26287 |
-| HJ-Q7391 | 丁丑廢皇太子瑛為庶人罷張九齡相仍黜之相宋璟卒監察御史周子諒言牛仙客事杖死于朝 | 甫用事 | fulltext.md L26291 |
-| HJ-Q7392 | 己卯平突厥獲其王追封孔宣父為文宣王顔回為兖 | 使牛仙客領河東節度使 | fulltext.md L26296 |
-| HJ-Q7393 | 辛巳命安禄山為平盧軍節度使 | 國公餘哲並為侯 | fulltext.md L26301 |
-| HJ-Q7394 | 甲申改元為載命安禄山為范陽節度使作太真妃楊 | 耀卿進尚書右僕射 | fulltext.md L26307 |
-| HJ-Q7395 | 乙酉冊太真妃楊氏為貴妃契丹殺公主叛 | 氏養子 | fulltext.md L26311 |
-| HJ-Q7396 | 己丑幸華清宮 | 鐵劵幸華清宮 | fulltext.md L26317 |
-| HJ-Q7397 | 經世之卯二千二百六十 | 王 | fulltext.md L26324 |
-| HJ-Q7398 | 庚子唐改元上元宦人李輔國逼太上皇入西宮劉展 | 東都 | fulltext.md L26334 |
-| HJ-Q7399 | 乙巳改元永泰吐蕃大掠畿甸帝御六軍屯于苑命九節度以本軍討賊吐蕃㑹回紇寇奉天僕固懷恩啓之也郭子儀復以回紇隨白元光破吐蕃于靈武崔旴以西川亂 | 代劉晏李峴為相 | fulltext.md L26343 |
-| HJ-Q7400 | 丁未吐蕃大寇靈武郭子儀鎮涇陽 | 丙午改元大厯周智光以華叛 | fulltext.md L26347 |
-| HJ-Q7401 | 己酉裴冕為相 | 戊申吐蕃再寇靈武 | fulltext.md L26351 |
-| HJ-Q7402 | 壬子回紇掠京城朱滔節度幽州 | 庚戌臧玠以潭州叛 | fulltext.md L26356 |
-| HJ-Q7403 | 乙卯魏博節度田承嗣擅取洺衛礠相郟州軍亂丙辰淄清李正已擅取齊海登萊沂宻徳棣曹濮兖鄆請命封隴西王李寳臣封隴西王李忠臣封西平王段秀實封張掖王崔寧破吐蕃河陽軍亂 | 癸丑郭子儀大敗吐蕃于靈武 | fulltext.md L26361 |
-| HJ-Q7404 | 戊午回紇冦太原吐蕃寇靈武 | 常衮為相 | fulltext.md L26366 |
-| HJ-Q7405 | 甲子唐孝文皇帝五年在奉天改元興元王武俊格命李懷光走河中帝移軍梁州渾瑊及吐蕃敗朱泚于武功李晟收京城迎帝還宮田希鑒殺馮河清以涇州叛行軍司馬田緒殺田悦以魏博降 | 經世之辰二千二百六十一 | fulltext.md L26375 |
-| HJ-Q7406 | 己巳董晉竇參為相韋臯破吐蕃于雋州 | 夏縣處士陽城為諌議大夫 | fulltext.md L26383 |
-| HJ-Q7407 | 壬申襄州軍亂趙璟陸贄為相貶相竇參郴州别駕吐 | 庚午吐蕃陷北庭 | fulltext.md L26388 |
-| HJ-Q7408 | 癸酉賈耽盧邁為相宣武軍亂 | 蕃入寇 | fulltext.md L26392 |
-| HJ-Q7409 | 丙子崔損趙宗儒為相 | 乙亥 | fulltext.md L26398 |
-| HJ-Q7410 | 戊寅鄭餘慶為相栗鍠殺刺史以明州叛 | 丁丑韋臯破吐蕃于嶲州 | fulltext.md L26402 |
-| HJ-Q7411 | 癸未高郢為相吐蕃請和 | 壬午 | fulltext.md L26410 |
-| HJ-Q7412 | 乙酉正月帝崩皇太子誦踐位王叔文王伾用事韋執誼賈耽鄭珣瑜高郢杜佑為相罷官市物貶京兆尹李實通州長史削民故也冊廣陵王純為皇太子罷鄭珣瑜高郢相以杜黃裳袁滋為相帝 | 甲申吐蕃南詔日本脩貢 | fulltext.md L26414 |
-| HJ-Q7413 | 己丑冊鄧王寧為皇太子王承宗以鎮叛蔡州呉少誠 | 戊子裴垍為相 | fulltext.md L26420 |
-| HJ-Q7414 | 庚寅用權德輿為相 | 卒弟少陽繼事 | fulltext.md L26424 |
-| HJ-Q7415 | 經世之已二千二百六十二 | 癸巳振武軍亂 | fulltext.md L26429 |
-| HJ-Q7416 | 乙未伐淮西盜殺宰相武元衡以裴度為相㑹兵伐王承宗于鎮淄青李師道以嵩僧叛㑹兵伐淄青 | 淮西逆命 | fulltext.md L26434 |
-| HJ-Q7417 | 丁酉崔羣李廓為相裴度大伐淮西將李愬入蔡獲呉 | 州宿州軍亂 | fulltext.md L26439 |
-| HJ-Q7418 | 戊戌鎮州王承宗淄青李師道順命李夷簡皇甫鎛程 | 元濟以獻淮西平裴度復相 | fulltext.md L26443 |
-| HJ-Q7419 | 己亥劉悟殺李師道以淄青十二州降令狐楚為相沂及安南軍亂以方士栁泌為台州刺史帝餌金石有疾 | 异為相 | fulltext.md L26447 |
-| HJ-Q7420 | 甲辰帝崩皇太子湛踐位是謂昭武皇帝貶侍郎李紳端州司馬李逢吉牛僧孺為相又以李程竇易直為相葬穆宗于光陵 | 癸卯牛僧孺為相 | fulltext.md L26454 |
-| HJ-Q7421 | 丙午裴度復内相㑹亂宮人殺帝于飲所羣臣誅賊立江王邙是謂昭獻皇帝以韋處厚為相幽州軍亂殺其帥朱克融 | 乙巳改元寳厯牛僧孺免相 | fulltext.md L26458 |
-| HJ-Q7422 | 庚戌興元軍亂殺節度使李絳温造平之牛僧孺宋申 | 宗閔為相南詔蠻陷東都 | fulltext.md L26465 |
-| HJ-Q7423 | 辛亥幽州軍亂貶相宋申錫州司馬内臣王守澄誣 | 錫為相 | fulltext.md L26469 |
-| HJ-Q7424 | 癸丑李德裕王涯為相罷李宗閔相冊魯王永為皇太 | 故也 | fulltext.md L26474 |
-| HJ-Q7425 | 甲寅幽州軍亂復李宗閔相 | 子 | fulltext.md L26478 |
-| HJ-Q7426 | 丁巳陳夷行為相河陽軍亂 | 丙辰改元開成李固言為相 | fulltext.md L26483 |
-| HJ-Q7427 | 己未崔鄆為相冊陳王成美為皇太子監國 | 軍亂皇太子有罪卒于少陽院 | fulltext.md L26488 |
-| HJ-Q7428 | 壬戌李德裕專政 | 馬幽州軍亂 | fulltext.md L26494 |
-| HJ-Q7429 | 經世之午二千二百六十三 | 癸亥劉禎以澤潞叛 | fulltext.md L26498 |
-| HJ-Q7430 | 己巳罷周墀馬植相再貶李徳裕崖州司户崔鉉魏扶 | 戊辰周墀馬植崔龜從為相 | fulltext.md L26505 |
-| HJ-Q7431 | 庚午魏扶罷相令狐綯為相 | 為相幽州軍亂 | fulltext.md L26509 |
-| HJ-Q7432 | 壬申裴休為相 | 辛未魏謩為相 | fulltext.md L26513 |
-| HJ-Q7433 | ### 癸酉鄭朗為相 | 癸酉鄭朗為相 | fulltext.md L26515 |
-| HJ-Q7434 | 丁丑魏謩出尹成都崔慎由蕭鄴為相 | 乙亥 | fulltext.md L26522 |
-| HJ-Q7435 | 辛巳相蕭鄴出尹太原蔣伸罷相林邑蠻入寇 | 相改元咸通宣洪寇亂 | fulltext.md L26530 |
-| HJ-Q7436 | 戊子湘潭戍軍亂立龎勛為帥陷徐宿滁和濠五州 | 丁亥楊收觀察浙西于琮為相 | fulltext.md L26539 |
-| HJ-Q7437 | 己丑蔣伸罷相劉瞻為相徐商出尹江陵命十八將伐徐以康成訓為軍帥徐寇平蠻復寇東西二川 | 貶楊收端州司馬移驩州賜死 | fulltext.md L26543 |
-| HJ-Q7438 | 甲午唐恭定皇帝元年葬懿宗于簡陵崔彦昭鄭畋盧 | 經世之未二千二百六十四 | fulltext.md L26550 |
-| HJ-Q7439 | 乙未浙西及曹濮冦亂王鐸復相 | 擕為相改元乾符蠻寇兩川 | fulltext.md L26554 |
-| HJ-Q7440 | 庚子改元廣明鄭從讜出尹太原沙陀軍敗北黄巢軍北逾五嶺破湖湘及江淮州高駢距文不利發徐冤許軍赴殷水以捍東都殷水軍潰黃巢陷東都西攻郟號潼關失守罷盧擕相王徽裴徹為 | 崔沆豆盧瑑為相盧擕復相 | fulltext.md L26562 |
-| HJ-Q7441 | 甲子唐景文皇帝十六年東徙至榖水梁王朱全忠坑帝侍從三百人至洛陽改元天祐以張漢瑜為相楊崇本以邠兵寇關轉全忠西攻行殺于洛宮立輝王祚是謂哀帝李克用以本部兵保太原 | 經世之申二千二百六十五 | fulltext.md L26589 |
-| HJ-Q7442 | 辛未梁改元乾祐北攻鎮定軍敗于柏鄉蜀改元永平 | 朂東下河北 | fulltext.md L26599 |
-| HJ-Q7443 | 乙亥梁改元貞明鄴王楊師厚卒分其地六州為兩鎮魏軍遂亂囚其帥賀德倫以六州入于晉蜀㧞山南之秦鳯階成宮大火晉李存朂東下大㑹兵于魏郊 | 原 | fulltext.md L26607 |
-| HJ-Q7444 | 辛巳梁改元龍德惠王友能以陳叛呉改元順義晉鎮 | 溥立晉存朂㧞梁之同州 | fulltext.md L26616 |
-| HJ-Q7445 | 壬午晉李存朂平鎮定又敗契丹于易水 | 定亂契丹犯幽州 | fulltext.md L26620 |
-| HJ-Q7446 | 乙酉唐帝存朂北巡魏郊以樞宻使郭崇韜同魏王繼岌伐蜀七旬平之獲其主王衍以歸至秦川驛族殺之以孟知祥鎮成都荆南高季興請附蜀改元咸康國亡漢改元曰龍泉南王審知為子延 | 甲申唐自汴徙都洛陽平上黨 | fulltext.md L26625 |
-| HJ-Q7447 | 己丑唐以趙鳯為相安重誨專政呉改元大和 | 于呉漢改元大有 | fulltext.md L26632 |
-| HJ-Q7448 | 辛卯唐以李遇為相罷安重誨樞密使以趙延壽范延 | 叛 | fulltext.md L26637 |
-| HJ-Q7449 | 壬辰唐孟知祥平東川獲董璋稱表封知祥為蜀王呉王錢鏐卒子元瓘繼福州王延鈞稱帝國曰閩元曰光啟 | 光為樞密使東西二川相攻 | fulltext.md L26641 |
-| HJ-Q7450 | 甲午後唐閔帝從厚元年改元應順以鳯翔潞王從珂移鎮太原從珂自岐入逐從厚代立于洛宮改元清泰從厚出奔衛州就殺之是年孟知祥以西川稱帝成都國曰蜀元曰明德知祥卒子昶繼 | 經世之酉二千二百六十六 | fulltext.md L26646 |
-| HJ-Q7451 | 己亥閩亂連重遇殺其君昶立其叔父延羲改元永隆庚子晉用和凝為相李金全以安叛命馬全節以十郡 | 北狄耶律徳光改元㑹同 | fulltext.md L26654 |
-| HJ-Q7452 | 辛丑晉帝石敬瑭北廵鄴安從進以襄叛安重宋鎮叛 | 之師平之 | fulltext.md L26658 |
-| HJ-Q7453 | 壬寅晉帝石敬瑭終于鄴從子齊王重貴立侍魏將軍耿延廣專政始貳于狄漢劉巖卒子玢繼改元光大 | 兩浙錢元瓘卒子𢎞佐繼 | fulltext.md L26662 |
-| HJ-Q7454 | 庚戌漢夷宰相楊贇侍衛將軍史宏肇三司使王章族賜澶州王殷魏州郭威王峻死十二月樞密使郭威以魏兵入渡河敗内軍于劉子陂其主承祐野死郭威至汴請宰相馮道迎其君之弟承珪 | 使北伐鎮鄴 | fulltext.md L26673 |
-| HJ-Q7455 | 癸丑周冊皇后姪柴榮為皇太子封晉王尹封府流王峻于商州王殷于登州皆殺之李榖馮道為相 | 壬子周平兖州 | fulltext.md L26678 |
-| HJ-Q7456 | 丁巳周李穀罷相王朴為樞密使伐江南有功唐改元交泰兵敗于紫金山請以江北地求和于周 | 漢劉承鈞改元天㑹 | fulltext.md L26685 |
+| HJ-Q7341 | 癸酉以代王侑留守长安越王侗留守东都秦王浩从驾征辽东复大集兵于涿郡天下群盗起杨𤣥感以本兵叛于黎阳 | 道大伐辽东不利全陷九军 | fulltext.md L26038 |
+| HJ-Q7342 | 乙亥北廵至于雁门为突厥所围 | 贼称天子 | fulltext.md L26043 |
+| HJ-Q7343 | 乙酉唐加秦王中书令 | 甲申唐李靖平辅公祏于江淮 | fulltext.md L26055 |
+| HJ-Q7344 | 戊子平梁师都于朔方 | 为右仆射 | fulltext.md L26061 |
+| HJ-Q7345 | 辛卯春大搜于昆明冬幸温汤 | 彦博为中书令 | fulltext.md L26067 |
+| HJ-Q7346 | 癸巳魏徵为侍中颁新定五经于天下 | 壬辰祀南郊 | fulltext.md L26071 |
+| HJ-Q7347 | 甲午唐广孝皇帝九年 | 经世之亥二千二百五十六 | fulltext.md L26075 |
+| HJ-Q7348 | 〔阙〕 太上皇崩于太 | 乙未李靖平吐谷浑获其王放 | fulltext.md L26078 |
+| HJ-Q7349 | 丙申魏徵迁特进温彦博迁右仆射 | 安宫葬高祖于献陵 | fulltext.md L26082 |
+| HJ-Q7350 | 戊戌高士亷为右仆射 | 丁酉幸洛阳宫 | fulltext.md L26086 |
+| HJ-Q7351 | 辛丑幸洛阳文成公主嫔于吐蕃 | 浑至日圆丘祀昊天上帝 | fulltext.md L26092 |
+| HJ-Q7352 | 癸卯图二十四功臣于凌烟阁内难作皇子齐王祐以齐叛废太子承干为庶人徙之黔幽魏王泰于北苑役之均以晋王治为皇太子诛侯君集至日祀南郊 | 壬寅幸岐阳 | fulltext.md L26096 |
+| HJ-Q7353 | 戊申阿史郍平兹获其王以归征松外蛮司空房𤣥 | 丁未起翠微宫于终南山 | fulltext.md L26102 |
+| HJ-Q7354 | 辛亥征贺鲁至于金岭至日有事于南郊 | 庚戌改元永徽禇遂良罢政 | fulltext.md L26108 |
+| HJ-Q7355 | 癸丑驸马都尉房遗爱柴令武薛万彻荆王元景及二公主以谋逆伏诛遂杀呉王恪禇遂良复为右仆射睦州女㓂乱 | 中栁爽为中书令 | fulltext.md L26113 |
+| HJ-Q7356 | 乙卯废皇后王氏良姊萧氏为庶人册昭仪武氏为皇后罢长孙无忌禇遂良政事以许敬宗李义府为相武后杀庶人王氏萧氏崔敦礼为中书令 | 甲寅筑长安罗城亲谒昭陵 | fulltext.md L26117 |
+| HJ-Q7357 | 丁巳幸许洛以洛阳为东都李义府进中书令许敬宗 | 庆杜正伦为相 | fulltext.md L26122 |
+| HJ-Q7358 | 己未杀长孙无忌禇遂良于流所幸东都 | 戊午苏定方平贺鲁获其王 | fulltext.md L26127 |
+| HJ-Q7359 | ### 死改来年为麟徳 | 死改来年为麟徳 | fulltext.md L26132 |
+| HJ-Q7360 | 钦定四库全书 | 皇极经世书卷六中 | fulltext.md L26136 |
+| HJ-Q7361 | 经㑹之午七 | 经元之甲一 | fulltext.md L26141 |
+| HJ-Q7362 | 经世之子二千二百五十七 | 经运之壬一百八十九 | fulltext.md L26145 |
+| HJ-Q7363 | 戊辰李𪟝平高丽获其王祀明堂改元总章 | 三品 | fulltext.md L26152 |
+| HJ-Q7364 | 庚午改元咸亨薛仁贵征吐蕃不利 | 卒 | fulltext.md L26157 |
+| HJ-Q7365 | 壬申帝及皇后至自东都 | 阎立本黄门侍郎郝处俊从行 | fulltext.md L26162 |
+| HJ-Q7366 | 甲戌皇后称天后以帝为天皇改元上元帝同皇后幸 | 癸酉帝及皇后幸九成宫 | fulltext.md L26166 |
+| HJ-Q7367 | 乙亥皇太子𢎞卒以雍王贤为皇太子 | 东都帝有疾 | fulltext.md L26170 |
+| HJ-Q7368 | 戊寅改来年为通干 | 丁丑 | fulltext.md L26175 |
+| HJ-Q7369 | 庚辰废皇太子贤为庶人以英王哲为皇太子帝皇后幸汝阳及嵩岳裴炎崔知温王德真并同中书门下三品改元永隆帝及皇后至自东都 | 突厥 | fulltext.md L26180 |
+| HJ-Q7370 | 壬午改元永淳帝及皇后幸东都起奉天宫于嵩之阳刘景先郭待举郭正一岑长倩魏元同并同中书门下平章事 | 中崔知温薛元超进中书令 | fulltext.md L26185 |
+| HJ-Q7371 | 丁亥武后赐宰相刘祎之死张光辅为鳯阁侍郎戊子武后称圣母关东八王谋兴复博州瑯琊王冲及父蔡州越王贞先发悉平之大夷王室 | 阁鸾台三品 | fulltext.md L26192 |
+| HJ-Q7372 | 经世之丑二千二百五十八 | 元方为相娄师徳亦相 | fulltext.md L26201 |
+| HJ-Q7373 | 壬寅武后祀南郊 | 逺顾琮李迥秀为相 | fulltext.md L26213 |
+| HJ-Q7374 | 甲辰韦嗣立宗楚客崔元𬀩张东之同平章事韦安石 | 癸卯武后幸东都朱敬则为相 | fulltext.md L26217 |
+| HJ-Q7375 | 乙巳武后改元神龙张柬之崔元𬀩桓彦范敬晖袁恕已平张易之及昌宗之乱徙武后于上阳宫除周国号以相王旦为安国王太平公主为镇国公主赏定乱功也韦氏复正皇后位武三思进位 | 纳言李峤内史 | fulltext.md L26221 |
+| HJ-Q7376 | 庚戌杀諌臣燕钦融于殿庭皇后韦氏及安乐公主行弑于内寝立温王重茂为嗣改元唐隆以裴谈张锡张嘉福岑羲为相临淄王隆基以刘幽求薛崇简钟绍京麻嗣元兵入诛韦温纪处讷宗楚 | 为相李峤为特进 | fulltext.md L26228 |
+| HJ-Q7377 | 壬子祀南郊改元太极祀北郊改元延和帝传位于皇太子隆基是谓明孝皇帝既践位改元先天黜刘幽求钟绍京张晖官 | 知古为相刘幽求进侍中相 | fulltext.md L26233 |
+| HJ-Q7378 | 乙卯册郢王嗣谦为皇太子 | 甲寅 | fulltext.md L26238 |
+| HJ-Q7379 | 丁巳幸洛阳嫔永乐公主于契丹 | 让宋璟为相 | fulltext.md L26243 |
+| HJ-Q7380 | ### 戊午至自东都 | 戊午至自东都 | fulltext.md L26245 |
+| HJ-Q7381 | 辛酉相姚崇卒 | 庚申张嘉贞为相 | fulltext.md L26251 |
+| HJ-Q7382 | ### 壬戌幸东都长安窃发 | 壬戌幸东都长安窃发 | fulltext.md L26253 |
+| HJ-Q7383 | 甲子唐明孝皇帝十三年废皇后王氏为庶人幸东都 | 经世之寅二千二百五十九 | fulltext.md L26259 |
+| HJ-Q7384 | 乙丑封泰山用源乾曜张说为左右相 | 宋璟守长安 | fulltext.md L26263 |
+| HJ-Q7385 | 丁卯至自东都 | 丙寅李元纮杜暹为相还东都 | fulltext.md L26267 |
+| HJ-Q7386 | 己巳张说宋璟为左右相谒乔定献昭干五陵裴光庭 | 戊辰萧嵩为相 | fulltext.md L26271 |
+| HJ-Q7387 | 庚午北讨契丹 | 为相 | fulltext.md L26275 |
+| HJ-Q7388 | 壬申至自东都宋璟免相 | 辛未幸东都 | fulltext.md L26279 |
+| HJ-Q7389 | 甲戌幸东都李林甫为相 | 癸酉韩休张九龄裴耀卿为相 | fulltext.md L26283 |
+| HJ-Q7390 | 丙子至自东都牛仙客为相是年太真杨氏入宫李林 | 乙亥 | fulltext.md L26287 |
+| HJ-Q7391 | 丁丑废皇太子瑛为庶人罢张九龄相仍黜之相宋璟卒监察御史周子谅言牛仙客事杖死于朝 | 甫用事 | fulltext.md L26291 |
+| HJ-Q7392 | 己卯平突厥获其王追封孔宣父为文宣王颜回为兖 | 使牛仙客领河东节度使 | fulltext.md L26296 |
+| HJ-Q7393 | 辛巳命安禄山为平卢军节度使 | 国公余哲并为侯 | fulltext.md L26301 |
+| HJ-Q7394 | 甲申改元为载命安禄山为范阳节度使作太真妃杨 | 耀卿进尚书右仆射 | fulltext.md L26307 |
+| HJ-Q7395 | 乙酉册太真妃杨氏为贵妃契丹杀公主叛 | 氏养子 | fulltext.md L26311 |
+| HJ-Q7396 | 己丑幸华清宫 | 铁劵幸华清宫 | fulltext.md L26317 |
+| HJ-Q7397 | 经世之卯二千二百六十 | 王 | fulltext.md L26324 |
+| HJ-Q7398 | 庚子唐改元上元宦人李辅国逼太上皇入西宫刘展 | 东都 | fulltext.md L26334 |
+| HJ-Q7399 | 乙巳改元永泰吐蕃大掠畿甸帝御六军屯于苑命九节度以本军讨贼吐蕃㑹回纥寇奉天仆固怀恩启之也郭子仪复以回纥随白元光破吐蕃于灵武崔旴以西川乱 | 代刘晏李岘为相 | fulltext.md L26343 |
+| HJ-Q7400 | 丁未吐蕃大寇灵武郭子仪镇泾阳 | 丙午改元大厯周智光以华叛 | fulltext.md L26347 |
+| HJ-Q7401 | 己酉裴冕为相 | 戊申吐蕃再寇灵武 | fulltext.md L26351 |
+| HJ-Q7402 | 壬子回纥掠京城朱滔节度幽州 | 庚戌臧玠以潭州叛 | fulltext.md L26356 |
+| HJ-Q7403 | 乙卯魏博节度田承嗣擅取洺卫礠相郏州军乱丙辰淄清李正已擅取齐海登莱沂宻徳棣曹濮兖郓请命封陇西王李寳臣封陇西王李忠臣封西平王段秀实封张掖王崔宁破吐蕃河阳军乱 | 癸丑郭子仪大败吐蕃于灵武 | fulltext.md L26361 |
+| HJ-Q7404 | 戊午回纥冦太原吐蕃寇灵武 | 常衮为相 | fulltext.md L26366 |
+| HJ-Q7405 | 甲子唐孝文皇帝五年在奉天改元兴元王武俊格命李怀光走河中帝移军梁州浑瑊及吐蕃败朱泚于武功李晟收京城迎帝还宫田希鉴杀冯河清以泾州叛行军司马田绪杀田悦以魏博降 | 经世之辰二千二百六十一 | fulltext.md L26375 |
+| HJ-Q7406 | 己巳董晋窦参为相韦臯破吐蕃于隽州 | 夏县处士阳城为諌议大夫 | fulltext.md L26383 |
+| HJ-Q7407 | 壬申襄州军乱赵璟陆贽为相贬相窦参郴州别驾吐 | 庚午吐蕃陷北庭 | fulltext.md L26388 |
+| HJ-Q7408 | 癸酉贾耽卢迈为相宣武军乱 | 蕃入寇 | fulltext.md L26392 |
+| HJ-Q7409 | 丙子崔损赵宗儒为相 | 乙亥 | fulltext.md L26398 |
+| HJ-Q7410 | 戊寅郑余庆为相栗锽杀刺史以明州叛 | 丁丑韦臯破吐蕃于嶲州 | fulltext.md L26402 |
+| HJ-Q7411 | 癸未高郢为相吐蕃请和 | 壬午 | fulltext.md L26410 |
+| HJ-Q7412 | 乙酉正月帝崩皇太子诵践位王叔文王伾用事韦执谊贾耽郑珣瑜高郢杜佑为相罢官市物贬京兆尹李实通州长史削民故也册广陵王纯为皇太子罢郑珣瑜高郢相以杜黄裳袁滋为相帝 | 甲申吐蕃南诏日本修贡 | fulltext.md L26414 |
+| HJ-Q7413 | 己丑册邓王宁为皇太子王承宗以镇叛蔡州呉少诚 | 戊子裴垍为相 | fulltext.md L26420 |
+| HJ-Q7414 | 庚寅用权德舆为相 | 卒弟少阳继事 | fulltext.md L26424 |
+| HJ-Q7415 | 经世之已二千二百六十二 | 癸巳振武军乱 | fulltext.md L26429 |
+| HJ-Q7416 | 乙未伐淮西盗杀宰相武元衡以裴度为相㑹兵伐王承宗于镇淄青李师道以嵩僧叛㑹兵伐淄青 | 淮西逆命 | fulltext.md L26434 |
+| HJ-Q7417 | 丁酉崔群李廓为相裴度大伐淮西将李愬入蔡获呉 | 州宿州军乱 | fulltext.md L26439 |
+| HJ-Q7418 | 戊戌镇州王承宗淄青李师道顺命李夷简皇甫镈程 | 元济以献淮西平裴度复相 | fulltext.md L26443 |
+| HJ-Q7419 | 己亥刘悟杀李师道以淄青十二州降令狐楚为相沂及安南军乱以方士栁泌为台州刺史帝饵金石有疾 | 异为相 | fulltext.md L26447 |
+| HJ-Q7420 | 甲辰帝崩皇太子湛践位是谓昭武皇帝贬侍郎李绅端州司马李逢吉牛僧孺为相又以李程窦易直为相葬穆宗于光陵 | 癸卯牛僧孺为相 | fulltext.md L26454 |
+| HJ-Q7421 | 丙午裴度复内相㑹乱宫人杀帝于饮所群臣诛贼立江王邙是谓昭献皇帝以韦处厚为相幽州军乱杀其帅朱克融 | 乙巳改元寳厯牛僧孺免相 | fulltext.md L26458 |
+| HJ-Q7422 | 庚戌兴元军乱杀节度使李绛温造平之牛僧孺宋申 | 宗闵为相南诏蛮陷东都 | fulltext.md L26465 |
+| HJ-Q7423 | 辛亥幽州军乱贬相宋申锡州司马内臣王守澄诬 | 锡为相 | fulltext.md L26469 |
+| HJ-Q7424 | 癸丑李德裕王涯为相罢李宗闵相册鲁王永为皇太 | 故也 | fulltext.md L26474 |
+| HJ-Q7425 | 甲寅幽州军乱复李宗闵相 | 子 | fulltext.md L26478 |
+| HJ-Q7426 | 丁巳陈夷行为相河阳军乱 | 丙辰改元开成李固言为相 | fulltext.md L26483 |
+| HJ-Q7427 | 己未崔郓为相册陈王成美为皇太子监国 | 军乱皇太子有罪卒于少阳院 | fulltext.md L26488 |
+| HJ-Q7428 | 壬戌李德裕专政 | 马幽州军乱 | fulltext.md L26494 |
+| HJ-Q7429 | 经世之午二千二百六十三 | 癸亥刘祯以泽潞叛 | fulltext.md L26498 |
+| HJ-Q7430 | 己巳罢周墀马植相再贬李徳裕崖州司户崔铉魏扶 | 戊辰周墀马植崔龟从为相 | fulltext.md L26505 |
+| HJ-Q7431 | 庚午魏扶罢相令狐绹为相 | 为相幽州军乱 | fulltext.md L26509 |
+| HJ-Q7432 | 壬申裴休为相 | 辛未魏謩为相 | fulltext.md L26513 |
+| HJ-Q7433 | ### 癸酉郑朗为相 | 癸酉郑朗为相 | fulltext.md L26515 |
+| HJ-Q7434 | 丁丑魏謩出尹成都崔慎由萧邺为相 | 乙亥 | fulltext.md L26522 |
+| HJ-Q7435 | 辛巳相萧邺出尹太原蒋伸罢相林邑蛮入寇 | 相改元咸通宣洪寇乱 | fulltext.md L26530 |
+| HJ-Q7436 | 戊子湘潭戍军乱立厐勋为帅陷徐宿滁和濠五州 | 丁亥杨收观察浙西于琮为相 | fulltext.md L26539 |
+| HJ-Q7437 | 己丑蒋伸罢相刘瞻为相徐商出尹江陵命十八将伐徐以康成训为军帅徐寇平蛮复寇东西二川 | 贬杨收端州司马移驩州赐死 | fulltext.md L26543 |
+| HJ-Q7438 | 甲午唐恭定皇帝元年葬懿宗于简陵崔彦昭郑畋卢 | 经世之未二千二百六十四 | fulltext.md L26550 |
+| HJ-Q7439 | 乙未浙西及曹濮冦乱王铎复相 | 擕为相改元干符蛮寇两川 | fulltext.md L26554 |
+| HJ-Q7440 | 庚子改元广明郑从谠出尹太原沙陀军败北黄巢军北逾五岭破湖湘及江淮州高骈距文不利发徐冤许军赴殷水以捍东都殷水军溃黄巢陷东都西攻郏号潼关失守罢卢擕相王徽裴彻为 | 崔沆豆卢瑑为相卢擕复相 | fulltext.md L26562 |
+| HJ-Q7441 | 甲子唐景文皇帝十六年东徙至榖水梁王朱全忠坑帝侍从三百人至洛阳改元天祐以张汉瑜为相杨崇本以邠兵寇关转全忠西攻行杀于洛宫立辉王祚是谓哀帝李克用以本部兵保太原 | 经世之申二千二百六十五 | fulltext.md L26589 |
+| HJ-Q7442 | 辛未梁改元干祐北攻镇定军败于柏乡蜀改元永平 | 朂东下河北 | fulltext.md L26599 |
+| HJ-Q7443 | 乙亥梁改元贞明邺王杨师厚卒分其地六州为两镇魏军遂乱囚其帅贺德伦以六州入于晋蜀㧞山南之秦鳯阶成宫大火晋李存朂东下大㑹兵于魏郊 | 原 | fulltext.md L26607 |
+| HJ-Q7444 | 辛巳梁改元龙德惠王友能以陈叛呉改元顺义晋镇 | 溥立晋存朂㧞梁之同州 | fulltext.md L26616 |
+| HJ-Q7445 | 壬午晋李存朂平镇定又败契丹于易水 | 定乱契丹犯幽州 | fulltext.md L26620 |
+| HJ-Q7446 | 乙酉唐帝存朂北巡魏郊以枢宻使郭崇韬同魏王继岌伐蜀七旬平之获其主王衍以归至秦川驿族杀之以孟知祥镇成都荆南高季兴请附蜀改元咸康国亡汉改元曰龙泉南王审知为子延 | 甲申唐自汴徙都洛阳平上党 | fulltext.md L26625 |
+| HJ-Q7447 | 己丑唐以赵鳯为相安重诲专政呉改元大和 | 于呉汉改元大有 | fulltext.md L26632 |
+| HJ-Q7448 | 辛卯唐以李遇为相罢安重诲枢密使以赵延寿范延 | 叛 | fulltext.md L26637 |
+| HJ-Q7449 | 壬辰唐孟知祥平东川获董璋称表封知祥为蜀王呉王钱镠卒子元瓘继福州王延钧称帝国曰闽元曰光启 | 光为枢密使东西二川相攻 | fulltext.md L26641 |
+| HJ-Q7450 | 甲午后唐闵帝从厚元年改元应顺以鳯翔潞王从珂移镇太原从珂自岐入逐从厚代立于洛宫改元清泰从厚出奔卫州就杀之是年孟知祥以西川称帝成都国曰蜀元曰明德知祥卒子昶继 | 经世之酉二千二百六十六 | fulltext.md L26646 |
+| HJ-Q7451 | 己亥闽乱连重遇杀其君昶立其叔父延羲改元永隆庚子晋用和凝为相李金全以安叛命马全节以十郡 | 北狄耶律徳光改元㑹同 | fulltext.md L26654 |
+| HJ-Q7452 | 辛丑晋帝石敬瑭北廵邺安从进以襄叛安重宋镇叛 | 之师平之 | fulltext.md L26658 |
+| HJ-Q7453 | 壬寅晋帝石敬瑭终于邺从子齐王重贵立侍魏将军耿延广专政始贰于狄汉刘岩卒子玢继改元光大 | 两浙钱元瓘卒子𢎞佐继 | fulltext.md L26662 |
+| HJ-Q7454 | 庚戌汉夷宰相杨赟侍卫将军史宏肇三司使王章族赐澶州王殷魏州郭威王峻死十二月枢密使郭威以魏兵入渡河败内军于刘子陂其主承祐野死郭威至汴请宰相冯道迎其君之弟承珪 | 使北伐镇邺 | fulltext.md L26673 |
+| HJ-Q7455 | 癸丑周册皇后姪柴荣为皇太子封晋王尹封府流王峻于商州王殷于登州皆杀之李榖冯道为相 | 壬子周平兖州 | fulltext.md L26678 |
+| HJ-Q7456 | 丁巳周李谷罢相王朴为枢密使伐江南有功唐改元交泰兵败于紫金山请以江北地求和于周 | 汉刘承钧改元天㑹 | fulltext.md L26685 |
 | HJ-Q7457 | ### 庚申 | 庚申 | fulltext.md L26689 |
 | HJ-Q7458 | ### 壬戌 | 壬戌 | fulltext.md L26693 |
-| HJ-Q7459 | 經世之亥二千二百六十八 | 經世之戌二千二百六十七 | fulltext.md L26699 |
-| HJ-Q7460 | 欽定四庫全書 | 皇極經世書卷六下 | fulltext.md L26703 |
-| HJ-Q7461 | 日日聲平闢 水水音開清 | 觀物篇三十五 | fulltext.md L26708 |
-| HJ-Q7462 | 〔■莊震■ 黑黑黑黑多多多多 多可个舌〕 | 開音清和律一之一 | fulltext.md L26763 |
+| HJ-Q7459 | 经世之亥二千二百六十八 | 经世之戌二千二百六十七 | fulltext.md L26699 |
+| HJ-Q7460 | 钦定四库全书 | 皇极经世书卷六下 | fulltext.md L26703 |
+| HJ-Q7461 | 日日声平辟 水水音开清 | 观物篇三十五 | fulltext.md L26708 |
+| HJ-Q7462 | 〔■庄震■ 黑黑黑黑多多多多 多可个舌〕 | 开音清和律一之一 | fulltext.md L26763 |
 | HJ-Q7463 | 〔■乍■■多多多多〕 二音 〔黑黑黑黑禾火化八〕 | 十一音 | fulltext.md L26766 |
-| HJ-Q7464 | 〔■宅直■多多多多〕 二音 〔黑黑黑黑光廣况○〕 | 十二音 | fulltext.md L26772 |
-| HJ-Q7465 | 〔古甲九癸 黑黑黑黑良良良良 千典旦○〕 | 平聲闢唱吕一之二 | fulltext.md L26778 |
-| HJ-Q7466 | 〔思三星■ 安安安安良良良良 多可个舌〕 | 開音清和律一之二 | fulltext.md L26816 |
+| HJ-Q7464 | 〔■宅直■多多多多〕 二音 〔黑黑黑黑光广况○〕 | 十二音 | fulltext.md L26772 |
+| HJ-Q7465 | 〔古甲九癸 黑黑黑黑良良良良 千典旦○〕 | 平声辟唱吕一之二 | fulltext.md L26778 |
+| HJ-Q7466 | 〔思三星■ 安安安安良良良良 多可个舌〕 | 开音清和律一之二 | fulltext.md L26816 |
 | HJ-Q7467 | 〔■乍□■良良良良〕 三音 〔安安安安元犬半○〕 | 十一音 | fulltext.md L26828 |
-| HJ-Q7468 | 〔■宅直■良良良良〕 三音 〔安安安安毛寳報霍〕 | 十二音 | fulltext.md L26834 |
-| HJ-Q7469 | 〔古甲九癸 安安安安千千千千 妻子四日〕 | 平聲闢唱吕一之三 | fulltext.md L26840 |
-| HJ-Q7470 | 〔乃妳女■ 夫夫夫夫千千千千 多可个舌〕 | 開音清和律一之四 | fulltext.md L26869 |
-| HJ-Q7471 | 〔■乍□■〕 四音 〔夫夫夫夫衰○帥骨〕 | 十一音 | fulltext.md L26890 |
-| HJ-Q7472 | 〔■宅直■千千千千〕 四音 〔夫夫夫夫龍甬用○〕 | 十二音 | fulltext.md L26896 |
-| HJ-Q7473 | 〔古甲九癸 夫夫夫夫刀刀刀刀 心審禁○〕 | 平聲闢唱吕一之四 | fulltext.md L26902 |
-| HJ-Q7474 | 〔卜百丙必 卜卜卜卜刀刀刀刀 多可个舌〕 | 開音清和律一之五 | fulltext.md L26922 |
+| HJ-Q7468 | 〔■宅直■良良良良〕 三音 〔安安安安毛寳报霍〕 | 十二音 | fulltext.md L26834 |
+| HJ-Q7469 | 〔古甲九癸 安安安安千千千千 妻子四日〕 | 平声辟唱吕一之三 | fulltext.md L26840 |
+| HJ-Q7470 | 〔乃妳女■ 夫夫夫夫千千千千 多可个舌〕 | 开音清和律一之四 | fulltext.md L26869 |
+| HJ-Q7471 | 〔■乍□■〕 四音 〔夫夫夫夫衰○帅骨〕 | 十一音 | fulltext.md L26890 |
+| HJ-Q7472 | 〔■宅直■千千千千〕 四音 〔夫夫夫夫龙甬用○〕 | 十二音 | fulltext.md L26896 |
+| HJ-Q7473 | 〔古甲九癸 夫夫夫夫刀刀刀刀 心审禁○〕 | 平声辟唱吕一之四 | fulltext.md L26902 |
+| HJ-Q7474 | 〔卜百丙必 卜卜卜卜刀刀刀刀 多可个舌〕 | 开音清和律一之五 | fulltext.md L26922 |
 | HJ-Q7475 | 〔■乍□■刀刀刀刀〕 五音 〔卜卜卜卜○○○十〕 | 十一音 | fulltext.md L26952 |
 | HJ-Q7476 | 〔■宅直■刀刀刀刀〕 五音 〔卜卜卜卜●●●●〕 | 十二音 | fulltext.md L26958 |
-| HJ-Q7477 | 〔古甲九癸 卜卜卜卜妻妻妻妻 ●●●●〕 | 平聲闢唱吕一之五 | fulltext.md L26964 |
-| HJ-Q7478 | 〔安亞乙一 東東東東妻妻妻妻 多可个舌〕 | 開音清和律一之六 | fulltext.md L26975 |
-| HJ-Q7479 | 〔■宅直■妻妻妻妻〕 六音 〔東東東東●●●●〕 | 十二音 | fulltext.md L27018 |
-| HJ-Q7480 | 〔■莊震■ 走走走走宫宫宫宫 多可个舌〕 | 開音清和律一之八 | fulltext.md L27069 |
+| HJ-Q7477 | 〔古甲九癸 卜卜卜卜妻妻妻妻 ●●●●〕 | 平声辟唱吕一之五 | fulltext.md L26964 |
+| HJ-Q7478 | 〔安亚乙一 东东东东妻妻妻妻 多可个舌〕 | 开音清和律一之六 | fulltext.md L26975 |
+| HJ-Q7479 | 〔■宅直■妻妻妻妻〕 六音 〔东东东东●●●●〕 | 十二音 | fulltext.md L27018 |
+| HJ-Q7480 | 〔■庄震■ 走走走走宫宫宫宫 多可个舌〕 | 开音清和律一之八 | fulltext.md L27069 |
 | HJ-Q7481 | 〔■乍□■宫宫宫宫〕 八音 〔走走走走禾火化八〕 | 十一音 | fulltext.md L27072 |
-| HJ-Q7482 | 〔■宅直■宫宫宫宫〕 八音 〔走走走走光廣况○〕 | 十二音 | fulltext.md L27078 |
-| HJ-Q7483 | 〔古甲九癸 走走走走心心心心 千典旦○〕 | 平聲闢唱吕一之七 | fulltext.md L27084 |
-| HJ-Q7484 | 〔思三星■ 思思思思心心心心 多可个舌〕 | 開音清和律一之九 | fulltext.md L27122 |
+| HJ-Q7482 | 〔■宅直■宫宫宫宫〕 八音 〔走走走走光广况○〕 | 十二音 | fulltext.md L27078 |
+| HJ-Q7483 | 〔古甲九癸 走走走走心心心心 千典旦○〕 | 平声辟唱吕一之七 | fulltext.md L27084 |
+| HJ-Q7484 | 〔思三星■ 思思思思心心心心 多可个舌〕 | 开音清和律一之九 | fulltext.md L27122 |
 | HJ-Q7485 | 〔■乍□■心心心心〕 九音 〔思思思思元犬半○〕 | 十一音 | fulltext.md L27134 |
-| HJ-Q7486 | 〔■宅直■心心心心〕 九音 〔思思思思毛寳報霍〕 | 十二音 | fulltext.md L27140 |
-| HJ-Q7487 | 〔古甲九癸 思思思思●●●● 多可个舌〕 | 平聲闢唱吕一之八 | fulltext.md L27146 |
-| HJ-Q7488 | 〔乃妳女■ ■■■■●●●● 多可个舌〕 | 開音清和律一之十 | fulltext.md L27175 |
-| HJ-Q7489 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L27196 |
-| HJ-Q7490 | 〔■宅直■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L27202 |
-| HJ-Q7491 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 平聲闢唱吕一之九 | fulltext.md L27208 |
-| HJ-Q7492 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 開音清和律一之十一 | fulltext.md L27228 |
+| HJ-Q7486 | 〔■宅直■心心心心〕 九音 〔思思思思毛寳报霍〕 | 十二音 | fulltext.md L27140 |
+| HJ-Q7487 | 〔古甲九癸 思思思思●●●● 多可个舌〕 | 平声辟唱吕一之八 | fulltext.md L27146 |
+| HJ-Q7488 | 〔乃妳女■ ■■■■●●●● 多可个舌〕 | 开音清和律一之十 | fulltext.md L27175 |
+| HJ-Q7489 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L27196 |
+| HJ-Q7490 | 〔■宅直■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L27202 |
+| HJ-Q7491 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 平声辟唱吕一之九 | fulltext.md L27208 |
+| HJ-Q7492 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 开音清和律一之十一 | fulltext.md L27228 |
 | HJ-Q7493 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L27258 |
 | HJ-Q7494 | 〔■宅直■●●●●〕 十一音 〔■■■■●●●●〕 | 十二音 | fulltext.md L27264 |
-| HJ-Q7495 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 平聲闢唱吕一之十 | fulltext.md L27270 |
-| HJ-Q7496 | 〔安亞乙一 ■■■■●●●● 多可个舌〕 | 開音清和律一之十二 | fulltext.md L27281 |
+| HJ-Q7495 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 平声辟唱吕一之十 | fulltext.md L27270 |
+| HJ-Q7496 | 〔安亚乙一 ■■■■●●●● 多可个舌〕 | 开音清和律一之十二 | fulltext.md L27281 |
 | HJ-Q7497 | 〔■乍□■●●●●〕 十二音 〔■■■■●●●●〕 | 十一音 | fulltext.md L27320 |
 | HJ-Q7498 | 〔■宅直■●●●●〕 十二音〔■■■■●●●●〕 | 十二音 | fulltext.md L27326 |
-| HJ-Q7499 | 日月聲平翕 水火音開濁 | 觀物篇三十六 | fulltext.md L27332 |
-| HJ-Q7500 | 〔■莊震■ 黄黄黄黄禾禾禾禾 多可个舌〕 | 開音濁和律二之二 | fulltext.md L27367 |
+| HJ-Q7499 | 日月声平翕 水火音开浊 | 观物篇三十六 | fulltext.md L27332 |
+| HJ-Q7500 | 〔■庄震■ 黄黄黄黄禾禾禾禾 多可个舌〕 | 开音浊和律二之二 | fulltext.md L27367 |
 | HJ-Q7501 | 〔■乍□■禾禾禾禾〕 二音 〔黄黄黄黄禾火化八〕 | 十一音 | fulltext.md L27370 |
-| HJ-Q7502 | 〔■宅直■禾禾禾禾〕 二音 〔黄黄黄黄光廣况○〕 | 十二音 | fulltext.md L27376 |
-| HJ-Q7503 | 〔古甲九癸 黄黄黄黄光光光光 千典旦○〕 | 平聲翕唱吕二之二 | fulltext.md L27382 |
-| HJ-Q7504 | 〔思三星■ □□□□光光光光 多可个舌〕 | 開音濁和律二之三 | fulltext.md L27420 |
+| HJ-Q7502 | 〔■宅直■禾禾禾禾〕 二音 〔黄黄黄黄光广况○〕 | 十二音 | fulltext.md L27376 |
+| HJ-Q7503 | 〔古甲九癸 黄黄黄黄光光光光 千典旦○〕 | 平声翕唱吕二之二 | fulltext.md L27382 |
+| HJ-Q7504 | 〔思三星■ □□□□光光光光 多可个舌〕 | 开音浊和律二之三 | fulltext.md L27420 |
 | HJ-Q7505 | 〔■乍□■光光光光〕 三音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L27432 |
-| HJ-Q7506 | 〔■宅直■光光光光〕 三音 〔□□□□毛寶報霍〕 | 十二音 | fulltext.md L27438 |
-| HJ-Q7507 | 〔古甲九癸 □□□□元元元元 妻子四日〕 | 平聲翕唱吕二之三 | fulltext.md L27444 |
-| HJ-Q7508 | 〔乃妳女■ 父父父父元元元元 多可个舌〕 | 開音濁和律二之四 | fulltext.md L27473 |
-| HJ-Q7509 | 〔■乍□■元元元元〕 四音 〔父父父父衰○帥骨〕 | 十一音 | fulltext.md L27494 |
-| HJ-Q7510 | 〔■宅直■元元元元〕 四音 〔父父父父龍甬用○〕 | 十二音 | fulltext.md L27500 |
-| HJ-Q7511 | 〔古甲九癸 父父父父毛毛毛毛 心審禁○〕 | 平聲翕唱吕二之四 | fulltext.md L27506 |
-| HJ-Q7512 | 〔卜百丙必 歩歩歩歩毛毛毛毛 多可个舌〕 | 開音濁和律二之五 | fulltext.md L27526 |
+| HJ-Q7506 | 〔■宅直■光光光光〕 三音 〔□□□□毛宝报霍〕 | 十二音 | fulltext.md L27438 |
+| HJ-Q7507 | 〔古甲九癸 □□□□元元元元 妻子四日〕 | 平声翕唱吕二之三 | fulltext.md L27444 |
+| HJ-Q7508 | 〔乃妳女■ 父父父父元元元元 多可个舌〕 | 开音浊和律二之四 | fulltext.md L27473 |
+| HJ-Q7509 | 〔■乍□■元元元元〕 四音 〔父父父父衰○帅骨〕 | 十一音 | fulltext.md L27494 |
+| HJ-Q7510 | 〔■宅直■元元元元〕 四音 〔父父父父龙甬用○〕 | 十二音 | fulltext.md L27500 |
+| HJ-Q7511 | 〔古甲九癸 父父父父毛毛毛毛 心审禁○〕 | 平声翕唱吕二之四 | fulltext.md L27506 |
+| HJ-Q7512 | 〔卜百丙必 歩歩歩歩毛毛毛毛 多可个舌〕 | 开音浊和律二之五 | fulltext.md L27526 |
 | HJ-Q7513 | 〔■乍□■毛毛毛毛〕 五音 〔歩歩歩歩○○○十〕 | 十一音 | fulltext.md L27556 |
 | HJ-Q7514 | 〔■宅直■毛毛毛毛〕 五音 〔歩歩歩歩●●●●〕 | 十二音 | fulltext.md L27562 |
-| HJ-Q7515 | 〔古甲九癸 歩歩歩歩衰衰衰衰 ●●●●〕 | 平聲翕唱吕二之五 | fulltext.md L27568 |
-| HJ-Q7516 | 〔安亞乙一 兊兊兊兊衰衰衰衰 多可个舌〕 | 開音濁和律二之六 | fulltext.md L27579 |
+| HJ-Q7515 | 〔古甲九癸 歩歩歩歩衰衰衰衰 ●●●●〕 | 平声翕唱吕二之五 | fulltext.md L27568 |
+| HJ-Q7516 | 〔安亚乙一 兊兊兊兊衰衰衰衰 多可个舌〕 | 开音浊和律二之六 | fulltext.md L27579 |
 | HJ-Q7517 | 〔■乍□■衰衰衰衰〕 六音 〔兊兊兊兊●●●●〕 | 十一音 | fulltext.md L27618 |
 | HJ-Q7518 | 〔■宅直■衰衰衰衰〕 六音 〔兊兊兊兊●●●●〕 | 十二音 | fulltext.md L27624 |
-| HJ-Q7519 | 〔■莊震■ 自自自自龍龍龍龍 多可个舌〕 | 開音濁和律二之八 | fulltext.md L27675 |
-| HJ-Q7520 | 〔■乍□■龍龍龍龍〕 八音 〔自自自自禾火化八〕 | 十一音 | fulltext.md L27678 |
-| HJ-Q7521 | 〔■宅直■龍龍龍龍〕 八音 〔自自自自光廣况○〕 | 十二音 | fulltext.md L27684 |
-| HJ-Q7522 | 〔古甲九癸 自自自自○○○○ 千典旦○〕 | 平聲翕唱吕二之七 | fulltext.md L27690 |
-| HJ-Q7523 | 〔思三星■ 寺寺寺寺○○○○ 多可个舌〕 | 開音濁和律二之九 | fulltext.md L27728 |
+| HJ-Q7519 | 〔■庄震■ 自自自自龙龙龙龙 多可个舌〕 | 开音浊和律二之八 | fulltext.md L27675 |
+| HJ-Q7520 | 〔■乍□■龙龙龙龙〕 八音 〔自自自自禾火化八〕 | 十一音 | fulltext.md L27678 |
+| HJ-Q7521 | 〔■宅直■龙龙龙龙〕 八音 〔自自自自光广况○〕 | 十二音 | fulltext.md L27684 |
+| HJ-Q7522 | 〔古甲九癸 自自自自○○○○ 千典旦○〕 | 平声翕唱吕二之七 | fulltext.md L27690 |
+| HJ-Q7523 | 〔思三星■ 寺寺寺寺○○○○ 多可个舌〕 | 开音浊和律二之九 | fulltext.md L27728 |
 | HJ-Q7524 | 〔■乍□■○○○○〕 九音 〔寺寺寺寺元犬半○〕 | 十一音 | fulltext.md L27740 |
-| HJ-Q7525 | 〔■宅直■○○○○〕 九音 〔寺寺寺寺毛寶報霍〕 | 十二音 | fulltext.md L27746 |
-| HJ-Q7526 | 〔古甲九癸 寺寺寺寺●●●● 妻子四日〕 | 平聲翕唱吕二之八 | fulltext.md L27752 |
-| HJ-Q7527 | 〔乃妳女■ ■■■■●●●● 多可个舌〕 | 開音濁和律二之十 | fulltext.md L27781 |
-| HJ-Q7528 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L27802 |
-| HJ-Q7529 | 〔□□□■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L27808 |
-| HJ-Q7530 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 平聲翕唱吕二之九 | fulltext.md L27814 |
-| HJ-Q7531 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 開音濁和律二之十一 | fulltext.md L27834 |
+| HJ-Q7525 | 〔■宅直■○○○○〕 九音 〔寺寺寺寺毛宝报霍〕 | 十二音 | fulltext.md L27746 |
+| HJ-Q7526 | 〔古甲九癸 寺寺寺寺●●●● 妻子四日〕 | 平声翕唱吕二之八 | fulltext.md L27752 |
+| HJ-Q7527 | 〔乃妳女■ ■■■■●●●● 多可个舌〕 | 开音浊和律二之十 | fulltext.md L27781 |
+| HJ-Q7528 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L27802 |
+| HJ-Q7529 | 〔□□□■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L27808 |
+| HJ-Q7530 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 平声翕唱吕二之九 | fulltext.md L27814 |
+| HJ-Q7531 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 开音浊和律二之十一 | fulltext.md L27834 |
 | HJ-Q7532 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L27864 |
 | HJ-Q7533 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L27870 |
-| HJ-Q7534 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 平聲翕唱吕二之十 | fulltext.md L27876 |
-| HJ-Q7535 | 〔□爻王寅 ■■■■●●●● 多可个舌〕 | 開音濁和律二之十二 | fulltext.md L27887 |
+| HJ-Q7534 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 平声翕唱吕二之十 | fulltext.md L27876 |
+| HJ-Q7535 | 〔□爻王寅 ■■■■●●●● 多可个舌〕 | 开音浊和律二之十二 | fulltext.md L27887 |
 | HJ-Q7536 | 〔■乍□■●●●●〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L27926 |
-| HJ-Q7537 | 欽定四庫全書 | 皇極經世書卷七上 | fulltext.md L27936 |
-| HJ-Q7538 | 〔■荘震■ 五五五五開開開開 多可个舌〕 | 開音清和律三之二 | fulltext.md L27994 |
-| HJ-Q7539 | 〔■乍□■開開開開〕 二音 〔五五五五禾火化八〕 | 十一音 | fulltext.md L27997 |
-| HJ-Q7540 | 〔■宅直■開開開開〕 二音 〔五五五五光廣况○〕 | 十二音 | fulltext.md L28003 |
-| HJ-Q7541 | 〔古甲九癸 五五五五丁丁丁丁 千典旦○〕 | 平聲闢唱吕三之二 | fulltext.md L28009 |
-| HJ-Q7542 | 〔思三星■ 毌毌毌毌丁丁丁丁 多可个舌〕 | 開音清和律三之三 | fulltext.md L28047 |
+| HJ-Q7537 | 钦定四库全书 | 皇极经世书卷七上 | fulltext.md L27936 |
+| HJ-Q7538 | 〔■荘震■ 五五五五开开开开 多可个舌〕 | 开音清和律三之二 | fulltext.md L27994 |
+| HJ-Q7539 | 〔■乍□■开开开开〕 二音 〔五五五五禾火化八〕 | 十一音 | fulltext.md L27997 |
+| HJ-Q7540 | 〔■宅直■开开开开〕 二音 〔五五五五光广况○〕 | 十二音 | fulltext.md L28003 |
+| HJ-Q7541 | 〔古甲九癸 五五五五丁丁丁丁 千典旦○〕 | 平声辟唱吕三之二 | fulltext.md L28009 |
+| HJ-Q7542 | 〔思三星■ 毌毌毌毌丁丁丁丁 多可个舌〕 | 开音清和律三之三 | fulltext.md L28047 |
 | HJ-Q7543 | 〔■乍□■丁丁丁丁〕 三音 〔毌毌毌毌元犬半○〕 | 十一音 | fulltext.md L28059 |
-| HJ-Q7544 | 〔■宅直■丁丁丁丁〕 三音 〔毌毌毌毌毛寳報霍〕 | 十二音 | fulltext.md L28065 |
-| HJ-Q7545 | 〔古甲九癸 毌毌毌毌臣臣臣臣 妻子四日〕 | 平聲闢唱吕三之三 | fulltext.md L28071 |
-| HJ-Q7546 | 〔■乍□■臣臣臣臣〕 四音 〔武武武武衰○帥骨〕 | 十一音 | fulltext.md L28119 |
-| HJ-Q7547 | 〔■宅直■臣臣臣臣〕 四音 〔武武武武龍甬用○〕 | 十二音 | fulltext.md L28125 |
-| HJ-Q7548 | 〔古甲九癸 武武武武牛牛牛牛 心審禁○〕 | 平聲闢唱吕三之四 | fulltext.md L28131 |
-| HJ-Q7549 | 〔卜百丙必 普普普普牛牛牛牛 多可个舌〕 | 開音清和律三之五 | fulltext.md L28151 |
+| HJ-Q7544 | 〔■宅直■丁丁丁丁〕 三音 〔毌毌毌毌毛寳报霍〕 | 十二音 | fulltext.md L28065 |
+| HJ-Q7545 | 〔古甲九癸 毌毌毌毌臣臣臣臣 妻子四日〕 | 平声辟唱吕三之三 | fulltext.md L28071 |
+| HJ-Q7546 | 〔■乍□■臣臣臣臣〕 四音 〔武武武武衰○帅骨〕 | 十一音 | fulltext.md L28119 |
+| HJ-Q7547 | 〔■宅直■臣臣臣臣〕 四音 〔武武武武龙甬用○〕 | 十二音 | fulltext.md L28125 |
+| HJ-Q7548 | 〔古甲九癸 武武武武牛牛牛牛 心审禁○〕 | 平声辟唱吕三之四 | fulltext.md L28131 |
+| HJ-Q7549 | 〔卜百丙必 普普普普牛牛牛牛 多可个舌〕 | 开音清和律三之五 | fulltext.md L28151 |
 | HJ-Q7550 | 〔■乍□■牛牛牛牛〕 五音 〔普普普普○○○十〕 | 十一音 | fulltext.md L28181 |
 | HJ-Q7551 | 〔■宅直■牛牛牛牛〕 五音 〔普普普普●●●●〕 | 十二音 | fulltext.md L28187 |
-| HJ-Q7552 | 〔古甲九癸 普普普普○○○○ ●●●●〕 | 平聲闢唱吕三之五 | fulltext.md L28193 |
-| HJ-Q7553 | 〔安亞乙一 土土土土○○○○ 多可个舌〕 | 開音清和律三之六 | fulltext.md L28204 |
+| HJ-Q7552 | 〔古甲九癸 普普普普○○○○ ●●●●〕 | 平声辟唱吕三之五 | fulltext.md L28193 |
+| HJ-Q7553 | 〔安亚乙一 土土土土○○○○ 多可个舌〕 | 开音清和律三之六 | fulltext.md L28204 |
 | HJ-Q7554 | 〔■乍□■○○○○〕 六音 〔土土土土●●●●〕 | 十一音 | fulltext.md L28243 |
 | HJ-Q7555 | 〔■宅直■○○○○〕 六音 〔土土土土●●●●〕 | 十二音 | fulltext.md L28249 |
-| HJ-Q7556 | 〔■莊震■ 草草草草魚魚魚魚 多可个舌〕 | 開音清和律三之八 | fulltext.md L28300 |
-| HJ-Q7557 | 〔■乍□■魚魚魚魚〕 八音 〔草草草草禾火化八〕 | 十一音 | fulltext.md L28303 |
-| HJ-Q7558 | 〔■宅直■魚魚魚魚〕 八音 〔草草草草光廣况○〕 | 十二音 | fulltext.md L28309 |
-| HJ-Q7559 | 〔古甲九癸 草草草草男男男男 千典旦○〕 | 平聲闢唱吕三之七 | fulltext.md L28315 |
-| HJ-Q7560 | 〔思三星■ □□□□男男男男 多可个舌〕 | 開音清和律三之九 | fulltext.md L28353 |
+| HJ-Q7556 | 〔■庄震■ 草草草草鱼鱼鱼鱼 多可个舌〕 | 开音清和律三之八 | fulltext.md L28300 |
+| HJ-Q7557 | 〔■乍□■鱼鱼鱼鱼〕 八音 〔草草草草禾火化八〕 | 十一音 | fulltext.md L28303 |
+| HJ-Q7558 | 〔■宅直■鱼鱼鱼鱼〕 八音 〔草草草草光广况○〕 | 十二音 | fulltext.md L28309 |
+| HJ-Q7559 | 〔古甲九癸 草草草草男男男男 千典旦○〕 | 平声辟唱吕三之七 | fulltext.md L28315 |
+| HJ-Q7560 | 〔思三星■ □□□□男男男男 多可个舌〕 | 开音清和律三之九 | fulltext.md L28353 |
 | HJ-Q7561 | 〔■乍□■男男男男〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L28365 |
-| HJ-Q7562 | 〔■宅直■男男男男〕 九音 〔□□□□毛寳報霍〕 | 十二音 | fulltext.md L28371 |
-| HJ-Q7563 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 平聲闢唱吕三之八 | fulltext.md L28377 |
-| HJ-Q7564 | 〔乃妳女■ ■■■■●●●● 多可个舌〕 | 開音清和律三之十 | fulltext.md L28406 |
-| HJ-Q7565 | 〔■乍□■●●●●〕 十一音〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L28427 |
-| HJ-Q7566 | 〔■宅直■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L28433 |
-| HJ-Q7567 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 平聲闢唱吕三之九 | fulltext.md L28439 |
-| HJ-Q7568 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 開音清和律三之十一 | fulltext.md L28459 |
+| HJ-Q7562 | 〔■宅直■男男男男〕 九音 〔□□□□毛寳报霍〕 | 十二音 | fulltext.md L28371 |
+| HJ-Q7563 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 平声辟唱吕三之八 | fulltext.md L28377 |
+| HJ-Q7564 | 〔乃妳女■ ■■■■●●●● 多可个舌〕 | 开音清和律三之十 | fulltext.md L28406 |
+| HJ-Q7565 | 〔■乍□■●●●●〕 十一音〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L28427 |
+| HJ-Q7566 | 〔■宅直■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L28433 |
+| HJ-Q7567 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 平声辟唱吕三之九 | fulltext.md L28439 |
+| HJ-Q7568 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 开音清和律三之十一 | fulltext.md L28459 |
 | HJ-Q7569 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L28489 |
 | HJ-Q7570 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L28495 |
-| HJ-Q7571 | 〔安亞乙一 ■■■■●●●● 多可个舌〕 | 開音清和律三之十二 | fulltext.md L28510 |
+| HJ-Q7571 | 〔安亚乙一 ■■■■●●●● 多可个舌〕 | 开音清和律三之十二 | fulltext.md L28510 |
 | HJ-Q7572 | 〔■乍□■●●●●〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L28549 |
-| HJ-Q7573 | 〔■莊震■ 吾吾吾吾回回回回 多可个舌〕 | 開音濁和律四之二 | fulltext.md L28612 |
+| HJ-Q7573 | 〔■庄震■ 吾吾吾吾回回回回 多可个舌〕 | 开音浊和律四之二 | fulltext.md L28612 |
 | HJ-Q7574 | 〔■乍□■回回回回〕 二音 〔吾吾吾吾禾火化八〕 | 十一音 | fulltext.md L28615 |
-| HJ-Q7575 | 〔■宅直■回回回回〕 二音 〔吾吾吾吾光廣况○〕 | 十二音 | fulltext.md L28621 |
-| HJ-Q7576 | 〔古甲九癸 吾吾吾吾兄兄兄兄 千典旦○〕 | 平聲翕唱吕四之二 | fulltext.md L28627 |
-| HJ-Q7577 | 〔思三星■ 目目目目兄兄兄兄 多可个舌〕 | 開音濁和律四之三 | fulltext.md L28665 |
+| HJ-Q7575 | 〔■宅直■回回回回〕 二音 〔吾吾吾吾光广况○〕 | 十二音 | fulltext.md L28621 |
+| HJ-Q7576 | 〔古甲九癸 吾吾吾吾兄兄兄兄 千典旦○〕 | 平声翕唱吕四之二 | fulltext.md L28627 |
+| HJ-Q7577 | 〔思三星■ 目目目目兄兄兄兄 多可个舌〕 | 开音浊和律四之三 | fulltext.md L28665 |
 | HJ-Q7578 | 〔■乍□■兄兄兄兄〕 三音 〔目目目目元犬半○〕 | 十一音 | fulltext.md L28677 |
-| HJ-Q7579 | 〔■宅直■兄兄兄兄〕 三音 〔目目目目毛寳報霍〕 | 十二音 | fulltext.md L28683 |
-| HJ-Q7580 | 〔古甲九癸 目目目目君君君君 妻子四日〕 | 平聲翕唱吕四之三 | fulltext.md L28689 |
-| HJ-Q7581 | 〔乃妳女■ 文文文文君君君君 多可个舌〕 | 開音濁和律四之四 | fulltext.md L28718 |
-| HJ-Q7582 | 〔古甲九癸 文文文文○○○○ 心審禁○〕 | 平聲翕唱吕四之四 | fulltext.md L28747 |
-| HJ-Q7583 | 〔卜百丙必 旁旁旁旁○○○○ 多可个舌〕 | 開音濁和律四之五 | fulltext.md L28767 |
+| HJ-Q7579 | 〔■宅直■兄兄兄兄〕 三音 〔目目目目毛寳报霍〕 | 十二音 | fulltext.md L28683 |
+| HJ-Q7580 | 〔古甲九癸 目目目目君君君君 妻子四日〕 | 平声翕唱吕四之三 | fulltext.md L28689 |
+| HJ-Q7581 | 〔乃妳女■ 文文文文君君君君 多可个舌〕 | 开音浊和律四之四 | fulltext.md L28718 |
+| HJ-Q7582 | 〔古甲九癸 文文文文○○○○ 心审禁○〕 | 平声翕唱吕四之四 | fulltext.md L28747 |
+| HJ-Q7583 | 〔卜百丙必 旁旁旁旁○○○○ 多可个舌〕 | 开音浊和律四之五 | fulltext.md L28767 |
 | HJ-Q7584 | 〔■乍□■○○○○〕 五音 〔旁旁旁旁○○○十〕 | 十一音 | fulltext.md L28797 |
 | HJ-Q7585 | 〔■宅直■○○○○〕 五音 〔旁旁旁旁●●●●〕 | 十二音 | fulltext.md L28803 |
-| HJ-Q7586 | 〔古甲九癸 旁旁旁旁 ●●●●〕 | 平聲翕唱吕四之五 | fulltext.md L28809 |
-| HJ-Q7587 | 〔安亞乙一 同同同同 多可个舌〕 | 開音濁和律四之六 | fulltext.md L28820 |
+| HJ-Q7586 | 〔古甲九癸 旁旁旁旁 ●●●●〕 | 平声翕唱吕四之五 | fulltext.md L28809 |
+| HJ-Q7587 | 〔安亚乙一 同同同同 多可个舌〕 | 开音浊和律四之六 | fulltext.md L28820 |
 | HJ-Q7588 | 〔■乍□■〕 六音 〔同同同同●●●●〕 | 十一音 | fulltext.md L28859 |
 | HJ-Q7589 | 〔■宅直■〕 六音 〔同同同同●●●●〕 | 十二音 | fulltext.md L28865 |
-| HJ-Q7590 | 〔■莊震■ 曹曹曹曹烏烏烏烏 多可个舌〕 | 開音濁和律四之八 | fulltext.md L28916 |
-| HJ-Q7591 | 〔■乍□■烏烏烏烏〕 八音 〔曹曹曹曹禾火化八〕 | 十一音 | fulltext.md L28919 |
-| HJ-Q7592 | 〔■宅直■烏烏烏烏〕 八音 〔曹曹曹曹光廣况○〕 | 十二音 | fulltext.md L28925 |
-| HJ-Q7593 | 〔古甲九癸 曹曹曹曹○○○○ 千典旦○〕 | 平聲翕唱吕四之七 | fulltext.md L28931 |
-| HJ-Q7594 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 開音濁和律四之九 | fulltext.md L28969 |
+| HJ-Q7590 | 〔■庄震■ 曹曹曹曹乌乌乌乌 多可个舌〕 | 开音浊和律四之八 | fulltext.md L28916 |
+| HJ-Q7591 | 〔■乍□■乌乌乌乌〕 八音 〔曹曹曹曹禾火化八〕 | 十一音 | fulltext.md L28919 |
+| HJ-Q7592 | 〔■宅直■乌乌乌乌〕 八音 〔曹曹曹曹光广况○〕 | 十二音 | fulltext.md L28925 |
+| HJ-Q7593 | 〔古甲九癸 曹曹曹曹○○○○ 千典旦○〕 | 平声翕唱吕四之七 | fulltext.md L28931 |
+| HJ-Q7594 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 开音浊和律四之九 | fulltext.md L28969 |
 | HJ-Q7595 | 〔■乍□■○○○○〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L28981 |
-| HJ-Q7596 | 〔■宅直■○○○○〕 九音 〔□□□□毛寳報霍〕 | 十二音 | fulltext.md L28987 |
-| HJ-Q7597 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 平聲翕唱吕四之八 | fulltext.md L28993 |
-| HJ-Q7598 | 〔乃妳女■ 多可个舌●●●● ■■■■〕 | 開音濁和律四之十 | fulltext.md L29022 |
-| HJ-Q7599 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 平聲翕唱吕四之九 | fulltext.md L29051 |
-| HJ-Q7600 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 開音濁和律四之十一 | fulltext.md L29071 |
+| HJ-Q7596 | 〔■宅直■○○○○〕 九音 〔□□□□毛寳报霍〕 | 十二音 | fulltext.md L28987 |
+| HJ-Q7597 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 平声翕唱吕四之八 | fulltext.md L28993 |
+| HJ-Q7598 | 〔乃妳女■ 多可个舌●●●● ■■■■〕 | 开音浊和律四之十 | fulltext.md L29022 |
+| HJ-Q7599 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 平声翕唱吕四之九 | fulltext.md L29051 |
+| HJ-Q7600 | 〔卜百丙必 ■■■■●●●● 多可个舌〕 | 开音浊和律四之十一 | fulltext.md L29071 |
 | HJ-Q7601 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L29101 |
 | HJ-Q7602 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L29107 |
-| HJ-Q7603 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 平聲翕唱吕四之十 | fulltext.md L29113 |
-| HJ-Q7604 | 〔安亞乙一 ■■■■●●●● 多可个舌〕 | 開音濁和律四之十二 | fulltext.md L29124 |
+| HJ-Q7603 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 平声翕唱吕四之十 | fulltext.md L29113 |
+| HJ-Q7604 | 〔安亚乙一 ■■■■●●●● 多可个舌〕 | 开音浊和律四之十二 | fulltext.md L29124 |
 | HJ-Q7605 | 〔■乍□■●●●●〕 十二音 〔■■■■●●●●〕 | 十一音 | fulltext.md L29163 |
 | HJ-Q7606 | 〔■宅直■●●●●〕 十二音〔■■■■●●●●〕 | 十二音 | fulltext.md L29169 |
-| HJ-Q7607 | 欽定四庫全書 | 皇極經世書卷七下 | fulltext.md L29175 |
-| HJ-Q7608 | 月日聲上之一闢 火水音發之一清 | 四 | fulltext.md L29185 |
-| HJ-Q7609 | 〔■莊震■ 花花花花可可可可 多可个舌〕 | 發音清和律一之二 | fulltext.md L29235 |
+| HJ-Q7607 | 钦定四库全书 | 皇极经世书卷七下 | fulltext.md L29175 |
+| HJ-Q7608 | 月日声上之一辟 火水音发之一清 | 四 | fulltext.md L29185 |
+| HJ-Q7609 | 〔■庄震■ 花花花花可可可可 多可个舌〕 | 发音清和律一之二 | fulltext.md L29235 |
 | HJ-Q7610 | 〔■乍○■可可可可〕 二音 〔花花花花禾火化八〕 | 十一音 | fulltext.md L29238 |
-| HJ-Q7611 | 〔■宅直■可可可可〕 二音 〔花花花花光廣况○〕 | 十二音 | fulltext.md L29244 |
-| HJ-Q7612 | 〔古甲九癸 花花花花兩兩兩兩 千典旦○〕 | 上聲闢唱呂一之二 | fulltext.md L29250 |
-| HJ-Q7613 | 〔思三星■ 亞亞亞亞兩兩兩兩 多可个舌〕 | 發音清和律一之三 | fulltext.md L29288 |
-| HJ-Q7614 | 〔■乍○■兩兩兩兩〕 三音 〔亞亞亞亞元犬半○〕 | 十一音 | fulltext.md L29300 |
-| HJ-Q7615 | 〔■宅直■兩兩兩兩〕 三音 〔亞亞亞亞毛寳報霍〕 | 十二音 | fulltext.md L29306 |
-| HJ-Q7616 | 〔古甲九癸典典典典〕 三音 〔亞亞亞亞妻子四日〕 | 上聲闢唱吕一之三 | fulltext.md L29312 |
-| HJ-Q7617 | 〔乃妳女■ 法法法法典典典典 多可个舌〕 | 發音清和律一之四 | fulltext.md L29341 |
-| HJ-Q7618 | 〔■乍□■典典典典〕 四音 〔法法法法衰○帥骨〕 | 十一音 | fulltext.md L29362 |
-| HJ-Q7619 | 〔■宅直■典典典典〕 四音 〔法法法法龍甬用○〕 | 十二音 | fulltext.md L29368 |
-| HJ-Q7620 | 〔古甲九癸 法法法法早早早早 心審禁○〕 | 上聲闢唱呂一之四 | fulltext.md L29374 |
-| HJ-Q7621 | 〔卜百丙必 百百百百早早早早 多可个舌〕 | 發音清和律一之五 | fulltext.md L29394 |
+| HJ-Q7611 | 〔■宅直■可可可可〕 二音 〔花花花花光广况○〕 | 十二音 | fulltext.md L29244 |
+| HJ-Q7612 | 〔古甲九癸 花花花花两两两两 千典旦○〕 | 上声辟唱吕一之二 | fulltext.md L29250 |
+| HJ-Q7613 | 〔思三星■ 亚亚亚亚两两两两 多可个舌〕 | 发音清和律一之三 | fulltext.md L29288 |
+| HJ-Q7614 | 〔■乍○■两两两两〕 三音 〔亚亚亚亚元犬半○〕 | 十一音 | fulltext.md L29300 |
+| HJ-Q7615 | 〔■宅直■两两两两〕 三音 〔亚亚亚亚毛寳报霍〕 | 十二音 | fulltext.md L29306 |
+| HJ-Q7616 | 〔古甲九癸典典典典〕 三音 〔亚亚亚亚妻子四日〕 | 上声辟唱吕一之三 | fulltext.md L29312 |
+| HJ-Q7617 | 〔乃妳女■ 法法法法典典典典 多可个舌〕 | 发音清和律一之四 | fulltext.md L29341 |
+| HJ-Q7618 | 〔■乍□■典典典典〕 四音 〔法法法法衰○帅骨〕 | 十一音 | fulltext.md L29362 |
+| HJ-Q7619 | 〔■宅直■典典典典〕 四音 〔法法法法龙甬用○〕 | 十二音 | fulltext.md L29368 |
+| HJ-Q7620 | 〔古甲九癸 法法法法早早早早 心审禁○〕 | 上声辟唱吕一之四 | fulltext.md L29374 |
+| HJ-Q7621 | 〔卜百丙必 百百百百早早早早 多可个舌〕 | 发音清和律一之五 | fulltext.md L29394 |
 | HJ-Q7622 | 〔■乍□■早早早早〕 五音 〔百百百百○○○十〕 | 十一音 | fulltext.md L29424 |
 | HJ-Q7623 | 〔■宅直■早早早早〕 五音 〔百百百百●●●●〕 | 十二音 | fulltext.md L29430 |
-| HJ-Q7624 | 〔古甲九癸 百百百百子子子子 ●●●●〕 | 上聲闢唱吕一之五 | fulltext.md L29436 |
-| HJ-Q7625 | 〔安亞乙一 丹丹丹丹子子子子 多可个舌〕 | 發音清和律一之六 | fulltext.md L29447 |
+| HJ-Q7624 | 〔古甲九癸 百百百百子子子子 ●●●●〕 | 上声辟唱吕一之五 | fulltext.md L29436 |
+| HJ-Q7625 | 〔安亚乙一 丹丹丹丹子子子子 多可个舌〕 | 发音清和律一之六 | fulltext.md L29447 |
 | HJ-Q7626 | 〔■乍○■子子子子〕 六音 〔丹丹丹丹●●●●〕 | 十一音 | fulltext.md L29486 |
 | HJ-Q7627 | 〔■宅直■子子子子〕 六音 〔丹丹丹丹●●●●〕 | 十二音 | fulltext.md L29492 |
-| HJ-Q7628 | 〔■莊震■ 哉哉哉哉孔孔孔孔 多可个舌〕 | 發音清和律一之八 | fulltext.md L29537 |
+| HJ-Q7628 | 〔■庄震■ 哉哉哉哉孔孔孔孔 多可个舌〕 | 发音清和律一之八 | fulltext.md L29537 |
 | HJ-Q7629 | 〔■乍□■孔孔孔孔〕 八音 〔哉哉哉哉禾火化八〕 | 十一音 | fulltext.md L29540 |
-| HJ-Q7630 | 〔■宅直■孔孔孔孔〕 八音 〔哉哉哉哉光廣况○〕 | 十二音 | fulltext.md L29546 |
-| HJ-Q7631 | 〔古甲九癸 哉哉哉哉審審審審 千典旦○〕 | 上聲闢唱吕一之七 | fulltext.md L29552 |
-| HJ-Q7632 | 〔思三星■ 三三三三審審審審 多可个舌〕 | 發音清和律一之九 | fulltext.md L29590 |
-| HJ-Q7633 | 〔■乍□■審審審審〕 九音 〔三三三三元犬半○〕 | 十一音 | fulltext.md L29602 |
-| HJ-Q7634 | 〔■宅直■審審審審〕 九音 〔三三三三毛報寳霍〕 | 十二音 | fulltext.md L29608 |
-| HJ-Q7635 | 〔古甲九癸 三三三三●●●● 妻子四日〕 | 上聲闢唱吕一之八 | fulltext.md L29614 |
-| HJ-Q7636 | 〔乃妳女■ 山山山山●●●● 多可个舌〕 | 發音清和律一之十 | fulltext.md L29643 |
-| HJ-Q7637 | 〔■乍□■●●●●〕 十音 〔山山山山衰○帥骨〕 | 十一音 | fulltext.md L29664 |
-| HJ-Q7638 | 〔■宅直■●●●●〕 十音 〔山山山山龍甬用○〕 | 十二音 | fulltext.md L29670 |
-| HJ-Q7639 | 〔古甲九癸 山山山山●●●● 心審禁○〕 | 上聲闢唱吕一之九 | fulltext.md L29676 |
-| HJ-Q7640 | 〔卜百丙必 莊莊莊莊●●●● 多可个舌〕 | 發音清和律一之十一 | fulltext.md L29696 |
-| HJ-Q7641 | 〔■乍□■●●●●〕 十一音〔莊莊莊莊○○○十〕 | 十一音 | fulltext.md L29726 |
-| HJ-Q7642 | 〔■宅直■●●●●〕 十一音〔莊莊莊莊●●●●〕 | 十二音 | fulltext.md L29732 |
-| HJ-Q7643 | 〔古甲九癸 莊莊莊莊●●●● ●●●●〕 | 上聲闢唱吕一之十 | fulltext.md L29738 |
-| HJ-Q7644 | 〔安亞乙一 卓卓卓卓●●●● 多可个舌〕 | 發音清和律一之十二 | fulltext.md L29749 |
+| HJ-Q7630 | 〔■宅直■孔孔孔孔〕 八音 〔哉哉哉哉光广况○〕 | 十二音 | fulltext.md L29546 |
+| HJ-Q7631 | 〔古甲九癸 哉哉哉哉审审审审 千典旦○〕 | 上声辟唱吕一之七 | fulltext.md L29552 |
+| HJ-Q7632 | 〔思三星■ 三三三三审审审审 多可个舌〕 | 发音清和律一之九 | fulltext.md L29590 |
+| HJ-Q7633 | 〔■乍□■审审审审〕 九音 〔三三三三元犬半○〕 | 十一音 | fulltext.md L29602 |
+| HJ-Q7634 | 〔■宅直■审审审审〕 九音 〔三三三三毛报寳霍〕 | 十二音 | fulltext.md L29608 |
+| HJ-Q7635 | 〔古甲九癸 三三三三●●●● 妻子四日〕 | 上声辟唱吕一之八 | fulltext.md L29614 |
+| HJ-Q7636 | 〔乃妳女■ 山山山山●●●● 多可个舌〕 | 发音清和律一之十 | fulltext.md L29643 |
+| HJ-Q7637 | 〔■乍□■●●●●〕 十音 〔山山山山衰○帅骨〕 | 十一音 | fulltext.md L29664 |
+| HJ-Q7638 | 〔■宅直■●●●●〕 十音 〔山山山山龙甬用○〕 | 十二音 | fulltext.md L29670 |
+| HJ-Q7639 | 〔古甲九癸 山山山山●●●● 心审禁○〕 | 上声辟唱吕一之九 | fulltext.md L29676 |
+| HJ-Q7640 | 〔卜百丙必 庄庄庄庄●●●● 多可个舌〕 | 发音清和律一之十一 | fulltext.md L29696 |
+| HJ-Q7641 | 〔■乍□■●●●●〕 十一音〔庄庄庄庄○○○十〕 | 十一音 | fulltext.md L29726 |
+| HJ-Q7642 | 〔■宅直■●●●●〕 十一音〔庄庄庄庄●●●●〕 | 十二音 | fulltext.md L29732 |
+| HJ-Q7643 | 〔古甲九癸 庄庄庄庄●●●● ●●●●〕 | 上声辟唱吕一之十 | fulltext.md L29738 |
+| HJ-Q7644 | 〔安亚乙一 卓卓卓卓●●●● 多可个舌〕 | 发音清和律一之十二 | fulltext.md L29749 |
 | HJ-Q7645 | 〔■乍□■●●●●〕 十二音〔卓卓卓卓●●●●〕 | 十一音 | fulltext.md L29788 |
 | HJ-Q7646 | 〔■宅直■●●●●〕 十二音〔卓卓卓卓●●●●〕 | 十二音 | fulltext.md L29794 |
-| HJ-Q7647 | 月月聲上翕 火火音發濁 | 觀物篇四十 | fulltext.md L29800 |
-| HJ-Q7648 | 〔■莊震■ 華華華華火火火火 多可个舌〕 | 發音濁和律二之二 | fulltext.md L29856 |
-| HJ-Q7649 | 〔■乍□■火火火火〕 二音 〔華華華華禾火化八〕 | 十一音 | fulltext.md L29859 |
-| HJ-Q7650 | 〔■宅直■火火火火〕 二音 〔華華華華光廣况○〕 | 十二音 | fulltext.md L29865 |
-| HJ-Q7651 | 〔古甲九癸 華華華華廣廣廣廣 千典旦○〕 | 上聲翕唱吕二之二 | fulltext.md L29871 |
-| HJ-Q7652 | 〔思三星■ 爻爻爻爻廣廣廣廣 多可个舌〕 | 發音濁和律二之三 | fulltext.md L29909 |
-| HJ-Q7653 | 〔■乍□■廣廣廣廣〕 三音 〔爻爻爻爻元犬半○〕 | 十一音 | fulltext.md L29921 |
-| HJ-Q7654 | 〔■宅直■廣廣廣廣〕 三音 〔爻爻爻爻毛寶報霍〕 | 十二音 | fulltext.md L29927 |
-| HJ-Q7655 | 〔古甲九癸 爻爻爻爻犬犬犬犬 妻子四日〕 | 上聲翕唱吕二之二 | fulltext.md L29933 |
-| HJ-Q7656 | 〔乃妳女■ 凡凡凡凡犬犬犬犬 多可个舌〕 | 發音濁和律二之四 | fulltext.md L29962 |
-| HJ-Q7657 | 〔■乍□■半半半半〕 四音 〔□□□□衰○帥骨〕 | 十一音 | fulltext.md L29983 |
-| HJ-Q7658 | 〔■宅直■半半半半〕 四音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L29989 |
-| HJ-Q7659 | 〔古甲九癸 凡凡凡凡寶寶寶寶 心審禁○〕 | 上聲翕唱吕二之四 | fulltext.md L29995 |
-| HJ-Q7660 | 〔卜百丙必 白白白白寶寶寶寶 多可个舌〕 | 發音濁和律二之五 | fulltext.md L30015 |
-| HJ-Q7661 | 〔■乍□■寶寶寶寶〕 五音 〔白白白白○○○十〕 | 十一音 | fulltext.md L30045 |
-| HJ-Q7662 | 〔■宅直■寶寶寶寶〕 五音 〔白白白白●●●●〕 | 十二音 | fulltext.md L30051 |
-| HJ-Q7663 | 〔古甲九癸 白白白白○○○○ ●●●●〕 | 上聲翕唱吕二之五 | fulltext.md L30057 |
-| HJ-Q7664 | 〔安亞乙一 大大大大○○○○ 多可个舌〕 | 發音濁和律二之六 | fulltext.md L30068 |
+| HJ-Q7647 | 月月声上翕 火火音发浊 | 观物篇四十 | fulltext.md L29800 |
+| HJ-Q7648 | 〔■庄震■ 华华华华火火火火 多可个舌〕 | 发音浊和律二之二 | fulltext.md L29856 |
+| HJ-Q7649 | 〔■乍□■火火火火〕 二音 〔华华华华禾火化八〕 | 十一音 | fulltext.md L29859 |
+| HJ-Q7650 | 〔■宅直■火火火火〕 二音 〔华华华华光广况○〕 | 十二音 | fulltext.md L29865 |
+| HJ-Q7651 | 〔古甲九癸 华华华华广广广广 千典旦○〕 | 上声翕唱吕二之二 | fulltext.md L29871 |
+| HJ-Q7652 | 〔思三星■ 爻爻爻爻广广广广 多可个舌〕 | 发音浊和律二之三 | fulltext.md L29909 |
+| HJ-Q7653 | 〔■乍□■广广广广〕 三音 〔爻爻爻爻元犬半○〕 | 十一音 | fulltext.md L29921 |
+| HJ-Q7654 | 〔■宅直■广广广广〕 三音 〔爻爻爻爻毛宝报霍〕 | 十二音 | fulltext.md L29927 |
+| HJ-Q7655 | 〔古甲九癸 爻爻爻爻犬犬犬犬 妻子四日〕 | 上声翕唱吕二之二 | fulltext.md L29933 |
+| HJ-Q7656 | 〔乃妳女■ 凡凡凡凡犬犬犬犬 多可个舌〕 | 发音浊和律二之四 | fulltext.md L29962 |
+| HJ-Q7657 | 〔■乍□■半半半半〕 四音 〔□□□□衰○帅骨〕 | 十一音 | fulltext.md L29983 |
+| HJ-Q7658 | 〔■宅直■半半半半〕 四音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L29989 |
+| HJ-Q7659 | 〔古甲九癸 凡凡凡凡宝宝宝宝 心审禁○〕 | 上声翕唱吕二之四 | fulltext.md L29995 |
+| HJ-Q7660 | 〔卜百丙必 白白白白宝宝宝宝 多可个舌〕 | 发音浊和律二之五 | fulltext.md L30015 |
+| HJ-Q7661 | 〔■乍□■宝宝宝宝〕 五音 〔白白白白○○○十〕 | 十一音 | fulltext.md L30045 |
+| HJ-Q7662 | 〔■宅直■宝宝宝宝〕 五音 〔白白白白●●●●〕 | 十二音 | fulltext.md L30051 |
+| HJ-Q7663 | 〔古甲九癸 白白白白○○○○ ●●●●〕 | 上声翕唱吕二之五 | fulltext.md L30057 |
+| HJ-Q7664 | 〔安亚乙一 大大大大○○○○ 多可个舌〕 | 发音浊和律二之六 | fulltext.md L30068 |
 | HJ-Q7665 | 〔■乍□■○○○○〕 六音 〔大大大大●●●●〕 | 十一音 | fulltext.md L30107 |
 | HJ-Q7666 | 〔■宅直■○○○○〕 六音 〔大大大大●●●●〕 | 十二音 | fulltext.md L30113 |
-| HJ-Q7667 | 〔■莊震■ 在在在在甬甬甬甬 多可个舌〕 | 發音濁和律二之八 | fulltext.md L30164 |
+| HJ-Q7667 | 〔■庄震■ 在在在在甬甬甬甬 多可个舌〕 | 发音浊和律二之八 | fulltext.md L30164 |
 | HJ-Q7668 | 〔■乍□■甬甬甬甬〕 八音 〔在在在在禾火化八〕 | 十一音 | fulltext.md L30167 |
-| HJ-Q7669 | 〔■宅直■甬甬甬甬〕 八音 〔在在在在光廣況○〕 | 十二音 | fulltext.md L30173 |
-| HJ-Q7670 | 〔古甲九癸 在在在在○○○○ 千典旦○〕 | 上聲翕唱吕二之七 | fulltext.md L30179 |
-| HJ-Q7671 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 發音濁和律二之九 | fulltext.md L30217 |
+| HJ-Q7669 | 〔■宅直■甬甬甬甬〕 八音 〔在在在在光广况○〕 | 十二音 | fulltext.md L30173 |
+| HJ-Q7670 | 〔古甲九癸 在在在在○○○○ 千典旦○〕 | 上声翕唱吕二之七 | fulltext.md L30179 |
+| HJ-Q7671 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 发音浊和律二之九 | fulltext.md L30217 |
 | HJ-Q7672 | 〔■乍□■○○○○〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L30229 |
-| HJ-Q7673 | 〔■宅直■○○○○〕 九音 〔□□□□毛寶報霍〕 | 十二音 | fulltext.md L30235 |
-| HJ-Q7674 | 〔古甲九癸 □□□□○○○○ 妻子四日〕 | 上聲翕唱吕二之八 | fulltext.md L30241 |
-| HJ-Q7675 | 〔乃妳女■ 士士士士●●●● 多可个○〕 | 發音濁和律二之十 | fulltext.md L30270 |
-| HJ-Q7676 | 〔■乍□■●●●●〕 十音 〔士士士士衰○帥骨〕 | 十一音 | fulltext.md L30291 |
-| HJ-Q7677 | 〔■宅直■●●●●〕 十音 〔士士士士龍甬用○〕 | 十二音 | fulltext.md L30297 |
-| HJ-Q7678 | 〔古甲九癸 士士士士●●●● 心審禁○〕 | 上聲翕唱吕二之九 | fulltext.md L30303 |
-| HJ-Q7679 | 〔卜百丙必 乍乍乍乍●●●● 多可个舌〕 | 發音濁和律二之十一 | fulltext.md L30323 |
+| HJ-Q7673 | 〔■宅直■○○○○〕 九音 〔□□□□毛宝报霍〕 | 十二音 | fulltext.md L30235 |
+| HJ-Q7674 | 〔古甲九癸 □□□□○○○○ 妻子四日〕 | 上声翕唱吕二之八 | fulltext.md L30241 |
+| HJ-Q7675 | 〔乃妳女■ 士士士士●●●● 多可个○〕 | 发音浊和律二之十 | fulltext.md L30270 |
+| HJ-Q7676 | 〔■乍□■●●●●〕 十音 〔士士士士衰○帅骨〕 | 十一音 | fulltext.md L30291 |
+| HJ-Q7677 | 〔■宅直■●●●●〕 十音 〔士士士士龙甬用○〕 | 十二音 | fulltext.md L30297 |
+| HJ-Q7678 | 〔古甲九癸 士士士士●●●● 心审禁○〕 | 上声翕唱吕二之九 | fulltext.md L30303 |
+| HJ-Q7679 | 〔卜百丙必 乍乍乍乍●●●● 多可个舌〕 | 发音浊和律二之十一 | fulltext.md L30323 |
 | HJ-Q7680 | 〔■乍□■●●●●〕 十一音〔乍乍乍乍○○○十〕 | 十一音 | fulltext.md L30353 |
 | HJ-Q7681 | 〔■宅直■●●●●〕 十一音〔乍乍乍乍●●●●〕 | 十二音 | fulltext.md L30359 |
-| HJ-Q7682 | 〔古甲九癸 乍乍乍乍●●●● ●●●●〕 | 上聲翕唱吕二之十 | fulltext.md L30365 |
-| HJ-Q7683 | 〔安亞乙一 宅宅宅宅●●●● 多可个舌〕 | 發音濁和律二之十二 | fulltext.md L30376 |
+| HJ-Q7682 | 〔古甲九癸 乍乍乍乍●●●● ●●●●〕 | 上声翕唱吕二之十 | fulltext.md L30365 |
+| HJ-Q7683 | 〔安亚乙一 宅宅宅宅●●●● 多可个舌〕 | 发音浊和律二之十二 | fulltext.md L30376 |
 | HJ-Q7684 | 〔■乍□■●●●●〕 十二音〔宅宅宅宅●●●●〕 | 十一音 | fulltext.md L30415 |
 | HJ-Q7685 | 〔■宅直■●●●●〕 十二音〔宅宅宅宅●●●●〕 | 十二音 | fulltext.md L30421 |
-| HJ-Q7686 | 欽定四庫全書卷 | 皇極經世書卷八上 | fulltext.md L30427 |
-| HJ-Q7687 | 月星聲上之三闢 火土音發之三清 | 四 | fulltext.md L30437 |
-| HJ-Q7688 | 〔■莊震■ 瓦瓦瓦瓦宰宰宰宰 多可个舌〕 | 發音清和律三之二 | fulltext.md L30487 |
+| HJ-Q7686 | 钦定四库全书卷 | 皇极经世书卷八上 | fulltext.md L30427 |
+| HJ-Q7687 | 月星声上之三辟 火土音发之三清 | 四 | fulltext.md L30437 |
+| HJ-Q7688 | 〔■庄震■ 瓦瓦瓦瓦宰宰宰宰 多可个舌〕 | 发音清和律三之二 | fulltext.md L30487 |
 | HJ-Q7689 | 〔■乍□■宰宰宰宰〕 二音 〔瓦瓦瓦瓦禾火化八〕 | 十一音 | fulltext.md L30490 |
-| HJ-Q7690 | 〔■宅直■宰宰宰宰〕 二音 〔瓦瓦瓦瓦光廣況○〕 | 十二音 | fulltext.md L30496 |
-| HJ-Q7691 | 〔古甲九癸 瓦瓦瓦瓦井井井井 千典旦○〕 | 上聲闢唱吕三之二 | fulltext.md L30502 |
-| HJ-Q7692 | 〔思三星■ 馬馬馬馬井井井井 多可个舌〕 | 發音清和律三之三 | fulltext.md L30540 |
-| HJ-Q7693 | 〔■乍□■井井井井〕 三音 〔馬馬馬馬元犬半○〕 | 十一音 | fulltext.md L30552 |
-| HJ-Q7694 | 〔■宅直■井井井井〕 三音 〔馬馬馬馬毛寳報霍〕 | 十二音 | fulltext.md L30558 |
-| HJ-Q7695 | 〔古甲九癸 馬馬馬馬引引引引 妻子四日〕 | 上聲闢唱吕三之三 | fulltext.md L30564 |
-| HJ-Q7696 | 〔乃妳女■ 晚晚晚晚引引引引 多可个舌〕 | 發音清和律三之四 | fulltext.md L30593 |
-| HJ-Q7697 | 〔■乍□■引引引引〕 四音〔晚晚晚晚衰○帥骨〕 | 十一音 | fulltext.md L30614 |
-| HJ-Q7698 | 〔■宅直■引引引引〕 四音 〔晚晚晚晚龍甬用○〕 | 十二音 | fulltext.md L30620 |
-| HJ-Q7699 | 〔古甲九癸 晚晚晚晚斗斗斗斗 心審禁○〕 | 上聲闢唱吕三之四 | fulltext.md L30626 |
-| HJ-Q7700 | 〔卜百丙必 朴朴朴朴斗斗斗斗 多可个舌〕 | 發音清和律三之五 | fulltext.md L30646 |
+| HJ-Q7690 | 〔■宅直■宰宰宰宰〕 二音 〔瓦瓦瓦瓦光广况○〕 | 十二音 | fulltext.md L30496 |
+| HJ-Q7691 | 〔古甲九癸 瓦瓦瓦瓦井井井井 千典旦○〕 | 上声辟唱吕三之二 | fulltext.md L30502 |
+| HJ-Q7692 | 〔思三星■ 马马马马井井井井 多可个舌〕 | 发音清和律三之三 | fulltext.md L30540 |
+| HJ-Q7693 | 〔■乍□■井井井井〕 三音 〔马马马马元犬半○〕 | 十一音 | fulltext.md L30552 |
+| HJ-Q7694 | 〔■宅直■井井井井〕 三音 〔马马马马毛寳报霍〕 | 十二音 | fulltext.md L30558 |
+| HJ-Q7695 | 〔古甲九癸 马马马马引引引引 妻子四日〕 | 上声辟唱吕三之三 | fulltext.md L30564 |
+| HJ-Q7696 | 〔乃妳女■ 晚晚晚晚引引引引 多可个舌〕 | 发音清和律三之四 | fulltext.md L30593 |
+| HJ-Q7697 | 〔■乍□■引引引引〕 四音〔晚晚晚晚衰○帅骨〕 | 十一音 | fulltext.md L30614 |
+| HJ-Q7698 | 〔■宅直■引引引引〕 四音 〔晚晚晚晚龙甬用○〕 | 十二音 | fulltext.md L30620 |
+| HJ-Q7699 | 〔古甲九癸 晚晚晚晚斗斗斗斗 心审禁○〕 | 上声辟唱吕三之四 | fulltext.md L30626 |
+| HJ-Q7700 | 〔卜百丙必 朴朴朴朴斗斗斗斗 多可个舌〕 | 发音清和律三之五 | fulltext.md L30646 |
 | HJ-Q7701 | 〔■乍□■斗斗斗斗〕 五音 〔朴朴朴朴○○○十〕 | 十一音 | fulltext.md L30676 |
 | HJ-Q7702 | 〔■宅直■斗斗斗斗〕 五音 〔朴朴朴朴●●●●〕 | 十二音 | fulltext.md L30682 |
-| HJ-Q7703 | 〔古甲九癸 朴朴朴朴○○○○ ●●●●〕 | 上聲闢唱吕三之五 | fulltext.md L30688 |
-| HJ-Q7704 | 〔安亞乙一 貪貪貪貪○○○○ 多可个舌〕 | 發音清和律三之六 | fulltext.md L30699 |
-| HJ-Q7705 | 〔■乍□■○○○○〕 六音 〔貪貪貪貪●●●●〕 | 十一音 | fulltext.md L30738 |
-| HJ-Q7706 | 〔■宅直■○○○○〕 六音 〔貪貪貪貪●●●●〕 | 十二音 | fulltext.md L30744 |
-| HJ-Q7707 | 〔■荘震■ 采采采采䑕䑕䑕䑕 多可个舌〕 | 發音清和律三之八 | fulltext.md L30795 |
+| HJ-Q7703 | 〔古甲九癸 朴朴朴朴○○○○ ●●●●〕 | 上声辟唱吕三之五 | fulltext.md L30688 |
+| HJ-Q7704 | 〔安亚乙一 贪贪贪贪○○○○ 多可个舌〕 | 发音清和律三之六 | fulltext.md L30699 |
+| HJ-Q7705 | 〔■乍□■○○○○〕 六音 〔贪贪贪贪●●●●〕 | 十一音 | fulltext.md L30738 |
+| HJ-Q7706 | 〔■宅直■○○○○〕 六音 〔贪贪贪贪●●●●〕 | 十二音 | fulltext.md L30744 |
+| HJ-Q7707 | 〔■荘震■ 采采采采䑕䑕䑕䑕 多可个舌〕 | 发音清和律三之八 | fulltext.md L30795 |
 | HJ-Q7708 | 〔■乍□■䑕䑕䑕䑕〕 八音 〔采采采采禾火化八〕 | 十一音 | fulltext.md L30798 |
-| HJ-Q7709 | 〔■宅直■䑕䑕䑕䑕〕 八音 〔采采采采光廣况○〕 | 十二音 | fulltext.md L30804 |
-| HJ-Q7710 | 〔古甲九癸 采采采采坎坎坎坎 千典旦○〕 | 上聲闢唱吕三之七 | fulltext.md L30810 |
-| HJ-Q7711 | 〔思三星■ □□□□坎坎坎坎 多可个舌〕 | 發音清和律三之九 | fulltext.md L30848 |
+| HJ-Q7709 | 〔■宅直■䑕䑕䑕䑕〕 八音 〔采采采采光广况○〕 | 十二音 | fulltext.md L30804 |
+| HJ-Q7710 | 〔古甲九癸 采采采采坎坎坎坎 千典旦○〕 | 上声辟唱吕三之七 | fulltext.md L30810 |
+| HJ-Q7711 | 〔思三星■ □□□□坎坎坎坎 多可个舌〕 | 发音清和律三之九 | fulltext.md L30848 |
 | HJ-Q7712 | 〔■乍□■坎坎坎坎〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L30860 |
-| HJ-Q7713 | 〔■宅直■坎坎坎坎〕 九音 〔□□□□毛寳報霍〕 | 十二音 | fulltext.md L30866 |
-| HJ-Q7714 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 上聲闢唱吕三之八 | fulltext.md L30872 |
-| HJ-Q7715 | 〔卜百丙必 □□□□●●●● 多可个舌〕 | 發音清和律三之十 | fulltext.md L30901 |
-| HJ-Q7716 | 〔■乍□■●●●●〕 十音 〔□□□□衰○帥骨〕 | 十一音 | fulltext.md L30922 |
-| HJ-Q7717 | 〔■宅直■●●●●〕 十音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L30928 |
-| HJ-Q7718 | 〔古甲九癸 □□□□●●●● 心審禁○〕 | 上聲闢唱吕三之九 | fulltext.md L30934 |
-| HJ-Q7719 | 〔安亞乙一 □□□□●●●● ●●●●〕 | □□□□●●●●〕 | fulltext.md L30944 |
-| HJ-Q7720 | 〔卜百丙必 义义义义●●●● 多可个舌〕 | 發音清和律三之十一 | fulltext.md L30955 |
+| HJ-Q7713 | 〔■宅直■坎坎坎坎〕 九音 〔□□□□毛寳报霍〕 | 十二音 | fulltext.md L30866 |
+| HJ-Q7714 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 上声辟唱吕三之八 | fulltext.md L30872 |
+| HJ-Q7715 | 〔卜百丙必 □□□□●●●● 多可个舌〕 | 发音清和律三之十 | fulltext.md L30901 |
+| HJ-Q7716 | 〔■乍□■●●●●〕 十音 〔□□□□衰○帅骨〕 | 十一音 | fulltext.md L30922 |
+| HJ-Q7717 | 〔■宅直■●●●●〕 十音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L30928 |
+| HJ-Q7718 | 〔古甲九癸 □□□□●●●● 心审禁○〕 | 上声辟唱吕三之九 | fulltext.md L30934 |
+| HJ-Q7719 | 〔安亚乙一 □□□□●●●● ●●●●〕 | □□□□●●●●〕 | fulltext.md L30944 |
+| HJ-Q7720 | 〔卜百丙必 义义义义●●●● 多可个舌〕 | 发音清和律三之十一 | fulltext.md L30955 |
 | HJ-Q7721 | 〔■乍□■●●●●〕 十一音〔义义义义○○○十〕 | 十一音 | fulltext.md L30985 |
-| HJ-Q7722 | 〔古甲九癸 义义义义●●●● ●●●●〕 | 上聲闢唱吕三之十 | fulltext.md L30995 |
-| HJ-Q7723 | 〔安亞乙一 坼坼坼坼●●●● 多可个舌〕 | 發音清和律三之十二 | fulltext.md L31006 |
+| HJ-Q7722 | 〔古甲九癸 义义义义●●●● ●●●●〕 | 上声辟唱吕三之十 | fulltext.md L30995 |
+| HJ-Q7723 | 〔安亚乙一 坼坼坼坼●●●● 多可个舌〕 | 发音清和律三之十二 | fulltext.md L31006 |
 | HJ-Q7724 | 〔■乍□■●●●●〕 十二音〔坼坼坼坼●●●●〕 | 十一音 | fulltext.md L31045 |
 | HJ-Q7725 | 〔■宅直■●●●●〕 十二音〔坼坼坼坼●●●●〕 | 十二音 | fulltext.md L31051 |
-| HJ-Q7726 | 月辰聲上翕 火石音發濁 | 觀物篇四十二 | fulltext.md L31057 |
-| HJ-Q7727 | 月辰聲上之四翕 火石音發之四濁 | 四 | fulltext.md L31065 |
-| HJ-Q7728 | 〔■荘震■ 牙牙牙牙毎毎毎毎 多可个舌〕 | 發音濁和律四之二 | fulltext.md L31115 |
+| HJ-Q7726 | 月辰声上翕 火石音发浊 | 观物篇四十二 | fulltext.md L31057 |
+| HJ-Q7727 | 月辰声上之四翕 火石音发之四浊 | 四 | fulltext.md L31065 |
+| HJ-Q7728 | 〔■荘震■ 牙牙牙牙毎毎毎毎 多可个舌〕 | 发音浊和律四之二 | fulltext.md L31115 |
 | HJ-Q7729 | 〔■乍□■毎毎毎毎〕 二音 〔牙牙牙牙禾火化八〕 | 十一音 | fulltext.md L31118 |
-| HJ-Q7730 | 〔■宅直■毎毎毎毎〕 二音 〔牙牙牙牙光廣况○〕 | 十二音 | fulltext.md L31124 |
-| HJ-Q7731 | 〔古甲九癸 牙牙牙牙永永永永 千典旦○〕 | 上聲翕唱吕四之二 | fulltext.md L31130 |
-| HJ-Q7732 | 〔思三星■ 皃皃皃皃永永永永 多可个舌〕 | 發音濁和律四之三 | fulltext.md L31168 |
+| HJ-Q7730 | 〔■宅直■毎毎毎毎〕 二音 〔牙牙牙牙光广况○〕 | 十二音 | fulltext.md L31124 |
+| HJ-Q7731 | 〔古甲九癸 牙牙牙牙永永永永 千典旦○〕 | 上声翕唱吕四之二 | fulltext.md L31130 |
+| HJ-Q7732 | 〔思三星■ 皃皃皃皃永永永永 多可个舌〕 | 发音浊和律四之三 | fulltext.md L31168 |
 | HJ-Q7733 | 〔■乍□■永永永永〕 三音 〔皃皃皃皃元犬半○〕 | 十一音 | fulltext.md L31180 |
-| HJ-Q7734 | 〔■宅直■永永永永〕 三音 〔皃皃皃○毛寳報霍〕 | 十二音 | fulltext.md L31186 |
-| HJ-Q7735 | 〔古甲九癸 皃皃皃皃允允允允 妻子四日〕 | 上聲翕唱吕四之三 | fulltext.md L31192 |
-| HJ-Q7736 | 〔乃妳女■ 萬萬萬萬允允允允 多可个舌〕 | 發音濁和律四之四 | fulltext.md L31221 |
-| HJ-Q7737 | 〔■乍□■允允允允〕 四音 〔萬萬萬萬衰○帥骨〕 | 十一音 | fulltext.md L31242 |
-| HJ-Q7738 | 〔■宅直■允允允允〕 四音 〔萬萬萬萬龍甬用○〕 | 十二音 | fulltext.md L31248 |
-| HJ-Q7739 | 〔古甲九癸 萬萬萬萬○○○○ 心審禁○〕 | 上聲翕唱吕四之四 | fulltext.md L31254 |
-| HJ-Q7740 | 〔卜百丙必 排排排排○○○○ 多可个舌〕 | 發音濁和律四之五 | fulltext.md L31274 |
+| HJ-Q7734 | 〔■宅直■永永永永〕 三音 〔皃皃皃○毛寳报霍〕 | 十二音 | fulltext.md L31186 |
+| HJ-Q7735 | 〔古甲九癸 皃皃皃皃允允允允 妻子四日〕 | 上声翕唱吕四之三 | fulltext.md L31192 |
+| HJ-Q7736 | 〔乃妳女■ 万万万万允允允允 多可个舌〕 | 发音浊和律四之四 | fulltext.md L31221 |
+| HJ-Q7737 | 〔■乍□■允允允允〕 四音 〔万万万万衰○帅骨〕 | 十一音 | fulltext.md L31242 |
+| HJ-Q7738 | 〔■宅直■允允允允〕 四音 〔万万万万龙甬用○〕 | 十二音 | fulltext.md L31248 |
+| HJ-Q7739 | 〔古甲九癸 万万万万○○○○ 心审禁○〕 | 上声翕唱吕四之四 | fulltext.md L31254 |
+| HJ-Q7740 | 〔卜百丙必 排排排排○○○○ 多可个舌〕 | 发音浊和律四之五 | fulltext.md L31274 |
 | HJ-Q7741 | 〔■乍□■○○○○〕 五音 〔排排排排○○○十〕 | 十一音 | fulltext.md L31304 |
 | HJ-Q7742 | 〔■宅直■○○○○〕 五音 〔排排排排●●●●〕 | 十二音 | fulltext.md L31310 |
-| HJ-Q7743 | 〔古甲九癸 排排排排水水水水 ●●●●〕 | 上聲翕唱吕四之五 | fulltext.md L31316 |
-| HJ-Q7744 | 〔安亞乙一 覃覃覃覃水水水水 多可个舌〕 | 發音濁和律四之六 | fulltext.md L31327 |
+| HJ-Q7743 | 〔古甲九癸 排排排排水水水水 ●●●●〕 | 上声翕唱吕四之五 | fulltext.md L31316 |
+| HJ-Q7744 | 〔安亚乙一 覃覃覃覃水水水水 多可个舌〕 | 发音浊和律四之六 | fulltext.md L31327 |
 | HJ-Q7745 | 〔■乍□■水水水水〕 六音 〔覃覃覃覃●●●●〕 | 十一音 | fulltext.md L31366 |
 | HJ-Q7746 | 〔■宅直■水水水水〕 六音 〔覃覃覃覃●●●●〕 | 十二音 | fulltext.md L31372 |
-| HJ-Q7747 | 〔■莊震■ 才才才才虎虎虎虎 多可个舌〕 | 發音濁和律四之八 | fulltext.md L31423 |
+| HJ-Q7747 | 〔■庄震■ 才才才才虎虎虎虎 多可个舌〕 | 发音浊和律四之八 | fulltext.md L31423 |
 | HJ-Q7748 | 〔■乍□■虎虎虎虎〕 八音 〔才才才才禾火化八〕 | 十一音 | fulltext.md L31426 |
-| HJ-Q7749 | 〔■宅直■虎虎虎虎〕 八音 〔才才才才光廣況○〕 | 十二音 | fulltext.md L31432 |
-| HJ-Q7750 | 〔古甲九癸 才才才才○○○○ 千典旦○〕 | 上聲翕唱吕四之七 | fulltext.md L31438 |
-| HJ-Q7751 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 發音濁和律四之九 | fulltext.md L31476 |
+| HJ-Q7749 | 〔■宅直■虎虎虎虎〕 八音 〔才才才才光广况○〕 | 十二音 | fulltext.md L31432 |
+| HJ-Q7750 | 〔古甲九癸 才才才才○○○○ 千典旦○〕 | 上声翕唱吕四之七 | fulltext.md L31438 |
+| HJ-Q7751 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 发音浊和律四之九 | fulltext.md L31476 |
 | HJ-Q7752 | 〔■乍□■○○○○〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L31488 |
-| HJ-Q7753 | 〔■宅直■○○○○〕 九音 〔□□□□毛寳報霍〕 | 十二音 | fulltext.md L31494 |
-| HJ-Q7754 | 〔古甲九癸 □□□□○○○○ 妻子四日〕 | 上聲翕唱吕四之八 | fulltext.md L31500 |
-| HJ-Q7755 | 發音濁和律四之十 | 同覃田■○○○○〕 | fulltext.md L31527 |
-| HJ-Q7756 | 〔■乍□■○○○○〕 十音 〔□□□□衰○帥骨〕 | 十一音 | fulltext.md L31549 |
-| HJ-Q7757 | 〔■宅直■○○○○〕 十音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L31555 |
-| HJ-Q7758 | 〔古甲九癸 □□□□○○○○ 心審禁○〕 | 上聲翕唱吕四之九 | fulltext.md L31561 |
-| HJ-Q7759 | 〔卜百丙必 崇崇崇崇●●●● 多可个舌〕 | 發音濁和律四之十一 | fulltext.md L31581 |
+| HJ-Q7753 | 〔■宅直■○○○○〕 九音 〔□□□□毛寳报霍〕 | 十二音 | fulltext.md L31494 |
+| HJ-Q7754 | 〔古甲九癸 □□□□○○○○ 妻子四日〕 | 上声翕唱吕四之八 | fulltext.md L31500 |
+| HJ-Q7755 | 发音浊和律四之十 | 同覃田■○○○○〕 | fulltext.md L31527 |
+| HJ-Q7756 | 〔■乍□■○○○○〕 十音 〔□□□□衰○帅骨〕 | 十一音 | fulltext.md L31549 |
+| HJ-Q7757 | 〔■宅直■○○○○〕 十音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L31555 |
+| HJ-Q7758 | 〔古甲九癸 □□□□○○○○ 心审禁○〕 | 上声翕唱吕四之九 | fulltext.md L31561 |
+| HJ-Q7759 | 〔卜百丙必 崇崇崇崇●●●● 多可个舌〕 | 发音浊和律四之十一 | fulltext.md L31581 |
 | HJ-Q7760 | 〔■乍□■●●●●〕 十一音〔崇崇崇崇○○○十〕 | 十一音 | fulltext.md L31611 |
 | HJ-Q7761 | 〔■宅直■●●●●〕 十一音〔崇崇崇崇●●●●〕 | 十二音 | fulltext.md L31617 |
-| HJ-Q7762 | 〔古甲九癸 崇崇崇崇●●●● ●●●●〕 | 上聲翕唱吕四之十 | fulltext.md L31623 |
-| HJ-Q7763 | 〔安亞乙一 茶茶茶茶●●●● 多可个舌〕 | 發音濁和律四之十二 | fulltext.md L31634 |
+| HJ-Q7762 | 〔古甲九癸 崇崇崇崇●●●● ●●●●〕 | 上声翕唱吕四之十 | fulltext.md L31623 |
+| HJ-Q7763 | 〔安亚乙一 茶茶茶茶●●●● 多可个舌〕 | 发音浊和律四之十二 | fulltext.md L31634 |
 | HJ-Q7764 | 〔■乍□■●●●●〕 十二音〔茶茶茶茶●●●●〕 | 十一音 | fulltext.md L31673 |
 | HJ-Q7765 | 〔■宅直■●●●●〕 十二音〔茶茶茶茶●●●●〕 | 十二音 | fulltext.md L31679 |
-| HJ-Q7766 | 欽定四庫全書 | 皇極經世書卷八下 | fulltext.md L31685 |
-| HJ-Q7767 | 星日聲去闢 土水音收清 | 觀物篇四十三 | fulltext.md L31690 |
-| HJ-Q7768 | 星日聲去之一闢 土水音收之一清 | 四 | fulltext.md L31698 |
+| HJ-Q7766 | 钦定四库全书 | 皇极经世书卷八下 | fulltext.md L31685 |
+| HJ-Q7767 | 星日声去辟 土水音收清 | 观物篇四十三 | fulltext.md L31690 |
+| HJ-Q7768 | 星日声去之一辟 土水音收之一清 | 四 | fulltext.md L31698 |
 | HJ-Q7769 | 〔■荘震■ 香香香香个个个个 多可个舌〕 | 收音清和律一之二 | fulltext.md L31747 |
 | HJ-Q7770 | 〔■乍□■个个个个〕 二音 〔香香香香禾火化八〕 | 十一音 | fulltext.md L31750 |
-| HJ-Q7771 | 〔■宅直■个个个个〕 二音 〔香香香香光廣况○〕 | 十二音 | fulltext.md L31756 |
-| HJ-Q7772 | 〔古甲九癸 香香香香向向向向 千典旦○〕 | 去聲闢唱吕一之二 | fulltext.md L31762 |
+| HJ-Q7771 | 〔■宅直■个个个个〕 二音 〔香香香香光广况○〕 | 十二音 | fulltext.md L31756 |
+| HJ-Q7772 | 〔古甲九癸 香香香香向向向向 千典旦○〕 | 去声辟唱吕一之二 | fulltext.md L31762 |
 | HJ-Q7773 | 〔思三星■ 乙乙乙乙向向向向 多汀个舌〕 | 收音清和律一之三 | fulltext.md L31800 |
 | HJ-Q7774 | 〔■乍▢■向向向向〕 三音 〔乙乙乙乙元犬半○〕 | 十一音 | fulltext.md L31812 |
-| HJ-Q7775 | 〔■宅且■向向向向〕 三音 〔乙乙乙乙毛寳報霍〕 | 十二音 | fulltext.md L31818 |
-| HJ-Q7776 | 〔古甲九癸 乙乙乙乙旦旦旦旦 妻子四日〕 | 去聲闢唱吕一之三 | fulltext.md L31824 |
+| HJ-Q7775 | 〔■宅且■向向向向〕 三音 〔乙乙乙乙毛寳报霍〕 | 十二音 | fulltext.md L31818 |
+| HJ-Q7776 | 〔古甲九癸 乙乙乙乙旦旦旦旦 妻子四日〕 | 去声辟唱吕一之三 | fulltext.md L31824 |
 | HJ-Q7777 | 〔乃妳女■ □□□□旦旦旦旦 多可个舌〕 | 收音清和律一之四 | fulltext.md L31853 |
-| HJ-Q7778 | 〔■乍□■旦旦旦旦〕 四音 〔□□□□衰○帥骨〕 | 十一音 | fulltext.md L31874 |
-| HJ-Q7779 | 〔■宅直■旦旦旦旦〕 四音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L31880 |
-| HJ-Q7780 | 〔古甲九癸 □□□□孝孝孝孝 心審禁〕 | 去聲闢唱吕一之四 | fulltext.md L31886 |
+| HJ-Q7778 | 〔■乍□■旦旦旦旦〕 四音 〔□□□□衰○帅骨〕 | 十一音 | fulltext.md L31874 |
+| HJ-Q7779 | 〔■宅直■旦旦旦旦〕 四音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L31880 |
+| HJ-Q7780 | 〔古甲九癸 □□□□孝孝孝孝 心审禁〕 | 去声辟唱吕一之四 | fulltext.md L31886 |
 | HJ-Q7781 | 〔卜百丙必 内内内内孝孝孝孝 多可个舌〕 | 收音清和律一之五 | fulltext.md L31906 |
 | HJ-Q7782 | 〔■乍□■孝孝孝孝〕 五音 〔内内内内○○○十〕 | 十一音 | fulltext.md L31936 |
 | HJ-Q7783 | 〔■宅直■孝孝孝孝〕 五音 〔内内内内●●●●〕 | 十二音 | fulltext.md L31942 |
-| HJ-Q7784 | 〔古甲九癸 内内内内四四四四 ●●●●〕 | 去聲闢唱吕一之五 | fulltext.md L31948 |
-| HJ-Q7785 | 〔安亞乙一 帝帝帝帝四四四四 多可个舌〕 | 收音清和律一之六 | fulltext.md L31959 |
+| HJ-Q7784 | 〔古甲九癸 内内内内四四四四 ●●●●〕 | 去声辟唱吕一之五 | fulltext.md L31948 |
+| HJ-Q7785 | 〔安亚乙一 帝帝帝帝四四四四 多可个舌〕 | 收音清和律一之六 | fulltext.md L31959 |
 | HJ-Q7786 | 〔■乍□■四四四四〕 六音 〔帝帝帝帝●●●●〕 | 十一音 | fulltext.md L31998 |
 | HJ-Q7787 | 〔■宅直■四四四四〕 六音 〔帝帝帝帝●●●●〕 | 十二音 | fulltext.md L32004 |
-| HJ-Q7788 | 〔■荘震■ 足足足足衆衆衆衆 多可个舌〕 | 收音清和律一之八 | fulltext.md L32055 |
-| HJ-Q7789 | 〔■乍□■衆衆衆衆〕 八音 〔足足足足禾火化八〕 | 十一音 | fulltext.md L32058 |
-| HJ-Q7790 | 〔■宅直■衆衆衆衆〕 八音 〔足足足足光廣况○〕 | 十二音 | fulltext.md L32064 |
-| HJ-Q7791 | 〔古甲九癸 足足足足禁禁禁禁 千典旦○〕 | 去聲闢唱吕一之七 | fulltext.md L32070 |
+| HJ-Q7788 | 〔■荘震■ 足足足足众众众众 多可个舌〕 | 收音清和律一之八 | fulltext.md L32055 |
+| HJ-Q7789 | 〔■乍□■众众众众〕 八音 〔足足足足禾火化八〕 | 十一音 | fulltext.md L32058 |
+| HJ-Q7790 | 〔■宅直■众众众众〕 八音 〔足足足足光广况○〕 | 十二音 | fulltext.md L32064 |
+| HJ-Q7791 | 〔古甲九癸 足足足足禁禁禁禁 千典旦○〕 | 去声辟唱吕一之七 | fulltext.md L32070 |
 | HJ-Q7792 | 〔思三星■ 星星星星禁禁禁禁 多可个舌〕 | 收音清和律一之九 | fulltext.md L32108 |
 | HJ-Q7793 | 〔■乍□■禁禁禁禁〕 九音 〔星星星星元犬半○〕 | 十一音 | fulltext.md L32120 |
-| HJ-Q7794 | 〔■宅直■禁禁禁禁〕 九音 〔星星星星毛寳報霍〕 | 十二音 | fulltext.md L32126 |
-| HJ-Q7795 | 〔古甲九癸 星星星星●●●● 妻子四日〕 | 去聲闢唱吕一之八 | fulltext.md L32132 |
+| HJ-Q7794 | 〔■宅直■禁禁禁禁〕 九音 〔星星星星毛寳报霍〕 | 十二音 | fulltext.md L32126 |
+| HJ-Q7795 | 〔古甲九癸 星星星星●●●● 妻子四日〕 | 去声辟唱吕一之八 | fulltext.md L32132 |
 | HJ-Q7796 | 〔乃妳女■ 手手手手●●●● 多可个舌〕 | 收音清和律一之十 | fulltext.md L32161 |
-| HJ-Q7797 | 〔■宅直■●●●●〕 十音 〔手手手手龍甬用○〕 | 十二音 | fulltext.md L32186 |
-| HJ-Q7798 | 〔古甲九癸 手手手手●●●● 心審禁○〕 | 去聲闢唱吕一之九 | fulltext.md L32192 |
+| HJ-Q7797 | 〔■宅直■●●●●〕 十音 〔手手手手龙甬用○〕 | 十二音 | fulltext.md L32186 |
+| HJ-Q7798 | 〔古甲九癸 手手手手●●●● 心审禁○〕 | 去声辟唱吕一之九 | fulltext.md L32192 |
 | HJ-Q7799 | 〔卜百丙必 震震震震●●●● 多可个舌〕 | 收音清和律一之十一 | fulltext.md L32212 |
 | HJ-Q7800 | 〔■乍□■●●●●〕 十一音〔震震震震○○○十〕 | 十一音 | fulltext.md L32242 |
 | HJ-Q7801 | 〔■宅直■●●●●〕 十一音〔震震震震●●●●〕 | 十二音 | fulltext.md L32248 |
-| HJ-Q7802 | 〔古甲九癸 震震震震●●●● ●●●●〕 | 去聲闢唱吕一之十 | fulltext.md L32254 |
-| HJ-Q7803 | 〔安亞乙一 中中中中●●●● 多可个舌〕 | 收音清和律一之十二 | fulltext.md L32265 |
+| HJ-Q7802 | 〔古甲九癸 震震震震●●●● ●●●●〕 | 去声辟唱吕一之十 | fulltext.md L32254 |
+| HJ-Q7803 | 〔安亚乙一 中中中中●●●● 多可个舌〕 | 收音清和律一之十二 | fulltext.md L32265 |
 | HJ-Q7804 | 〔■乍□■●●●●〕 十二音〔中中中中●●●●〕 | 十一音 | fulltext.md L32304 |
 | HJ-Q7805 | 〔■宅直■●●●●〕 十二音〔中中中中●●●●〕 | 十二音 | fulltext.md L32310 |
-| HJ-Q7806 | 星月聲去翕 土火音收濁 | 觀物篇四十四 | fulltext.md L32316 |
-| HJ-Q7807 | 〔■荘震■ 雄雄雄雄化化化化 多可个舌〕 | 收音濁和律二之二 | fulltext.md L32371 |
+| HJ-Q7806 | 星月声去翕 土火音收浊 | 观物篇四十四 | fulltext.md L32316 |
+| HJ-Q7807 | 〔■荘震■ 雄雄雄雄化化化化 多可个舌〕 | 收音浊和律二之二 | fulltext.md L32371 |
 | HJ-Q7808 | 〔■乍□■化化化化〕 二音 〔雄雄雄雄禾火化八〕 | 十一音 | fulltext.md L32374 |
-| HJ-Q7809 | 〔■宅直■化化化化〕 二音 〔雄雄雄雄光廣况○〕 | 十二音 | fulltext.md L32380 |
-| HJ-Q7810 | 〔古甲九癸 雄雄雄雄化化化化 千典旦○〕 | 去聲翕唱吕二之二 | fulltext.md L32386 |
-| HJ-Q7811 | 〔思三星■ 王王王王况况况况 多可个舌〕 | 收音濁和律二之三 | fulltext.md L32424 |
+| HJ-Q7809 | 〔■宅直■化化化化〕 二音 〔雄雄雄雄光广况○〕 | 十二音 | fulltext.md L32380 |
+| HJ-Q7810 | 〔古甲九癸 雄雄雄雄化化化化 千典旦○〕 | 去声翕唱吕二之二 | fulltext.md L32386 |
+| HJ-Q7811 | 〔思三星■ 王王王王况况况况 多可个舌〕 | 收音浊和律二之三 | fulltext.md L32424 |
 | HJ-Q7812 | 〔■乍□■况况况况〕 三音 〔王王王王元犬半○〕 | 十一音 | fulltext.md L32436 |
-| HJ-Q7813 | 〔■宅直■况况况况〕 三音 〔王王王王毛寳報霍〕 | 十二音 | fulltext.md L32442 |
-| HJ-Q7814 | 〔古甲九癸 王王王王半半半半 妻子四日〕 | 去聲翕唱吕二之三 | fulltext.md L32448 |
-| HJ-Q7815 | 〔乃妳女■ □□□□半半半半 多可个舌〕 | 收音濁和律二之四 | fulltext.md L32477 |
-| HJ-Q7816 | 〔■乍□■半半半半〕 四音 〔□□□□衰○師骨〕 | 十一音 | fulltext.md L32498 |
-| HJ-Q7817 | 〔■宅直■半半半半〕 四音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L32504 |
-| HJ-Q7818 | 〔古甲九癸 □□□□報報報報 心審禁○〕 | 去聲翕唱吕二之四 | fulltext.md L32510 |
-| HJ-Q7819 | 〔卜百丙必 □□□□報報報報 多可个舌〕 | 收音濁和律二之五 | fulltext.md L32530 |
-| HJ-Q7820 | 〔■乍□■報報報報〕 五音 〔□□□□○○○十〕 | 十一音 | fulltext.md L32560 |
-| HJ-Q7821 | 〔■宅直■報報報報〕 五音 〔□□□□●●●●〕 | 十二音 | fulltext.md L32566 |
-| HJ-Q7822 | 〔古甲九癸 □□□□帥帥帥帥 ●●●●〕 | 去聲翕唱吕二之五 | fulltext.md L32572 |
-| HJ-Q7823 | 〔安亞乙一 弟弟弟弟帥帥帥帥 多可个舌〕 | 收音濁和律二之六 | fulltext.md L32583 |
-| HJ-Q7824 | 〔■乍□■帥帥帥帥〕 六音 〔弟弟弟弟●●●●〕 | 十一音 | fulltext.md L32622 |
-| HJ-Q7825 | 〔■宅直■ 弟弟弟弟帥帥帥帥 ●●●●〕 | 十二音 | fulltext.md L32628 |
-| HJ-Q7826 | 〔■荘震■ 匠匠匠匠用用用用 多可个舌〕 | 收音濁和律二之八 | fulltext.md L32679 |
+| HJ-Q7813 | 〔■宅直■况况况况〕 三音 〔王王王王毛寳报霍〕 | 十二音 | fulltext.md L32442 |
+| HJ-Q7814 | 〔古甲九癸 王王王王半半半半 妻子四日〕 | 去声翕唱吕二之三 | fulltext.md L32448 |
+| HJ-Q7815 | 〔乃妳女■ □□□□半半半半 多可个舌〕 | 收音浊和律二之四 | fulltext.md L32477 |
+| HJ-Q7816 | 〔■乍□■半半半半〕 四音 〔□□□□衰○师骨〕 | 十一音 | fulltext.md L32498 |
+| HJ-Q7817 | 〔■宅直■半半半半〕 四音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L32504 |
+| HJ-Q7818 | 〔古甲九癸 □□□□报报报报 心审禁○〕 | 去声翕唱吕二之四 | fulltext.md L32510 |
+| HJ-Q7819 | 〔卜百丙必 □□□□报报报报 多可个舌〕 | 收音浊和律二之五 | fulltext.md L32530 |
+| HJ-Q7820 | 〔■乍□■报报报报〕 五音 〔□□□□○○○十〕 | 十一音 | fulltext.md L32560 |
+| HJ-Q7821 | 〔■宅直■报报报报〕 五音 〔□□□□●●●●〕 | 十二音 | fulltext.md L32566 |
+| HJ-Q7822 | 〔古甲九癸 □□□□帅帅帅帅 ●●●●〕 | 去声翕唱吕二之五 | fulltext.md L32572 |
+| HJ-Q7823 | 〔安亚乙一 弟弟弟弟帅帅帅帅 多可个舌〕 | 收音浊和律二之六 | fulltext.md L32583 |
+| HJ-Q7824 | 〔■乍□■帅帅帅帅〕 六音 〔弟弟弟弟●●●●〕 | 十一音 | fulltext.md L32622 |
+| HJ-Q7825 | 〔■宅直■ 弟弟弟弟帅帅帅帅 ●●●●〕 | 十二音 | fulltext.md L32628 |
+| HJ-Q7826 | 〔■荘震■ 匠匠匠匠用用用用 多可个舌〕 | 收音浊和律二之八 | fulltext.md L32679 |
 | HJ-Q7827 | 〔■乍□■用用用用〕 八音 〔匠匠匠匠禾火化八〕 | 十一音 | fulltext.md L32682 |
-| HJ-Q7828 | 〔■宅直■用用用用〕 八音 〔匠匠匠匠光廣况○〕 | 十二音 | fulltext.md L32688 |
-| HJ-Q7829 | 〔古甲九癸 匠匠匠匠○○○○ 千典旦○〕 | 去聲翕唱吕二之七 | fulltext.md L32694 |
-| HJ-Q7830 | 〔思三星■ 象象象象○○○○ 多可个舌〕 | 收音濁和律二之九 | fulltext.md L32732 |
+| HJ-Q7828 | 〔■宅直■用用用用〕 八音 〔匠匠匠匠光广况○〕 | 十二音 | fulltext.md L32688 |
+| HJ-Q7829 | 〔古甲九癸 匠匠匠匠○○○○ 千典旦○〕 | 去声翕唱吕二之七 | fulltext.md L32694 |
+| HJ-Q7830 | 〔思三星■ 象象象象○○○○ 多可个舌〕 | 收音浊和律二之九 | fulltext.md L32732 |
 | HJ-Q7831 | 〔■乍□■○○○○〕 九音 〔象象象象元犬半○〕 | 十一音 | fulltext.md L32744 |
-| HJ-Q7832 | 〔■宅直■○○○○〕 九音 〔象象象象毛寳報霍〕 | 十二音 | fulltext.md L32750 |
-| HJ-Q7833 | 〔古甲九癸 象象象象●●●● 妻子四日〕 | 去聲翕唱吕二之八 | fulltext.md L32756 |
-| HJ-Q7834 | 〔乃妳女■ 石石石石●●●● 多可个舌〕 | 收音濁和律二之十 | fulltext.md L32785 |
-| HJ-Q7835 | 〔■乍□■●●●●〕 十音 〔石石石石衰○帥骨〕 | 十一音 | fulltext.md L32806 |
-| HJ-Q7836 | 〔■宅直■●●●●〕 十音 〔石石石石龍甬用○〕 | 十二音 | fulltext.md L32812 |
-| HJ-Q7837 | 〔古甲九癸 石石石石●●●● 心審禁○〕 | 去聲翕唱吕二之九 | fulltext.md L32818 |
-| HJ-Q7838 | 〔卜百丙必 □□□□●●●● 多可个舌〕 | 收音濁和律二之十一 | fulltext.md L32838 |
+| HJ-Q7832 | 〔■宅直■○○○○〕 九音 〔象象象象毛寳报霍〕 | 十二音 | fulltext.md L32750 |
+| HJ-Q7833 | 〔古甲九癸 象象象象●●●● 妻子四日〕 | 去声翕唱吕二之八 | fulltext.md L32756 |
+| HJ-Q7834 | 〔乃妳女■ 石石石石●●●● 多可个舌〕 | 收音浊和律二之十 | fulltext.md L32785 |
+| HJ-Q7835 | 〔■乍□■●●●●〕 十音 〔石石石石衰○帅骨〕 | 十一音 | fulltext.md L32806 |
+| HJ-Q7836 | 〔■宅直■●●●●〕 十音 〔石石石石龙甬用○〕 | 十二音 | fulltext.md L32812 |
+| HJ-Q7837 | 〔古甲九癸 石石石石●●●● 心审禁○〕 | 去声翕唱吕二之九 | fulltext.md L32818 |
+| HJ-Q7838 | 〔卜百丙必 □□□□●●●● 多可个舌〕 | 收音浊和律二之十一 | fulltext.md L32838 |
 | HJ-Q7839 | 〔■乍□■●●●●〕 十一音〔□□□□○○○十〕 | 十一音 | fulltext.md L32868 |
 | HJ-Q7840 | 〔■宅直■●●●●〕 十一音〔□□□□●●●●〕 | 十二音 | fulltext.md L32874 |
-| HJ-Q7841 | 〔古甲九癸 □□□□●●●● ●●●●〕 | 去聲翕唱吕二之十 | fulltext.md L32880 |
-| HJ-Q7842 | 〔安亞乙一 直直直直●●●● 多可个舌〕 | 收音濁和律二之十二 | fulltext.md L32891 |
+| HJ-Q7841 | 〔古甲九癸 □□□□●●●● ●●●●〕 | 去声翕唱吕二之十 | fulltext.md L32880 |
+| HJ-Q7842 | 〔安亚乙一 直直直直●●●● 多可个舌〕 | 收音浊和律二之十二 | fulltext.md L32891 |
 | HJ-Q7843 | 〔■乍□■●●●●〕 十二音〔直直直直●●●●〕 | 十一音 | fulltext.md L32930 |
 | HJ-Q7844 | 〔■宅直■●●●●〕 十二音〔直直直直●●●●〕 | 十二音 | fulltext.md L32936 |
-| HJ-Q7845 | 欽定四庫全書 | 皇極經世書巻九上 | fulltext.md L32942 |
-| HJ-Q7846 | 星星聲去闢 土土音收清 | 觀物篇四十五 | fulltext.md L32947 |
-| HJ-Q7847 | 〔■荘震■ 仰仰仰仰愛愛愛愛 多可个舌〕 | 收音清和律三之二 | fulltext.md L33003 |
-| HJ-Q7848 | 〔■乍□■愛愛愛愛〕 二音 〔仰仰仰仰禾火化八〕 | 十一音 | fulltext.md L33006 |
-| HJ-Q7849 | 〔■宅直■愛愛愛愛〕 二音 〔仰仰仰仰光廣况○〕 | 十二音 | fulltext.md L33012 |
-| HJ-Q7850 | 〔古甲九癸 仰仰仰仰亘亘亘亘 千典旦○〕 | 去聲闢唱吕三之二 | fulltext.md L33018 |
+| HJ-Q7845 | 钦定四库全书 | 皇极经世书巻九上 | fulltext.md L32942 |
+| HJ-Q7846 | 星星声去辟 土土音收清 | 观物篇四十五 | fulltext.md L32947 |
+| HJ-Q7847 | 〔■荘震■ 仰仰仰仰爱爱爱爱 多可个舌〕 | 收音清和律三之二 | fulltext.md L33003 |
+| HJ-Q7848 | 〔■乍□■爱爱爱爱〕 二音 〔仰仰仰仰禾火化八〕 | 十一音 | fulltext.md L33006 |
+| HJ-Q7849 | 〔■宅直■爱爱爱爱〕 二音 〔仰仰仰仰光广况○〕 | 十二音 | fulltext.md L33012 |
+| HJ-Q7850 | 〔古甲九癸 仰仰仰仰亘亘亘亘 千典旦○〕 | 去声辟唱吕三之二 | fulltext.md L33018 |
 | HJ-Q7851 | 〔思三星■ 美美羙羙亘亘亘亘 多可个舌〕 | 收音清和律三之三 | fulltext.md L33056 |
 | HJ-Q7852 | 〔■乍□■亘亘亘亘〕 三音 〔羙羙羙羙元犬半○〕 | 十一音 | fulltext.md L33068 |
-| HJ-Q7853 | 〔■宅直■亘亘亘亘〕 三音 〔羙羙羙羙毛寳報霍〕 | 十二音 | fulltext.md L33074 |
-| HJ-Q7854 | 〔古甲九癸 羙羙羙羙艮艮艮艮 妻子四日〕 | 去聲闢唱吕三之三 | fulltext.md L33080 |
-| HJ-Q7855 | 〔乃妳女■ □□□□艮艮艮艮 多可个舌〕 | 收音濁和律四之四 | fulltext.md L33109 |
-| HJ-Q7856 | 〔■乍□■艮艮艮艮〕 四音 〔□□□□衰○帥骨〕 | 十一音 | fulltext.md L33130 |
-| HJ-Q7857 | 〔■宅直■艮艮艮艮〕 四音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L33136 |
-| HJ-Q7858 | 〔古甲九癸 □□□□奏奏奏奏 心審禁○〕 | 去聲闢唱吕三之四 | fulltext.md L33142 |
+| HJ-Q7853 | 〔■宅直■亘亘亘亘〕 三音 〔羙羙羙羙毛寳报霍〕 | 十二音 | fulltext.md L33074 |
+| HJ-Q7854 | 〔古甲九癸 羙羙羙羙艮艮艮艮 妻子四日〕 | 去声辟唱吕三之三 | fulltext.md L33080 |
+| HJ-Q7855 | 〔乃妳女■ □□□□艮艮艮艮 多可个舌〕 | 收音浊和律四之四 | fulltext.md L33109 |
+| HJ-Q7856 | 〔■乍□■艮艮艮艮〕 四音 〔□□□□衰○帅骨〕 | 十一音 | fulltext.md L33130 |
+| HJ-Q7857 | 〔■宅直■艮艮艮艮〕 四音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L33136 |
+| HJ-Q7858 | 〔古甲九癸 □□□□奏奏奏奏 心审禁○〕 | 去声辟唱吕三之四 | fulltext.md L33142 |
 | HJ-Q7859 | 〔卜百丙必 品品品品奏奏奏奏 多可个舌〕 | 收音清和律三之五 | fulltext.md L33162 |
 | HJ-Q7860 | 〔■乍□■奏奏奏奏〕 五音 〔品品品品○○○十〕 | 十一音 | fulltext.md L33192 |
 | HJ-Q7861 | 〔■宅直■奏奏奏奏〕 五音 〔品品品品●●●●〕 | 十二音 | fulltext.md L33198 |
-| HJ-Q7862 | 〔古甲九癸 品品品品○○○○ ●●●●〕 | 去聲闢唱吕三之五 | fulltext.md L33204 |
-| HJ-Q7863 | 〔安亞乙一 天天天天○○○○ 多可个舌〕 | 收音清和律三之六 | fulltext.md L33215 |
+| HJ-Q7862 | 〔古甲九癸 品品品品○○○○ ●●●●〕 | 去声辟唱吕三之五 | fulltext.md L33204 |
+| HJ-Q7863 | 〔安亚乙一 天天天天○○○○ 多可个舌〕 | 收音清和律三之六 | fulltext.md L33215 |
 | HJ-Q7864 | 〔■乍□■○○○○〕 六音 〔天天天天●●●●〕 | 十一音 | fulltext.md L33254 |
 | HJ-Q7865 | 〔■宅直■○○○○〕 六音 〔天天天天●●●●〕 | 十二音 | fulltext.md L33260 |
 | HJ-Q7866 | 〔■乍□■去去去去〕 八音 〔七七七七禾火化八〕 | 十一音 | fulltext.md L33312 |
-| HJ-Q7867 | 〔■宅直■去去去去〕 八音 〔七七七七光廣况○〕 | 十二音 | fulltext.md L33318 |
-| HJ-Q7868 | 〔古甲九癸 七七七七欠欠欠欠 千典旦○〕 | 去聲闢唱吕三之七 | fulltext.md L33324 |
+| HJ-Q7867 | 〔■宅直■去去去去〕 八音 〔七七七七光广况○〕 | 十二音 | fulltext.md L33318 |
+| HJ-Q7868 | 〔古甲九癸 七七七七欠欠欠欠 千典旦○〕 | 去声辟唱吕三之七 | fulltext.md L33324 |
 | HJ-Q7869 | 〔思三星■ □□□□欠欠欠欠 多可个舌〕 | 收音清和律三之九 | fulltext.md L33362 |
 | HJ-Q7870 | 〔■乍□■欠欠欠欠〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L33374 |
-| HJ-Q7871 | 〔■宅直■欠欠欠欠〕 九音 〔□□□□毛寳報霍〕 | 十二音 | fulltext.md L33380 |
-| HJ-Q7872 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 去聲闢唱吕三之八 | fulltext.md L33386 |
+| HJ-Q7871 | 〔■宅直■欠欠欠欠〕 九音 〔□□□□毛寳报霍〕 | 十二音 | fulltext.md L33380 |
+| HJ-Q7872 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 去声辟唱吕三之八 | fulltext.md L33386 |
 | HJ-Q7873 | 〔乃妳女■ 耳耳耳耳●●●● 多可个舌〕 | 收音清和律三之十 | fulltext.md L33415 |
-| HJ-Q7874 | 〔■乍□■●●●●〕 十音 〔耳耳耳耳衰○帥骨〕 | 十一音 | fulltext.md L33436 |
-| HJ-Q7875 | 〔■宅直■●●●●〕 十音 〔耳耳耳耳龍甬用○〕 | 十二音 | fulltext.md L33442 |
-| HJ-Q7876 | 〔古甲九癸 耳耳耳耳●●●● 心審禁○〕 | 去聲闢唱吕三之九 | fulltext.md L33448 |
+| HJ-Q7874 | 〔■乍□■●●●●〕 十音 〔耳耳耳耳衰○帅骨〕 | 十一音 | fulltext.md L33436 |
+| HJ-Q7875 | 〔■宅直■●●●●〕 十音 〔耳耳耳耳龙甬用○〕 | 十二音 | fulltext.md L33442 |
+| HJ-Q7876 | 〔古甲九癸 耳耳耳耳●●●● 心审禁○〕 | 去声辟唱吕三之九 | fulltext.md L33448 |
 | HJ-Q7877 | 〔卜百丙必 赤赤赤赤●●●● 多可个舌〕 | 收音清和律三之十一 | fulltext.md L33468 |
 | HJ-Q7878 | 〔■乍□■●●●●〕 十一音〔赤赤赤赤○○○十〕 | 十一音 | fulltext.md L33498 |
 | HJ-Q7879 | 〔■宅直■●●●●〕 十一音〔赤赤赤赤●●●●〕 | 十二音 | fulltext.md L33504 |
-| HJ-Q7880 | 〔古甲九癸 赤赤赤赤●●●● ●●●●〕 | 去聲闢唱吕三之十 | fulltext.md L33510 |
-| HJ-Q7881 | 〔安亞乙一 王王王王●●●● 多可个舌〕 | 收音清和律三之十二 | fulltext.md L33521 |
+| HJ-Q7880 | 〔古甲九癸 赤赤赤赤●●●● ●●●●〕 | 去声辟唱吕三之十 | fulltext.md L33510 |
+| HJ-Q7881 | 〔安亚乙一 王王王王●●●● 多可个舌〕 | 收音清和律三之十二 | fulltext.md L33521 |
 | HJ-Q7882 | 〔■乍□■●●●●〕 十二音〔王王王王●●●●〕 | 十一音 | fulltext.md L33560 |
 | HJ-Q7883 | 〔■宅直■●●●●〕 十二音〔王王王王●●●●〕 | 十二音 | fulltext.md L33566 |
-| HJ-Q7884 | 星辰聲去翕 土石音收濁 | 觀物篇四十六 | fulltext.md L33572 |
-| HJ-Q7885 | 〔■荘震■ 月月月月退退退退 多可个舌〕 | 收音濁和律四之二 | fulltext.md L33628 |
+| HJ-Q7884 | 星辰声去翕 土石音收浊 | 观物篇四十六 | fulltext.md L33572 |
+| HJ-Q7885 | 〔■荘震■ 月月月月退退退退 多可个舌〕 | 收音浊和律四之二 | fulltext.md L33628 |
 | HJ-Q7886 | 〔■乍□■退退退退〕 二音 〔月月月月禾火化八〕 | 十一音 | fulltext.md L33631 |
-| HJ-Q7887 | 〔■宅直■退退退退〕 二音 〔月月月月光廣况○〕 | 十二音 | fulltext.md L33637 |
-| HJ-Q7888 | 〔古甲九癸 月月月月瑩瑩瑩瑩 千典旦○〕 | 去聲翕唱吕四之二 | fulltext.md L33643 |
-| HJ-Q7889 | 〔思三星■ 眉眉眉眉瑩瑩瑩瑩 多可个舌〕 | 收音濁和律四之三 | fulltext.md L33681 |
-| HJ-Q7890 | 〔■乍□■瑩瑩瑩瑩〕 三音 〔眉眉眉眉元犬半○〕 | 十一音 | fulltext.md L33693 |
-| HJ-Q7891 | 〔■宅直■瑩瑩瑩瑩〕 三音 〔眉眉眉眉毛寳報霍〕 | 十二音 | fulltext.md L33699 |
-| HJ-Q7892 | 〔古甲九癸 眉眉眉眉巽巽巽巽 妻子四日〕 | 去聲翕唱吕四之三 | fulltext.md L33705 |
-| HJ-Q7893 | 〔乃妳女■ □□□□巽巽巽巽 多可个舌〕 | 收音濁和律四之四 | fulltext.md L33734 |
-| HJ-Q7894 | 〔■乍□■巽巽巽巽〕 四音 〔□□□□衰○帥骨〕 | 十一音 | fulltext.md L33755 |
-| HJ-Q7895 | 〔■宅直■巽巽巽巽〕 四音 〔□□□□龍甬用○〕 | 十二音 | fulltext.md L33761 |
-| HJ-Q7896 | 〔古甲九癸 □□□□○○○○ 心審禁○〕 | 去聲翕唱吕四之四 | fulltext.md L33767 |
-| HJ-Q7897 | 〔卜百丙必 平平平平○○○○ 多可个舌〕 | 收音濁和律四之五 | fulltext.md L33787 |
+| HJ-Q7887 | 〔■宅直■退退退退〕 二音 〔月月月月光广况○〕 | 十二音 | fulltext.md L33637 |
+| HJ-Q7888 | 〔古甲九癸 月月月月莹莹莹莹 千典旦○〕 | 去声翕唱吕四之二 | fulltext.md L33643 |
+| HJ-Q7889 | 〔思三星■ 眉眉眉眉莹莹莹莹 多可个舌〕 | 收音浊和律四之三 | fulltext.md L33681 |
+| HJ-Q7890 | 〔■乍□■莹莹莹莹〕 三音 〔眉眉眉眉元犬半○〕 | 十一音 | fulltext.md L33693 |
+| HJ-Q7891 | 〔■宅直■莹莹莹莹〕 三音 〔眉眉眉眉毛寳报霍〕 | 十二音 | fulltext.md L33699 |
+| HJ-Q7892 | 〔古甲九癸 眉眉眉眉巽巽巽巽 妻子四日〕 | 去声翕唱吕四之三 | fulltext.md L33705 |
+| HJ-Q7893 | 〔乃妳女■ □□□□巽巽巽巽 多可个舌〕 | 收音浊和律四之四 | fulltext.md L33734 |
+| HJ-Q7894 | 〔■乍□■巽巽巽巽〕 四音 〔□□□□衰○帅骨〕 | 十一音 | fulltext.md L33755 |
+| HJ-Q7895 | 〔■宅直■巽巽巽巽〕 四音 〔□□□□龙甬用○〕 | 十二音 | fulltext.md L33761 |
+| HJ-Q7896 | 〔古甲九癸 □□□□○○○○ 心审禁○〕 | 去声翕唱吕四之四 | fulltext.md L33767 |
+| HJ-Q7897 | 〔卜百丙必 平平平平○○○○ 多可个舌〕 | 收音浊和律四之五 | fulltext.md L33787 |
 | HJ-Q7898 | 〔■乍□■○○○○〕 五音 〔平平平平○○○十〕 | 十一音 | fulltext.md L33817 |
 | HJ-Q7899 | 〔■宅直■○○○○〕 五音 〔平平平平●●●●〕 | 十二音 | fulltext.md L33823 |
-| HJ-Q7900 | 〔古甲九癸 平平平平貴貴貴貴 ●●●●〕 | 去聲闢唱吕四之五 | fulltext.md L33829 |
-| HJ-Q7901 | 〔安亞乙一 田田田田貴貴貴貴 多可个舌〕 | 收音濁和律四之六 | fulltext.md L33840 |
-| HJ-Q7902 | 〔■乍□■貴貴貴貴〕 六音 〔田田田田●●●●〕 | 十一音 | fulltext.md L33879 |
-| HJ-Q7903 | 〔■宅直■貴貴貴貴〕 六音 〔田田田田●●●●〕 | 十二音 | fulltext.md L33885 |
-| HJ-Q7904 | 〔■荘震■ 全全全全兎兎兎兎 多可个舌〕 | 收音濁和律四之八 | fulltext.md L33936 |
+| HJ-Q7900 | 〔古甲九癸 平平平平贵贵贵贵 ●●●●〕 | 去声辟唱吕四之五 | fulltext.md L33829 |
+| HJ-Q7901 | 〔安亚乙一 田田田田贵贵贵贵 多可个舌〕 | 收音浊和律四之六 | fulltext.md L33840 |
+| HJ-Q7902 | 〔■乍□■贵贵贵贵〕 六音 〔田田田田●●●●〕 | 十一音 | fulltext.md L33879 |
+| HJ-Q7903 | 〔■宅直■贵贵贵贵〕 六音 〔田田田田●●●●〕 | 十二音 | fulltext.md L33885 |
+| HJ-Q7904 | 〔■荘震■ 全全全全兎兎兎兎 多可个舌〕 | 收音浊和律四之八 | fulltext.md L33936 |
 | HJ-Q7905 | 〔■乍□■兎兎兎兎〕 八音 〔全全全全禾火化八〕 | 十一音 | fulltext.md L33939 |
-| HJ-Q7906 | 〔■宅直■兎兎兎兎〕 八音 〔全全全全光廣况○〕 | 十二音 | fulltext.md L33945 |
-| HJ-Q7907 | 〔古甲九癸 全全全全○○○○ 千典旦○〕 | 去聲翕唱吕四之七 | fulltext.md L33951 |
-| HJ-Q7908 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 收音濁和律四之九 | fulltext.md L33989 |
+| HJ-Q7906 | 〔■宅直■兎兎兎兎〕 八音 〔全全全全光广况○〕 | 十二音 | fulltext.md L33945 |
+| HJ-Q7907 | 〔古甲九癸 全全全全○○○○ 千典旦○〕 | 去声翕唱吕四之七 | fulltext.md L33951 |
+| HJ-Q7908 | 〔思三星■ □□□□○○○○ 多可个舌〕 | 收音浊和律四之九 | fulltext.md L33989 |
 | HJ-Q7909 | 〔■乍□■○○○○〕 九音 〔□□□□元犬半○〕 | 十一音 | fulltext.md L34001 |
-| HJ-Q7910 | 〔■宅直■○○○○〕 九音 〔□□□□毛寳報霍〕 | 十二音 | fulltext.md L34007 |
-| HJ-Q7911 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 去聲翕唱吕四之八 | fulltext.md L34013 |
-| HJ-Q7912 | 〔乃妳女■ 二二二二●●●● 多可个舌〕 | 收音濁和律四之十 | fulltext.md L34042 |
-| HJ-Q7913 | 〔■乍□■●●●●〕 十音 〔二二二二衰○帥骨〕 | 十一音 | fulltext.md L34063 |
-| HJ-Q7914 | 〔■宅直■●●●●〕 十音 〔二二二二龍甬用○〕 | 十二音 | fulltext.md L34069 |
-| HJ-Q7915 | 〔古甲九癸 二二二二●●●● 心審禁○〕 | 去聲翕唱吕四之九 | fulltext.md L34075 |
-| HJ-Q7916 | 〔卜百丙必 辰辰辰辰●●●● 多可个舌〕 | 收音濁和律四之十一 | fulltext.md L34095 |
+| HJ-Q7910 | 〔■宅直■○○○○〕 九音 〔□□□□毛寳报霍〕 | 十二音 | fulltext.md L34007 |
+| HJ-Q7911 | 〔古甲九癸 □□□□●●●● 妻子四日〕 | 去声翕唱吕四之八 | fulltext.md L34013 |
+| HJ-Q7912 | 〔乃妳女■ 二二二二●●●● 多可个舌〕 | 收音浊和律四之十 | fulltext.md L34042 |
+| HJ-Q7913 | 〔■乍□■●●●●〕 十音 〔二二二二衰○帅骨〕 | 十一音 | fulltext.md L34063 |
+| HJ-Q7914 | 〔■宅直■●●●●〕 十音 〔二二二二龙甬用○〕 | 十二音 | fulltext.md L34069 |
+| HJ-Q7915 | 〔古甲九癸 二二二二●●●● 心审禁○〕 | 去声翕唱吕四之九 | fulltext.md L34075 |
+| HJ-Q7916 | 〔卜百丙必 辰辰辰辰●●●● 多可个舌〕 | 收音浊和律四之十一 | fulltext.md L34095 |
 | HJ-Q7917 | 〔■乍□■●●●●〕 十一音〔辰辰辰辰○○○十〕 | 十一音 | fulltext.md L34125 |
 | HJ-Q7918 | 〔■宅直■●●●●〕 十一音〔辰辰辰辰●●●●〕 | 十二音 | fulltext.md L34131 |
-| HJ-Q7919 | 〔古甲九癸 辰辰辰辰●●●● ●●●●〕 | 去聲翕唱吕四之十 | fulltext.md L34137 |
-| HJ-Q7920 | 〔安亞乙一 呈呈呈呈●●●● 多可个舌〕 | 收音濁和律四之十二 | fulltext.md L34148 |
+| HJ-Q7919 | 〔古甲九癸 辰辰辰辰●●●● ●●●●〕 | 去声翕唱吕四之十 | fulltext.md L34137 |
+| HJ-Q7920 | 〔安亚乙一 呈呈呈呈●●●● 多可个舌〕 | 收音浊和律四之十二 | fulltext.md L34148 |
 | HJ-Q7921 | 〔■乍□■●●●●〕 十二音〔呈呈呈呈●●●●〕 | 十一音 | fulltext.md L34187 |
 | HJ-Q7922 | 〔■宅直■●●●●〕 十二音〔呈呈呈呈●●●●〕 | 十二音 | fulltext.md L34193 |
-| HJ-Q7923 | 欽定四庫全書 | 皇極經世書卷九下 | fulltext.md L34199 |
-| HJ-Q7924 | 〔■莊震■ 血血血血舌舌舌舌 多可介舌〕 | 閉音清和律一之二 | fulltext.md L34257 |
+| HJ-Q7923 | 钦定四库全书 | 皇极经世书卷九下 | fulltext.md L34199 |
+| HJ-Q7924 | 〔■庄震■ 血血血血舌舌舌舌 多可介舌〕 | 闭音清和律一之二 | fulltext.md L34257 |
 | HJ-Q7925 | 〔■乍□■舌舌舌舌〕 二音 〔血血血血禾火化八〕 | 十一音 | fulltext.md L34260 |
-| HJ-Q7926 | 〔■宅直■舌舌舌舌〕 二音 〔血血血血光廣况○〕 | 十二音 | fulltext.md L34266 |
-| HJ-Q7927 | 〔古甲九癸 血血血血○○○○ 千典旦○〕 | 入聲闢唱吕一之二 | fulltext.md L34272 |
-| HJ-Q7928 | 〔思三星■ 一一一一○○○○ 多可介舌〕 | 閉音清和律一之三 | fulltext.md L34310 |
+| HJ-Q7926 | 〔■宅直■舌舌舌舌〕 二音 〔血血血血光广况○〕 | 十二音 | fulltext.md L34266 |
+| HJ-Q7927 | 〔古甲九癸 血血血血○○○○ 千典旦○〕 | 入声辟唱吕一之二 | fulltext.md L34272 |
+| HJ-Q7928 | 〔思三星■ 一一一一○○○○ 多可介舌〕 | 闭音清和律一之三 | fulltext.md L34310 |
 | HJ-Q7929 | 〔■乍□■○○○○〕 三音 〔一一一一元犬半○〕 | 十一音 | fulltext.md L34322 |
-| HJ-Q7930 | 〔■宅直■○○○○〕 三音 〔一一一一毛寳報霍〕 | 十二音 | fulltext.md L34328 |
-| HJ-Q7931 | 〔古甲九癸 一一一一○○○○ 妻子四日〕 | 入聲闢唱吕一之三 | fulltext.md L34334 |
-| HJ-Q7932 | 〔乃妳女■ 飛飛飛飛○○○○ 多可介舌〕 | 閉音清和律一之四 | fulltext.md L34363 |
-| HJ-Q7933 | 〔■乍□■○○○○〕 四音 〔飛飛飛飛衰○帥骨〕 | 十一音 | fulltext.md L34384 |
-| HJ-Q7934 | 〔■宅直■○○○○〕 四音 〔飛飛飛飛龍甬用○〕 | 十二音 | fulltext.md L34390 |
-| HJ-Q7935 | 〔古甲九癸 飛飛飛飛岳岳岳岳 心審禁○〕 | 入聲闢唱吕一之四 | fulltext.md L34396 |
-| HJ-Q7936 | 〔卜百丙必 必必必必岳岳岳岳 多可介舌〕 | 閉音清和律一之五 | fulltext.md L34416 |
+| HJ-Q7930 | 〔■宅直■○○○○〕 三音 〔一一一一毛寳报霍〕 | 十二音 | fulltext.md L34328 |
+| HJ-Q7931 | 〔古甲九癸 一一一一○○○○ 妻子四日〕 | 入声辟唱吕一之三 | fulltext.md L34334 |
+| HJ-Q7932 | 〔乃妳女■ 飞飞飞飞○○○○ 多可介舌〕 | 闭音清和律一之四 | fulltext.md L34363 |
+| HJ-Q7933 | 〔■乍□■○○○○〕 四音 〔飞飞飞飞衰○帅骨〕 | 十一音 | fulltext.md L34384 |
+| HJ-Q7934 | 〔■宅直■○○○○〕 四音 〔飞飞飞飞龙甬用○〕 | 十二音 | fulltext.md L34390 |
+| HJ-Q7935 | 〔古甲九癸 飞飞飞飞岳岳岳岳 心审禁○〕 | 入声辟唱吕一之四 | fulltext.md L34396 |
+| HJ-Q7936 | 〔卜百丙必 必必必必岳岳岳岳 多可介舌〕 | 闭音清和律一之五 | fulltext.md L34416 |
 | HJ-Q7937 | 〔■乍□■岳岳岳岳〕 五音 〔必必必必○○○十〕 | 十一音 | fulltext.md L34446 |
 | HJ-Q7938 | 〔■宅直■岳岳岳岳〕 五音 〔必必必必●●●●〕 | 十二音 | fulltext.md L34452 |
-| HJ-Q7939 | 〔古甲九癸 必必必必日日日日 ●●●●〕 | 入聲闢唱吕一之五 | fulltext.md L34458 |
+| HJ-Q7939 | 〔古甲九癸 必必必必日日日日 ●●●●〕 | 入声辟唱吕一之五 | fulltext.md L34458 |
 | HJ-Q7940 | 〔■乍□■日日日日〕 六音 〔■■■■●●●●〕 | 十一音 | fulltext.md L34506 |
 | HJ-Q7941 | 〔■宅直■日日日日〕 六音 〔■■■■●●●●〕 | 十二音 | fulltext.md L34512 |
-| HJ-Q7942 | 〔■莊震■ ■■■■○○○○ 多可介舌〕 | 閉音清和律一之八 | fulltext.md L34563 |
+| HJ-Q7942 | 〔■庄震■ ■■■■○○○○ 多可介舌〕 | 闭音清和律一之八 | fulltext.md L34563 |
 | HJ-Q7943 | 〔■乍□■○○○○〕 八音 〔■■■■禾火化八〕 | 十一音 | fulltext.md L34566 |
-| HJ-Q7944 | 〔■宅直■○○○○〕 八音 〔■■■■光廣况○〕 | 十一音 | fulltext.md L34572 |
-| HJ-Q7945 | 〔思三星■ ■■■■○○○○ 多可介舌〕 | 閉音清和律一之九 | fulltext.md L34614 |
+| HJ-Q7944 | 〔■宅直■○○○○〕 八音 〔■■■■光广况○〕 | 十一音 | fulltext.md L34572 |
+| HJ-Q7945 | 〔思三星■ ■■■■○○○○ 多可介舌〕 | 闭音清和律一之九 | fulltext.md L34614 |
 | HJ-Q7946 | 〔■乍□■○○○○〕 九音 〔■■■■元犬半○〕 | 十一音 | fulltext.md L34626 |
-| HJ-Q7947 | 〔■宅直■○○○○〕 九音 〔■■■■毛寳報霍〕 | 十二音 | fulltext.md L34632 |
-| HJ-Q7948 | 〔古甲九癸 ■■■■●●●● 妻子四日〕 | 入聲闢唱吕一之八 | fulltext.md L34638 |
-| HJ-Q7949 | 〔乃妳女■ ■■■■●●●● 多可介石〕 | 閉音清和律一之十 | fulltext.md L34667 |
-| HJ-Q7950 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L34688 |
-| HJ-Q7951 | 〔■宅直■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L34694 |
-| HJ-Q7952 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 入聲闢唱吕一之九 | fulltext.md L34700 |
-| HJ-Q7953 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 閉音清和律一之十一 | fulltext.md L34720 |
+| HJ-Q7947 | 〔■宅直■○○○○〕 九音 〔■■■■毛寳报霍〕 | 十二音 | fulltext.md L34632 |
+| HJ-Q7948 | 〔古甲九癸 ■■■■●●●● 妻子四日〕 | 入声辟唱吕一之八 | fulltext.md L34638 |
+| HJ-Q7949 | 〔乃妳女■ ■■■■●●●● 多可介石〕 | 闭音清和律一之十 | fulltext.md L34667 |
+| HJ-Q7950 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L34688 |
+| HJ-Q7951 | 〔■宅直■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L34694 |
+| HJ-Q7952 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 入声辟唱吕一之九 | fulltext.md L34700 |
+| HJ-Q7953 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 闭音清和律一之十一 | fulltext.md L34720 |
 | HJ-Q7954 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L34750 |
 | HJ-Q7955 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L34756 |
-| HJ-Q7956 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 入聲闢唱吕一之十 | fulltext.md L34762 |
-| HJ-Q7957 | 〔安亞乙一 ■■■■●●●● 多可介舌〕 | 閉音清和律一之十二 | fulltext.md L34773 |
+| HJ-Q7956 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 入声辟唱吕一之十 | fulltext.md L34762 |
+| HJ-Q7957 | 〔安亚乙一 ■■■■●●●● 多可介舌〕 | 闭音清和律一之十二 | fulltext.md L34773 |
 | HJ-Q7958 | 〔■乍□■●●●●〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L34812 |
 | HJ-Q7959 | 〔■宅直■●●●●〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L34818 |
-| HJ-Q7960 | 辰月聲入翕 石火音閉濁 | 觀物篇四十八 | fulltext.md L34824 |
-| HJ-Q7961 | 〔■莊震■ 賢賢賢賢八八八八 多可介舌〕 | 閉音濁和律二之二 | fulltext.md L34880 |
-| HJ-Q7962 | 〔■乍□■八八八八〕 二音 〔賢賢賢賢禾火化八〕 | 十一音 | fulltext.md L34883 |
-| HJ-Q7963 | 〔■宅直■八八八八〕 二音 〔賢賢賢賢光廣况○〕 | 十二音 | fulltext.md L34889 |
-| HJ-Q7964 | 〔古甲九癸 賢賢賢賢○○○○ 千典旦○〕 | 入聲翕唱吕二之二 | fulltext.md L34895 |
-| HJ-Q7965 | 〔思三星■ 寅寅寅寅○○○○ 多可介舌〕 | 閉音濁和律二之三 | fulltext.md L34933 |
+| HJ-Q7960 | 辰月声入翕 石火音闭浊 | 观物篇四十八 | fulltext.md L34824 |
+| HJ-Q7961 | 〔■庄震■ 贤贤贤贤八八八八 多可介舌〕 | 闭音浊和律二之二 | fulltext.md L34880 |
+| HJ-Q7962 | 〔■乍□■八八八八〕 二音 〔贤贤贤贤禾火化八〕 | 十一音 | fulltext.md L34883 |
+| HJ-Q7963 | 〔■宅直■八八八八〕 二音 〔贤贤贤贤光广况○〕 | 十二音 | fulltext.md L34889 |
+| HJ-Q7964 | 〔古甲九癸 贤贤贤贤○○○○ 千典旦○〕 | 入声翕唱吕二之二 | fulltext.md L34895 |
+| HJ-Q7965 | 〔思三星■ 寅寅寅寅○○○○ 多可介舌〕 | 闭音浊和律二之三 | fulltext.md L34933 |
 | HJ-Q7966 | 〔■乍□■○○○○〕 三音 〔寅寅寅寅元犬半○〕 | 十一音 | fulltext.md L34945 |
-| HJ-Q7967 | 〔■宅直■○○○○〕 三音 〔寅寅寅寅毛寳報霍〕 | 十二音 | fulltext.md L34951 |
-| HJ-Q7968 | 〔古甲九癸 寅寅寅寅○○○○ 妻子四日〕 | 入聲翕唱吕二之三 | fulltext.md L34957 |
-| HJ-Q7969 | 〔乃妳女■ 吠吠吠吠○○○○ 多可介舌〕 | 閉音濁和律二之四 | fulltext.md L34986 |
-| HJ-Q7970 | 〔■乍□■○○○○〕 四音 〔吠吠吠吠衰○帥骨〕 | 十一音 | fulltext.md L35007 |
-| HJ-Q7971 | 〔■宅直■○○○○〕 四音 〔吠吠吠吠龍甬用○〕 | 十二音 | fulltext.md L35013 |
-| HJ-Q7972 | 〔古甲九癸 吠吠吠吠霍霍霍霍 心審禁○〕 | 入聲翕唱吕二之四 | fulltext.md L35019 |
-| HJ-Q7973 | 〔卜百丙必 鼻鼻鼻鼻霍霍霍霍 多可介舌〕 | 閉音濁和律二之五 | fulltext.md L35039 |
+| HJ-Q7967 | 〔■宅直■○○○○〕 三音 〔寅寅寅寅毛寳报霍〕 | 十二音 | fulltext.md L34951 |
+| HJ-Q7968 | 〔古甲九癸 寅寅寅寅○○○○ 妻子四日〕 | 入声翕唱吕二之三 | fulltext.md L34957 |
+| HJ-Q7969 | 〔乃妳女■ 吠吠吠吠○○○○ 多可介舌〕 | 闭音浊和律二之四 | fulltext.md L34986 |
+| HJ-Q7970 | 〔■乍□■○○○○〕 四音 〔吠吠吠吠衰○帅骨〕 | 十一音 | fulltext.md L35007 |
+| HJ-Q7971 | 〔■宅直■○○○○〕 四音 〔吠吠吠吠龙甬用○〕 | 十二音 | fulltext.md L35013 |
+| HJ-Q7972 | 〔古甲九癸 吠吠吠吠霍霍霍霍 心审禁○〕 | 入声翕唱吕二之四 | fulltext.md L35019 |
+| HJ-Q7973 | 〔卜百丙必 鼻鼻鼻鼻霍霍霍霍 多可介舌〕 | 闭音浊和律二之五 | fulltext.md L35039 |
 | HJ-Q7974 | 〔■乍□■霍霍霍霍〕 五音 〔鼻鼻鼻鼻○○○十〕 | 十一音 | fulltext.md L35069 |
 | HJ-Q7975 | 〔■宅直■霍霍霍霍〕 五音 〔鼻鼻鼻鼻●●●●〕 | 十二音 | fulltext.md L35075 |
-| HJ-Q7976 | 〔古甲九癸 鼻鼻鼻鼻骨骨骨骨 ●●●●〕 | 入聲翕唱吕二之二 | fulltext.md L35081 |
-| HJ-Q7977 | 〔安亞乙一 ■■■■骨骨骨骨 多可介舌〕 | 閉音濁和律二之六 | fulltext.md L35092 |
+| HJ-Q7976 | 〔古甲九癸 鼻鼻鼻鼻骨骨骨骨 ●●●●〕 | 入声翕唱吕二之二 | fulltext.md L35081 |
+| HJ-Q7977 | 〔安亚乙一 ■■■■骨骨骨骨 多可介舌〕 | 闭音浊和律二之六 | fulltext.md L35092 |
 | HJ-Q7978 | 〔■乍□■骨骨骨骨〕 六音 〔■■■■●●●●〕 | 十一音 | fulltext.md L35131 |
 | HJ-Q7979 | 〔■宅直■骨骨骨骨〕 六音 〔■■■■●●●●〕 | 十二音 | fulltext.md L35137 |
-| HJ-Q7980 | 〔■莊震■ ■■■■○○○○ 多可介舌〕 | 閉音濁和律二之八 | fulltext.md L35188 |
+| HJ-Q7980 | 〔■庄震■ ■■■■○○○○ 多可介舌〕 | 闭音浊和律二之八 | fulltext.md L35188 |
 | HJ-Q7981 | 〔■乍 ■○○○○〕 八音 〔■■■■禾火化八〕 | 十一音 | fulltext.md L35191 |
-| HJ-Q7982 | 〔■宅直■○○○○〕 八音 〔■■■■光廣况○〕 | 十二音 | fulltext.md L35197 |
-| HJ-Q7983 | 〔古甲九癸 ■■■■十十十十 千典旦○〕 | 入聲翕唱吕二之七 | fulltext.md L35203 |
-| HJ-Q7984 | 〔思三星■ ■■■■十十十十 多可介舌〕 | 閉音濁和律二之九 | fulltext.md L35241 |
+| HJ-Q7982 | 〔■宅直■○○○○〕 八音 〔■■■■光广况○〕 | 十二音 | fulltext.md L35197 |
+| HJ-Q7983 | 〔古甲九癸 ■■■■十十十十 千典旦○〕 | 入声翕唱吕二之七 | fulltext.md L35203 |
+| HJ-Q7984 | 〔思三星■ ■■■■十十十十 多可介舌〕 | 闭音浊和律二之九 | fulltext.md L35241 |
 | HJ-Q7985 | 〔■乍□■十十十十〕 九音 〔■■■■元犬半○〕 | 十一音 | fulltext.md L35253 |
-| HJ-Q7986 | 〔■宅直■十十十十〕 九音 〔■■■■毛寳報霍〕 | 十二音 | fulltext.md L35259 |
-| HJ-Q7987 | 〔古甲九癸 ■■■■●●●● 妻子四日〕 | 入聲翕唱吕二之八 | fulltext.md L35265 |
-| HJ-Q7988 | 〔乃妳女■ ■■■■●●●● 多可介舌〕 | 閉音濁和律二之十 | fulltext.md L35294 |
-| HJ-Q7989 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L35315 |
-| HJ-Q7990 | 〔■宅直■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L35321 |
-| HJ-Q7991 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 入聲翕唱吕二之九 | fulltext.md L35327 |
-| HJ-Q7992 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 閉音濁和律二之十一 | fulltext.md L35347 |
+| HJ-Q7986 | 〔■宅直■十十十十〕 九音 〔■■■■毛寳报霍〕 | 十二音 | fulltext.md L35259 |
+| HJ-Q7987 | 〔古甲九癸 ■■■■●●●● 妻子四日〕 | 入声翕唱吕二之八 | fulltext.md L35265 |
+| HJ-Q7988 | 〔乃妳女■ ■■■■●●●● 多可介舌〕 | 闭音浊和律二之十 | fulltext.md L35294 |
+| HJ-Q7989 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L35315 |
+| HJ-Q7990 | 〔■宅直■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L35321 |
+| HJ-Q7991 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 入声翕唱吕二之九 | fulltext.md L35327 |
+| HJ-Q7992 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 闭音浊和律二之十一 | fulltext.md L35347 |
 | HJ-Q7993 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L35377 |
 | HJ-Q7994 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L35383 |
-| HJ-Q7995 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 入聲翕唱吕二之十 | fulltext.md L35389 |
-| HJ-Q7996 | 〔安亞乙一 ■■■■●●●● 多可介舌〕 | 閉音濁和律二之十二 | fulltext.md L35400 |
+| HJ-Q7995 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 入声翕唱吕二之十 | fulltext.md L35389 |
+| HJ-Q7996 | 〔安亚乙一 ■■■■●●●● 多可介舌〕 | 闭音浊和律二之十二 | fulltext.md L35400 |
 | HJ-Q7997 | 〔■乍□■●●●●〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L35439 |
 | HJ-Q7998 | 〔■宅直■●●●●〕 十二音〔■■■■●●●●〕 | 十二音 | fulltext.md L35445 |
-| HJ-Q7999 | 欽定四庫全書 | 皇極經世書巻十上 | fulltext.md L35451 |
-| HJ-Q8000 | 〔■莊震■ □□□□○○○○ 多可介舌〕 | 閉音清和律三之二 | fulltext.md L35508 |
+| HJ-Q7999 | 钦定四库全书 | 皇极经世书巻十上 | fulltext.md L35451 |
+| HJ-Q8000 | 〔■庄震■ □□□□○○○○ 多可介舌〕 | 闭音清和律三之二 | fulltext.md L35508 |
 | HJ-Q8001 | 〔■乍□■○○○○〕 二音 〔□□□□禾火化八〕 | 十一音 | fulltext.md L35511 |
-| HJ-Q8002 | 〔古甲九癸 □□□□○○○○ 千典旦○〕 | 入聲闢唱吕三之二 | fulltext.md L35521 |
-| HJ-Q8003 | 〔思三星■ 米米米米○○○○ 多可介舌〕 | 閉音清和律三之三 | fulltext.md L35559 |
+| HJ-Q8002 | 〔古甲九癸 □□□□○○○○ 千典旦○〕 | 入声辟唱吕三之二 | fulltext.md L35521 |
+| HJ-Q8003 | 〔思三星■ 米米米米○○○○ 多可介舌〕 | 闭音清和律三之三 | fulltext.md L35559 |
 | HJ-Q8004 | 〔■乍□■○○○○〕 三音 〔米米米米元犬半○〕 | 十一音 | fulltext.md L35571 |
-| HJ-Q8005 | 〔■宅直■○○○○〕 三音 〔米米米米毛寳報霍〕 | 十二音 | fulltext.md L35577 |
-| HJ-Q8006 | 〔古甲九癸 米米米米○○○○ 妻子四日〕 | 入聲闢唱吕二之三 | fulltext.md L35583 |
-| HJ-Q8007 | 〔乃妳女■ 尾尾尾尾○○○○ 多可介舌〕 | 閉音清和律三之四 | fulltext.md L35612 |
-| HJ-Q8008 | 〔■乍□■○○○○〕 四音 〔尾尾尾尾衰○帥骨〕 | 十一音 | fulltext.md L35633 |
-| HJ-Q8009 | 〔■宅直■○○○○〕 四音 〔尾尾尾尾龍甬用○〕 | 十二音 | fulltext.md L35639 |
-| HJ-Q8010 | 〔古甲九癸 尾尾尾尾六六六六 心審禁○〕 | 入聲闢唱吕三之四 | fulltext.md L35645 |
-| HJ-Q8011 | 〔卜百丙必 匹匹匹匹六六六六 多可介舌〕 | 閉音清和律三之五 | fulltext.md L35665 |
+| HJ-Q8005 | 〔■宅直■○○○○〕 三音 〔米米米米毛寳报霍〕 | 十二音 | fulltext.md L35577 |
+| HJ-Q8006 | 〔古甲九癸 米米米米○○○○ 妻子四日〕 | 入声辟唱吕二之三 | fulltext.md L35583 |
+| HJ-Q8007 | 〔乃妳女■ 尾尾尾尾○○○○ 多可介舌〕 | 闭音清和律三之四 | fulltext.md L35612 |
+| HJ-Q8008 | 〔■乍□■○○○○〕 四音 〔尾尾尾尾衰○帅骨〕 | 十一音 | fulltext.md L35633 |
+| HJ-Q8009 | 〔■宅直■○○○○〕 四音 〔尾尾尾尾龙甬用○〕 | 十二音 | fulltext.md L35639 |
+| HJ-Q8010 | 〔古甲九癸 尾尾尾尾六六六六 心审禁○〕 | 入声辟唱吕三之四 | fulltext.md L35645 |
+| HJ-Q8011 | 〔卜百丙必 匹匹匹匹六六六六 多可介舌〕 | 闭音清和律三之五 | fulltext.md L35665 |
 | HJ-Q8012 | 〔■乍□■六六六六〕 五音 〔匹匹匹匹○○○十〕 | 十一音 | fulltext.md L35695 |
 | HJ-Q8013 | 〔■宅直■六六六六〕 五音 〔匹匹匹匹●●●●〕 | 十二音 | fulltext.md L35701 |
-| HJ-Q8014 | 〔古甲九癸 匹匹匹匹徳徳徳徳 ●●●●〕 | 入聲闢唱吕三之五 | fulltext.md L35707 |
-| HJ-Q8015 | 〔安亞乙一 □□□□徳徳徳徳 多可介舌〕 | 閉音清和律三之六 | fulltext.md L35718 |
+| HJ-Q8014 | 〔古甲九癸 匹匹匹匹徳徳徳徳 ●●●●〕 | 入声辟唱吕三之五 | fulltext.md L35707 |
+| HJ-Q8015 | 〔安亚乙一 □□□□徳徳徳徳 多可介舌〕 | 闭音清和律三之六 | fulltext.md L35718 |
 | HJ-Q8016 | 〔■乍 ■徳徳徳徳〕 六音 〔■■■■●●●●〕 | 十一音 | fulltext.md L35757 |
-| HJ-Q8017 | 〔■荘震■ ■■■■○○○○ 多可介舌〕 | 閉音清和律三之八 | fulltext.md L35812 |
+| HJ-Q8017 | 〔■荘震■ ■■■■○○○○ 多可介舌〕 | 闭音清和律三之八 | fulltext.md L35812 |
 | HJ-Q8018 | 〔■乍□■○○○○〕 八音 〔■■■■禾火化八〕 | 十一音 | fulltext.md L35815 |
-| HJ-Q8019 | 〔■宅直■○○○○〕 八音 〔■■■■光廣况○〕 | 十二音 | fulltext.md L35821 |
-| HJ-Q8020 | 〔古甲九癸 ■■■■○○○○ 千典旦○〕 | 入聲闢唱吕三之七 | fulltext.md L35827 |
-| HJ-Q8021 | 〔思三星■ ■■■■○○○○ 多可介舌〕 | 閉音清和律三之九 | fulltext.md L35865 |
+| HJ-Q8019 | 〔■宅直■○○○○〕 八音 〔■■■■光广况○〕 | 十二音 | fulltext.md L35821 |
+| HJ-Q8020 | 〔古甲九癸 ■■■■○○○○ 千典旦○〕 | 入声辟唱吕三之七 | fulltext.md L35827 |
+| HJ-Q8021 | 〔思三星■ ■■■■○○○○ 多可介舌〕 | 闭音清和律三之九 | fulltext.md L35865 |
 | HJ-Q8022 | 〔■乍□■○○○○〕 九音 〔■■■■元犬半○〕 | 十一音 | fulltext.md L35877 |
-| HJ-Q8023 | 〔■宅直■○○○○〕 九音 〔■■■■毛寳報霍〕 | 十二音 | fulltext.md L35883 |
-| HJ-Q8024 | 〔古甲九癸 ■■■■●●●● 妻子四日〕 | 入聲闢唱吕三之八 | fulltext.md L35889 |
-| HJ-Q8025 | 〔乃妳女■ ■■■■多可介舌〕 | 閉音清和律三之十 | fulltext.md L35918 |
-| HJ-Q8026 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L35939 |
-| HJ-Q8027 | 〔■宅直■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L35945 |
-| HJ-Q8028 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 入聲闢唱吕三之九 | fulltext.md L35951 |
-| HJ-Q8029 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 閉音清和律三之十一 | fulltext.md L35971 |
+| HJ-Q8023 | 〔■宅直■○○○○〕 九音 〔■■■■毛寳报霍〕 | 十二音 | fulltext.md L35883 |
+| HJ-Q8024 | 〔古甲九癸 ■■■■●●●● 妻子四日〕 | 入声辟唱吕三之八 | fulltext.md L35889 |
+| HJ-Q8025 | 〔乃妳女■ ■■■■多可介舌〕 | 闭音清和律三之十 | fulltext.md L35918 |
+| HJ-Q8026 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L35939 |
+| HJ-Q8027 | 〔■宅直■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L35945 |
+| HJ-Q8028 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 入声辟唱吕三之九 | fulltext.md L35951 |
+| HJ-Q8029 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 闭音清和律三之十一 | fulltext.md L35971 |
 | HJ-Q8030 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L36001 |
 | HJ-Q8031 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L36007 |
-| HJ-Q8032 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 入聲闢唱吕三之十 | fulltext.md L36013 |
-| HJ-Q8033 | 〔安亞乙一 ■■■■●●●● 多可介舌〕 | 閉音清和律三之十二 | fulltext.md L36024 |
+| HJ-Q8032 | 〔古甲九癸 ■■■■●●●● ●●●●〕 | 入声辟唱吕三之十 | fulltext.md L36013 |
+| HJ-Q8033 | 〔安亚乙一 ■■■■●●●● 多可介舌〕 | 闭音清和律三之十二 | fulltext.md L36024 |
 | HJ-Q8034 | 〔■乍□■●●●●〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L36063 |
 | HJ-Q8035 | 〔■宅直■●●●●〕 十二音〔■■■■●●●●〕 | 十二音 | fulltext.md L36069 |
-| HJ-Q8036 | 辰辰聲入翕 石石音閉濁 | 觀物篇五十 | fulltext.md L36075 |
-| HJ-Q8037 | 〔■荘震■ 堯堯堯堯○○○○ 多可介舌〕 | 閉音濁和律四之二 | fulltext.md L36131 |
-| HJ-Q8038 | 〔■乍□■○○○○〕 二音 〔堯堯堯堯禾火化八〕 | 十一音 | fulltext.md L36134 |
-| HJ-Q8039 | 〔■宅直■○○○○〕 二音 〔堯堯堯堯光廣况○〕 | 十二音 | fulltext.md L36140 |
-| HJ-Q8040 | 〔古甲九癸 堯堯堯堯○○○○ 千典旦○〕 | 入聲翕唱吕四之二 | fulltext.md L36146 |
-| HJ-Q8041 | 〔思三星■ 民民民民○○○○ 多可介舌〕 | 閉音濁和律四之三 | fulltext.md L36184 |
+| HJ-Q8036 | 辰辰声入翕 石石音闭浊 | 观物篇五十 | fulltext.md L36075 |
+| HJ-Q8037 | 〔■荘震■ 尧尧尧尧○○○○ 多可介舌〕 | 闭音浊和律四之二 | fulltext.md L36131 |
+| HJ-Q8038 | 〔■乍□■○○○○〕 二音 〔尧尧尧尧禾火化八〕 | 十一音 | fulltext.md L36134 |
+| HJ-Q8039 | 〔■宅直■○○○○〕 二音 〔尧尧尧尧光广况○〕 | 十二音 | fulltext.md L36140 |
+| HJ-Q8040 | 〔古甲九癸 尧尧尧尧○○○○ 千典旦○〕 | 入声翕唱吕四之二 | fulltext.md L36146 |
+| HJ-Q8041 | 〔思三星■ 民民民民○○○○ 多可介舌〕 | 闭音浊和律四之三 | fulltext.md L36184 |
 | HJ-Q8042 | 〔■乍□■○○○○〕 三音 〔民民民民元犬半○〕 | 十一音 | fulltext.md L36196 |
-| HJ-Q8043 | 〔■宅直■○○○○〕 三音 〔民民民民毛寳報霍〕 | 十二音 | fulltext.md L36202 |
-| HJ-Q8044 | 〔古甲九癸 民民民民○○○○ 妻子四日〕 | 入聲翕唱吕四之三 | fulltext.md L36208 |
-| HJ-Q8045 | 〔乃妳女■ 未未未未○○○○ 多可介舌〕 | 閉音濁和律四之四 | fulltext.md L36237 |
-| HJ-Q8046 | 〔■乍□■○○○○〕 四音 〔未未未未衰○帥骨〕 | 十一音 | fulltext.md L36258 |
-| HJ-Q8047 | 〔■宅直■○○○○〕 四音 〔未未未未龍甬用○〕 | 十二音 | fulltext.md L36264 |
-| HJ-Q8048 | 〔古甲九癸 未未未未玉玉玉玊 心審禁○〕 | 入聲翕唱吕四之四 | fulltext.md L36270 |
-| HJ-Q8049 | 〔卜百丙必 瓶瓶瓶瓶玉玉玉玉 多可介舌〕 | 閉音濁和律四之五 | fulltext.md L36290 |
+| HJ-Q8043 | 〔■宅直■○○○○〕 三音 〔民民民民毛寳报霍〕 | 十二音 | fulltext.md L36202 |
+| HJ-Q8044 | 〔古甲九癸 民民民民○○○○ 妻子四日〕 | 入声翕唱吕四之三 | fulltext.md L36208 |
+| HJ-Q8045 | 〔乃妳女■ 未未未未○○○○ 多可介舌〕 | 闭音浊和律四之四 | fulltext.md L36237 |
+| HJ-Q8046 | 〔■乍□■○○○○〕 四音 〔未未未未衰○帅骨〕 | 十一音 | fulltext.md L36258 |
+| HJ-Q8047 | 〔■宅直■○○○○〕 四音 〔未未未未龙甬用○〕 | 十二音 | fulltext.md L36264 |
+| HJ-Q8048 | 〔古甲九癸 未未未未玉玉玉玊 心审禁○〕 | 入声翕唱吕四之四 | fulltext.md L36270 |
+| HJ-Q8049 | 〔卜百丙必 瓶瓶瓶瓶玉玉玉玉 多可介舌〕 | 闭音浊和律四之五 | fulltext.md L36290 |
 | HJ-Q8050 | 〔■乍□■玉玉玉玉〕 五音 〔瓶瓶瓶瓶○○○十〕 | 十一音 | fulltext.md L36320 |
 | HJ-Q8051 | 〔■宅直■玉玉玉玉〕 五音 〔瓶瓶瓶瓶●●●●〕 | 十二音 | fulltext.md L36326 |
-| HJ-Q8052 | 〔古甲九癸 瓶瓶瓶瓶北北北北 ●●●●〕 | 入聲翕唱吕四之五 | fulltext.md L36332 |
-| HJ-Q8053 | 〔安亞乙一 ■■■■北北北北 多可介舌〕 | 閉音濁和律四之六 | fulltext.md L36343 |
+| HJ-Q8052 | 〔古甲九癸 瓶瓶瓶瓶北北北北 ●●●●〕 | 入声翕唱吕四之五 | fulltext.md L36332 |
+| HJ-Q8053 | 〔安亚乙一 ■■■■北北北北 多可介舌〕 | 闭音浊和律四之六 | fulltext.md L36343 |
 | HJ-Q8054 | 〔■乍□■北北北北〕 六音 〔■■■■●●●●〕 | 十一音 | fulltext.md L36382 |
 | HJ-Q8055 | 〔■宅直■北北北北〕 六音 〔■■■■●●●●〕 | 十二音 | fulltext.md L36388 |
-| HJ-Q8056 | 〔■荘震■ ■■■■○○○○ 多可介舌〕 | 閉音濁和律四之八 | fulltext.md L36439 |
+| HJ-Q8056 | 〔■荘震■ ■■■■○○○○ 多可介舌〕 | 闭音浊和律四之八 | fulltext.md L36439 |
 | HJ-Q8057 | 〔■乍□■○○○○〕 八音 〔■■■■禾火化八〕 | 十一音 | fulltext.md L36442 |
-| HJ-Q8058 | 〔■宅直■○○○○〕 八音 〔■■■■光廣况○〕 | 十二音 | fulltext.md L36448 |
-| HJ-Q8059 | 〔古甲九癸 ■■■■妾妾妾妾 千典旦○〕 | 入聲翕唱吕四之七 | fulltext.md L36454 |
-| HJ-Q8060 | 〔思三星■ ■■■■妾妾妾妾 多可介舌〕 | 閉音濁和律四之九 | fulltext.md L36492 |
+| HJ-Q8058 | 〔■宅直■○○○○〕 八音 〔■■■■光广况○〕 | 十二音 | fulltext.md L36448 |
+| HJ-Q8059 | 〔古甲九癸 ■■■■妾妾妾妾 千典旦○〕 | 入声翕唱吕四之七 | fulltext.md L36454 |
+| HJ-Q8060 | 〔思三星■ ■■■■妾妾妾妾 多可介舌〕 | 闭音浊和律四之九 | fulltext.md L36492 |
 | HJ-Q8061 | 〔■乍□■妾妾妾妾〕 九音 〔■■■■元犬半○〕 | 十一音 | fulltext.md L36504 |
-| HJ-Q8062 | 〔■宅直■妾妾妾妾〕 九音 〔■■■■毛寳報霍〕 | 十二音 | fulltext.md L36510 |
-| HJ-Q8063 | 〔古甲九癸 ■■■■○○○○ 妻子四日〕 | 入聲翕唱吕四之八 | fulltext.md L36516 |
-| HJ-Q8064 | 〔乃妳女■ ■■■■●●●● 多可介舌〕 | 閉音濁和律四之十 | fulltext.md L36545 |
-| HJ-Q8065 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帥骨〕 | 十一音 | fulltext.md L36566 |
-| HJ-Q8066 | 〔■宅直■●●●●〕 十音 〔■■■■龍甬用○〕 | 十二音 | fulltext.md L36572 |
-| HJ-Q8067 | 〔古甲九癸 ■■■■●●●● 心審禁○〕 | 入聲翕唱吕四之九 | fulltext.md L36578 |
-| HJ-Q8068 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 閉音濁和律四之十一 | fulltext.md L36598 |
+| HJ-Q8062 | 〔■宅直■妾妾妾妾〕 九音 〔■■■■毛寳报霍〕 | 十二音 | fulltext.md L36510 |
+| HJ-Q8063 | 〔古甲九癸 ■■■■○○○○ 妻子四日〕 | 入声翕唱吕四之八 | fulltext.md L36516 |
+| HJ-Q8064 | 〔乃妳女■ ■■■■●●●● 多可介舌〕 | 闭音浊和律四之十 | fulltext.md L36545 |
+| HJ-Q8065 | 〔■乍□■●●●●〕 十音 〔■■■■衰○帅骨〕 | 十一音 | fulltext.md L36566 |
+| HJ-Q8066 | 〔■宅直■●●●●〕 十音 〔■■■■龙甬用○〕 | 十二音 | fulltext.md L36572 |
+| HJ-Q8067 | 〔古甲九癸 ■■■■●●●● 心审禁○〕 | 入声翕唱吕四之九 | fulltext.md L36578 |
+| HJ-Q8068 | 〔卜百丙必 ■■■■●●●● 多可介舌〕 | 闭音浊和律四之十一 | fulltext.md L36598 |
 | HJ-Q8069 | 〔■乍□■●●●●〕 十一音〔■■■■○○○十〕 | 十一音 | fulltext.md L36628 |
 | HJ-Q8070 | 〔■宅直■●●●●〕 十一音〔■■■■●●●●〕 | 十二音 | fulltext.md L36634 |
-| HJ-Q8071 | 〔古甲九癸 ■■■■○○○○ ●●●●〕 | 入聲翕唱吕四之十 | fulltext.md L36640 |
-| HJ-Q8072 | 〔安亞乙一 ■■■■○○○○ 多可介舌〕 | 閉音濁和律四之十二 | fulltext.md L36651 |
+| HJ-Q8071 | 〔古甲九癸 ■■■■○○○○ ●●●●〕 | 入声翕唱吕四之十 | fulltext.md L36640 |
+| HJ-Q8072 | 〔安亚乙一 ■■■■○○○○ 多可介舌〕 | 闭音浊和律四之十二 | fulltext.md L36651 |
 | HJ-Q8073 | 〔■乍□■○○○○〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L36690 |
 | HJ-Q8074 | 〔■宅直■○○○○〕 十二音〔■■■■●●●●〕 | 十一音 | fulltext.md L36696 |
-| HJ-Q8075 | 欽定四庫全書 | 皇極經世書巻十下 | fulltext.md L36702 |
-| HJ-Q8076 | 人之所以能靈於萬物者謂其目能收萬物之色耳能收萬物之聲鼻能收萬物之氣口能收萬物之味聲色氣味者萬物之體也目耳鼻口者萬人之用也體無定用惟變是用用無定體惟化是體 | 觀物篇五十二 | fulltext.md L36713 |
-| HJ-Q8077 | 易曰窮理盡性以至于命所以謂之理者物之理也所以謂之性者天之性也所以謂之命者䖏理性者也所以能䖏理性者非道而何是知道為天地之本天地為萬物之本以天地觀萬物則萬物 | 觀物篇五十三 | fulltext.md L36719 |
-| HJ-Q8078 | 觀春則知易之所存乎觀夏則知書之所存乎觀秋則知詩之所存乎觀冬則知春秋之所存乎 | 觀物篇五十四 | fulltext.md L36725 |
-| HJ-Q8079 | 善化天下者止于盡道而已善教天下者止于盡德而已善勸天下者止于盡功而已善率天下者止于盡力而已以道德功力為化者乃謂之皇矣以道德功力為教者乃謂之帝矣以道德功力為 | 觀物篇五十五 | fulltext.md L36738 |
-| HJ-Q8080 | 孔子賛易自羲軒而下序書自堯舜而下删詩自文武而下修春秋自桓文而下自羲軒而下祖三皇也自堯舜而下宗五帝也自文武而下子三王也自桓文而下孫五伯也祖三皇尚賢也宗五帝 | 觀物篇五十六 | fulltext.md L36746 |
-| HJ-Q8081 | 仲尼曰韶盡美矣又盡善也武盡美矣未盡善也又曰管仲相桓公霸諸侯一匡天下民到于今受其賜微管仲吾其被髪左袵矣是知武王雖不逮舜之盡善盡美以其解天下之倒懸則下于舜一 | 觀物篇五十八 | fulltext.md L36770 |
-| HJ-Q8082 | 仲尼曰善人為邦百年亦可以勝殘去殺矣誠哉是言也自極亂至于極治必三變矣三皇之法無殺五伯之法無生伯一變至于王矣王一變至于帝矣帝一變至于皇矣其于生也非百年而何是 | 觀物篇五十九 | fulltext.md L36777 |
-| HJ-Q8083 | 日經天之元月經天之㑹星經天之運辰經天之世以日經日則元之元可知之矣以日經月則元之㑹可知之矣以日經星則元之運可知之矣以日經辰則元之世可知之矣以月經日則㑹之元 | 觀物篇六十 | fulltext.md L36784 |
-| HJ-Q8084 | 太陽之體數十太隂之體數十二少陽之體數十少隂之體數十二少剛之體數十少柔之體數十二太剛之體數十太柔之體數十二進太陽少陽太剛少剛之體數退太隂少隂太柔少柔之體數 | 觀物篇六十一 | fulltext.md L36791 |
-| HJ-Q8085 | 有日日之物者也有日月之物者也有日星之物者也有日辰之物者也有月日之物者也有月月之物者也有月星之物者也有月辰之物者也有星日之物者也有星月之物者也有星星之物者 | 觀物篇六十二 | fulltext.md L36796 |
-| HJ-Q8086 | 欽定四庫全書 | 皇極經世書卷十二 | fulltext.md L36809 |
-| HJ-Q8087 | 凡事為之極幾十之七則可以正矣蓋夏至之日止于六十兼之以晨昏分〔可辨邑矣〕庶幾乎十之七也 | 天地之交十之三 | fulltext.md L36880 |
-| HJ-Q8088 | 上經起於三下經起於四皆交泰之義也 | 乾坤交而為泰變而為雜卦也 | fulltext.md L36905 |
-| HJ-Q8089 | 在人則乾道成男坤道成女在物則乾道成陽坤道成隂 | 不知乾無以知性命之理 | fulltext.md L36912 |
-| HJ-Q8090 | 象起於形數起於質名起於言意起於用 | 君子於易玩象玩數玩辭玩意 | fulltext.md L36916 |
-| HJ-Q8091 | 復次剝明治生於亂乎姤次夬明亂生於治乎時哉時哉未有剝而不復未有夬而不姤者防乎其防邦家其長子孫其昌是以聖人貴未然之防是謂易之大綱寂然不動反本復靜坤之時也感而 | 以尊降卑曰臨以上觀下曰觀 | fulltext.md L36927 |
-| HJ-Q8092 | 圖雖無文〔先天圖也〕吾終日言而未甞離乎是蓋天地萬物之理盡在其中矣 | 易有三百八十四爻真天文也 | fulltext.md L36940 |
-| HJ-Q8093 | 先天學心法也故圖皆自中起萬化萬事生乎心也先天學主乎誠至誠可以通神明不誠則不可以得道先天之學心也後天之學迹也 | 先天圖者環中也 | fulltext.md L36944 |
-| HJ-Q8094 | 季札之才近伯夷 | 叔向子産晏子之才相等埒 | fulltext.md L36961 |
-| HJ-Q8095 | 有馬者借人乗之舍己以從人也 | 當仁不讓於師者進人之道也 | fulltext.md L36976 |
-| HJ-Q8096 | 顔子不遷怒不貳過遷怒貳過皆情也非性也不至於性命不足以謂之好學 | 仲弓可使南面可使從政也 | fulltext.md L36982 |
-| HJ-Q8097 | 老子知易之體者也 | 老子五千言大抵皆明物理 | fulltext.md L36992 |
-| HJ-Q8098 | 莊荀之徒失之辯 | 魯國之儒一人者謂孔子也 | fulltext.md L37001 |
-| HJ-Q8099 | 漢儒以反經合道為權得一端者也權所以平物之輕重聖人行權酌其輕重而行之合其宜而已故執中無權者猶為偏也王通言春秋王道之權非王通莫能及此故權在一身則有一身之權在 | 智哉留侯善藏其用 | fulltext.md L37006 |
-| HJ-Q8100 | 素問密語之類於術之理可謂至矣 | 素問隂符七國時書也 | fulltext.md L37014 |
-| HJ-Q8101 | 韻法先閉後開者春也純開者夏也先開後閉者秋也冬則閉而無聲 | 韻法闔闢者律天清濁者呂地 | fulltext.md L37018 |
-| HJ-Q8102 | 欽定四庫全書 | 皇極經世書卷十三 | fulltext.md L37023 |
-| HJ-Q8103 | 太極一也不動生二二則神也神生數數生象象生噐太極不動性也發則神神則數數則象象則噐噐之變復歸於神也 | 觀物外篇下 | fulltext.md L37028 |
-| HJ-Q8104 | 太極道之極也太𤣥道之𤣥也太素色之本也太一數之始也太初事之初也其成功則一也 | 心為太極又曰道為太極 | fulltext.md L37032 |
-| HJ-Q8105 | 陽主闢而出隂主翕而入 | 隂事太半葢陽一而隂二也 | fulltext.md L37045 |
-| HJ-Q8106 | 得天氣者動得地氣者靜 | 生者性天也成者形地也 | fulltext.md L37053 |
-| HJ-Q8107 | 日入地中搆精之象也 | 月體本黑受日之光故白 | fulltext.md L37075 |
-| HJ-Q8108 | 海潮者地之喘息也所以應月者從其類也 | 火生于無水生于有 | fulltext.md L37095 |
-| HJ-Q8109 | 水者火之地火者水之氣黒者白之地寒者暑之地月者日之影也情者性之影也隂者陽之影鬼者人之影也 | 燈之明暗之境日月之象也 | fulltext.md L37099 |
-| HJ-Q8110 | 鬼神者無形而有用其情狀可得而知也於用則可見之矣若人之耳目鼻口手足草木之枝葉華實顔色皆鬼神之所為也福善禍滛主之者誰耶聰明正直有之者誰邪不疾而速不行而至任之 | 明則有日月幽則有鬼神 | fulltext.md L37103 |
-| HJ-Q8111 | 生生長類天地成功别生分類聖人成能 | 天地生萬物聖人生萬民 | fulltext.md L37109 |
-| HJ-Q8112 | 風類水類小大相反 | 魚者水之族也蟲者風之族也 | fulltext.md L37118 |
-| HJ-Q8113 | 木之支榦土石之所成所以不易葉花水火之所盛故變而易也 | 木者星之子是以果實象也 | fulltext.md L37130 |
-| HJ-Q8114 | 水之木珊瑚之類是也石之花監法之類是也 | 草類之細入于坤 | fulltext.md L37136 |
-| HJ-Q8115 | 形可分神不可分 | 氣者神之宅也體者氣之宅也 | fulltext.md L37168 |
-| HJ-Q8116 | 心性而膽情陽性而隂情性神而情鬼 | 有形則有體有性則有用 | fulltext.md L37175 |
-| HJ-Q8117 | 人之貴兼乎萬類自重而得其貴所以能用萬類已配天地謂之人唯仁者其可謂之人矣 | 人之類備乎萬物之性 | fulltext.md L37181 |
-| HJ-Q8118 | 凡處失在得之先則得亦不喜若處得在失之先則失難處矣必至於隕穫 | 義重則内重利重則外重 | fulltext.md L37196 |
-| HJ-Q8119 | 能循天理動者造化在我也 | 循理則為常理之外則為異矣 | fulltext.md L37205 |
-| HJ-Q8120 | 聖人利物而無我 | 事必量力量力故能久 | fulltext.md L37220 |
-| HJ-Q8121 | 不我物則能物物 | 易地而處則無我也 | fulltext.md L37224 |
-| HJ-Q8122 | 夫弓固有强弱然一弓二人張之則有力者以為弓弱無力者以為弓强故有力者不以己之力有餘而以為弓弱無力者不以己之力不足而以為弓强何不思之甚也一弓非有强弱者二人之力 | 人智强則物智弱 | fulltext.md L37229 |
-| HJ-Q8123 | 今有人登兩臺兩臺皆等則不見其高一臺高然後知其卑下者也 | 金須百鍊然後精人亦如此 | fulltext.md L37233 |
-| HJ-Q8124 | 能醫人能醫之疾不得謂之良醫醫人之所不能醫者天下之良醫也能處人所不能處之事則能為人所不能為之事也 | 所行之路不可不寛寛則少礙 | fulltext.md L37238 |
-| HJ-Q8125 | 為治之道必通其變不可以膠柱猶春之時不可行冬之令也 | 天道之變王道之權也 | fulltext.md L37247 |
-| HJ-Q8126 | 學以人事為大今之經典古之人事也 | 天時地理人事三者知之不易 | fulltext.md L37252 |
-| HJ-Q8127 | 學不至於樂不可謂之學 | 學不際天人不足以謂之學 | fulltext.md L37256 |
-| HJ-Q8128 | 凡人為學失於自主張太過 | 記問之學未足以為事業 | fulltext.md L37260 |
-| HJ-Q8129 | ### 學在不止故王通云沒身而已 | 學在不止故王通云沒身而已 | fulltext.md L37262 |
-| HJ-Q8130 | 欽定四庫全書 子部七 | 皇極經世書卷十四 | fulltext.md L37266 |
-| HJ-Q8131 | 〔臣〕紀昀〔臣〕陸錫熊〔臣〕孫士毅 | 總纂官 | fulltext.md L37271 |
-| HJ-Q8132 | 先天者伏羲之易也後天者文王之易也太元者子雲之易後天之匹也皇極經世者康節之易先天之嗣也觀物篇立言廣大措意精微如繋辭然稽之以理既無不通參之以數亦無不合經世之 | 張行成皇極經世索隱原序 | fulltext.md L37276 |
+| HJ-Q8075 | 钦定四库全书 | 皇极经世书巻十下 | fulltext.md L36702 |
+| HJ-Q8076 | 人之所以能灵于万物者谓其目能收万物之色耳能收万物之声鼻能收万物之气口能收万物之味声色气味者万物之体也目耳鼻口者万人之用也体无定用惟变是用用无定体惟化是体 | 观物篇五十二 | fulltext.md L36713 |
+| HJ-Q8077 | 易曰穷理尽性以至于命所以谓之理者物之理也所以谓之性者天之性也所以谓之命者䖏理性者也所以能䖏理性者非道而何是知道为天地之本天地为万物之本以天地观万物则万物 | 观物篇五十三 | fulltext.md L36719 |
+| HJ-Q8078 | 观春则知易之所存乎观夏则知书之所存乎观秋则知诗之所存乎观冬则知春秋之所存乎 | 观物篇五十四 | fulltext.md L36725 |
+| HJ-Q8079 | 善化天下者止于尽道而已善教天下者止于尽德而已善劝天下者止于尽功而已善率天下者止于尽力而已以道德功力为化者乃谓之皇矣以道德功力为教者乃谓之帝矣以道德功力为 | 观物篇五十五 | fulltext.md L36738 |
+| HJ-Q8080 | 孔子賛易自羲轩而下序书自尧舜而下删诗自文武而下修春秋自桓文而下自羲轩而下祖三皇也自尧舜而下宗五帝也自文武而下子三王也自桓文而下孙五伯也祖三皇尚贤也宗五帝 | 观物篇五十六 | fulltext.md L36746 |
+| HJ-Q8081 | 仲尼曰韶尽美矣又尽善也武尽美矣未尽善也又曰管仲相桓公霸诸侯一匡天下民到于今受其赐微管仲吾其被髪左袵矣是知武王虽不逮舜之尽善尽美以其解天下之倒悬则下于舜一 | 观物篇五十八 | fulltext.md L36770 |
+| HJ-Q8082 | 仲尼曰善人为邦百年亦可以胜残去杀矣诚哉是言也自极乱至于极治必三变矣三皇之法无杀五伯之法无生伯一变至于王矣王一变至于帝矣帝一变至于皇矣其于生也非百年而何是 | 观物篇五十九 | fulltext.md L36777 |
+| HJ-Q8083 | 日经天之元月经天之㑹星经天之运辰经天之世以日经日则元之元可知之矣以日经月则元之㑹可知之矣以日经星则元之运可知之矣以日经辰则元之世可知之矣以月经日则㑹之元 | 观物篇六十 | fulltext.md L36784 |
+| HJ-Q8084 | 太阳之体数十太隂之体数十二少阳之体数十少隂之体数十二少刚之体数十少柔之体数十二太刚之体数十太柔之体数十二进太阳少阳太刚少刚之体数退太隂少隂太柔少柔之体数 | 观物篇六十一 | fulltext.md L36791 |
+| HJ-Q8085 | 有日日之物者也有日月之物者也有日星之物者也有日辰之物者也有月日之物者也有月月之物者也有月星之物者也有月辰之物者也有星日之物者也有星月之物者也有星星之物者 | 观物篇六十二 | fulltext.md L36796 |
+| HJ-Q8086 | 钦定四库全书 | 皇极经世书卷十二 | fulltext.md L36809 |
+| HJ-Q8087 | 凡事为之极几十之七则可以正矣盖夏至之日止于六十兼之以晨昏分〔可辨邑矣〕庶几乎十之七也 | 天地之交十之三 | fulltext.md L36880 |
+| HJ-Q8088 | 上经起于三下经起于四皆交泰之义也 | 乾坤交而为泰变而为杂卦也 | fulltext.md L36905 |
+| HJ-Q8089 | 在人则乾道成男坤道成女在物则乾道成阳坤道成隂 | 不知干无以知性命之理 | fulltext.md L36912 |
+| HJ-Q8090 | 象起于形数起于质名起于言意起于用 | 君子于易玩象玩数玩辞玩意 | fulltext.md L36916 |
+| HJ-Q8091 | 复次剥明治生于乱乎姤次夬明乱生于治乎时哉时哉未有剥而不复未有夬而不姤者防乎其防邦家其长子孙其昌是以圣人贵未然之防是谓易之大纲寂然不动反本复静坤之时也感而 | 以尊降卑曰临以上观下曰观 | fulltext.md L36927 |
+| HJ-Q8092 | 图虽无文〔先天图也〕吾终日言而未甞离乎是盖天地万物之理尽在其中矣 | 易有三百八十四爻真天文也 | fulltext.md L36940 |
+| HJ-Q8093 | 先天学心法也故图皆自中起万化万事生乎心也先天学主乎诚至诚可以通神明不诚则不可以得道先天之学心也后天之学迹也 | 先天图者环中也 | fulltext.md L36944 |
+| HJ-Q8094 | 季札之才近伯夷 | 叔向子产晏子之才相等埒 | fulltext.md L36961 |
+| HJ-Q8095 | 有马者借人乗之舍己以从人也 | 当仁不让于师者进人之道也 | fulltext.md L36976 |
+| HJ-Q8096 | 颜子不迁怒不贰过迁怒贰过皆情也非性也不至于性命不足以谓之好学 | 仲弓可使南面可使从政也 | fulltext.md L36982 |
+| HJ-Q8097 | 老子知易之体者也 | 老子五千言大抵皆明物理 | fulltext.md L36992 |
+| HJ-Q8098 | 庄荀之徒失之辩 | 鲁国之儒一人者谓孔子也 | fulltext.md L37001 |
+| HJ-Q8099 | 汉儒以反经合道为权得一端者也权所以平物之轻重圣人行权酌其轻重而行之合其宜而已故执中无权者犹为偏也王通言春秋王道之权非王通莫能及此故权在一身则有一身之权在 | 智哉留侯善藏其用 | fulltext.md L37006 |
+| HJ-Q8100 | 素问密语之类于术之理可谓至矣 | 素问隂符七国时书也 | fulltext.md L37014 |
+| HJ-Q8101 | 韵法先闭后开者春也纯开者夏也先开后闭者秋也冬则闭而无声 | 韵法阖辟者律天清浊者吕地 | fulltext.md L37018 |
+| HJ-Q8102 | 钦定四库全书 | 皇极经世书卷十三 | fulltext.md L37023 |
+| HJ-Q8103 | 太极一也不动生二二则神也神生数数生象象生噐太极不动性也发则神神则数数则象象则噐噐之变复归于神也 | 观物外篇下 | fulltext.md L37028 |
+| HJ-Q8104 | 太极道之极也太𤣥道之𤣥也太素色之本也太一数之始也太初事之初也其成功则一也 | 心为太极又曰道为太极 | fulltext.md L37032 |
+| HJ-Q8105 | 阳主辟而出隂主翕而入 | 隂事太半葢阳一而隂二也 | fulltext.md L37045 |
+| HJ-Q8106 | 得天气者动得地气者静 | 生者性天也成者形地也 | fulltext.md L37053 |
+| HJ-Q8107 | 日入地中搆精之象也 | 月体本黑受日之光故白 | fulltext.md L37075 |
+| HJ-Q8108 | 海潮者地之喘息也所以应月者从其类也 | 火生于无水生于有 | fulltext.md L37095 |
+| HJ-Q8109 | 水者火之地火者水之气黒者白之地寒者暑之地月者日之影也情者性之影也隂者阳之影鬼者人之影也 | 灯之明暗之境日月之象也 | fulltext.md L37099 |
+| HJ-Q8110 | 鬼神者无形而有用其情状可得而知也于用则可见之矣若人之耳目鼻口手足草木之枝叶华实颜色皆鬼神之所为也福善祸滛主之者谁耶聪明正直有之者谁邪不疾而速不行而至任之 | 明则有日月幽则有鬼神 | fulltext.md L37103 |
+| HJ-Q8111 | 生生长类天地成功别生分类圣人成能 | 天地生万物圣人生万民 | fulltext.md L37109 |
+| HJ-Q8112 | 风类水类小大相反 | 鱼者水之族也虫者风之族也 | fulltext.md L37118 |
+| HJ-Q8113 | 木之支干土石之所成所以不易叶花水火之所盛故变而易也 | 木者星之子是以果实象也 | fulltext.md L37130 |
+| HJ-Q8114 | 水之木珊瑚之类是也石之花监法之类是也 | 草类之细入于坤 | fulltext.md L37136 |
+| HJ-Q8115 | 形可分神不可分 | 气者神之宅也体者气之宅也 | fulltext.md L37168 |
+| HJ-Q8116 | 心性而胆情阳性而隂情性神而情鬼 | 有形则有体有性则有用 | fulltext.md L37175 |
+| HJ-Q8117 | 人之贵兼乎万类自重而得其贵所以能用万类已配天地谓之人唯仁者其可谓之人矣 | 人之类备乎万物之性 | fulltext.md L37181 |
+| HJ-Q8118 | 凡处失在得之先则得亦不喜若处得在失之先则失难处矣必至于陨获 | 义重则内重利重则外重 | fulltext.md L37196 |
+| HJ-Q8119 | 能循天理动者造化在我也 | 循理则为常理之外则为异矣 | fulltext.md L37205 |
+| HJ-Q8120 | 圣人利物而无我 | 事必量力量力故能久 | fulltext.md L37220 |
+| HJ-Q8121 | 不我物则能物物 | 易地而处则无我也 | fulltext.md L37224 |
+| HJ-Q8122 | 夫弓固有强弱然一弓二人张之则有力者以为弓弱无力者以为弓强故有力者不以己之力有余而以为弓弱无力者不以己之力不足而以为弓强何不思之甚也一弓非有强弱者二人之力 | 人智强则物智弱 | fulltext.md L37229 |
+| HJ-Q8123 | 今有人登两台两台皆等则不见其高一台高然后知其卑下者也 | 金须百炼然后精人亦如此 | fulltext.md L37233 |
+| HJ-Q8124 | 能医人能医之疾不得谓之良医医人之所不能医者天下之良医也能处人所不能处之事则能为人所不能为之事也 | 所行之路不可不寛寛则少碍 | fulltext.md L37238 |
+| HJ-Q8125 | 为治之道必通其变不可以胶柱犹春之时不可行冬之令也 | 天道之变王道之权也 | fulltext.md L37247 |
+| HJ-Q8126 | 学以人事为大今之经典古之人事也 | 天时地理人事三者知之不易 | fulltext.md L37252 |
+| HJ-Q8127 | 学不至于乐不可谓之学 | 学不际天人不足以谓之学 | fulltext.md L37256 |
+| HJ-Q8128 | 凡人为学失于自主张太过 | 记问之学未足以为事业 | fulltext.md L37260 |
+| HJ-Q8129 | ### 学在不止故王通云没身而已 | 学在不止故王通云没身而已 | fulltext.md L37262 |
+| HJ-Q8130 | 钦定四库全书 子部七 | 皇极经世书卷十四 | fulltext.md L37266 |
+| HJ-Q8131 | 〔臣〕纪昀〔臣〕陆锡熊〔臣〕孙士毅 | 总纂官 | fulltext.md L37271 |
+| HJ-Q8132 | 先天者伏羲之易也后天者文王之易也太元者子云之易后天之匹也皇极经世者康节之易先天之嗣也观物篇立言广大措意精微如繋辞然稽之以理既无不通参之以数亦无不合经世之 | 张行成皇极经世索隐原序 | fulltext.md L37276 |

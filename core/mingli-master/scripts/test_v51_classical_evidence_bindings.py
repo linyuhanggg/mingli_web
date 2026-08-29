@@ -14,6 +14,7 @@ import build_evidence_index
 import generate_classical_evidence_bindings
 from reading_engine.contracts import FactRef
 from reading_engine.evidence_rules import load_evidence_rules, match_rule
+from simplified_canonical import canonicalize
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -43,6 +44,27 @@ QIONGTONG_RUNTIME_VERIFIED = {
 
 
 class ClassicalEvidenceBindingTests(unittest.TestCase):
+    def test_product_evidence_text_is_simplified_canonical(self) -> None:
+        manifest = generate_classical_evidence_bindings.load_committed()
+        records = build_evidence_index.compile_evidence_rules(
+            root=ROOT,
+            enforce_classical_bindings=False,
+        )
+
+        for record in records:
+            for field in ("source_title", "chapter", "title", "quote"):
+                self.assertEqual(record[field], canonicalize(record[field]))
+            self.assertEqual(
+                record["topics"],
+                [canonicalize(topic) for topic in record["topics"]],
+            )
+        for binding in manifest["bindings"].values():
+            for source in binding["classical_sources"]:
+                self.assertEqual(
+                    source["verbatim_quote"],
+                    canonicalize(source["verbatim_quote"]),
+                )
+
     def test_physiognomy_terminology_sources_use_substantive_text_not_headings(self) -> None:
         payload = generate_classical_evidence_bindings.load_committed()
         mayi_sources = payload["bindings"][
@@ -126,7 +148,7 @@ class ClassicalEvidenceBindingTests(unittest.TestCase):
                     line = path.read_text(encoding="utf-8").splitlines()[
                         line_number - 1
                     ]
-                    self.assertIn(source["verbatim_quote"], line)
+                    self.assertIn(source["verbatim_quote"], canonicalize(line))
 
     def test_qiongtong_runtime_summaries_preserve_month_specific_differences(self) -> None:
         records = {
@@ -235,6 +257,7 @@ class ClassicalEvidenceBindingTests(unittest.TestCase):
 
     def test_group_b_mandatory_packs_have_exact_source_and_scope_bindings(self) -> None:
         def source(pack: str, sha256: str, line: int, quote: str) -> dict[str, str]:
+            quote = canonicalize(quote)
             return {
                 "path": f"references/fulltext/{pack}/fulltext.md",
                 "sha256": sha256,

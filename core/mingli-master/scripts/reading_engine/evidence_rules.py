@@ -20,7 +20,7 @@ INDEX_PATH = (
 )
 SCHEMA_VERSION = "mingli-evidence-rule-v1"
 CLASSICAL_EVIDENCE_BINDINGS_SHA256 = (
-    "73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d"
+    "75a19665334f6976424fce62fb5f869d9a7745b85039ed25302c099fe1c8fb89"
 )
 EVIDENCE_ROLES = frozenset(
     {
@@ -63,6 +63,8 @@ class FactPredicate:
 
 @dataclass(frozen=True)
 class ClassicalSource:
+    """Raw artifact identity plus its exact product-canonical excerpt."""
+
     path: str
     sha256: str
     anchor: str

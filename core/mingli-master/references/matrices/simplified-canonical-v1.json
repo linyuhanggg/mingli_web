@@ -1,0 +1,44 @@
+{
+  "schema_version": "mingli-simplified-canonical-v1",
+  "canonical_id": "mingli-product-simplified-v1",
+  "foundation": {
+    "distribution": "OpenCC",
+    "version": "1.4.2",
+    "config": "t2s",
+    "license": "Apache-2.0",
+    "upstream": "https://github.com/BYVoid/OpenCC/tree/ver.1.4.2"
+  },
+  "operation_order": [
+    "opencc:t2s_to_fixed_point",
+    "project_editorial_rules"
+  ],
+  "passage_acceptance": {
+    "minimum_normalized_characters": 3,
+    "quoted_two_character_passages": "accept_if_raw_contains_classical_quote_delimiter",
+    "classical_quote_delimiters": [
+      "「",
+      "」",
+      "『",
+      "』"
+    ],
+    "decision_ref": "Raft #mingli-dev task #22",
+    "rationale": "Release 5.1 contains seven real two-character quoted passages. Their classical quote delimiters are raw structural evidence, so they remain accepted after punctuation removal without depending on a legacy converter's punctuation output."
+  },
+  "editorial_rules": [
+    {
+      "id": "MING-66-EDITORIAL-001",
+      "source": "夘",
+      "target": "卯",
+      "scope": "global",
+      "decision_ref": "Raft #mingli-dev task #22",
+      "rationale": "The product requires one simplified canonical. In the release 5.1 research corpus every reviewed occurrence of 夘 is the earthly branch 卯, including 亥夘未木合 at san-shi/daliuren-daquan/fulltext.md L2460.",
+      "evidence": [
+        {
+          "path": "references/fulltext/san-shi/daliuren-daquan/fulltext.md",
+          "anchor": "fulltext.md#L2460",
+          "raw_excerpt": "亥夘未木合"
+        }
+      ]
+    }
+  ]
+}
