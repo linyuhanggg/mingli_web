@@ -570,6 +570,72 @@ def test_protocol_boundary_rejects_extra_or_legacy_fields() -> None:
         contracts.command_from_dict(malformed)
 
 
+@pytest.mark.parametrize(
+    "private_field",
+    [
+        "raw",
+        "engine_raw_json",
+        "raw_runtime_payload",
+        "provider_payload",
+        "engine_output",
+        "private_engine_output",
+        "third_party_runtime_object",
+    ],
+)
+def test_prepared_brief_rejects_private_provider_payload_without_echoing_it(
+    private_field: str,
+) -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    private_value = "must-never-cross-the-backend-boundary"
+    payload = {
+        "kind": "prepared",
+        "state_token": "fake-opaque-state",
+        "brief": brief_payload(),
+    }
+    payload["brief"]["facts"] = [
+        {
+            "ref": "fact:profile-version:test/calculated/bazi/four_pillars",
+            "subject_ref": "profile-version:test",
+            "kind_id": "kind.fact",
+            "value": {private_field: {"secret_value": private_value}},
+            "display_text": "四柱已由 Runtime 计算。",
+        }
+    ]
+
+    with pytest.raises(contracts.ContractValidationError) as caught:
+        contracts.result_from_dict(payload)
+
+    assert private_value not in str(caught.value)
+
+
+def test_prepared_brief_rejects_private_provider_data_from_finding() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    private_value = "must-never-cross-the-backend-boundary"
+    payload = {
+        "kind": "prepared",
+        "state_token": "fake-opaque-state",
+        "brief": brief_payload(),
+    }
+    payload["brief"]["findings"] = [
+        {
+            "ref": "finding:profile-version:test/bazi/overview",
+            "subject_ref": "profile-version:test",
+            "dimension_ids": ["overview"],
+            "kind_id": "kind.structure",
+            "data": {"third_party_payload": {"secret_value": private_value}},
+            "fact_refs": [],
+            "evidence_refs": [],
+            "limit_kind_ids": [],
+            "support_mode": "shared_turn",
+        }
+    ]
+
+    with pytest.raises(contracts.ContractValidationError) as caught:
+        contracts.result_from_dict(payload)
+
+    assert private_value not in str(caught.value)
+
+
 def test_prepared_brief_is_deeply_immutable() -> None:
     contracts = importlib.import_module("app.readings.runtime_contracts")
     payload = {

@@ -20,6 +20,38 @@
         { "type": "null" }
       ]
     },
+    "publicJsonValue": {
+      "oneOf": [
+        { "type": ["string", "number", "boolean", "null"] },
+        {
+          "type": "array",
+          "items": { "$ref": "#/$defs/publicJsonValue" }
+        },
+        {
+          "type": "object",
+          "propertyNames": {
+            "not": {
+              "anyOf": [
+                { "pattern": "(^|[-_])raw($|[-_])" },
+                { "pattern": "(^|[-_])payload($|[-_])" },
+                { "pattern": "^private[-_]engine[-_]" },
+                { "pattern": "^third[-_]party[-_]" },
+                {
+                  "enum": [
+                    "engine_input",
+                    "engine_output",
+                    "engine_request",
+                    "provider_request",
+                    "provider_response"
+                  ]
+                }
+              ]
+            }
+          },
+          "additionalProperties": { "$ref": "#/$defs/publicJsonValue" }
+        }
+      ]
+    },
     "runtimeFailure": {
       "type": "object",
       "additionalProperties": false,
@@ -270,7 +302,7 @@
         "ref": { "$ref": "#/$defs/nonEmptyText" },
         "subject_ref": { "$ref": "#/$defs/nonEmptyText" },
         "kind_id": { "$ref": "#/$defs/nonEmptyText" },
-        "value": {},
+        "value": { "$ref": "#/$defs/publicJsonValue" },
         "display_text": { "$ref": "#/$defs/nonEmptyText" }
       }
     },
@@ -344,7 +376,7 @@
         "subject_ref": { "$ref": "#/$defs/nonEmptyText" },
         "dimension_ids": { "$ref": "#/$defs/stringArray" },
         "kind_id": { "$ref": "#/$defs/nonEmptyText" },
-        "data": {},
+        "data": { "$ref": "#/$defs/publicJsonValue" },
         "public_text": { "$ref": "#/$defs/nonEmptyText" },
         "fact_refs": { "$ref": "#/$defs/stringArray" },
         "evidence_refs": { "$ref": "#/$defs/stringArray" },
