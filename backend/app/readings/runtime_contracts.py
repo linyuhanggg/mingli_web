@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import math
 from collections.abc import Iterator, Mapping
 from dataclasses import dataclass
 from functools import lru_cache
@@ -31,12 +32,31 @@ def _validator(schema_name: str) -> Draft202012Validator:
     return Draft202012Validator(schema)
 
 
+def _non_finite_json_path(value: object, path: str = "$") -> str | None:
+    if isinstance(value, float):
+        return None if math.isfinite(value) else path
+    if isinstance(value, Mapping):
+        for key, item in value.items():
+            found = _non_finite_json_path(item, f"{path}[{str(key)!r}]")
+            if found is not None:
+                return found
+    elif isinstance(value, (list, tuple)):
+        for index, item in enumerate(value):
+            found = _non_finite_json_path(item, f"{path}[{index}]")
+            if found is not None:
+                return found
+    return None
+
+
 def _validate_schema(schema_name: str, payload: Mapping[str, object]) -> None:
+    non_finite_path = _non_finite_json_path(payload)
+    if non_finite_path is not None:
+        raise ContractValidationError(f"{schema_name} validation failed at {non_finite_path}")
     try:
         _validator(schema_name).validate(dict(payload))
     except ValidationError as error:
         path = "$" + "".join(f"[{part!r}]" for part in error.absolute_path)
-        raise ContractValidationError(f"{schema_name} validation failed at {path}") from error
+        raise ContractValidationError(f"{schema_name} validation failed at {path}") from None
 
 
 def _freeze_json(value: object) -> JsonValue:
