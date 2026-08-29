@@ -95,6 +95,10 @@ class ReferenceCatalogTests(unittest.TestCase):
         self.assertEqual(mingli_pack.catalog_fulltext_path(entry), expected)
         self.assertEqual(search_bm25.catalog_fulltext_path(entry), expected)
 
+    def test_search_consumers_emit_the_product_simplified_canonical(self) -> None:
+        self.assertIn("阴阳", search_bm25.tokenize("陰陽"))
+        self.assertEqual(mingli_pack.compact("  陰陽  亥夘未木合  "), "阴阳 亥卯未木合")
+
     def test_generated_catalog_has_no_drift_and_renders_blocked_raw_status(self) -> None:
         completed = subprocess.run(
             [

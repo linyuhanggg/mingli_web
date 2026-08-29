@@ -11,6 +11,8 @@ from pathlib import Path
 import re
 from typing import Any
 
+from simplified_canonical import canonicalize
+
 
 SCHEMA_VERSION = "mingli-reading-source-plan-v1"
 ROOT = Path(__file__).resolve().parents[1]
@@ -328,7 +330,7 @@ def _book_titles(packs: list[str]) -> list[str]:
     catalog_path = ROOT / "references/catalog/catalog.json"
     catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
     titles = {
-        f"{item['system']}/{item['slug']}": item["title"]
+        f"{item['system']}/{item['slug']}": canonicalize(str(item["title"]))
         for item in catalog.get("ready_reference_packs", [])
     }
     missing = [pack for pack in packs if pack not in titles]

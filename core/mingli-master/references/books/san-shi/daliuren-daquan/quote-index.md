@@ -405,7 +405,7 @@
 ### DLQ-066
 - source_layer: `compendium_body`
 - normalized_anchor: `fulltext.md:L4098`
-- exact_quote: `支干入传为事连，岁建幷煞亦如然干支入传中者，占事主速。`
+- exact_quote: `支干入传为事连，岁建并煞亦如然干支入传中者，占事主速。`
 - use: 干支进入三传时的相对催速信号；仍须与发用旺衰和专项应期法合看。
 
 ## 引用规则

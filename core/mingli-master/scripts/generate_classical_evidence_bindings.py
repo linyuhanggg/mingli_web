@@ -16,6 +16,7 @@ from pathlib import Path
 from typing import Any, Mapping
 
 import build_evidence_index as compiler
+from simplified_canonical import canonicalize
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -519,6 +520,7 @@ def _source(
     quote: str,
     location: str = "research_tree",
 ) -> dict[str, Any]:
+    quote = canonicalize(quote)
     anchor = f"{Path(path).name}#L{start}"
     if end != start:
         anchor += f"-L{end}"
@@ -669,7 +671,7 @@ def _qimen_excerpt_source(record: Mapping[str, Any]) -> list[dict[str, Any]]:
     )
     quote = str(record["quote"])
     excerpt = "\n".join(lines[start - 1 : end])
-    if quote not in excerpt:
+    if canonicalize(quote) not in canonicalize(excerpt):
         raise ValueError(f"qimen allowlist quote is outside section: {record['rule_id']}")
     return [
         _source(
@@ -779,7 +781,7 @@ def _explicit_quote_id_sources(
     for quote_id in quote_ids:
         quote, start, end = registry[quote_id]
         excerpt = "\n".join(artifact_lines[start - 1 : end])
-        if quote not in excerpt:
+        if canonicalize(quote) not in canonicalize(excerpt):
             raise ValueError(f"quote registry mismatch: {pack} {quote_id}")
         sources.append(
             _source(path=path, sha256=sha256, start=start, end=end, quote=quote)
@@ -811,7 +813,7 @@ def _lixuzhong_source(
     path = str(item["local_fulltext_path"])
     sha256 = str(item["local_fulltext_sha256"])
     excerpt = (RESEARCH_ROOT / path).read_text(encoding="utf-8").splitlines()[start - 1]
-    if quote not in excerpt:
+    if canonicalize(quote) not in canonicalize(excerpt):
         raise ValueError(f"Li Xuzhong quote is absent from fixed fulltext: {quote_id}")
     return [_source(path=path, sha256=sha256, start=start, end=start, quote=quote)]
 
@@ -884,7 +886,7 @@ def generate() -> dict[str, Any]:
 def main() -> int:
     payload = generate()
     rendered = json.dumps(
-        payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")
+        payload, ensure_ascii=False, indent=2, sort_keys=True
     ) + "\n"
     OUTPUT.write_text(rendered, encoding="utf-8")
     verified = sum(
