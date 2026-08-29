@@ -18,6 +18,8 @@ PROC_ROOT=/proc
 STARTUP_GRACE_SECONDS=1
 HEALTH_ATTEMPTS=30
 HEALTH_SLEEP_SECONDS=1
+STOP_ATTEMPTS=50
+STOP_SLEEP_SECONDS=0.1
 SERVICE_WRAPPER='child=; trap '\''[ -z "$child" ] || kill "$child" 2>/dev/null || true'\'' TERM INT EXIT; "$@" & child=$!; wait "$child"; status=$?; trap - EXIT; exit "$status"'
 SERVICE_PID=
 
@@ -29,6 +31,8 @@ configure_local_environment() {
   export MINGLI_RUNTIME_ADAPTER=fake
   export MINGLI_MODEL_ADAPTER=fake
   export MINGLI_OTP_ADAPTER=fake
+  export MINGLI_COOKIE_DOMAIN=
+  export MINGLI_COOKIE_SECURE=false
   export BACKEND_INTERNAL_URL="http://127.0.0.1:8000"
   export PGDATA
 }
@@ -62,6 +66,19 @@ port_listening() {
   (exec 3<>"/dev/tcp/127.0.0.1/$1") 2>/dev/null
 }
 
+wait_for_port_release() {
+  local port="$1"
+  local attempt
+
+  for attempt in $(seq 1 "$STOP_ATTEMPTS"); do
+    if ! port_listening "$port"; then
+      return 0
+    fi
+    sleep "$STOP_SLEEP_SECONDS"
+  done
+  return 1
+}
+
 process_matches() {
   local pid="$1"
   local identity="$2"
@@ -91,25 +108,59 @@ find_managed_pid() {
   return 1
 }
 
+stop_managed_pid() {
+  local name="$1"
+  local identity="$2"
+  local pid="$3"
+  local attempt
+
+  if ! kill "$pid" 2>/dev/null; then
+    if ! process_matches "$pid" "$identity"; then
+      return 0
+    fi
+    service_error "$name" "could not stop its previous managed process"
+    return 1
+  fi
+  for attempt in $(seq 1 "$STOP_ATTEMPTS"); do
+    if ! process_matches "$pid" "$identity"; then
+      return 0
+    fi
+    sleep "$STOP_SLEEP_SECONDS"
+  done
+  service_error "$name" "did not stop its previous managed process"
+}
+
 managed_pid() {
   local name="$1"
   local identity="$2"
+  local checkout_sha="$3"
   local pid_file="${PID_DIR}/${name}.pid"
   local pid=
+  local stopped_managed_pid=false
+  local stored_checkout_sha=
 
   if [ -f "$pid_file" ]; then
     pid="$(sed -n '1p' "$pid_file")"
+    stored_checkout_sha="$(sed -n '2p' "$pid_file")"
     if process_matches "$pid" "$identity"; then
-      printf '%s\n' "$pid"
-      return 0
+      if [ "$stored_checkout_sha" = "$checkout_sha" ]; then
+        printf '%s\n' "$pid"
+        return 0
+      fi
+      echo "    stopping ${name} from checkout ${stored_checkout_sha:-unknown} before ${checkout_sha}" >&2
+      stop_managed_pid "$name" "$identity" "$pid" || return 2
+      stopped_managed_pid=true
     fi
     rm -f "$pid_file"
   fi
 
   if pid="$(find_managed_pid "$identity")"; then
-    printf '%s\n' "$pid" >"$pid_file"
-    printf '%s\n' "$pid"
-    return 0
+    echo "    stopping ${name} with missing checkout state before ${checkout_sha}" >&2
+    stop_managed_pid "$name" "$identity" "$pid" || return 2
+    stopped_managed_pid=true
+  fi
+  if [ "$stopped_managed_pid" = true ]; then
+    return 3
   fi
   return 1
 }
@@ -121,30 +172,42 @@ service_error() {
   return 1
 }
 
-launch() { # name port_or_empty exact_identity command...
+launch() { # name port_or_empty exact_identity checkout_sha command...
   local name="$1"
   local port="$2"
   local identity="$3"
+  local checkout_sha="$4"
   local existing_pid=
+  local managed_status
+  local replaced_checkout=false
   local pid_file="${PID_DIR}/${name}.pid"
-  shift 3
+  shift 4
 
   SERVICE_PID=
-  if existing_pid="$(managed_pid "$name" "$identity")"; then
+  if existing_pid="$(managed_pid "$name" "$identity" "$checkout_sha")"; then
     SERVICE_PID="$existing_pid"
     echo "    ${name} already running as PID ${SERVICE_PID}${port:+ (port ${port})}"
     return 0
+  else
+    managed_status=$?
+    case "$managed_status" in
+      1) ;;
+      3) replaced_checkout=true ;;
+      *) return "$managed_status" ;;
+    esac
   fi
   if [ -n "$port" ] && port_listening "$port"; then
-    service_error "$name" "cannot start because port ${port} belongs to another process"
-    return 1
+    if [ "$replaced_checkout" != true ] || ! wait_for_port_release "$port"; then
+      service_error "$name" "cannot start because port ${port} belongs to another process"
+      return 1
+    fi
   fi
 
   echo "    starting ${name}${port:+ (port ${port})}"
   setsid nohup bash -c "$SERVICE_WRAPPER" "$identity" "$@" \
     >"${LOG_DIR}/${name}.log" 2>&1 &
   SERVICE_PID=$!
-  printf '%s\n' "$SERVICE_PID" >"$pid_file"
+  printf '%s\n%s\n' "$SERVICE_PID" "$checkout_sha" >"$pid_file"
   sleep "$STARTUP_GRACE_SECONDS"
   if ! process_matches "$SERVICE_PID" "$identity"; then
     rm -f "$pid_file"
@@ -189,8 +252,10 @@ start_main() {
   local worker_pid
   local web_pid
   local admin_pid
+  local checkout_sha
 
   cd "$REPO_ROOT"
+  checkout_sha="$(git -C "$REPO_ROOT" rev-parse HEAD)"
   load_admin_bootstrap_environment
   configure_local_environment
   mkdir -p "$PGRUN" "$LOG_DIR" "$PID_DIR"
@@ -205,16 +270,16 @@ start_main() {
   done
 
   echo "==> Launching application processes"
-  launch api 8000 fateradar-cloud-agent-api \
+  launch api 8000 fateradar-cloud-agent-api "$checkout_sha" \
     uv run --project backend uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
   api_pid="$SERVICE_PID"
-  launch worker "" fateradar-cloud-agent-worker \
+  launch worker "" fateradar-cloud-agent-worker "$checkout_sha" \
     uv run --directory backend python -m worker.main --poll-interval 2
   worker_pid="$SERVICE_PID"
-  launch web 3000 fateradar-cloud-agent-web \
+  launch web 3000 fateradar-cloud-agent-web "$checkout_sha" \
     npm --prefix web run dev
   web_pid="$SERVICE_PID"
-  launch admin 3001 fateradar-cloud-agent-admin \
+  launch admin 3001 fateradar-cloud-agent-admin "$checkout_sha" \
     npm --prefix admin run dev
   admin_pid="$SERVICE_PID"
 

@@ -5,6 +5,7 @@ import shutil
 import stat
 import subprocess
 import textwrap
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 
 import pytest
@@ -169,9 +170,7 @@ def _install_fixture(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
     return repo, home, pg_bin, env
 
 
-def _run_install(
-    repo: Path, pg_bin: Path, env: dict[str, str]
-) -> subprocess.CompletedProcess[str]:
+def _run_install(repo: Path, pg_bin: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
     harness = textwrap.dedent(
         f"""
         source {repo / "scripts/cloud-agent/install.sh"}
@@ -233,12 +232,17 @@ def _start_fixture(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
         set -eu
         if [[ "$*" == *"uvicorn"* ]]; then service=api; else service=worker; fi
         printf '%s\n' "$service" >>"$STUB_STATE/launches.log"
+        checkout_sha="$(git -C "$PWD" rev-parse HEAD)"
+        printf '%s %s\n' "$service" "$checkout_sha" \
+          >>"$STUB_STATE/launch-checkouts.log"
         if [ "${FAIL_SERVICE:-}" = "$service" ]; then
           printf '%s failed immediately\n' "$service" >&2
           exit 17
         fi
         test -n "${MINGLI_ADMIN_BOOTSTRAP_EMAIL:-}"
         test -n "${MINGLI_ADMIN_BOOTSTRAP_PASSWORD:-}"
+        trap 'rm -f "$STUB_STATE/$service.started"; exit 0' TERM INT
+        trap 'rm -f "$STUB_STATE/$service.started"' EXIT
         : >"$STUB_STATE/$service.started"
         while :; do sleep 60; done
         """,
@@ -250,10 +254,15 @@ def _start_fixture(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
         set -eu
         if [[ " $* " == *" --prefix web "* ]]; then service=web; else service=admin; fi
         printf '%s\n' "$service" >>"$STUB_STATE/launches.log"
+        checkout_sha="$(git -C "$PWD" rev-parse HEAD)"
+        printf '%s %s\n' "$service" "$checkout_sha" \
+          >>"$STUB_STATE/launch-checkouts.log"
         if [ "${FAIL_SERVICE:-}" = "$service" ]; then
           printf '%s failed immediately\n' "$service" >&2
           exit 17
         fi
+        trap 'rm -f "$STUB_STATE/$service.started"; exit 0' TERM INT
+        trap 'rm -f "$STUB_STATE/$service.started"' EXIT
         : >"$STUB_STATE/$service.started"
         while :; do sleep 60; done
         """,
@@ -261,8 +270,42 @@ def _start_fixture(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
     return repo, home, pg_bin, env
 
 
-def _start_harness(repo: Path, pg_bin: Path, *, twice: bool) -> str:
-    second_run = "start_main" if twice else ":"
+def _start_harness(
+    repo: Path,
+    pg_bin: Path,
+    *,
+    twice: bool,
+    checkout_change: bool = False,
+) -> str:
+    if checkout_change:
+        run_sequence = textwrap.dedent(
+            """
+            sleep 60 &
+            unrelated_pid=$!
+            start_main
+            for service in api worker web admin; do
+              sed -n '1p' "$PID_DIR/$service.pid" >"$STUB_STATE/$service.sha-a.pid"
+            done
+            touch checkout-change-marker
+            git add checkout-change-marker
+            git commit -qm "fixture checkout change"
+            start_main
+            for service in api worker web admin; do
+              old_pid="$(cat "$STUB_STATE/$service.sha-a.pid")"
+              new_pid="$(sed -n '1p' "$PID_DIR/$service.pid")"
+              test "$old_pid" != "$new_pid"
+              ! process_matches "$old_pid" "fateradar-cloud-agent-$service"
+            done
+            start_main
+            kill -0 "$unrelated_pid"
+            kill "$unrelated_pid"
+            wait "$unrelated_pid" 2>/dev/null || true
+            unrelated_pid=
+            """
+        ).strip()
+    else:
+        run_sequence = "start_main\nstart_main" if twice else "start_main"
+    indented_run_sequence = textwrap.indent(run_sequence, "        ")
     return textwrap.dedent(
         f"""
         source {repo / "scripts/cloud-agent/start.sh"}
@@ -272,9 +315,16 @@ def _start_harness(repo: Path, pg_bin: Path, *, twice: bool) -> str:
         HEALTH_SLEEP_SECONDS=0.1
 
         process_matches() {{
-          local state
-          state="$(ps -p "$1" -o stat= 2>/dev/null)" || return 1
-          [[ "$state" != Z* ]]
+          local current_pid pid_file service state
+          service="${{2##*-}}"
+          if ! state="$(ps -p "$1" -o stat= 2>/dev/null)" || [[ "$state" = Z* ]]; then
+            pid_file="$PID_DIR/$service.pid"
+            current_pid=
+            [ ! -f "$pid_file" ] || current_pid="$(sed -n '1p' "$pid_file")"
+            [ "$current_pid" != "$1" ] || rm -f "$STUB_STATE/$service.started"
+            return 1
+          fi
+          return 0
         }}
         find_managed_pid() {{ return 1; }}
         port_listening() {{
@@ -289,6 +339,9 @@ def _start_harness(repo: Path, pg_bin: Path, *, twice: bool) -> str:
         api_ready() {{ test -f "$STUB_STATE/api.started"; }}
         cleanup() {{
           local pid_file pid
+          if [ -n "${{unrelated_pid:-}}" ]; then
+            kill "$unrelated_pid" 2>/dev/null || true
+          fi
           for pid_file in "$PID_DIR"/*.pid; do
             [ -f "$pid_file" ] || continue
             pid="$(sed -n '1p' "$pid_file")"
@@ -297,8 +350,7 @@ def _start_harness(repo: Path, pg_bin: Path, *, twice: bool) -> str:
           sleep 0.1
         }}
         trap cleanup EXIT
-        start_main
-        {second_run}
+{indented_run_sequence}
         """
     )
 
@@ -317,13 +369,13 @@ def test_scripts_encode_current_local_contracts() -> None:
     assert "pgrep" not in start
     for identity in ("api", "worker", "web", "admin"):
         assert f"fateradar-cloud-agent-{identity}" in start
-        assert (
-            f"${{LOG_DIR}}/{identity}.log" in start or "${LOG_DIR}/${name}.log" in start
-        )
+        assert f"${{LOG_DIR}}/{identity}.log" in start or "${LOG_DIR}/${name}.log" in start
     assert "/api/v1/health/live" in start
     assert "/api/v1/health/ready" in start
     for adapter in ("RUNTIME", "MODEL", "OTP"):
         assert f"export MINGLI_{adapter}_ADAPTER=fake" in start
+    assert "export MINGLI_COOKIE_DOMAIN=" in start
+    assert "export MINGLI_COOKIE_SECURE=false" in start
 
 
 def test_local_defaults_validate_against_current_backend_contract(
@@ -331,8 +383,10 @@ def test_local_defaults_validate_against_current_backend_contract(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.syspath_prepend(str(REPO_ROOT / "backend"))
+    from app.admin.cookies import set_admin_cookies
     from app.admin.schemas import AdminLoginRequest
     from app.config import Settings
+    from fastapi import Response
 
     request = AdminLoginRequest(
         email=DEFAULT_ADMIN_EMAIL,
@@ -349,6 +403,8 @@ def test_local_defaults_validate_against_current_backend_contract(
             "MINGLI_RUNTIME_ADAPTER": "one-shot",
             "MINGLI_MODEL_ADAPTER": "deepseek",
             "MINGLI_OTP_ADAPTER": "smtp",
+            "MINGLI_COOKIE_DOMAIN": "staging.example.com",
+            "MINGLI_COOKIE_SECURE": "true",
         }
     )
     harness = textwrap.dedent(
@@ -356,6 +412,7 @@ def test_local_defaults_validate_against_current_backend_contract(
         source {START_SCRIPT}
         configure_local_environment
         printf '%s\n' "$MINGLI_RUNTIME_ADAPTER" "$MINGLI_MODEL_ADAPTER" "$MINGLI_OTP_ADAPTER"
+        printf '%s\n' "$MINGLI_COOKIE_DOMAIN" "$MINGLI_COOKIE_SECURE"
         """
     )
     completed = subprocess.run(
@@ -366,16 +423,38 @@ def test_local_defaults_validate_against_current_backend_contract(
         check=False,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    runtime_adapter, model_adapter, otp_adapter = completed.stdout.splitlines()
+    runtime_adapter, model_adapter, otp_adapter, cookie_domain, cookie_secure = (
+        completed.stdout.splitlines()
+    )
     assert (runtime_adapter, model_adapter, otp_adapter) == ("fake", "fake", "fake")
+    assert cookie_domain == ""
+    assert cookie_secure == "false"
 
     monkeypatch.setenv("MINGLI_RUNTIME_ADAPTER", runtime_adapter)
     monkeypatch.setenv("MINGLI_MODEL_ADAPTER", model_adapter)
     monkeypatch.setenv("MINGLI_OTP_ADAPTER", otp_adapter)
+    monkeypatch.setenv("MINGLI_COOKIE_DOMAIN", cookie_domain)
+    monkeypatch.setenv("MINGLI_COOKIE_SECURE", cookie_secure)
     settings = Settings()
     assert settings.runtime_adapter == "fake"
     assert settings.model_adapter == "fake"
     assert settings.otp_adapter == "fake"
+    assert settings.cookie_domain == ""
+    assert settings.cookie_secure is False
+
+    response = Response()
+    set_admin_cookies(
+        response,
+        settings=settings,
+        session_token="local-session",
+        csrf_token="local-csrf",
+        expires_at=datetime.now(UTC) + timedelta(hours=1),
+    )
+    cookie_headers = response.headers.getlist("set-cookie")
+    assert len(cookie_headers) == 2
+    for header in cookie_headers:
+        assert "domain=" not in header.lower()
+        assert "; secure" not in header.lower()
 
 
 def test_install_is_idempotent_pins_local_database_and_creates_fake_contract(
@@ -433,15 +512,14 @@ def test_process_identity_requires_exact_wrapper_and_service_name(
         PID_DIR={tmp_path / "pids"}
         mkdir -p "$PID_DIR"
         printf '%s\\0' /bin/bash -c "$SERVICE_WRAPPER" fateradar-cloud-agent-web >{cmdline}
+        printf '%s\n%s\n' 123 checkout-a >"$PID_DIR/web.pid"
         process_matches 123 fateradar-cloud-agent-web
         ! process_matches 123 fateradar-cloud-agent-admin
-        ! managed_pid admin fateradar-cloud-agent-admin
-        test "$(managed_pid web fateradar-cloud-agent-web)" = 123
+        ! managed_pid admin fateradar-cloud-agent-admin checkout-a
+        test "$(managed_pid web fateradar-cloud-agent-web checkout-a)" = 123
         """
     )
-    completed = subprocess.run(
-        ["bash", "-c", harness], text=True, capture_output=True, check=False
-    )
+    completed = subprocess.run(["bash", "-c", harness], text=True, capture_output=True, check=False)
     assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
@@ -459,18 +537,62 @@ def test_start_launches_each_service_once_and_reconciles_without_duplicates(
         check=False,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    launches = (
-        (tmp_path / "state" / "launches.log").read_text(encoding="utf-8").splitlines()
-    )
+    launches = (tmp_path / "state" / "launches.log").read_text(encoding="utf-8").splitlines()
     assert launches == ["api", "worker", "web", "admin"]
     assert completed.stdout.count("already running as PID") == 4
     assert "local-test-password" not in completed.stdout + completed.stderr
 
 
-@pytest.mark.parametrize("failed_service", ["api", "worker", "web", "admin"])
-def test_start_reports_each_immediate_child_failure(
-    tmp_path: Path, failed_service: str
+def test_start_restarts_each_managed_service_once_after_checkout_change(
+    tmp_path: Path,
 ) -> None:
+    repo, home, pg_bin, env = _start_fixture(tmp_path)
+    harness = _start_harness(repo, pg_bin, twice=False, checkout_change=True)
+    completed = subprocess.run(
+        ["bash", "-c", harness],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+
+    sha_b = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "HEAD"],
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+    sha_a = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "HEAD^"],
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+    services = ["api", "worker", "web", "admin"]
+    launches = (tmp_path / "state" / "launches.log").read_text(encoding="utf-8").splitlines()
+    assert launches == services + services
+    launch_checkouts = (
+        (tmp_path / "state" / "launch-checkouts.log").read_text(encoding="utf-8").splitlines()
+    )
+    assert launch_checkouts == [
+        *(f"{service} {sha_a}" for service in services),
+        *(f"{service} {sha_b}" for service in services),
+    ]
+    assert completed.stdout.count("already running as PID") == 4
+    for service in services:
+        pid_state = (
+            (home / ".local" / "state" / "fateradar-cloud-agent" / f"{service}.pid")
+            .read_text(encoding="utf-8")
+            .splitlines()
+        )
+        assert pid_state[1] == sha_b
+
+
+@pytest.mark.parametrize("failed_service", ["api", "worker", "web", "admin"])
+def test_start_reports_each_immediate_child_failure(tmp_path: Path, failed_service: str) -> None:
     repo, _home, pg_bin, env = _start_fixture(tmp_path)
     env["FAIL_SERVICE"] = failed_service
     completed = subprocess.run(
@@ -483,7 +605,10 @@ def test_start_reports_each_immediate_child_failure(
         check=False,
     )
     assert completed.returncode != 0
-    assert f"ERROR: {failed_service} exited during startup" in completed.stderr
+    assert (
+        f"ERROR: {failed_service} exited during startup" in completed.stderr
+        or f"ERROR: {failed_service} exited before becoming healthy" in completed.stderr
+    )
     assert f"logs/{failed_service}.log" in completed.stderr
 
 
