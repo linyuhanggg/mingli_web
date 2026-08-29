@@ -13,6 +13,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 INSTALL_SCRIPT = REPO_ROOT / "scripts" / "cloud-agent" / "install.sh"
 START_SCRIPT = REPO_ROOT / "scripts" / "cloud-agent" / "start.sh"
 LOCAL_DATABASE_URL = "postgresql+asyncpg://mingli:mingli-local@127.0.0.1:5432/mingli"
+DEFAULT_ADMIN_EMAIL = "cloud-agent-admin@example.com"
 FORBIDDEN_RUNTIME_IDENTITIES = (
     "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
     "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68",
@@ -168,7 +169,9 @@ def _install_fixture(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
     return repo, home, pg_bin, env
 
 
-def _run_install(repo: Path, pg_bin: Path, env: dict[str, str]) -> subprocess.CompletedProcess[str]:
+def _run_install(
+    repo: Path, pg_bin: Path, env: dict[str, str]
+) -> subprocess.CompletedProcess[str]:
     harness = textwrap.dedent(
         f"""
         source {repo / "scripts/cloud-agent/install.sh"}
@@ -196,7 +199,7 @@ def _start_fixture(tmp_path: Path) -> tuple[Path, Path, Path, dict[str, str]]:
     admin_dir.mkdir(parents=True)
     admin_env = admin_dir / "local.env"
     admin_env.write_text(
-        "export MINGLI_ADMIN_BOOTSTRAP_EMAIL=cloud-agent-admin@localhost\n"
+        f"export MINGLI_ADMIN_BOOTSTRAP_EMAIL={DEFAULT_ADMIN_EMAIL}\n"
         "export MINGLI_ADMIN_BOOTSTRAP_PASSWORD=local-test-password\n",
         encoding="utf-8",
     )
@@ -305,6 +308,7 @@ def test_scripts_encode_current_local_contracts() -> None:
     start = START_SCRIPT.read_text(encoding="utf-8")
 
     assert 'export MINGLI_DATABASE_URL="$LOCAL_DATABASE_URL"' in install
+    assert f"MINGLI_ADMIN_BOOTSTRAP_EMAIL:-{DEFAULT_ADMIN_EMAIL}" in install
     assert "'fateradar-fake-contract', 'test-v1'" in install
     assert 'git -C "$REPO_ROOT" rev-parse HEAD' in install
     for forbidden in FORBIDDEN_RUNTIME_IDENTITIES:
@@ -313,9 +317,65 @@ def test_scripts_encode_current_local_contracts() -> None:
     assert "pgrep" not in start
     for identity in ("api", "worker", "web", "admin"):
         assert f"fateradar-cloud-agent-{identity}" in start
-        assert f"${{LOG_DIR}}/{identity}.log" in start or "${LOG_DIR}/${name}.log" in start
+        assert (
+            f"${{LOG_DIR}}/{identity}.log" in start or "${LOG_DIR}/${name}.log" in start
+        )
     assert "/api/v1/health/live" in start
     assert "/api/v1/health/ready" in start
+    for adapter in ("RUNTIME", "MODEL", "OTP"):
+        assert f"export MINGLI_{adapter}_ADAPTER=fake" in start
+
+
+def test_local_defaults_validate_against_current_backend_contract(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.syspath_prepend(str(REPO_ROOT / "backend"))
+    from app.admin.schemas import AdminLoginRequest
+    from app.config import Settings
+
+    request = AdminLoginRequest(
+        email=DEFAULT_ADMIN_EMAIL,
+        password="local-test-password",
+    )
+    assert str(request.email) == DEFAULT_ADMIN_EMAIL
+
+    home = tmp_path / "home"
+    home.mkdir()
+    env = os.environ.copy()
+    env.update(
+        {
+            "HOME": str(home),
+            "MINGLI_RUNTIME_ADAPTER": "one-shot",
+            "MINGLI_MODEL_ADAPTER": "deepseek",
+            "MINGLI_OTP_ADAPTER": "smtp",
+        }
+    )
+    harness = textwrap.dedent(
+        f"""
+        source {START_SCRIPT}
+        configure_local_environment
+        printf '%s\n' "$MINGLI_RUNTIME_ADAPTER" "$MINGLI_MODEL_ADAPTER" "$MINGLI_OTP_ADAPTER"
+        """
+    )
+    completed = subprocess.run(
+        ["bash", "-c", harness],
+        env=env,
+        text=True,
+        capture_output=True,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+    runtime_adapter, model_adapter, otp_adapter = completed.stdout.splitlines()
+    assert (runtime_adapter, model_adapter, otp_adapter) == ("fake", "fake", "fake")
+
+    monkeypatch.setenv("MINGLI_RUNTIME_ADAPTER", runtime_adapter)
+    monkeypatch.setenv("MINGLI_MODEL_ADAPTER", model_adapter)
+    monkeypatch.setenv("MINGLI_OTP_ADAPTER", otp_adapter)
+    settings = Settings()
+    assert settings.runtime_adapter == "fake"
+    assert settings.model_adapter == "fake"
+    assert settings.otp_adapter == "fake"
 
 
 def test_install_is_idempotent_pins_local_database_and_creates_fake_contract(
@@ -328,6 +388,7 @@ def test_install_is_idempotent_pins_local_database_and_creates_fake_contract(
     assert first.returncode == 0, first.stdout + first.stderr
     admin_env = home / ".config" / "fateradar-cloud-agent" / "local.env"
     first_admin_values = admin_env.read_text(encoding="utf-8")
+    assert f"MINGLI_ADMIN_BOOTSTRAP_EMAIL={DEFAULT_ADMIN_EMAIL}" in first_admin_values
 
     second = _run_install(repo, pg_bin, env)
     assert second.returncode == 0, second.stdout + second.stderr
@@ -359,7 +420,9 @@ def test_install_is_idempotent_pins_local_database_and_creates_fake_contract(
         assert forbidden not in seed_log
 
 
-def test_process_identity_requires_exact_wrapper_and_service_name(tmp_path: Path) -> None:
+def test_process_identity_requires_exact_wrapper_and_service_name(
+    tmp_path: Path,
+) -> None:
     proc_root = tmp_path / "proc"
     cmdline = proc_root / "123" / "cmdline"
     cmdline.parent.mkdir(parents=True)
@@ -376,7 +439,9 @@ def test_process_identity_requires_exact_wrapper_and_service_name(tmp_path: Path
         test "$(managed_pid web fateradar-cloud-agent-web)" = 123
         """
     )
-    completed = subprocess.run(["bash", "-c", harness], text=True, capture_output=True, check=False)
+    completed = subprocess.run(
+        ["bash", "-c", harness], text=True, capture_output=True, check=False
+    )
     assert completed.returncode == 0, completed.stdout + completed.stderr
 
 
@@ -394,14 +459,18 @@ def test_start_launches_each_service_once_and_reconciles_without_duplicates(
         check=False,
     )
     assert completed.returncode == 0, completed.stdout + completed.stderr
-    launches = (tmp_path / "state" / "launches.log").read_text(encoding="utf-8").splitlines()
+    launches = (
+        (tmp_path / "state" / "launches.log").read_text(encoding="utf-8").splitlines()
+    )
     assert launches == ["api", "worker", "web", "admin"]
     assert completed.stdout.count("already running as PID") == 4
     assert "local-test-password" not in completed.stdout + completed.stderr
 
 
 @pytest.mark.parametrize("failed_service", ["api", "worker", "web", "admin"])
-def test_start_reports_each_immediate_child_failure(tmp_path: Path, failed_service: str) -> None:
+def test_start_reports_each_immediate_child_failure(
+    tmp_path: Path, failed_service: str
+) -> None:
     repo, _home, pg_bin, env = _start_fixture(tmp_path)
     env["FAIL_SERVICE"] = failed_service
     completed = subprocess.run(
