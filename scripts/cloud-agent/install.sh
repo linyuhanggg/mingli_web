@@ -51,7 +51,7 @@ ensure_admin_bootstrap_environment() {
     return 1
   fi
 
-  local email="${MINGLI_ADMIN_BOOTSTRAP_EMAIL:-cloud-agent-admin@localhost}"
+  local email="${MINGLI_ADMIN_BOOTSTRAP_EMAIL:-cloud-agent-admin@example.com}"
   local password="${MINGLI_ADMIN_BOOTSTRAP_PASSWORD:-}"
   if [ -z "$password" ]; then
     password="$(uv run --project backend python -c 'import secrets; print(secrets.token_urlsafe(24))')"

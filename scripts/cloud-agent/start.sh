@@ -26,6 +26,9 @@ configure_local_environment() {
   export TZ=Asia/Shanghai
   export MINGLI_ENVIRONMENT=local
   export MINGLI_DATABASE_URL="postgresql+asyncpg://mingli:mingli-local@127.0.0.1:5432/mingli"
+  export MINGLI_RUNTIME_ADAPTER=fake
+  export MINGLI_MODEL_ADAPTER=fake
+  export MINGLI_OTP_ADAPTER=fake
   export BACKEND_INTERNAL_URL="http://127.0.0.1:8000"
   export PGDATA
 }
