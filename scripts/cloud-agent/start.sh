@@ -134,6 +134,7 @@ managed_pid() {
   local name="$1"
   local identity="$2"
   local checkout_sha="$3"
+  local force_restart="${4:-false}"
   local pid_file="${PID_DIR}/${name}.pid"
   local pid=
   local stopped_managed_pid=false
@@ -143,11 +144,15 @@ managed_pid() {
     pid="$(sed -n '1p' "$pid_file")"
     stored_checkout_sha="$(sed -n '2p' "$pid_file")"
     if process_matches "$pid" "$identity"; then
-      if [ "$stored_checkout_sha" = "$checkout_sha" ]; then
+      if [ "$stored_checkout_sha" = "$checkout_sha" ] && [ "$force_restart" != true ]; then
         printf '%s\n' "$pid"
         return 0
       fi
-      echo "    stopping ${name} from checkout ${stored_checkout_sha:-unknown} before ${checkout_sha}" >&2
+      if [ "$stored_checkout_sha" = "$checkout_sha" ]; then
+        echo "    stopping ${name} for tracked Backend changes in checkout ${checkout_sha}" >&2
+      else
+        echo "    stopping ${name} from checkout ${stored_checkout_sha:-unknown} before ${checkout_sha}" >&2
+      fi
       stop_managed_pid "$name" "$identity" "$pid" || return 2
       stopped_managed_pid=true
     fi
@@ -172,19 +177,24 @@ service_error() {
   return 1
 }
 
-launch() { # name port_or_empty exact_identity checkout_sha command...
+tracked_backend_dirty() {
+  ! git -C "$REPO_ROOT" diff --quiet HEAD -- backend
+}
+
+launch() { # name port_or_empty exact_identity checkout_sha force_restart command...
   local name="$1"
   local port="$2"
   local identity="$3"
   local checkout_sha="$4"
+  local force_restart="$5"
   local existing_pid=
   local managed_status
   local replaced_checkout=false
   local pid_file="${PID_DIR}/${name}.pid"
-  shift 4
+  shift 5
 
   SERVICE_PID=
-  if existing_pid="$(managed_pid "$name" "$identity" "$checkout_sha")"; then
+  if existing_pid="$(managed_pid "$name" "$identity" "$checkout_sha" "$force_restart")"; then
     SERVICE_PID="$existing_pid"
     echo "    ${name} already running as PID ${SERVICE_PID}${port:+ (port ${port})}"
     return 0
@@ -252,10 +262,14 @@ start_main() {
   local worker_pid
   local web_pid
   local admin_pid
+  local backend_dirty=false
   local checkout_sha
 
   cd "$REPO_ROOT"
   checkout_sha="$(git -C "$REPO_ROOT" rev-parse HEAD)"
+  if tracked_backend_dirty; then
+    backend_dirty=true
+  fi
   load_admin_bootstrap_environment
   configure_local_environment
   mkdir -p "$PGRUN" "$LOG_DIR" "$PID_DIR"
@@ -270,16 +284,16 @@ start_main() {
   done
 
   echo "==> Launching application processes"
-  launch api 8000 fateradar-cloud-agent-api "$checkout_sha" \
+  launch api 8000 fateradar-cloud-agent-api "$checkout_sha" "$backend_dirty" \
     uv run --project backend uvicorn app.main:app --app-dir backend --host 127.0.0.1 --port 8000
   api_pid="$SERVICE_PID"
-  launch worker "" fateradar-cloud-agent-worker "$checkout_sha" \
+  launch worker "" fateradar-cloud-agent-worker "$checkout_sha" "$backend_dirty" \
     uv run --directory backend python -m worker.main --poll-interval 2
   worker_pid="$SERVICE_PID"
-  launch web 3000 fateradar-cloud-agent-web "$checkout_sha" \
+  launch web 3000 fateradar-cloud-agent-web "$checkout_sha" false \
     npm --prefix web run dev
   web_pid="$SERVICE_PID"
-  launch admin 3001 fateradar-cloud-agent-admin "$checkout_sha" \
+  launch admin 3001 fateradar-cloud-agent-admin "$checkout_sha" false \
     npm --prefix admin run dev
   admin_pid="$SERVICE_PID"
 
