@@ -1,6 +1,8 @@
 # Hashes are SHA-256 of artifacts fetched from the pinned PyPI releases. The
 # macOS arm64 wheels were audited on 2026-07-25. The CPython 3.14 Linux x86_64
 # wheel was independently re-fetched from PyPI and audited on 2026-08-25.
+# OpenCC 1.4.2 wheels for all three supported targets were independently
+# re-fetched from PyPI and audited on 2026-08-29.
 PyYAML==6.0.3 \
     --hash=sha256:652cb6edd41e718550aad172851962662ff2681490a8a711af6a4d288dd96824 \
     --hash=sha256:34d5fcd24b8445fadc33f9cf348c1047101756fd760b4dacb5c3e99755703310 \
@@ -8,4 +10,7 @@ PyYAML==6.0.3 \
 sxtwl==2.0.7 --hash=sha256:38b24472389f7f6f3521c2c99e4b5e86c0184c7d6eb02e5409c239d21f0a6512
 astronomy-engine==2.1.19 --hash=sha256:232ba7dd2bbf42225c48be6721b676e8c6c079dbd4588d2781dfa68adcb6f67f
 cnlunar==0.2.4 --hash=sha256:19689288604e86a3ef48dba23d39d6a7efbd5efabcb3923d4d656319762af4ea
-zhconv==1.4.3 --hash=sha256:ad42d9057ca0605f8e41d62b67ca797f879f58193ee6840562c51459b2698c45
+OpenCC==1.4.2 \
+    --hash=sha256:a3bb8d817b8d5500fda9a81e245825d176b087e4d31702dafc2ef83d6ef21b4a \
+    --hash=sha256:2dd2f8c3f7e633d252753c8f69298d5f446e02d62a3cf9c6a3c18683b5346c89 \
+    --hash=sha256:d054897f2e597d663410b9dc20b9e79d9410a893b9578ef3eaf3f6eef5fbcb52

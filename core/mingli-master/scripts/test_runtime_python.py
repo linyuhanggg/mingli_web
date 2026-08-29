@@ -241,15 +241,19 @@ class RuntimePythonTests(unittest.TestCase):
         requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
         self.assertIn("cnlunar==0.2.4", requirements.splitlines())
 
-    def test_runtime_pins_and_manifests_the_text_normalizer(self) -> None:
-        self.assertIn("zhconv", runtime_python.REQUIRED_MODULES)
-        self.assertEqual(runtime_python.PINNED_VERSIONS["zhconv"], "1.4.3")
-        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["zhconv"], "1.4.3")
+    def test_runtime_pins_and_exercises_the_text_normalizer(self) -> None:
+        self.assertIn("opencc", runtime_python.REQUIRED_MODULES)
+        self.assertEqual(runtime_python.PINNED_VERSIONS["opencc"], "1.4.2")
+        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["opencc"], "1.4.2")
         requirements = (ROOT / "requirements.txt").read_text(encoding="utf-8")
-        self.assertIn("zhconv==1.4.3", requirements.splitlines())
+        self.assertIn("OpenCC==1.4.2", requirements.splitlines())
         identity = runtime_python.current_runtime_identity()
-        self.assertEqual(identity["zhconv"], "1.4.3")
-        self.assertIn("zhconv", identity["origins"])
+        self.assertEqual(identity["opencc"], "1.4.2")
+        self.assertEqual(identity["opencc_t2s_known_answer"], "汉字与软体")
+        self.assertIn("opencc", identity["origins"])
+        identity["opencc_t2s_known_answer"] = "漢字與軟體"
+        with self.assertRaisesRegex(RuntimeError, "isolated runtime identity"):
+            runtime_python.validate_runtime_identity(identity)
 
     def test_runtime_lock_matches_the_complete_distribution_allowlist(self) -> None:
         lock = ROOT / "requirements-runtime.lock"
@@ -257,7 +261,7 @@ class RuntimePythonTests(unittest.TestCase):
             runtime_python.load_hash_locked_distributions(lock),
             runtime_python.REQUIRED_DISTRIBUTIONS,
         )
-        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["zhconv"], "1.4.3")
+        self.assertEqual(runtime_python.REQUIRED_DISTRIBUTIONS["opencc"], "1.4.2")
 
     def test_runtime_lock_rejects_an_unregistered_distribution(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
@@ -278,7 +282,7 @@ class RuntimePythonTests(unittest.TestCase):
                 "0" * 64,
                 (ROOT / "requirements-runtime.lock").read_text(encoding="utf-8"),
             )
-            self.assertEqual(replaced, 7)
+            self.assertEqual(replaced, 9)
             lock.write_text(tampered, encoding="utf-8")
 
             with self.assertRaisesRegex(RuntimeError, "approved artifact hash sets"):
@@ -287,7 +291,7 @@ class RuntimePythonTests(unittest.TestCase):
     def test_runtime_lock_rejects_a_requirement_without_a_hash(self) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             lock = Path(temporary) / "requirements-runtime.lock"
-            lock.write_text("zhconv==1.4.3\n", encoding="utf-8")
+            lock.write_text("OpenCC==1.4.2\n", encoding="utf-8")
             with self.assertRaisesRegex(RuntimeError, "fully hash locked"):
                 runtime_python.load_hash_locked_distributions(lock)
 
