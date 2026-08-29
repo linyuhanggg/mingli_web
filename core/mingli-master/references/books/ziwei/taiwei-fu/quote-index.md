@@ -5,46 +5,46 @@
 
 | id | quote | chapter | source_url | verified |
 |---|---|---|---|---|
-| TQ-01 | 斗數至玄至微，理旨難明，雖設問於百篇之中，猶有言而未盡。 | zonglun/zhi-xuan-zhi-wei | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-02 | 壽夭賢愚，富貴貧賤，不可一概論議。 | zonglun/zhi-xuan-zhi-wei | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-03 | 其星分布一十二垣，數定乎三十六位。 | zonglun/yiqian-erling-liu-yuan | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-04 | 入廟為奇，失度為虛。 | zonglun/rumiao-shidu | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-05 | 大抵以身命為福德之本，加以根源為窮通之資。 | zonglun/rumiao-shidu | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-06 | 觀乎紫微舍躔，司一天儀之象，率列宿而成垣。 | zonglun/ziwei-shezhuan | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-07 | 金星專司財庫，最怕空亡。 | zonglun/ziwei-shezhuan | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-08 | 帝星動則列宿奔馳，貪守空而財源不聚。 | zonglun/ziwei-shezhuan | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-09 | 祿逢沖破，吉處藏凶。 | liyue/lu-feng-chongpo | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-10 | 馬遇空亡，終身奔走。 | liyue/ma-yu-kongwang | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-11 | 生逢敗地，發也虛花。絕處逢生，生花不敗。 | liyue/sheng-feng-baidi | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-12 | 日月最嫌反背，祿馬最喜交馳。 | liyue/riyue-fanbei | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-13 | 紫微天府全依輔弼之功。 | liyue/ziwei-tianfu-fubi | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-14 | 七殺破軍專依羊鈴之虐。 | liyue/qisha-pojun-yangling | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-15 | 輔弼夾帝為上品，桃花犯主為至淫。 | liyue/fubi-jiadi | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-16 | 君臣慶會，材善經邦。 | liyue/junchen-qinghui | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-17 | 魁鉞同行，位居臺輔。 | liyue/kuiyue-tongxing | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-18 | 祿文拱命，貴而且賢。 | liyue/lu-wen-gongming | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-19 | 日月夾財，不權則富。 | liyue/riyue-jiacai | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-20 | 馬頭帶劍，鎮衛邊疆。 | liyue/matou-daijian | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-21 | 刑囚夾印，刑杖惟司。 | liyue/xingqiu-jiayin | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-22 | 太陽居午，謂之日麗中天，有專權之貴，敵國之富。 | liyue/taiyang-juwu | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-23 | 太陰居子，號曰水澄桂萼，得清要之職，忠諫之材。 | liyue/taiyin-juzi | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-24 | 紫微輔弼同宮，一呼百諾居上品。 | liyue/junchen-qinghui | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-25 | 日月守不如照合，蔭福聚不怕凶危。 | liyue/riyue-jiacai | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-26 | 貪居亥子，名為犯水桃花。刑遇貪狼，號曰風流彩杖。 | liyue/taohua-fanzhu | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-27 | 七殺廉貞同位，路上埋屍。破軍暗曜同鄉，水中作塚。 | liyue/qisha-lianzhen-tongwei | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-28 | 祿居奴僕縱有官也奔馳。 | liyue/lu-ju-nupu | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-29 | 帝坐金車則曰金輿捧櫛，福安文曜謂之玉袖天香。 | liyue/jin-yu-pengzhi | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-30 | 太陽會文昌於官祿，皇殿朝班，富貴全美。 | liyue/changfeng-juangong | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-31 | 太陰會文曲於妻宮，蟾宮折桂，文章全盛。 | liyue/qugong-zhegui | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-32 | 祿存守於田財，堆金積玉。 | liyue/changfeng-juangong | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-33 | 殺居絕地，天年夭似顏回。貪坐生鄉，壽考永如彭祖。 | liyue/sha-ju-juedi | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-34 | 忌暗同居身命疾厄，沉困尪羸。 | liyue/qisha-lianzhen-tongwei | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-35 | 七殺臨於身命加惡殺，必定死亡。 | liyue/qisha-lin-shenming | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-36 | 鈴羊合於命宮遇白虎，須當刑戮。 | liyue/lingyang-mingbai | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-37 | 童子限如水上泡漚，老人限似風中燃燭。 | liyue/tongzi-laoren-xian | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-38 | 人生榮辱限元必有休咎，處世孤貧數中逢乎駁雜。 | liyue/tongzi-laoren-xian | https://zh.wikisource.org/zh-hant/太微賦 | false |
-| TQ-39 | 官符加刑殺於遷移，離鄉遭配。 | liyue/guanfu-xingsha | references/fulltext/ziwei/taiwei-fu/fulltext.md L46 | false |
-| TQ-40 | 病符官符皆作禍。 | liyue/bingfu-guanfu | references/fulltext/ziwei/taiwei-fu/fulltext.md L49 | false |
+| TQ-01 | 斗数至玄至微，理旨难明，虽设问于百篇之中，犹有言而未尽。 | zonglun/zhi-xuan-zhi-wei | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-02 | 寿夭贤愚，富贵贫贱，不可一概论议。 | zonglun/zhi-xuan-zhi-wei | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-03 | 其星分布一十二垣，数定乎三十六位。 | zonglun/yiqian-erling-liu-yuan | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-04 | 入庙为奇，失度为虚。 | zonglun/rumiao-shidu | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-05 | 大抵以身命为福德之本，加以根源为穷通之资。 | zonglun/rumiao-shidu | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-06 | 观乎紫微舍躔，司一天仪之象，率列宿而成垣。 | zonglun/ziwei-shezhuan | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-07 | 金星专司财库，最怕空亡。 | zonglun/ziwei-shezhuan | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-08 | 帝星动则列宿奔驰，贪守空而财源不聚。 | zonglun/ziwei-shezhuan | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-09 | 禄逢冲破，吉处藏凶。 | liyue/lu-feng-chongpo | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-10 | 马遇空亡，终身奔走。 | liyue/ma-yu-kongwang | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-11 | 生逢败地，发也虚花。绝处逢生，生花不败。 | liyue/sheng-feng-baidi | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-12 | 日月最嫌反背，禄马最喜交驰。 | liyue/riyue-fanbei | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-13 | 紫微天府全依辅弼之功。 | liyue/ziwei-tianfu-fubi | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-14 | 七杀破军专依羊铃之虐。 | liyue/qisha-pojun-yangling | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-15 | 辅弼夹帝为上品，桃花犯主为至淫。 | liyue/fubi-jiadi | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-16 | 君臣庆会，材善经邦。 | liyue/junchen-qinghui | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-17 | 魁钺同行，位居台辅。 | liyue/kuiyue-tongxing | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-18 | 禄文拱命，贵而且贤。 | liyue/lu-wen-gongming | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-19 | 日月夹财，不权则富。 | liyue/riyue-jiacai | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-20 | 马头带剑，镇卫边疆。 | liyue/matou-daijian | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-21 | 刑囚夹印，刑杖惟司。 | liyue/xingqiu-jiayin | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-22 | 太阳居午，谓之日丽中天，有专权之贵，敌国之富。 | liyue/taiyang-juwu | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-23 | 太阴居子，号曰水澄桂萼，得清要之职，忠谏之材。 | liyue/taiyin-juzi | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-24 | 紫微辅弼同宫，一呼百诺居上品。 | liyue/junchen-qinghui | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-25 | 日月守不如照合，荫福聚不怕凶危。 | liyue/riyue-jiacai | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-26 | 贪居亥子，名为犯水桃花。刑遇贪狼，号曰风流彩杖。 | liyue/taohua-fanzhu | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-27 | 七杀廉贞同位，路上埋尸。破军暗曜同乡，水中作冢。 | liyue/qisha-lianzhen-tongwei | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-28 | 禄居奴仆纵有官也奔驰。 | liyue/lu-ju-nupu | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-29 | 帝坐金车则曰金舆捧栉，福安文曜谓之玉袖天香。 | liyue/jin-yu-pengzhi | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-30 | 太阳会文昌于官禄，皇殿朝班，富贵全美。 | liyue/changfeng-juangong | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-31 | 太阴会文曲于妻宫，蟾宫折桂，文章全盛。 | liyue/qugong-zhegui | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-32 | 禄存守于田财，堆金积玉。 | liyue/changfeng-juangong | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-33 | 杀居绝地，天年夭似颜回。贪坐生乡，寿考永如彭祖。 | liyue/sha-ju-juedi | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-34 | 忌暗同居身命疾厄，沉困尪羸。 | liyue/qisha-lianzhen-tongwei | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-35 | 七杀临于身命加恶杀，必定死亡。 | liyue/qisha-lin-shenming | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-36 | 铃羊合于命宫遇白虎，须当刑戮。 | liyue/lingyang-mingbai | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-37 | 童子限如水上泡沤，老人限似风中燃烛。 | liyue/tongzi-laoren-xian | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-38 | 人生荣辱限元必有休咎，处世孤贫数中逢乎驳杂。 | liyue/tongzi-laoren-xian | https://zh.wikisource.org/zh-hant/太微赋 | false |
+| TQ-39 | 官符加刑杀于迁移，离乡遭配。 | liyue/guanfu-xingsha | references/fulltext/ziwei/taiwei-fu/fulltext.md L46 | false |
+| TQ-40 | 病符官符皆作祸。 | liyue/bingfu-guanfu | references/fulltext/ziwei/taiwei-fu/fulltext.md L49 | false |
 
 ---
 

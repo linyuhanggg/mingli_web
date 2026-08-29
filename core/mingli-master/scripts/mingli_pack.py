@@ -8,6 +8,8 @@ import json
 import re
 from pathlib import Path
 
+from simplified_canonical import canonicalize
+
 
 SKILL_ROOT = Path(__file__).resolve().parents[1]
 CATALOG = SKILL_ROOT / "references" / "catalog" / "catalog.json"
@@ -40,15 +42,20 @@ def catalog_fulltext_path(item: dict) -> Path | None:
 
 def cmd_list(args: argparse.Namespace) -> int:
     for item in iter_packs(args.system):
-        print(f"{item['system']}/{item['slug']}\t{item['title']}\t{item['skill_index_path']}")
+        print(
+            f"{item['system']}/{item['slug']}\t"
+            f"{canonicalize(str(item['title']))}\t{item['skill_index_path']}"
+        )
     return 0
 
 
 def cmd_blocked(_: argparse.Namespace) -> int:
     for item in load_catalog()["blocked_or_excluded"]:
         print(
-            f"{item['system']}/{item['slug']}\t{item['title']}\t"
-            f"raw={item['raw_source_status']}\tnorm={item['normalized_status']}\t{item.get('reason','')}"
+            f"{item['system']}/{item['slug']}\t"
+            f"{canonicalize(str(item['title']))}\t"
+            f"raw={item['raw_source_status']}\tnorm={item['normalized_status']}\t"
+            f"{canonicalize(str(item.get('reason', '')))}"
         )
     return 0
 
@@ -66,7 +73,7 @@ def cmd_locate(args: argparse.Namespace) -> int:
     item = find_pack(args.pack)
     if not item:
         raise SystemExit(f"Unknown ready pack: {args.pack}")
-    print(f"title: {item['title']}")
+    print(f"title: {canonicalize(str(item['title']))}")
     print(f"index: {item['skill_index_path']}")
     fulltext = catalog_fulltext_path(item)
     print(f"fulltext: {rel(fulltext) if fulltext else ''}")
@@ -79,7 +86,7 @@ def cmd_locate(args: argparse.Namespace) -> int:
 
 
 def compact(text: str) -> str:
-    return re.sub(r"\s+", " ", text).strip()
+    return canonicalize(re.sub(r"\s+", " ", text).strip())
 
 
 def search_file(path: Path, pattern: re.Pattern[str], context: int) -> list[str]:
@@ -88,7 +95,7 @@ def search_file(path: Path, pattern: re.Pattern[str], context: int) -> list[str]
     lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     hits: list[str] = []
     for idx, line in enumerate(lines, start=1):
-        if pattern.search(line):
+        if pattern.search(canonicalize(line)):
             start = max(1, idx - context)
             end = min(len(lines), idx + context)
             snippet = " / ".join(compact(lines[i - 1]) for i in range(start, end + 1) if lines[i - 1].strip())
@@ -98,7 +105,7 @@ def search_file(path: Path, pattern: re.Pattern[str], context: int) -> list[str]
 
 def cmd_search(args: argparse.Namespace) -> int:
     flags = 0 if args.case_sensitive else re.IGNORECASE
-    pattern = re.compile(args.query, flags)
+    pattern = re.compile(canonicalize(args.query), flags)
     files: list[Path] = []
     packs = [find_pack(args.pack)] if args.pack else list(iter_packs(args.system))
     packs = [p for p in packs if p]

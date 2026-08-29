@@ -2,6 +2,7 @@
   "schema_version": "mingli-runtime-closure-v1",
   "files": [
     "SKILL.md",
+    "THIRD_PARTY_NOTICES.md",
     "release/runtime-closure-v1.json",
     "release/version.json",
     "requirements-runtime.lock",
@@ -25,6 +26,7 @@
     "scripts/reading_evidence_bundle.py",
     "scripts/reading_source_plan.py",
     "scripts/search_bm25.py",
+    "scripts/simplified_canonical.py",
     "scripts/structured_chart_adapter.py",
     "scripts/ziwei_fact_adapter.py",
     "scripts/ziwei_runtime.js",
@@ -39,6 +41,7 @@
     "references/source-excerpts/qimen-faqiao-chaibu-v1.md",
     "references/matrices/classical-evidence-bindings-v1.json",
     "references/matrices/evidence-scope-bindings-v1.yaml",
+    "references/matrices/simplified-canonical-v1.json",
     "references/matrices/runtime-source-families-v1.yaml",
     "references/matrices/qiongtong-applicability.yaml",
     "references/matrices/liuren-source-tables-v1.yaml",
