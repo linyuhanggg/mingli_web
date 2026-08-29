@@ -32,7 +32,12 @@
           "propertyNames": {
             "not": {
               "anyOf": [
-                { "pattern": "(^|[-_])raw($|[-_])" },
+                {
+                  "allOf": [
+                    { "pattern": "(^|[-_])raw($|[-_])" },
+                    { "not": { "const": "raw_degrees" } }
+                  ]
+                },
                 { "pattern": "(^|[-_])payload($|[-_])" },
                 { "pattern": "^private[-_]engine[-_]" },
                 { "pattern": "^third[-_]party[-_]" },
