@@ -138,7 +138,7 @@ export function RhythmFactsFlow() {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立一份确认的出生资料。</p>
-          <ButtonLink href="/account/profiles">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles/new">去建档</ButtonLink>
         </div>
       ) : null}
 

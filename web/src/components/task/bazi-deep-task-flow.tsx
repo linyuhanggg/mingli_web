@@ -12,14 +12,13 @@ import {
   recordConsent,
   createIdempotencyKey,
   getBaziDeepCheckout,
-  pollReading,
   startBaziDeepReading,
   type DeliveryState,
   type ReadingStatus,
+  type ReadingVersionSummary,
 } from "@/lib/api";
 import { useOptionalAccountSession } from "@/components/account-session-context";
 import { CURRENT_POLICY_VERSION } from "@/lib/policy";
-import { shouldKeepPolling } from "@/lib/reading-poll";
 import { ReadingResult } from "@/components/readings/reading-result";
 import { Status } from "@/components/ui/status";
 
@@ -155,6 +154,9 @@ export function stateForReadingStatus(
   if (status === "completing") {
     return mode === "preview" ? "preview_loading" : "running";
   }
+  if (status === "delayed" && mode === "preview") {
+    return "preview_loading";
+  }
   if (status === "input_ready") {
     return mode === "preview" ? "preview_loading" : "awaiting_fulfillment";
   }
@@ -265,7 +267,8 @@ export function BaziDeepTaskFlow({
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
-  const [retryKey, setRetryKey] = useState(0);
+  const [previewRetryKey, setPreviewRetryKey] = useState(0);
+  const [deepRetryKey, setDeepRetryKey] = useState(0);
   const deepStartKeyRef = useRef<string | null>(null);
   const checkoutStartKeyRef = useRef<string | null>(null);
   const fulfillmentKeyRef = useRef<string | null>(null);
@@ -297,36 +300,29 @@ export function BaziDeepTaskFlow({
     onBack();
   }, [onBack, pathname, searchParams, writeHref]);
 
-  useEffect(() => {
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    async function run() {
-      if (cancelled) return;
-      try {
-        const summary = await pollReading(previewReadingId);
-        if (cancelled) return;
-        setError(null);
+  const handlePreviewSummary = useCallback((summary: ReadingVersionSummary) => {
+    setError(null);
     setErrorStatus(null);
-        const hints = previewPollHints(summary);
-        const nextState = stateForReadingStatus(summary.status, "preview", hints);
-        setState(nextState);
-        if (nextState === "free" || nextState === "failed" || !shouldKeepPolling(summary)) return;
-        timer = setTimeout(run, POLL_MS);
-      } catch (reason) {
-        if (cancelled) return;
-        setState("failed");
-        setErrorStatus(errorHttpStatus(reason));
-        setError(readableError(reason));
-      }
-    }
+    setState(stateForReadingStatus(summary.status, "preview", previewPollHints(summary)));
+  }, []);
 
-    void run();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [previewReadingId, retryKey]);
+  const handleDeepSummary = useCallback((summary: ReadingVersionSummary) => {
+    setError(null);
+    setErrorStatus(null);
+    setState((current) => (
+      summary.delivery_state
+        ? stateForDeliveryState(summary.delivery_state, current)
+        : summary.status === "input_ready"
+          ? current
+          : stateForReadingStatus(summary.status, "deep")
+    ));
+  }, []);
+
+  const handleReadingPollError = useCallback((reason: unknown) => {
+    setState("failed");
+    setErrorStatus(errorHttpStatus(reason));
+    setError(readableError(reason));
+  }, []);
 
   const accountState = session?.state.status;
   const accessState = (
@@ -490,55 +486,25 @@ export function BaziDeepTaskFlow({
     };
   }, [bindConfirmedPayment, checkoutOrderId, deepReadingId, state]);
 
-  useEffect(() => {
-    if (!deepReadingId || !["queued", "running"].includes(state)) return;
-    const readingId = deepReadingId;
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-
-    async function run() {
-      if (cancelled) return;
-      try {
-        const summary = await pollReading(readingId);
-        if (cancelled) return;
-        setError(null);
-    setErrorStatus(null);
-        const nextState = summary.delivery_state
-          ? stateForDeliveryState(summary.delivery_state, state)
-          : summary.status === "input_ready"
-            ? state
-            : stateForReadingStatus(summary.status, "deep");
-        setState(nextState);
-        if (
-          nextState === "succeeded"
-          || nextState === "failed"
-          || !shouldKeepPolling(summary)
-        ) return;
-        timer = setTimeout(run, POLL_MS);
-      } catch (reason) {
-        if (cancelled) return;
-        setState("failed");
-        setErrorStatus(errorHttpStatus(reason));
-        setError(readableError(reason));
-      }
-    }
-
-    void run();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [deepReadingId, state]);
-
   const phase = statusDescription(accessState);
   const sessionChecking = session?.state.status === "checking";
-  const showDeepResult = accessState === "succeeded"
+  const showDeepResult = ["queued", "running", "succeeded"].includes(accessState)
     && deepReadingId !== null
     && session?.state.status === "signedIn";
 
   function retry() {
     setError(null);
     setErrorStatus(null);
+    if (state === "failed") {
+      if (deepReadingId) {
+        setState("running");
+        setDeepRetryKey((value) => value + 1);
+      } else {
+        setState("preview_loading");
+        setPreviewRetryKey((value) => value + 1);
+      }
+      return;
+    }
     if (checkoutOrderId) {
       bindingPaymentKeyRef.current = null;
       setState("checkout_pending");
@@ -549,7 +515,7 @@ export function BaziDeepTaskFlow({
       setState("unpaid");
       return;
     }
-    setRetryKey((value) => value + 1);
+    setPreviewRetryKey((value) => value + 1);
   }
 
   return (
@@ -630,7 +596,8 @@ export function BaziDeepTaskFlow({
       </section>
 
       {(
-        accessState === "free"
+        accessState === "preview_loading"
+        || accessState === "free"
         || accessState === "unauthenticated"
         || accessState === "unpaid"
         || accessState === "awaiting_fulfillment"
@@ -649,6 +616,9 @@ export function BaziDeepTaskFlow({
           <div className={styles.result}>
             <ReadingResult
               baziDeepFulfilled={accessState === "succeeded"}
+              key={`preview-${previewReadingId}-${previewRetryKey}`}
+              onPollError={handleReadingPollError}
+              onSummary={handlePreviewSummary}
               readingId={previewReadingId}
             />
           </div>
@@ -737,7 +707,12 @@ export function BaziDeepTaskFlow({
             <p>下面的最终报告由服务端接受后提供；前台不自行生成或补写结论。</p>
           </div>
           <div className={styles.result}>
-            <ReadingResult readingId={deepReadingId} />
+            <ReadingResult
+              key={`deep-${deepReadingId}-${deepRetryKey}`}
+              onPollError={handleReadingPollError}
+              onSummary={handleDeepSummary}
+              readingId={deepReadingId}
+            />
           </div>
         </section>
       ) : null}

@@ -246,7 +246,7 @@ export function ProfileForm() {
         }
         await confirmProfileDraft(pending.draftId, pending.body);
         setPendingConfirm(null);
-        router.push("/app/profiles?created=1");
+        router.push("/account/profiles?created=1");
       } catch (reason) {
         if (isProfileNameConflict(reason)) {
           setNameConflict(readProfileNameConflict(reason));

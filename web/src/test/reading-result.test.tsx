@@ -3,6 +3,7 @@ import { join } from "node:path";
 
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReadingResult } from "@/components/readings/reading-result";
@@ -68,7 +69,7 @@ function readingSummary(
     },
     prior_answer: null,
     input_request: null,
-    created_at: "2026-08-10T01:00:00Z",
+    created_at: new Date().toISOString(),
     ...overrides,
   };
 }
@@ -347,6 +348,7 @@ function callsTo(fetchMock: ReturnType<typeof vi.fn>, suffix: string) {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+  vi.useRealTimers();
   routerPush.mockReset();
 });
 
@@ -757,6 +759,229 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
       /fact:opaque|evidence:opaque|finding:opaque|profile-version:secret|1994-04-30|opaque-runtime-token|模型草稿|内部提示词|不要显示/i,
     );
     expect(visible).not.toContain("state_token");
+  });
+
+  it("keeps polling after 15 seconds, offers a preserved restart after 60 seconds, and caps automatic polling at 10 minutes", async () => {
+    vi.useFakeTimers();
+    const startedAt = Date.parse("2026-08-29T12:00:00Z");
+    vi.setSystemTime(startedAt);
+    const onRestart = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async () => (
+      jsonResponse(readingSummary("input_ready", {
+        created_at: new Date(startedAt).toISOString(),
+        poll_after_seconds: 30,
+        poll_required: true,
+      }))
+    ));
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ReadingResult
+        onRestart={onRestart}
+        readingId={VERSION_ID}
+        startedAt={startedAt}
+      />,
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(15_000);
+    });
+    expect(screen.getByRole("link", { name: "稍后查看" })).toHaveAttribute(
+      "href",
+      "/account/history",
+    );
+    expect(screen.queryByRole("button", { name: "重试（保留原资料）" }))
+      .not.toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(45_000);
+    });
+    act(() => {
+      screen.getByRole("button", { name: "重试（保留原资料）" }).click();
+    });
+    expect(onRestart).toHaveBeenCalledTimes(1);
+    const callsAtOneMinute = fetchMock.mock.calls.length;
+    expect(callsAtOneMinute).toBeGreaterThan(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(9 * 60_000);
+    });
+    expect(screen.getByText("自动检查已暂停")).toBeVisible();
+    const callsAtCap = fetchMock.mock.calls.length;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2 * 60_000);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(callsAtCap);
+
+    act(() => {
+      screen.getByRole("button", { name: "重新检查状态" }).click();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(callsAtCap + 1);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2 * 60_000);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(callsAtCap + 1);
+  });
+
+  it("aborts an in-flight automatic request at the cap and gives a manual check a fresh controller", async () => {
+    vi.useFakeTimers();
+    const startedAt = Date.parse("2026-08-29T12:00:00Z");
+    vi.setSystemTime(startedAt + 599_000);
+    let requestCount = 0;
+    let automaticSignal: AbortSignal | undefined;
+    let manualSignal: AbortSignal | undefined;
+    let resolveAutomatic!: (response: Response) => void;
+    const automaticResponse = new Promise<Response>((resolve) => {
+      resolveAutomatic = resolve;
+    });
+    const onPollError = vi.fn();
+    const onSummary = vi.fn();
+    const summary = readingSummary("runtime_unknown", {
+      created_at: new Date(startedAt).toISOString(),
+      poll_after_seconds: 30,
+      poll_required: true,
+    });
+    const fetchMock = vi.fn<typeof fetch>((_url, init) => {
+      requestCount += 1;
+      if (requestCount === 1) {
+        automaticSignal = init?.signal ?? undefined;
+        return automaticResponse;
+      }
+      manualSignal = init?.signal ?? undefined;
+      return Promise.resolve(jsonResponse(summary));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ReadingResult
+        onPollError={onPollError}
+        onSummary={onSummary}
+        readingId={VERSION_ID}
+        startedAt={startedAt}
+      />,
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(automaticSignal).toBeDefined();
+    expect(automaticSignal?.aborted).toBe(false);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+    expect(screen.getByText("自动检查已暂停")).toBeVisible();
+    expect(automaticSignal?.aborted).toBe(true);
+
+    await act(async () => {
+      resolveAutomatic(jsonResponse(summary));
+      await Promise.resolve();
+    });
+    expect(onSummary).not.toHaveBeenCalled();
+    expect(onPollError).not.toHaveBeenCalled();
+
+    act(() => {
+      screen.getByRole("button", { name: "重新检查状态" }).click();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(manualSignal).toBeDefined();
+    expect(manualSignal).not.toBe(automaticSignal);
+    expect(manualSignal?.aborted).toBe(false);
+    expect(onSummary).toHaveBeenCalledTimes(1);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2 * 60_000);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("reports typed summaries and poll failures to the parent owner", async () => {
+    const onSummary = vi.fn();
+    const onPollError = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>(async (url) => (
+      String(url).includes("failed-version")
+        ? problemResponse("暂时无法读取状态", 500)
+        : jsonResponse(readingSummary("runtime_unknown"))
+    ));
+    vi.stubGlobal("fetch", fetchMock);
+
+    const { rerender } = render(
+      <ReadingResult
+        onPollError={onPollError}
+        onSummary={onSummary}
+        readingId="summary-version"
+      />,
+    );
+    await waitFor(() => expect(onSummary).toHaveBeenCalledTimes(1));
+    expect(onSummary).toHaveBeenCalledWith(
+      expect.objectContaining({ status: "runtime_unknown" }),
+    );
+
+    rerender(
+      <ReadingResult
+        onPollError={onPollError}
+        onSummary={onSummary}
+        readingId="failed-version"
+      />,
+    );
+    await waitFor(() => expect(onPollError).toHaveBeenCalledTimes(1));
+    expect(onPollError.mock.calls[0]?.[0]).toEqual(
+      expect.objectContaining({ message: "暂时无法读取状态" }),
+    );
+  });
+
+  it("keeps one owner across same-id rerenders and aborts the old request when the id changes", async () => {
+    let oldSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn<typeof fetch>((url, init) => {
+      if (String(url).includes("old-version")) {
+        oldSignal = init?.signal ?? undefined;
+        return new Promise<Response>((_resolve, reject) => {
+          oldSignal?.addEventListener("abort", () => {
+            reject(new DOMException("aborted", "AbortError"));
+          });
+        });
+      }
+      return Promise.resolve(jsonResponse(readingSummary("runtime_unknown")));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const firstSummary = vi.fn();
+    const secondSummary = vi.fn();
+    const { rerender } = render(
+      <StrictMode>
+        <ReadingResult onSummary={firstSummary} readingId="old-version" />
+      </StrictMode>,
+    );
+    await waitFor(() => expect(oldSignal).toBeDefined());
+
+    rerender(
+      <StrictMode>
+        <ReadingResult onSummary={secondSummary} readingId="old-version" />
+      </StrictMode>,
+    );
+    await act(async () => {
+      await Promise.resolve();
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(oldSignal?.aborted).toBe(false);
+
+    rerender(
+      <StrictMode>
+        <ReadingResult onSummary={secondSummary} readingId="new-version" />
+      </StrictMode>,
+    );
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(oldSignal?.aborted).toBe(true);
+    await waitFor(() => expect(secondSummary).toHaveBeenCalledTimes(1));
+    expect(firstSummary).not.toHaveBeenCalled();
   });
 
   it.each([

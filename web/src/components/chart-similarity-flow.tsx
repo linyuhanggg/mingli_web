@@ -139,7 +139,7 @@ export function ChartSimilarityFlow() {
       {!loading && !error && profiles.length === 0 ? (
         <div className={styles.state}>
           <p>还没有可用的档案。请先建立并确认档案版本。</p>
-          <ButtonLink href="/account/profiles">去建档</ButtonLink>
+          <ButtonLink href="/account/profiles/new">去建档</ButtonLink>
         </div>
       ) : null}
 

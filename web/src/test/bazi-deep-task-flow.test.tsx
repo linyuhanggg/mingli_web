@@ -1,5 +1,6 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockPollReading = vi.hoisted(() => vi.fn());
@@ -45,17 +46,50 @@ vi.mock("@/components/readings/reading-result", () => ({
   ReadingResult: ({
     readingId,
     baziDeepFulfilled = false,
+    onPollError,
+    onSummary,
   }: {
     readingId: string;
     baziDeepFulfilled?: boolean;
-  }) => (
-    <div
-      data-bazi-deep-fulfilled={String(baziDeepFulfilled)}
-      data-testid={`reading-result-${readingId}`}
-    >
-      服务端结果 renderer
-    </div>
-  ),
+    onPollError?: (error: unknown) => void;
+    onSummary?: (summary: typeof previewSummary) => void;
+  }) => {
+    useEffect(() => {
+      let active = true;
+      let timer: ReturnType<typeof setTimeout> | null = null;
+
+      async function run() {
+        try {
+          const summary = await mockPollReading(readingId);
+          if (!active) return;
+          onSummary?.(summary);
+          const record = summary as Record<string, unknown>;
+          const terminal = ["accepted", "runtime_unknown", "terminal_stopped"]
+            .includes(String(record.status));
+          if (!terminal && record.poll_required !== false) {
+            timer = setTimeout(run, 2000);
+          }
+        } catch (error) {
+          if (active) onPollError?.(error);
+        }
+      }
+
+      void run();
+      return () => {
+        active = false;
+        if (timer) clearTimeout(timer);
+      };
+    }, [onPollError, onSummary, readingId]);
+
+    return (
+      <div
+        data-bazi-deep-fulfilled={String(baziDeepFulfilled)}
+        data-testid={`reading-result-${readingId}`}
+      >
+        服务端结果 renderer
+      </div>
+    );
+  },
 }));
 
 import {
@@ -174,6 +208,7 @@ describe("Bazi deep task state contract", () => {
     expect(stateForReadingStatus("input_ready", "deep")).toBe("awaiting_fulfillment");
     expect(stateForReadingStatus("prepared", "deep")).toBe("running");
     expect(stateForReadingStatus("completing", "deep")).toBe("running");
+    expect(stateForReadingStatus("delayed", "preview")).toBe("preview_loading");
     expect(stateForReadingStatus("accepted", "deep")).toBe("succeeded");
     expect(stateForReadingStatus("delayed", "deep")).toBe("failed");
     expect(stateForReadingStatus("terminal_stopped", "deep")).toBe("failed");
@@ -238,7 +273,7 @@ describe("Bazi deep task state contract", () => {
     });
 
     expect(screen.getByText("正在准备免费盘面")).toBeVisible();
-    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
     expect(mockPollReading).toHaveBeenCalledTimes(1);
 
     await act(async () => {
@@ -638,7 +673,7 @@ describe("guest bazi preview restore", () => {
     });
 
     expect(screen.getByText("正在准备免费盘面")).toBeVisible();
-    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
     expect(mockPollReading).toHaveBeenCalledTimes(1);
 
     await act(async () => {
