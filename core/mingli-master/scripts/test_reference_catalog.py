@@ -5,10 +5,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import subprocess
 import sys
+import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import mingli_pack
 import search_bm25
@@ -98,6 +101,60 @@ class ReferenceCatalogTests(unittest.TestCase):
     def test_search_consumers_emit_the_product_simplified_canonical(self) -> None:
         self.assertIn("阴阳", search_bm25.tokenize("陰陽"))
         self.assertEqual(mingli_pack.compact("  陰陽  亥夘未木合  "), "阴阳 亥卯未木合")
+
+    def test_regex_search_matches_the_canonical_view_of_real_l2460_text(self) -> None:
+        raw_line = (
+            "行合，即三合也。亥夘未木合，主繁宂驳杂；寅午戌火合，主侣党不正；"
+            "巳酉丑金合，主矫革离异；申子辰水合，主流动无滞。"
+        )
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            fulltext = root / "references/fulltext/san-shi/daliuren-daquan/fulltext.md"
+            fulltext.parent.mkdir(parents=True)
+            fulltext.write_text("\n" * 2459 + raw_line + "\n", encoding="utf-8")
+            raw_before_search = fulltext.read_bytes()
+
+            with patch.object(mingli_pack, "SKILL_ROOT", root):
+                hits = mingli_pack.search_file(
+                    fulltext,
+                    re.compile(mingli_pack.canonicalize("亥夘未木合")),
+                    context=0,
+                )
+
+            self.assertEqual(len(hits), 1)
+            self.assertTrue(
+                hits[0].startswith(
+                    "references/fulltext/san-shi/daliuren-daquan/fulltext.md:L2460: "
+                )
+            )
+            self.assertIn("亥卯未木合", hits[0])
+            self.assertEqual(fulltext.read_bytes(), raw_before_search)
+            self.assertIn("亥夘未木合", fulltext.read_text(encoding="utf-8"))
+
+    def test_regex_search_keeps_other_layers_and_no_hit_behavior(self) -> None:
+        with tempfile.TemporaryDirectory() as temp_dir:
+            root = Path(temp_dir)
+            index = root / "references/books/san-shi/daliuren-daquan/index.md"
+            index.parent.mkdir(parents=True)
+            index.write_text("# 陰陽五行\n\n普通索引行\n", encoding="utf-8")
+
+            with patch.object(mingli_pack, "SKILL_ROOT", root):
+                hits = mingli_pack.search_file(
+                    index,
+                    re.compile(mingli_pack.canonicalize(r"陰陽.*行")),
+                    context=0,
+                )
+                misses = mingli_pack.search_file(
+                    index,
+                    re.compile(mingli_pack.canonicalize("不存在的词")),
+                    context=0,
+                )
+
+            self.assertEqual(
+                hits,
+                ["references/books/san-shi/daliuren-daquan/index.md:L1: # 阴阳五行"],
+            )
+            self.assertEqual(misses, [])
 
     def test_generated_catalog_has_no_drift_and_renders_blocked_raw_status(self) -> None:
         completed = subprocess.run(

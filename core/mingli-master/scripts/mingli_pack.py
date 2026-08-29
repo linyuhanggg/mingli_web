@@ -95,7 +95,7 @@ def search_file(path: Path, pattern: re.Pattern[str], context: int) -> list[str]
     lines = path.read_text(encoding="utf-8", errors="ignore").splitlines()
     hits: list[str] = []
     for idx, line in enumerate(lines, start=1):
-        if pattern.search(line):
+        if pattern.search(canonicalize(line)):
             start = max(1, idx - context)
             end = min(len(lines), idx + context)
             snippet = " / ".join(compact(lines[i - 1]) for i in range(start, end + 1) if lines[i - 1].strip())
