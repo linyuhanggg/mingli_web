@@ -470,6 +470,42 @@ sys.stdout.write({json.dumps(wire_result, ensure_ascii=False)!r} + "\\n")
         assert result.to_dict() == expected.to_dict()
 
 
+async def test_process_adapter_rejects_non_finite_public_fact_value(
+    tmp_path: Path,
+) -> None:
+    fake_runtime = FakeMingliRuntimeAdapter()
+    intent = {
+        "subject_refs": ["fixture:subject"],
+        "object_id": "natal",
+        "dimension_ids": ["overview"],
+        "horizon": {"kind_id": "life", "start": None, "end": None},
+        "capability_id": "bazi",
+        "comparisons": [],
+    }
+    command = Prepare(
+        query="已有资料",
+        intent=intent,
+        facts={"fixture:subject": {"fixture_input": "present"}},
+    )
+    prepared = await fake_runtime.execute(command)
+    assert isinstance(prepared, Prepared)
+    wire_result = prepared.to_dict()
+    wire_result["brief"]["facts"][0]["value"] = {"nested": [float("nan")]}
+    launcher = _write_executable(
+        tmp_path / "runtime-fixture",
+        f"""#!/usr/bin/env python3
+import sys
+sys.stdin.buffer.read()
+sys.stdout.write({json.dumps(wire_result, ensure_ascii=False)!r} + "\\n")
+""",
+    )
+    state_root = tmp_path / "state"
+    state_root.mkdir()
+
+    with pytest.raises(RuntimeTransportError, match="runtime_invalid_result"):
+        await _adapter(launcher, state_root).execute(command)
+
+
 @pytest.mark.parametrize(
     "stdout",
     [
