@@ -99,16 +99,16 @@ class ProvisionRuntimeTests(unittest.TestCase):
             "sxtwl==2.0.7",
             "astronomy-engine==2.1.19",
             "cnlunar==0.2.4",
-            "zhconv==1.4.3",
+            "OpenCC==1.4.2",
         ):
             self.assertIn(requirement, text)
         self.assertIn(
             "c458b6d084f9b935061bc36216e8a69a7e293a2f1e68bf956dcd9e6cbcd143f5",
             text,
         )
-        self.assertEqual(text.count("--hash=sha256:"), 7)
+        self.assertEqual(text.count("--hash=sha256:"), 9)
         requirements_txt = lock.with_name("requirements.txt").read_text(encoding="utf-8")
-        self.assertIn("zhconv==1.4.3", requirements_txt.splitlines())
+        self.assertIn("OpenCC==1.4.2", requirements_txt.splitlines())
         build_lock = lock.with_name("requirements-runtime-build.lock")
         build_text = build_lock.read_text(encoding="utf-8")
         self.assertIn("setuptools==82.0.1", build_text)
@@ -161,7 +161,7 @@ class ProvisionRuntimeTests(unittest.TestCase):
                 b"0" * 64,
                 approved_bytes,
             )
-            self.assertEqual(replaced, 7)
+            self.assertEqual(replaced, 9)
             replacement = root / "tampered-runtime.lock"
             replacement.write_bytes(tampered)
             observed: dict[str, object] = {}
@@ -276,7 +276,7 @@ class ProvisionRuntimeTests(unittest.TestCase):
                 "0" * 64,
                 provision_runtime.DEFAULT_REQUIREMENTS.read_text(encoding="utf-8"),
             )
-            self.assertEqual(replaced, 7)
+            self.assertEqual(replaced, 9)
             requirements.write_text(tampered, encoding="utf-8")
             executable = provision_runtime.runtime_python(root / "venv")
             executable.parent.mkdir(parents=True)
