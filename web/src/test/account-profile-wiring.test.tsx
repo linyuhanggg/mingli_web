@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import AccountProfilesPage from "@/app/account/profiles/page";
 import AccountProfileDetailPage from "@/app/account/profiles/[profileId]/page";
+import AccountNewProfilePage from "@/app/account/profiles/new/page";
 import { ApiError } from "@/lib/api";
 
 const api = vi.hoisted(() => ({
@@ -66,6 +67,21 @@ describe("account profile route wiring", () => {
     expect(api.listProfiles).not.toHaveBeenCalled();
   });
 
+  it("keeps the canonical new-profile route private and renders the form after login", async () => {
+    const signedOut = render(<AccountNewProfilePage />);
+
+    expect(await screen.findByRole("status", { name: "需要登录" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "建立命理档案" })).not.toBeInTheDocument();
+
+    signedOut.unmount();
+    api.getAccount.mockResolvedValue(account);
+    render(<AccountNewProfilePage />);
+
+    expect(await screen.findByRole("heading", { level: 1, name: "新建档案" })).toBeVisible();
+    expect(screen.getByRole("heading", { level: 2, name: "建立命理档案" })).toBeVisible();
+    expect(screen.getByLabelText("档案名称（可选）")).toBeEnabled();
+  });
+
   it("shows immutable server-returned profile versions after login", async () => {
     api.getAccount.mockResolvedValue(account);
     api.listProfiles.mockResolvedValue({
@@ -86,7 +102,7 @@ describe("account profile route wiring", () => {
     expect(screen.getByText(/档案 3/)).toBeVisible();
     expect(screen.getByRole("link", { name: "新建档案版本" })).toHaveAttribute(
       "href",
-      "/app/profile/new",
+      "/account/profiles/new",
     );
   });
 

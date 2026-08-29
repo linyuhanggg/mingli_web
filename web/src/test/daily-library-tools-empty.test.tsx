@@ -163,13 +163,13 @@ describe("library / tools product shell", () => {
 });
 
 describe("opened tools 去建档", () => {
-  it("sends 去建档 to /account/profiles on an opened tool", async () => {
+  it("sends 去建档 to /account/profiles/new on an opened tool", async () => {
     const page = await ToolDetailPage({ params: Promise.resolve({ tool: "time-check" }) });
     render(page);
 
     expect(await screen.findByRole("link", { name: "去建档" })).toHaveAttribute(
       "href",
-      "/account/profiles",
+      "/account/profiles/new",
     );
     expect(screen.queryByRole("link", { name: "去建档" })).not.toHaveAttribute(
       "href",
@@ -185,7 +185,7 @@ describe("opened tools 去建档", () => {
       "src/components/five-elements-facts-flow.tsx",
     ]) {
       const source = readFileSync(resolve(process.cwd(), file), "utf8");
-      expect(source, file).toContain('href="/account/profiles">去建档');
+      expect(source, file).toContain('href="/account/profiles/new">去建档');
       expect(source, file).not.toContain('href="/app/profile/new">去建档');
     }
   });

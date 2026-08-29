@@ -378,17 +378,21 @@ export async function startMeihuaReading(
 
 export async function pollReading(
   readingVersionId: string,
+  signal?: AbortSignal,
 ): Promise<ReadingVersionSummary> {
   return requestJson<ReadingVersionSummary>(
     `/api/v1/readings/${encodeURIComponent(readingVersionId)}`,
+    { signal },
   );
 }
 
 export async function getReadingResult(
   readingVersionId: string,
+  signal?: AbortSignal,
 ): Promise<ReadingResultResponse> {
   const result = await requestJson<ReadingResultResponse>(
     `/api/v1/readings/${encodeURIComponent(readingVersionId)}/result`,
+    { signal },
   );
   return {
     ...result,

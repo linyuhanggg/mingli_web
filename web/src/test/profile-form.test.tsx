@@ -161,7 +161,7 @@ describe("ProfileForm", () => {
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     await waitFor(() =>
-      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+      expect(routerPush).toHaveBeenCalledWith("/account/profiles?created=1"),
     );
     expect(api.createProfileDraft).toHaveBeenCalledWith(undefined);
     expect(api.confirmProfileDraft).toHaveBeenCalledWith(
@@ -199,7 +199,7 @@ describe("ProfileForm", () => {
     await user.click(screen.getByRole("button", { name: "重试确认" }));
 
     await waitFor(() =>
-      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+      expect(routerPush).toHaveBeenCalledWith("/account/profiles?created=1"),
     );
     expect(api.createProfileDraft).toHaveBeenCalledTimes(1);
     expect(api.confirmProfileDraft).toHaveBeenCalledTimes(2);
@@ -244,7 +244,7 @@ describe("ProfileForm", () => {
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     await waitFor(() =>
-      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+      expect(routerPush).toHaveBeenCalledWith("/account/profiles?created=1"),
     );
     expect(api.discardProfileDraft).toHaveBeenCalledWith(
       "55555555-5555-4555-8555-555555555555",
@@ -362,7 +362,7 @@ describe("ProfileForm", () => {
     expect(routerPush).toHaveBeenCalledWith(
       "/account/profiles/11111111-1111-4111-8111-111111111111?version=22222222-2222-4222-8222-222222222222",
     );
-    expect(routerPush).not.toHaveBeenCalledWith("/app/profiles?created=1");
+    expect(routerPush).not.toHaveBeenCalledWith("/account/profiles?created=1");
     expect(api.discardProfileDraft).not.toHaveBeenCalled();
   });
 
