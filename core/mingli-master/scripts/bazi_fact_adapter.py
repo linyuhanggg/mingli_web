@@ -1533,20 +1533,6 @@ class BaziEngineAdapter(
             time_basis="not_applicable",
         )
 
-    def bind_canonical_facts(
-        self,
-        request: BaziNormalizedEngineRequest,
-        payload: dict[str, Any],
-    ) -> EngineAdapterResult[BaziCanonicalFacts]:
-        """Bind facts already returned by the private Runtime subprocess."""
-
-        provenance = self._provenance(request)
-        facts = BaziFactContract().bind_canonical_facts(payload, provenance)
-        return EngineAdapterResult(
-            canonical_facts=facts,
-            provenance=provenance,
-        )
-
 
 def build_from_pillars(
     values: list[str],
@@ -1620,7 +1606,11 @@ def _extension_branch_relations(
     four_pillars: dict[str, str],
 ) -> list[dict[str, str]]:
     relations: list[dict[str, str]] = []
-    for position, pillar in four_pillars.items():
+    # The retired JSON subprocess sorted object keys before the Provider read
+    # them.  Keep that public relation order stable when Canonical Facts now
+    # arrive directly from the in-process Engine Adapter.
+    for position in sorted(four_pillars):
+        pillar = four_pillars[position]
         natal_branch = pillar[1]
         pair = {branch, natal_branch}
         for label, patterns in PAIR_RELATIONS.items():
