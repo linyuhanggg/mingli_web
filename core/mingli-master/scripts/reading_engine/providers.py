@@ -24,6 +24,7 @@ import near_time_fortune_adapter
 import reading_evidence_bundle
 import reading_source_plan
 import ziwei_fact_adapter
+from fact_contracts.bazi import BaziFactContract
 from runtime_python import runtime_command
 
 from .contracts import (
@@ -3208,16 +3209,10 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
             "coordinate_accuracy_meters": args.coordinate_accuracy_meters,
             "time_basis_policy": args.time_basis_policy,
         }
-        facts = bazi_calc._run_adapter(self.skill_dir, args)
-        facts.setdefault("adapter", {})["generated_at"] = (
-            "deterministic-chart-identity"
-        )
-        bazi_calc._validate_facts(self.skill_dir, facts)
-        calendar = facts.get("calendar_normalization")
-        if isinstance(calendar, Mapping):
-            facts["public_calendar_normalization"] = _public_calendar_normalization(
-                calendar
-            )
+        question_contract = {
+            "domains": list(args.reasoning_domains),
+            "gender": args.gender,
+        }
         if args.mode == "birth":
             engine_request: (
                 bazi_fact_adapter.BaziBirthEngineRequest
@@ -3238,6 +3233,7 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
                 coordinate_source=args.coordinate_source,
                 coordinate_accuracy_meters=args.coordinate_accuracy_meters,
                 time_basis_policy=str(args.time_basis_policy),
+                question_contract=question_contract,
             )
         else:
             engine_request = bazi_fact_adapter.BaziPillarsEngineRequest(
@@ -3245,12 +3241,31 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
                 gender=args.gender,
                 source=str(args.source),
                 source_ref=args.source_ref,
+                question_contract=question_contract,
             )
-        facts = (
-            bazi_fact_adapter.BaziEngineAdapter()
-            .bind_canonical_facts(engine_request, facts)
-            .canonical_facts.to_payload()
+        engine_adapter = bazi_fact_adapter.BaziEngineAdapter()
+        try:
+            engine_result = engine_adapter.adapt(engine_request)
+        except ValueError as exc:
+            raise RuntimeError(str(exc)) from None
+        facts = engine_result.canonical_facts.to_payload()
+        if facts.get("conflicts"):
+            raise RuntimeError(
+                "Bazi birth data conflict with the supplied four pillars"
+            )
+        facts.setdefault("adapter", {})["generated_at"] = (
+            "deterministic-chart-identity"
         )
+        bazi_calc._validate_facts(self.skill_dir, facts)
+        calendar = facts.get("calendar_normalization")
+        if isinstance(calendar, Mapping):
+            facts["public_calendar_normalization"] = _public_calendar_normalization(
+                calendar
+            )
+        facts = BaziFactContract().bind_canonical_facts(
+            facts,
+            engine_result.provenance,
+        ).to_payload()
         calendar_digest = _bound_calendar_digest(facts)
         result_facts = {
             "chart_digest": _chart_digest(facts),
