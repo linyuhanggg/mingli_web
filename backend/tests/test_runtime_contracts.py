@@ -3,6 +3,7 @@ import json
 import os
 import subprocess
 import sys
+import traceback
 from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
@@ -606,6 +607,7 @@ def test_prepared_brief_rejects_private_provider_payload_without_echoing_it(
         contracts.result_from_dict(payload)
 
     assert private_value not in str(caught.value)
+    assert private_value not in "".join(traceback.format_exception(caught.value))
 
 
 def test_prepared_brief_rejects_private_provider_data_from_finding() -> None:
@@ -634,6 +636,124 @@ def test_prepared_brief_rejects_private_provider_data_from_finding() -> None:
         contracts.result_from_dict(payload)
 
     assert private_value not in str(caught.value)
+    assert private_value not in "".join(traceback.format_exception(caught.value))
+
+
+@pytest.mark.parametrize(
+    ("collection", "field", "non_finite"),
+    [
+        ("facts", "value", float("nan")),
+        ("findings", "data", float("inf")),
+    ],
+    ids=("fact-nan", "finding-infinity"),
+)
+def test_prepared_brief_rejects_non_finite_public_json_values(
+    collection: str,
+    field: str,
+    non_finite: float,
+) -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    payload = {
+        "kind": "prepared",
+        "state_token": "fake-opaque-state",
+        "brief": brief_payload(),
+    }
+    item = (
+        {
+            "ref": "fact:profile-version:test/calculated/bazi/four_pillars",
+            "subject_ref": "profile-version:test",
+            "kind_id": "kind.fact",
+            "value": {"nested": [non_finite]},
+            "display_text": "四柱已由 Runtime 计算。",
+        }
+        if field == "value"
+        else {
+            "ref": "finding:profile-version:test/bazi/overview",
+            "subject_ref": "profile-version:test",
+            "dimension_ids": ["overview"],
+            "kind_id": "kind.structure",
+            "data": {"nested": [non_finite]},
+            "fact_refs": [],
+            "evidence_refs": [],
+            "limit_kind_ids": [],
+            "support_mode": "shared_turn",
+        }
+    )
+    payload["brief"][collection] = [item]
+
+    with pytest.raises(contracts.ContractValidationError):
+        contracts.result_from_dict(payload)
+
+
+def test_prepared_brief_accepts_public_fengshui_raw_degrees(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.syspath_prepend(str(MINGLI_CORE_SCRIPTS))
+    fengshui = importlib.import_module("reading_engine.fengshui")
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    normalized = fengshui.normalize_compass_measurements(
+        [
+            {
+                "measurement_id": "door-axis",
+                "facing_degrees": 359.0,
+                "method": "handheld_compass",
+                "north_reference": "magnetic",
+                "correction_degrees": 2.0,
+                "uncertainty_degrees": 0.25,
+                "quality": "good",
+                "source_type": "user_measurement",
+                "source_ref": "front-door",
+            }
+        ]
+    )
+    projected = fengshui.public_projection({"compass": normalized})
+    payload = {
+        "kind": "prepared",
+        "state_token": "fake-opaque-state",
+        "brief": brief_payload(),
+    }
+    payload["brief"]["facts"] = [
+        {
+            "ref": "fact:profile-version:test/calculated/fengshui/compass",
+            "subject_ref": "profile-version:test",
+            "kind_id": "kind.fact",
+            "value": projected,
+            "display_text": "罗盘测量已归一化。",
+        }
+    ]
+
+    prepared = contracts.result_from_dict(payload)
+
+    public_value = prepared.to_dict()["brief"]["facts"][0]["value"]
+    assert public_value == projected
+    assert public_value["compass"]["measurements"][0]["raw_degrees"] == 359.0
+
+
+def test_prepared_brief_accepts_public_engine_identity_fields() -> None:
+    contracts = importlib.import_module("app.readings.runtime_contracts")
+    payload = {
+        "kind": "prepared",
+        "state_token": "fake-opaque-state",
+        "brief": brief_payload(),
+    }
+    public_identity = {
+        "engine_id": "fengshui",
+        "engine_version": "v53",
+        "engine_contract": "mingli-portable-interface-v2",
+    }
+    payload["brief"]["facts"] = [
+        {
+            "ref": "fact:profile-version:test/calculated/fengshui/engine",
+            "subject_ref": "profile-version:test",
+            "kind_id": "kind.fact",
+            "value": public_identity,
+            "display_text": "公开引擎身份。",
+        }
+    ]
+
+    prepared = contracts.result_from_dict(payload)
+
+    assert prepared.to_dict()["brief"]["facts"][0]["value"] == public_identity
 
 
 def test_prepared_brief_is_deeply_immutable() -> None:
