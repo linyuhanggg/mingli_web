@@ -32,6 +32,7 @@ def _mini_repo(tmp_path: Path, script: Path) -> tuple[Path, Path, Path, Path]:
     script_dir.mkdir(parents=True)
     shutil.copy2(script, script_dir / script.name)
     (repo / "backend").mkdir()
+    (repo / "backend" / "tracked.py").write_text("before\n", encoding="utf-8")
     (repo / "web").mkdir()
     (repo / "admin").mkdir()
 
@@ -276,8 +277,37 @@ def _start_harness(
     *,
     twice: bool,
     checkout_change: bool = False,
+    backend_dirty_change: bool = False,
 ) -> str:
-    if checkout_change:
+    if backend_dirty_change:
+        run_sequence = textwrap.dedent(
+            """
+            sleep 60 &
+            unrelated_pid=$!
+            start_main
+            for service in api worker web admin; do
+              sed -n '1p' "$PID_DIR/$service.pid" >"$STUB_STATE/$service.clean.pid"
+            done
+            printf '# tracked Backend change\n' >>backend/tracked.py
+            start_main
+            for service in api worker; do
+              old_pid="$(cat "$STUB_STATE/$service.clean.pid")"
+              new_pid="$(sed -n '1p' "$PID_DIR/$service.pid")"
+              test "$old_pid" != "$new_pid"
+              ! process_matches "$old_pid" "fateradar-cloud-agent-$service"
+            done
+            for service in web admin; do
+              old_pid="$(cat "$STUB_STATE/$service.clean.pid")"
+              new_pid="$(sed -n '1p' "$PID_DIR/$service.pid")"
+              test "$old_pid" = "$new_pid"
+            done
+            kill -0 "$unrelated_pid"
+            kill "$unrelated_pid"
+            wait "$unrelated_pid" 2>/dev/null || true
+            unrelated_pid=
+            """
+        ).strip()
+    elif checkout_change:
         run_sequence = textwrap.dedent(
             """
             sleep 60 &
@@ -589,6 +619,61 @@ def test_start_restarts_each_managed_service_once_after_checkout_change(
             .splitlines()
         )
         assert pid_state[1] == sha_b
+
+
+def test_start_restarts_only_api_and_worker_for_tracked_backend_changes(
+    tmp_path: Path,
+) -> None:
+    repo, _home, pg_bin, env = _start_fixture(tmp_path)
+    harness = _start_harness(
+        repo,
+        pg_bin,
+        twice=False,
+        backend_dirty_change=True,
+    )
+    completed = subprocess.run(
+        ["bash", "-c", harness],
+        cwd=repo,
+        env=env,
+        text=True,
+        capture_output=True,
+        timeout=20,
+        check=False,
+    )
+    assert completed.returncode == 0, completed.stdout + completed.stderr
+
+    checkout_sha = subprocess.run(
+        ["git", "-C", str(repo), "rev-parse", "HEAD"],
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout.strip()
+    assert subprocess.run(
+        [
+            "git",
+            "-C",
+            str(repo),
+            "status",
+            "--porcelain",
+            "--untracked-files=no",
+            "--",
+            "backend",
+        ],
+        check=True,
+        text=True,
+        capture_output=True,
+    ).stdout
+    launches = (tmp_path / "state" / "launches.log").read_text(encoding="utf-8").splitlines()
+    assert launches == ["api", "worker", "web", "admin", "api", "worker"]
+    launch_checkouts = (
+        (tmp_path / "state" / "launch-checkouts.log").read_text(encoding="utf-8").splitlines()
+    )
+    assert launch_checkouts == [
+        *(f"{service} {checkout_sha}" for service in ("api", "worker", "web", "admin")),
+        f"api {checkout_sha}",
+        f"worker {checkout_sha}",
+    ]
+    assert completed.stdout.count("already running as PID") == 2
 
 
 @pytest.mark.parametrize("failed_service", ["api", "worker", "web", "admin"])
