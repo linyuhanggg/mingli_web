@@ -15,6 +15,8 @@ from typing import Any
 
 import yaml
 
+from simplified_canonical import canonicalize
+
 
 ROOT = Path(__file__).resolve().parents[1]
 CATALOG = ROOT / "references" / "catalog" / "catalog.json"
@@ -40,7 +42,7 @@ CLASSICAL_EVIDENCE_BINDINGS = (
 # index is admitted only when both build-time and runtime code pin this exact
 # independently audited manifest.
 CLASSICAL_EVIDENCE_BINDINGS_SHA256 = (
-    "73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d"
+    "75a19665334f6976424fce62fb5f869d9a7745b85039ed25302c099fe1c8fb89"
 )
 SCOPE_BINDING_PACK_PREFIXES = {
     "bazi": ("bazi/",),
@@ -199,6 +201,8 @@ def _validate_classical_source(source: Any, *, rule_id: str) -> dict[str, Any]:
     quote_sha256 = str(normalized.get("verbatim_quote_sha256") or "")
     if quote_sha256 != hashlib.sha256(quote.encode("utf-8")).hexdigest():
         raise ValueError(f"classical source quote hash mismatch: {rule_id}")
+    if quote != canonicalize(quote):
+        raise ValueError(f"classical source quote is not simplified canonical: {rule_id}")
     return normalized
 
 
@@ -337,7 +341,7 @@ def _verify_research_source_if_present(
     lines = resolved.read_text(encoding="utf-8", errors="strict").splitlines()
     if end > len(lines):
         raise ValueError(f"classical source anchor exceeds artifact: {relative}")
-    excerpt = "\n".join(lines[start - 1 : end])
+    excerpt = canonicalize("\n".join(lines[start - 1 : end]))
     if str(source["verbatim_quote"]) not in excerpt:
         raise ValueError(f"classical source quote is outside anchor: {relative}")
 
@@ -739,7 +743,7 @@ def validate_source_bound_record(
         )[local_id]
     except KeyError as exc:
         raise ValueError(f"evidence rule is absent from source: {rule_id}") from exc
-    if str(record.get("quote") or "") != binding["quote"]:
+    if str(record.get("quote") or "") != canonicalize(str(binding["quote"])):
         raise ValueError(f"evidence quote does not match source: {rule_id}")
     if str(record.get("source_anchor") or "") != binding["source_anchor"]:
         raise ValueError(f"evidence source anchor mismatch: {rule_id}")
@@ -1083,8 +1087,8 @@ def _compile_rule(
         source_binding = _rule_source_binding(raw, path)
     except _MissingSourceQuote:
         return None
-    quote = str(source_binding["quote"])
-    chapter = _first(fields, "source_chapter", "chapter", "section")
+    quote = canonicalize(str(source_binding["quote"]))
+    chapter = canonicalize(_first(fields, "source_chapter", "chapter", "section"))
     anchor = str(source_binding["source_anchor"])
     applicable = _first(
         fields,
@@ -1097,7 +1101,7 @@ def _compile_rule(
     if any(marker.casefold() in metadata_probe for marker in NON_SUBSTANTIVE_MARKERS):
         return None
     topics = tuple(
-        value
+        canonicalize(value)
         for value in dict.fromkeys(
             filter(
                 None,
@@ -1151,11 +1155,11 @@ def _compile_rule(
         "local_rule_id": raw.local_id,
         "system": _canonical_system(pack, str(item["system"])),
         "source_pack": pack,
-        "source_title": str(item["title"]),
+        "source_title": canonicalize(str(item["title"])),
         "source_layer": _first(fields, "source_layer")
         or str(item.get("source_layer") or "unspecified"),
         "chapter": chapter,
-        "title": raw.title,
+        "title": canonicalize(raw.title),
         "quote": quote,
         "source_anchor": anchor,
         "source_path": relative,

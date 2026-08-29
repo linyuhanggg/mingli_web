@@ -20,13 +20,13 @@ from pathlib import Path
 
 ENV_NAME = "MINGLI_PYTHON"
 MINIMUM_VERSION = (3, 10)
-REQUIRED_MODULES = ("yaml", "sxtwl", "astronomy", "cnlunar", "zhconv")
+REQUIRED_MODULES = ("yaml", "sxtwl", "astronomy", "cnlunar", "opencc")
 PINNED_VERSIONS = {
     "yaml": "6.0.3",
     "sxtwl": "2.0.7",
     "astronomy": "2.1.19",
     "cnlunar": "0.2.4",
-    "zhconv": "1.4.3",
+    "opencc": "1.4.2",
 }
 PROBE_MARKER = "mingli-runtime-v1"
 ROOT = Path(__file__).resolve().parents[1]
@@ -48,7 +48,7 @@ REQUIRED_DISTRIBUTIONS = {
     "sxtwl": "2.0.7",
     "astronomy_engine": "2.1.19",
     "cnlunar": "0.2.4",
-    "zhconv": "1.4.3",
+    "opencc": "1.4.2",
 }
 LOCKED_REQUIREMENT_PATTERN = re.compile(
     r"^([A-Za-z0-9][A-Za-z0-9._-]*)==([^\s\\]+)(?:\s+(.+))?$"
@@ -388,11 +388,12 @@ def current_runtime_identity() -> dict[str, object]:
 
     import astronomy
     import cnlunar
+    import opencc
     import sxtwl
     import yaml
-    import zhconv
 
     lunar = cnlunar.Lunar(datetime(2024, 2, 10, 12))
+    opencc_t2s = opencc.OpenCC("t2s").convert("漢字與軟體")
     package_root = Path(cnlunar.__file__).resolve().parent
     reviewed_files: dict[str, str] = {}
     for relative in CNLUNAR_REVIEWED_FILES:
@@ -400,7 +401,7 @@ def current_runtime_identity() -> dict[str, object]:
         if installed.parent != package_root or not installed.is_file():
             raise RuntimeError(f"cnlunar reviewed runtime file is missing: {relative}")
         reviewed_files[relative] = hashlib.sha256(installed.read_bytes()).hexdigest()
-    modules = (astronomy, cnlunar, yaml, sxtwl, zhconv)
+    modules = (astronomy, cnlunar, opencc, yaml, sxtwl)
     return {
         "marker": PROBE_MARKER,
         "python": list(sys.version_info[:3]),
@@ -408,7 +409,7 @@ def current_runtime_identity() -> dict[str, object]:
         "sxtwl": importlib.metadata.version("sxtwl"),
         "astronomy": importlib.metadata.version("astronomy-engine"),
         "cnlunar": importlib.metadata.version("cnlunar"),
-        "zhconv": importlib.metadata.version("zhconv"),
+        "opencc": importlib.metadata.version("OpenCC"),
         "origins": {
             module.__name__: str(Path(module.__file__).resolve()) for module in modules
         },
@@ -422,6 +423,7 @@ def current_runtime_identity() -> dict[str, object]:
             lunar.month8Char,
             lunar.day8Char,
         ],
+        "opencc_t2s_known_answer": opencc_t2s,
         "cnlunar_reviewed_files": reviewed_files,
     }
 
@@ -457,7 +459,8 @@ def validate_runtime_identity(
     origins = result.get("origins")
     origins_are_isolated = (
         isinstance(origins, dict)
-        and set(origins) == {"astronomy", "cnlunar", "yaml", "sxtwl", "zhconv"}
+        and set(origins)
+        == {"astronomy", "cnlunar", "opencc", "yaml", "sxtwl"}
         and all(root.name in {"site-packages", "dist-packages"} for root in resolved_site_roots)
         and all(root.is_relative_to(prefix) for root in resolved_site_roots)
         and all(
@@ -469,6 +472,7 @@ def validate_runtime_identity(
         not origins_are_isolated
         or result.get("cnlunar_known_answer")
         != [2024, 1, 1, "甲辰", "丙寅", "甲辰"]
+        or result.get("opencc_t2s_known_answer") != "汉字与软体"
     ):
         raise RuntimeError(f"{ENV_NAME} failed isolated runtime identity checks")
     expected_hashes = load_cnlunar_reviewed_hashes(provenance_path)

@@ -4,31 +4,31 @@
 
 | id | quote | chapter | source_url | verified |
 |---|---|---|---|---|
-| ZW-Q0001 | ## 紫微斗數全書卷一 | sec-0001-sec-0001 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L98 | true |
-| ZW-Q0002 | 嘗聞命之理微，鮮有知之真而順受之者，余謂功名富貴，有命存焉，遂捐厥職，訪道學者，以為之宗，行抵華山下，詢知希夷公，曾得道於茲矣。因陟其巔，謁其祠，將返，見一道者，年須弱冠，態度老誠，遂 | sec-0002-sec-0002 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L102 | true |
-| ZW-Q0003 | 斗數至玄至微，理旨難明，雖設問於百篇之中，猶有言而未盡，至如星之分野，各有所屬，壽夭賢愚，富貴貧賤，不可一概論議。 | sec-0003-sec-0003 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L108 | true |
-| ZW-Q0004 | 原夫紫微帝座，生為厚重之容。天府尊星，也作純和之體。 | sec-0004-sec-0004 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L159 | true |
-| ZW-Q0005 | 紫微帝座以輔弼為佐，貳作數中之主星乃有用之源流。是以南北二斗集而成數，為萬物之靈。 | sec-0005-sec-0005 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L194 | true |
-| ZW-Q0006 | 命居生旺定富貴，各有所宜。身坐空亡論榮枯，專求其要。 | sec-0006-sec-0006 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L205 | true |
-| ZW-Q0007 | 白玉蟾先生曰觀天斗數與五星不同，按此星辰與諸術大異。 | sec-0007-sec-0007 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L221 | true |
-| ZW-Q0008 | 諸星吉多逢凶也吉，諸星惡多逢吉也凶。 | sec-0008-sec-0008 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L244 | true |
-| ZW-Q0009 | 前後兩凶神為兩鄰，加會尚可撐持，同室與謀最難堤防。 | sec-0009-sec-0009 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L267 | true |
-| ZW-Q0010 | ### 諸星問答論 | sec-0010-sec-0010 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L302 | true |
-| ZW-Q0011 | 答曰：紫微屬土，乃中天之尊星為帝座，主掌造化樞機，人生主宰。仗五行育萬物，以人命為之立定數。 | sec-0011-sec-0011 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L306 | true |
-| ZW-Q0012 | 答曰：天機屬木，南斗第三益算之善星也。後化氣曰善，又得地合之行事，解諸星之順逆。定數於人命，逢諸吉咸集，則萬事皆善。勤於禮佛，敬乎六親，利於林泉，宜於僧道。無惡虐不仁之心，有靈機應 | sec-0012-sec-0012 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L340 | true |
-| ZW-Q0013 | 答曰：太陽星屬火，日之精也。乃造化之表儀，在數主人有貴氣，能為文為武。諸吉集則降禎祥，處黑星則勞心費力。若隨身命之中，居於廟樂之地。為數中之至曜，乃官祿之樞機。後化貴化祿，最宜在 | sec-0013-sec-0013 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L355 | true |
-| ZW-Q0014 | 答曰：武曲北斗第六星，屬金，乃財帛宮主。與天府同宮有壽，其施權於十二宮分，其臨地有廟、旺、陷宮。主於人，性剛果決，有喜有怒，可福可災。若陷囚會於震宮，必為破主淹留之舉。與祿馬交馳，發財 | sec-0014-sec-0014 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L369 | true |
-| ZW-Q0015 | 答曰：天同星屬水，乃南方第四星也，為福德宮之主宰。復云：化福最喜遇吉曜，助福添祥，為人廉潔，貌稟清奇。有機樞無亢激，不怕七殺相侵，不怕諸殺同纏。限若逢之，一生得地，十二宮中皆曰福，無 | sec-0015-sec-0015 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L374 | true |
-| ZW-Q0016 | 答曰：廉貞屬火，北斗第五星也。在斗司品秩，在數司權令。不臨廟旺，更犯官符，故曰化囚為殺。觸之不可解其禍，逢之不可測其祥。主人心狠性狂，不習禮義。逢帝座執威權，遇祿存主富貴，遇文昌好 | sec-0016-sec-0016 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L379 | true |
-| ZW-Q0017 | 答曰：天府屬土，南斗主令第一星也。為財帛之主宰，在斗司福權之宿，會吉皆為富貴之基，定作文昌之論。 | sec-0017-sec-0017 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L387 | true |
-| ZW-Q0018 | 答曰：太陰乃水之精，為田宅主，化富，與日為配。天儀表有上弦下弦之用，黃到黑到分勢尚好，虧數定廟樂。其為人也聰明俊秀，其稟性也端雅純祥。上弦為要之機，下弦減威之論。所值不以所見無 | sec-0018-sec-0018 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L396 | true |
-| ZW-Q0019 | 答曰：貪狼北斗解厄之神，第一星也。屬水，化氣為桃花，為標準，乃主禍福之神。受善惡定奸詐瞞人，授學神仙之術。又好高吟浮蕩，作巧成拙。入廟樂之宮，可為祥可為禍。會破軍迷花戀酒而喪命，同 | sec-0019-sec-0019 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L401 | true |
-| ZW-Q0020 | 答曰：巨門屬水、金。北斗第二星也，為陰精之星，化氣為暗。在身命一生招口舌之非；在兄弟則骨肉參商；在夫妻主於隔角，生離死別，縱夫妻有對，不免汙名失節；在子息損後方招，雖有而無；在財帛 | sec-0020-sec-0020 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L406 | true |
-| ZW-Q0021 | 答曰：天相屬水，南斗第五星也。為司爵之宿，為福善，化氣曰印，是為官祿文星，佐帝之位。若人命逢之，言語誠實，事不虛偽。見人難，有惻隱之心；見人惡，抱不平之氣。官祿得之則顯榮，帝座合之則爭 | sec-0021-sec-0021 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L411 | true |
-| ZW-Q0022 | 答曰：天梁屬土，南斗第二星也。司壽化氣為蔭為福壽，乃父母之主命化暴戾為祥和。於人命則性情磊落，於相貌則厚重溫謙，循直無私。臨事果決，蔭於身福及子孫。遇昌曲於財宮，逢太陽於福德 | sec-0022-sec-0022 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L421 | true |
-| ZW-Q0023 | 答曰：七殺南斗第六星也，屬火、金。乃斗中之上將，實成敗之孤辰。在斗司斗柄，主於風憲。其威作金之靈，其性若清涼之狀。主於數則宜僧道，主於身定歷艱辛。在命宮若限不扶夭折，在官祿得地，化 | sec-0023-sec-0023 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L432 | true |
-| ZW-Q0024 | 答曰：破軍屬水，北斗第七星也，司夫妻、子息、奴僕之神。居子午入廟，在天為殺氣，在數為耗星，故化氣曰耗。主人暴凶狡詐，其性奸猾，與人寡合，動輒損人。不成人之善，善助人之惡。虐視六親如寇讎， | sec-0024-sec-0024 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L442 | true |
-| ZW-Q0025 | 答曰：文昌主科甲，守身命主人幽閑儒雅，清秀魁梧，博文廣記，機變異常，一舉成名，披緋衣紫，福壽雙全。縱四殺沖破不為下賤。女人加吉得地，衣祿充足。四殺沖破，偏房下賤，僧道宜之。加權祿厚重 | sec-0025-sec-0025 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L446 | true |
+| ZW-Q0001 | ## 紫微斗数全书卷一 | sec-0001-sec-0001 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L98 | true |
+| ZW-Q0002 | 尝闻命之理微，鲜有知之真而顺受之者，余谓功名富贵，有命存焉，遂捐厥职，访道学者，以为之宗，行抵华山下，询知希夷公，曾得道于兹矣。因陟其巅，谒其祠，将返，见一道者，年须弱冠，态度老诚，遂 | sec-0002-sec-0002 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L102 | true |
+| ZW-Q0003 | 斗数至玄至微，理旨难明，虽设问于百篇之中，犹有言而未尽，至如星之分野，各有所属，寿夭贤愚，富贵贫贱，不可一概论议。 | sec-0003-sec-0003 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L108 | true |
+| ZW-Q0004 | 原夫紫微帝座，生为厚重之容。天府尊星，也作纯和之体。 | sec-0004-sec-0004 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L159 | true |
+| ZW-Q0005 | 紫微帝座以辅弼为佐，贰作数中之主星乃有用之源流。是以南北二斗集而成数，为万物之灵。 | sec-0005-sec-0005 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L194 | true |
+| ZW-Q0006 | 命居生旺定富贵，各有所宜。身坐空亡论荣枯，专求其要。 | sec-0006-sec-0006 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L205 | true |
+| ZW-Q0007 | 白玉蟾先生曰观天斗数与五星不同，按此星辰与诸术大异。 | sec-0007-sec-0007 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L221 | true |
+| ZW-Q0008 | 诸星吉多逢凶也吉，诸星恶多逢吉也凶。 | sec-0008-sec-0008 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L244 | true |
+| ZW-Q0009 | 前后两凶神为两邻，加会尚可撑持，同室与谋最难堤防。 | sec-0009-sec-0009 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L267 | true |
+| ZW-Q0010 | ### 诸星问答论 | sec-0010-sec-0010 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L302 | true |
+| ZW-Q0011 | 答曰：紫微属土，乃中天之尊星为帝座，主掌造化枢机，人生主宰。仗五行育万物，以人命为之立定数。 | sec-0011-sec-0011 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L306 | true |
+| ZW-Q0012 | 答曰：天机属木，南斗第三益算之善星也。后化气曰善，又得地合之行事，解诸星之顺逆。定数于人命，逢诸吉咸集，则万事皆善。勤于礼佛，敬乎六亲，利于林泉，宜于僧道。无恶虐不仁之心，有灵机应 | sec-0012-sec-0012 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L340 | true |
+| ZW-Q0013 | 答曰：太阳星属火，日之精也。乃造化之表仪，在数主人有贵气，能为文为武。诸吉集则降祯祥，处黑星则劳心费力。若随身命之中，居于庙乐之地。为数中之至曜，乃官禄之枢机。后化贵化禄，最宜在 | sec-0013-sec-0013 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L355 | true |
+| ZW-Q0014 | 答曰：武曲北斗第六星，属金，乃财帛宫主。与天府同宫有寿，其施权于十二宫分，其临地有庙、旺、陷宫。主于人，性刚果决，有喜有怒，可福可灾。若陷囚会于震宫，必为破主淹留之举。与禄马交驰，发财 | sec-0014-sec-0014 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L369 | true |
+| ZW-Q0015 | 答曰：天同星属水，乃南方第四星也，为福德宫之主宰。复云：化福最喜遇吉曜，助福添祥，为人廉洁，貌禀清奇。有机枢无亢激，不怕七杀相侵，不怕诸杀同缠。限若逢之，一生得地，十二宫中皆曰福，无 | sec-0015-sec-0015 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L374 | true |
+| ZW-Q0016 | 答曰：廉贞属火，北斗第五星也。在斗司品秩，在数司权令。不临庙旺，更犯官符，故曰化囚为杀。触之不可解其祸，逢之不可测其祥。主人心狠性狂，不习礼义。逢帝座执威权，遇禄存主富贵，遇文昌好 | sec-0016-sec-0016 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L379 | true |
+| ZW-Q0017 | 答曰：天府属土，南斗主令第一星也。为财帛之主宰，在斗司福权之宿，会吉皆为富贵之基，定作文昌之论。 | sec-0017-sec-0017 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L387 | true |
+| ZW-Q0018 | 答曰：太阴乃水之精，为田宅主，化富，与日为配。天仪表有上弦下弦之用，黄到黑到分势尚好，亏数定庙乐。其为人也聪明俊秀，其禀性也端雅纯祥。上弦为要之机，下弦减威之论。所值不以所见无 | sec-0018-sec-0018 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L396 | true |
+| ZW-Q0019 | 答曰：贪狼北斗解厄之神，第一星也。属水，化气为桃花，为标准，乃主祸福之神。受善恶定奸诈瞒人，授学神仙之术。又好高吟浮荡，作巧成拙。入庙乐之宫，可为祥可为祸。会破军迷花恋酒而丧命，同 | sec-0019-sec-0019 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L401 | true |
+| ZW-Q0020 | 答曰：巨门属水、金。北斗第二星也，为阴精之星，化气为暗。在身命一生招口舌之非；在兄弟则骨肉参商；在夫妻主于隔角，生离死别，纵夫妻有对，不免污名失节；在子息损后方招，虽有而无；在财帛 | sec-0020-sec-0020 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L406 | true |
+| ZW-Q0021 | 答曰：天相属水，南斗第五星也。为司爵之宿，为福善，化气曰印，是为官禄文星，佐帝之位。若人命逢之，言语诚实，事不虚伪。见人难，有恻隐之心；见人恶，抱不平之气。官禄得之则显荣，帝座合之则争 | sec-0021-sec-0021 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L411 | true |
+| ZW-Q0022 | 答曰：天梁属土，南斗第二星也。司寿化气为荫为福寿，乃父母之主命化暴戾为祥和。于人命则性情磊落，于相貌则厚重温谦，循直无私。临事果决，荫于身福及子孙。遇昌曲于财宫，逢太阳于福德 | sec-0022-sec-0022 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L421 | true |
+| ZW-Q0023 | 答曰：七杀南斗第六星也，属火、金。乃斗中之上将，实成败之孤辰。在斗司斗柄，主于风宪。其威作金之灵，其性若清凉之状。主于数则宜僧道，主于身定历艰辛。在命宫若限不扶夭折，在官禄得地，化 | sec-0023-sec-0023 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L432 | true |
+| ZW-Q0024 | 答曰：破军属水，北斗第七星也，司夫妻、子息、奴仆之神。居子午入庙，在天为杀气，在数为耗星，故化气曰耗。主人暴凶狡诈，其性奸猾，与人寡合，动辄损人。不成人之善，善助人之恶。虐视六亲如寇雠， | sec-0024-sec-0024 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L442 | true |
+| ZW-Q0025 | 答曰：文昌主科甲，守身命主人幽闲儒雅，清秀魁梧，博文广记，机变异常，一举成名，披绯衣紫，福寿双全。纵四杀冲破不为下贱。女人加吉得地，衣禄充足。四杀冲破，偏房下贱，僧道宜之。加权禄厚重 | sec-0025-sec-0025 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L446 | true |
 | ZW-Q0026 | 答曰：文曲属水，北斗第四星也，主科甲文车之宿。其象属水，与文昌同协，吉数最为祥，临身命中作科第之客。桃花浪暖，入仕无疑。于官禄面君颜而执政。单居身命，吏逢凶曜，亦作无名舌辩之徒。与 | sec-0026-sec-0026 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L455 | true |
 | ZW-Q0027 | 答曰：命逢流年昌曲，为科名科甲。大小二限逢之，三合拱照太阳，又照流年禄；小限太岁逢魁钺、左右、台座、日月、科权禄马三方拱照，决然高中无疑。然亦此数星俱全方为大吉，但以流年科甲为主。 | sec-0027-sec-0027 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L461 | true |
 | ZW-Q0028 | 希夷先生答曰：左辅帝极主宰之星，守身命诸宫降福。主人形貌敦厚慷慨风流。紫府禄权若得三合冲照，主文武大贵。火忌冲破，虽富贵不久。僧道清闲，所以温重贤晓，旺地封赠。火忌冲破，以中局 | sec-0028-sec-0028 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L471 | true |
@@ -66,7 +66,7 @@
 | ZW-Q0060 | 大抵人命俱从寅上起正月，顺数至本生月止，又自人生月起子时逆至本生时安命，顺至本生时安身。 | sec-0060-sec-0060 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L954 | true |
 | ZW-Q0061 | 紫微土，南北斗化帝座，为官禄主。紫微面紫色或白青，腰背肥满，为人忠厚老成，谦恭耿直，其威制七杀降火铃。 | sec-0061-sec-0061 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L1512 | true |
 | ZW-Q0062 | 紫微有倚靠年长之兄，天府同三人，天相同三四人，破军同亦有三人，或各胞生，加羊陀火铃空劫克害有则欠和。 | sec-0062-sec-0062 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2263 | true |
-| ZW-Q0063 | 紫微晚聘谐老性刚，天府同谐老，天相同年少，破军同刑剋，加羊陀火铃亦刑，贪狼同有吉星免刑。 | sec-0063-sec-0063 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2288 | true |
+| ZW-Q0063 | 紫微晚聘谐老性刚，天府同谐老，天相同年少，破军同刑克，加羊陀火铃亦刑，贪狼同有吉星免刑。 | sec-0063-sec-0063 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2288 | true |
 | ZW-Q0064 | 凡看子女先看本宫星宿主有几子。若加羊陀火玲空劫杀忌主生子女有刑克，次看对宫有冲刑否。 | sec-0064-sec-0064 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2314 | true |
 | ZW-Q0065 | 紫微丰足仓箱，加羊陀火铃空劫不旺，破军同先难后易，天相同财帛蓄积， | sec-0065-sec-0065 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2349 | true |
 | ZW-Q0066 | 先看命宫星曜落陷加羊陀火铃空劫化忌守照如何，又看疾厄宫星曜善恶庙旺落陷如何断之。 | sec-0066-sec-0066 | references/fulltext/ziwei/ziwei-doushu-quanshu/fulltext.md L2381 | true |

@@ -189,7 +189,7 @@
 | GX-Q0183 | 四六日出寅无别、 | line-0252 | references/fulltext/xingming/guotian-jing/fulltext.md L252 | true |
 | GX-Q0184 | 五月日高三丈地、 | line-0253 | references/fulltext/xingming/guotian-jing/fulltext.md L253 | true |
 | GX-Q0185 | 十月十二四更二、 | line-0254 | references/fulltext/xingming/guotian-jing/fulltext.md L254 | true |
-| GX-Q0186 | 仲冬纔到四更初、 | line-0255 | references/fulltext/xingming/guotian-jing/fulltext.md L255 | true |
+| GX-Q0186 | 仲冬才到四更初、 | line-0255 | references/fulltext/xingming/guotian-jing/fulltext.md L255 | true |
 | GX-Q0187 | 便是寅时真口诀。 | line-0256 | references/fulltext/xingming/guotian-jing/fulltext.md L256 | true |
 | GX-Q0188 | 猫眼辨时 | line-0258 | references/fulltext/xingming/guotian-jing/fulltext.md L258 | true |
 | GX-Q0189 | 子午卯酉一条线 | line-0259 | references/fulltext/xingming/guotian-jing/fulltext.md L259 | true |
@@ -653,7 +653,7 @@
 | GX-Q0647 | 驾后神煞歌、以年逆数 | line-0842 | references/fulltext/xingming/guotian-jing/fulltext.md L842 | true |
 | GX-Q0648 | 子年红鸾卯为首， | line-0843 | references/fulltext/xingming/guotian-jing/fulltext.md L843 | true |
 | GX-Q0649 | 天喜对宫在于酉。 | line-0844 | references/fulltext/xingming/guotian-jing/fulltext.md L844 | true |
-| GX-Q0650 | 血刃浮沈及解神， | line-0845 | references/fulltext/xingming/guotian-jing/fulltext.md L845 | true |
+| GX-Q0650 | 血刃浮沉及解神， | line-0845 | references/fulltext/xingming/guotian-jing/fulltext.md L845 | true |
 | GX-Q0651 | 戌上分明牢掣肘。 | line-0846 | references/fulltext/xingming/guotian-jing/fulltext.md L846 | true |
 | GX-Q0652 | 天哭还从午上寻， | line-0847 | references/fulltext/xingming/guotian-jing/fulltext.md L847 | true |
 | GX-Q0653 | 披头更向辰宫究。 | line-0848 | references/fulltext/xingming/guotian-jing/fulltext.md L848 | true |
@@ -890,8 +890,8 @@
 | GX-Q0884 | 国印值空亡为官，到任而死，或无正印掌之。 | line-1100 | references/fulltext/xingming/guotian-jing/fulltext.md L1100 | true |
 | GX-Q0885 | 常人命中，皆有天雄、地雌、空亡、的杀、天地、二耗，此人上无片瓦之处，下无立锥之地，所以最为紧要也。 | line-1101 | references/fulltext/xingming/guotian-jing/fulltext.md L1101 | true |
 | GX-Q0886 | ?曰：曾得先天之法，贵贱已知矣。愿闻水死、兵亡、蛇伤、虎咬、或缢死、雷轰，何以知之。 | line-1102 | references/fulltext/xingming/guotian-jing/fulltext.md L1102 | true |
-| GX-Q0887 | 答曰：有劫杀，阳刃、的杀、贯索、浮沈、天厄、桃花，皆要用也。 | line-1103 | references/fulltext/xingming/guotian-jing/fulltext.md L1103 | true |
-| GX-Q0888 | 且如命主身宫，逢水孛八煞宫，值浮沈限度，又逢流年水孛，必主溺死； | line-1104 | references/fulltext/xingming/guotian-jing/fulltext.md L1104 | true |
+| GX-Q0887 | 答曰：有劫杀，阳刃、的杀、贯索、浮沉、天厄、桃花，皆要用也。 | line-1103 | references/fulltext/xingming/guotian-jing/fulltext.md L1103 | true |
+| GX-Q0888 | 且如命主身宫，逢水孛八煞宫，值浮沉限度，又逢流年水孛，必主溺死； | line-1104 | references/fulltext/xingming/guotian-jing/fulltext.md L1104 | true |
 | GX-Q0889 | 或身命坐阳刃，金火与命主同度，必主兵亡。 | line-1105 | references/fulltext/xingming/guotian-jing/fulltext.md L1105 | true |
 | GX-Q0890 | 巳酉丑生人，安命寅宫，限逢计孛，必主虎咬； | line-1107 | references/fulltext/xingming/guotian-jing/fulltext.md L1107 | true |
 | GX-Q0891 | 子午卯酉生人，巳宫安命，行限井鬼逢火罗。 | line-1108 | references/fulltext/xingming/guotian-jing/fulltext.md L1108 | true |
@@ -978,7 +978,7 @@
 | GX-Q0972 | 日月合璧：太阳与太阴同宫，或对照，或三合照是也。然须庙旺方为贵。日有中道，月有九行。中道者黄道也。九行者，青道二出黄道东，赤道二出黄道南，白道二出黄道西，黑道二出黄道北。分主八节， | line-1218 | references/fulltext/xingming/guotian-jing/fulltext.md L1218 | true |
 | GX-Q0973 | 五星连珠：五星不必同宫，只得顺布，五位相续而不断者，亦是虚拱一位，而命居其中者亦是。拱日门，则是五星连珠；拱地户，则是五星拱太微、拱紫微。所谓坐实不如拱虚，对照不如正照者是也，或 | line-1219 | references/fulltext/xingming/guotian-jing/fulltext.md L1219 | true |
 | GX-Q0974 | 斗牛秀气：紫气十一曜之最尊，清而贵，文而美者也；丑位有斗牛二宿，乃二十八宿之始，金陵之气，盛于东南，龙泉，剑名，之神光于牛斗，若紫气一星对照正照，丑上安命，特为奇异。斗牛之墟丑宫得 | line-1220 | references/fulltext/xingming/guotian-jing/fulltext.md L1220 | true |
-| GX-Q0975 | 文章秘府：日月木金水气罗三合对照，亥宫安命是也，亥有木星，主图书，乃文章秘府之星，主为人才学富足，见识超卓，福气亦厚。十月阴气进踰干维始，上达乎天，云汉至营室东壁，间升气悉究，自 | line-1221 | references/fulltext/xingming/guotian-jing/fulltext.md L1221 | true |
+| GX-Q0975 | 文章秘府：日月木金水气罗三合对照，亥宫安命是也，亥有木星，主图书，乃文章秘府之星，主为人才学富足，见识超卓，福气亦厚。十月阴气进逾干维始，上达乎天，云汉至营室东壁，间升气悉究，自 | line-1221 | references/fulltext/xingming/guotian-jing/fulltext.md L1221 | true |
 | GX-Q0976 | 五星朝斗：五星会于双鱼则有卿相之象，若一星二星居于前后者，亦是日月木金水五星同居，双鱼宫是也。盖亥为天门，乃上帝之离宫，众星聚此以拱，北辰是五星朝斗之宫也，夫斗星北斗也，七 | line-1222 | references/fulltext/xingming/guotian-jing/fulltext.md L1222 | true |
 | GX-Q0977 | 孛于东井：孛居未上，夜生人，未上安命是也，贵而有权之命。古者太平之世，日不蚀、星不孛，则孛者常顺于天隐，而不见惟怒，则为彗星一见，则众星失色，此星性猛、机变、威权，常好居黄道正位，故在 | line-1223 | references/fulltext/xingming/guotian-jing/fulltext.md L1223 | true |
 | GX-Q0978 | 首携龙角：角亢二宿为苍龙之角也，罗?建首乃天之神首，居辰之位，乃如龙之有首，而角亢二宿左右扶之，以为之角矣。命居辰上而得罗?，主为人荣显。罗?天首之星也，属火之气，又为天权天统之星， | line-1224 | references/fulltext/xingming/guotian-jing/fulltext.md L1224 | true |
@@ -1048,7 +1048,7 @@
 | GX-Q1042 | 居三隔三：如子丑寅三宫，有星卯辰巳三位无星，午未申三位有星，酉戌亥三位无星，乃为合此。如七政临于子丑寅三宫，同命居之，罗计在子午，而气孛临于未申，谓之居三隔三，亦要星辰得地，相 | line-1288 | references/fulltext/xingming/guotian-jing/fulltext.md L1288 | true |
 | GX-Q1043 | 太乙抱蟾于酉未。酉未乃西南之方，孛乐之地，与月同躔合格。计都朝斗于丑牛。斗牛亦文章之府，计临反吉，化贱为贵。水星伴月向未巳，为朝主背君。午宫是君位，凡人安命在巳，而得月水同居于 | line-1289 | references/fulltext/xingming/guotian-jing/fulltext.md L1289 | true |
 | GX-Q1044 | 日月丽正：又如日在午，月在未，或又日丽卯宫之房，月丽酉宫之毕，着明之象也，五星又各其好，而引之、从之、朝之、拱之乃大贵格。 | line-1290 | references/fulltext/xingming/guotian-jing/fulltext.md L1290 | true |
-| GX-Q1045 | 群星朝北：亥子乃天门，北阙之上，众星环遶而归向之，所谓天上星辰皆拱北。 | line-1291 | references/fulltext/xingming/guotian-jing/fulltext.md L1291 | true |
+| GX-Q1045 | 群星朝北：亥子乃天门，北阙之上，众星环绕而归向之，所谓天上星辰皆拱北。 | line-1291 | references/fulltext/xingming/guotian-jing/fulltext.md L1291 | true |
 | GX-Q1046 | 众曜拱南：或众曜趋拱南离巳午，少微、紫微二垣身命相关。行限相遇则为顺而吉，反是则为逆而凶。顺必异貌奇人，逆则穷途寒士。顺序主人丰姿、秀丽，学业过人，逆则性质卤莽，难免穷途之苦。面 | line-1292 | references/fulltext/xingming/guotian-jing/fulltext.md L1292 | true |
 | GX-Q1047 | 面北坐南，北人必贵，南人必富。水土二星，同躔于子，乃北方之旺星，又安命于此，北人必贵，南人必富，须以分野论之。斯乃风土厚薄之相宜，地势使之必然也。复有天地开明。此论八卦合格。水居申， | line-1293 | references/fulltext/xingming/guotian-jing/fulltext.md L1293 | true |
 | GX-Q1048 | 山泽通气：艮为山，木星居之，兑为泽，金星居之，二星得所，为通气。 | line-1294 | references/fulltext/xingming/guotian-jing/fulltext.md L1294 | true |
@@ -1319,7 +1319,7 @@
 | GX-Q1313 | 【官禄宫天福星】太白木星入官禄，一世为官居显轴，天上之宫会水星，太阳合照作公卿，水居好乐合于月，官居位显职非轻。火在十宫夜入庙，朝端定列仍年少，罗星计孛本为凶，官禄之宫不可容。 | line-1561 | references/fulltext/xingming/guotian-jing/fulltext.md L1561 | true |
 | GX-Q1314 | 【福德宫福寿星】福德宫中或见金，夜生一世福神钦。木会太阳居十一，禄厚福优居显秩。水会月吉火浅薄，金土同照主食邑，十一宫中罗最吉，太阳木气三合值，生则须封万户侯，死则定知当庙食。 | line-1562 | references/fulltext/xingming/guotian-jing/fulltext.md L1562 | true |
 | GX-Q1315 | 【相貌宫】土星相貌却乌黄，木宿元来瘦且长。金白不惟多嗜欲，水星行动受趋跄，罗?薄艺随身有，月孛为人带黑丑，荧惑一星多性恶，水星最是双眉好，计都巧计爱谈论，罗火东西打杀人，水火相随 | line-1563 | references/fulltext/xingming/guotian-jing/fulltext.md L1563 | true |
-| GX-Q1316 | 【日月】太阳太阴单守命，间世英贤谁可并，忠直廉平性任真，覆庇生民朝野迥，若临财帛金满籯，倏忽翔威万里程。临在兄弟多生一，若居父母保年龄，子息一子真鸑鷟，奴仆一呼须百诺。临妻贤敏 | line-1564 | references/fulltext/xingming/guotian-jing/fulltext.md L1564 | true |
+| GX-Q1316 | 【日月】太阳太阴单守命，间世英贤谁可并，忠直廉平性任真，覆庇生民朝野迥，若临财帛金满籯，倏忽翔威万里程。临在兄弟多生一，若居父母保年龄，子息一子真𬸚𬸦，奴仆一呼须百诺。临妻贤敏 | line-1564 | references/fulltext/xingming/guotian-jing/fulltext.md L1564 | true |
 | GX-Q1317 | 【金木】金星守命福昌炽，木性宽仁金礼义，若临财帛粟麦丰，敏慧虹蜺为胆气。兄弟金四木须三，父母长年福禄深，子息木三金主四，如临奴仆盛车轸，临妻员敏期偕老，照疾多康灾害少，迁宫之位 | line-1565 | references/fulltext/xingming/guotian-jing/fulltext.md L1565 | true |
 | GX-Q1318 | 【夜火昼土】火星威焰恃贤亲，土宿敦恭信且诚，临照财宫多积聚，文章锦绣作公卿，兄弟火二土须五，田宅康宁期百六，子宫土五火主二，临照奴牛须得取，照妻偕老年期百，临在八宫无疾厄，迁宫 | line-1566 | references/fulltext/xingming/guotian-jing/fulltext.md L1566 | true |
 | GX-Q1319 | 【孛罗计】罗计孛临本命宫，刚强暴虐足威风，临财主执多权概，势力过人胆气雄，兄弟合胎皆异姓，若临父母二三重，临子一如兄弟应，或是螟蛉随母聘，临在妻宫主换妻，妻临一例断裁之，倘逢满 | line-1567 | references/fulltext/xingming/guotian-jing/fulltext.md L1567 | true |
@@ -1400,7 +1400,7 @@
 | GX-Q1394 | 张果星宗十七【统论限说】大凡洞微所急者限主星也，所贵者禄星也，所重者诸曜顺行也，所发者庙宫也，所畏者忌星也，所好者吉神也，所辅者行年也，所助者三方也，所恶者气孛罗计也，如善星 | line-1642 | references/fulltext/xingming/guotian-jing/fulltext.md L1642 | true |
 | GX-Q1395 | 【诸煞倒限】太岁为众煞之主，统众煞行于黑道中，所以为灾不违时刻，看人寿夭穷困终身不吉，皆因身命宫位、日月命主俱落煞乡，更煞神拱夹，又占高强纵或得福，横中得财，然限入煞乡，未免死 | line-1643 | references/fulltext/xingming/guotian-jing/fulltext.md L1643 | true |
 | GX-Q1396 | 【三煞歌断】要知三煞最为凶，值难同临不善终。三合无星更须忌，煞星切莫又相逢。若还日月同居此，官禄临之福愈隆，大限相将离煞尾，黄泉之下定行踪。 | line-1644 | references/fulltext/xingming/guotian-jing/fulltext.md L1644 | true |
-| GX-Q1397 | 【阳刃歌断】煞中阳刃最无情，身命同临主破刑。大限若交当畏惧，煞星在上恐难行。若无凶曜尤当忌，局势参详判死生，三合更加神煞拱，纔离阳刃入幽冥。【亡神歌断】皆言七煞是亡神，莫道亡神祸 | line-1645 | references/fulltext/xingming/guotian-jing/fulltext.md L1645 | true |
+| GX-Q1397 | 【阳刃歌断】煞中阳刃最无情，身命同临主破刑。大限若交当畏惧，煞星在上恐难行。若无凶曜尤当忌，局势参详判死生，三合更加神煞拱，才离阳刃入幽冥。【亡神歌断】皆言七煞是亡神，莫道亡神祸 | line-1645 | references/fulltext/xingming/guotian-jing/fulltext.md L1645 | true |
 | GX-Q1398 | 【的煞巳断】巳中的煞金生处，煞气严凝人畏惧，莫教劫煞又同宫，便主黄泉寻去路。若为水命土星到，装起煞神真局势。世人莫只忌秋生，四季生人尢可畏。【的煞酉断】酉中的煞旺中金，金气秋霜煞 | line-1646 | references/fulltext/xingming/guotian-jing/fulltext.md L1646 | true |
 | GX-Q1399 | 【飞廉歌断】煞若飞廉凶又凶，莫安身命在其中。欲知鬼局十分重，命主阴阳不可逢。此煞不须和合看，只将他局究其功。若还行限临其地，煞曜临之不善终。【诸煞总断】星家倒限有真机，第一先将煞 | line-1647 | references/fulltext/xingming/guotian-jing/fulltext.md L1647 | true |
 | GX-Q1400 | 善会日月善星会日月本以为吉，人皆知吉善。而不知夫善中有恶，是其恶也，善者恶之胎。若星曜会于生地则吉，倘或临于空亡、阳刃、破碎之乡为灾不可胜言，虽处安静无事之时，而有卒夭暴亡 | line-1648 | references/fulltext/xingming/guotian-jing/fulltext.md L1648 | true |

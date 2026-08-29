@@ -199,6 +199,7 @@ docs/                                 架构、验收与发布记录
 - V5.1 实施账本：`docs/plans/2026-07-24-mingli-v51-progress.json`
 - Provider 完整性矩阵：`references/matrices/provider-completeness.yaml`
 - 参考目录：`references/catalog/D2_READY_REFERENCE_PACKS.md`
+- 产品简体 canonical 与语料重建：`docs/simplified-canonical.md`
 
 ---
 
