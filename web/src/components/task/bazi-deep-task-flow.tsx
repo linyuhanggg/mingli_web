@@ -343,8 +343,11 @@ export function BaziDeepTaskFlow({
 
   const handlePreviewPollError = useCallback((reason: unknown) => {
     if (!previewCallbacksEnabledRef.current) return;
+    setReadyPreviewReadingId((current) => (
+      current === previewReadingId ? null : current
+    ));
     handleReadingPollError(reason);
-  }, [handleReadingPollError]);
+  }, [handleReadingPollError, previewReadingId]);
 
   const accountState = session?.state.status;
   const accessState = (

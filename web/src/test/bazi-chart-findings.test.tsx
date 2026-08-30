@@ -200,4 +200,41 @@ describe("F3 product copy lock", () => {
     expect(screen.queryByText("month_command")).not.toBeInTheDocument();
     expect(screen.queryByText(/no Shensha item may override/i)).not.toBeInTheDocument();
   });
+
+  it("gates Runtime finding cards with interpretive capability", () => {
+    const findings = [
+      {
+        claim_unit_id: "bazi.day-master-root-support-v1",
+        public_text: ROOT_SUPPORT_BODY,
+      },
+      {
+        claim_unit_id: "bazi.element-flow-inventory-v1",
+        public_text: ELEMENT_FLOW_BODY,
+      },
+    ];
+
+    const { rerender } = render(
+      <BaziChart
+        chart={baseChart}
+        findings={findings}
+        showInterpretiveSections={false}
+      />,
+    );
+    expect(screen.queryByRole("heading", { name: "日主根气与生扶" })).not.toBeInTheDocument();
+    expect(screen.queryByText(ROOT_SUPPORT_BODY)).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "五行流转盘点" })).not.toBeInTheDocument();
+    expect(screen.queryByText(ELEMENT_FLOW_BODY)).not.toBeInTheDocument();
+
+    rerender(
+      <BaziChart
+        chart={baseChart}
+        findings={findings}
+        showInterpretiveSections
+      />,
+    );
+    expect(screen.getByRole("heading", { name: "日主根气与生扶" })).toBeVisible();
+    expect(screen.getByText(ROOT_SUPPORT_BODY)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "五行流转盘点" })).toBeVisible();
+    expect(screen.getByText(ELEMENT_FLOW_BODY)).toBeVisible();
+  });
 });

@@ -2244,7 +2244,7 @@ export function BaziChart({
           }}
           sourceCounts={pillarSourceCounts}
         />
-        {findingCards.length > 0 ? (
+        {showInterpretiveSections && findingCards.length > 0 ? (
           <section className={styles.findingsSection} aria-label="盘面说明">
             {findingCards.map((card) => (
               <article className={styles.findingCard} key={`${card.title}-${card.body.slice(0, 24)}`}>

@@ -20,6 +20,7 @@ const mockListProfiles = vi.hoisted(() => vi.fn());
 const mockSearch = vi.hoisted(() => ({ value: new URLSearchParams() }));
 const mockSessionStatus = vi.hoisted(() => ({ value: "signedOut" as "checking" | "signedOut" | "signedIn" }));
 const readingSummaryCallbacks = vi.hoisted(() => new Map<string, (summary: unknown) => void>());
+const readingPollErrorCallbacks = vi.hoisted(() => new Map<string, (error: unknown) => void>());
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
@@ -62,10 +63,12 @@ vi.mock("@/components/readings/reading-result", () => ({
   }) => {
     useEffect(() => {
       if (onSummary) readingSummaryCallbacks.set(readingId, onSummary as (summary: unknown) => void);
+      if (onPollError) readingPollErrorCallbacks.set(readingId, onPollError);
       return () => {
         readingSummaryCallbacks.delete(readingId);
+        readingPollErrorCallbacks.delete(readingId);
       };
-    }, [onSummary, readingId]);
+    }, [onPollError, onSummary, readingId]);
 
     useEffect(() => {
       let active = true;
@@ -179,6 +182,7 @@ const checkoutConfirmed = {
 beforeEach(() => {
   window.sessionStorage.clear();
   readingSummaryCallbacks.clear();
+  readingPollErrorCallbacks.clear();
   mockSessionStatus.value = "signedOut";
   mockSearch.value = new URLSearchParams();
   mockPollReading.mockReset();
@@ -290,6 +294,40 @@ describe("Bazi deep task state contract", () => {
     expect(screen.getByText("免费盘面已就绪")).toBeVisible();
     expect(screen.queryByText("正在准备免费盘面")).not.toBeInTheDocument();
     expect(screen.queryByText(/离开页面后任务仍会继续/)).not.toBeInTheDocument();
+  });
+
+  it("clears pinned chart readiness when result loading fails after a ready summary", async () => {
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "prepared",
+      result_available: true,
+      poll_required: false,
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByText("免费盘面已就绪")).toBeVisible();
+    expect(screen.getByRole("region", { name: "八字工作台" })).toHaveAttribute(
+      "data-chart-first",
+      "true",
+    );
+
+    act(() => {
+      readingPollErrorCallbacks.get("preview-1")?.(new Error("result payload failed"));
+    });
+
+    expect(screen.getByText("任务暂未完成")).toBeVisible();
+    expect(screen.queryByText("免费盘面已就绪")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "八字工作台" })).not.toHaveAttribute(
+      "data-chart-first",
+    );
   });
 
   it("F2: chart-ready shell leads with chart and compresses task chrome", async () => {
