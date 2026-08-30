@@ -1450,11 +1450,131 @@ async def test_confirm_and_preview_replays_a_concurrent_idempotent_request(
             atomic_client.post(endpoint, headers=headers, json=payload),
             atomic_client.post(endpoint, headers=headers, json=payload),
         )
+        conflicting_payload = confirm_and_preview_payload()
+        conflicting_payload["profile"]["on_name_conflict"] = "overwrite"
+        conflicting_payload["reading"]["dimension_ids"] = ["overview"]
+        conflict = await atomic_client.post(
+            endpoint,
+            headers=headers,
+            json=conflicting_payload,
+        )
+
+    assert sorted((first.status_code, second.status_code)) == [200, 201]
+    assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
+    assert conflict.status_code == 409, conflict.text
+    assert conflict.json()["title"] == "Idempotency-Key conflict"
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_replays_cross_process_overwrite_race(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    profile_service = __import__("app.profiles.service", fromlist=["ProfileService"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    payload["profile"]["on_name_conflict"] = "overwrite"
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        existing = await create_confirmed_profile(atomic_client, csrf_headers)
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+
+        initial_replays_ready = asyncio.Event()
+        first_commit_finished = asyncio.Event()
+        initial_replay_count = 0
+        confirm_count = 0
+        original_replay = ReadingService.replay_confirm_profile_preview
+        original_confirm = profile_service.ProfileService.confirm_draft
+        original_commit = AsyncSession.commit
+
+        async def synchronize_initial_replay_misses(
+            service: ReadingService,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
+            nonlocal initial_replay_count
+            result = await original_replay(service, *args, **kwargs)
+            if initial_replay_count < 2:
+                assert result[0] is None
+                await service.session.rollback()
+                initial_replay_count += 1
+                if initial_replay_count == 2:
+                    initial_replays_ready.set()
+                await initial_replays_ready.wait()
+            return result
+
+        async def commit_then_release_duplicate(session: AsyncSession) -> None:
+            await original_commit(session)
+            first_commit_finished.set()
+
+        async def confirm_after_winner_commits(
+            service: Any,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
+            nonlocal confirm_count
+            confirm_count += 1
+            if confirm_count == 2:
+                await first_commit_finished.wait()
+            return await original_confirm(service, *args, **kwargs)
+
+        monkeypatch.setattr(
+            ReadingService,
+            "replay_confirm_profile_preview",
+            synchronize_initial_replay_misses,
+        )
+        monkeypatch.setattr(AsyncSession, "commit", commit_then_release_duplicate)
+        monkeypatch.setattr(
+            profile_service.ProfileService,
+            "confirm_draft",
+            confirm_after_winner_commits,
+        )
+        headers = {
+            **csrf_headers,
+            "Idempotency-Key": "cross-process-overwrite-preview-v1",
+        }
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+
+        first, second = await asyncio.gather(
+            atomic_client.post(endpoint, headers=headers, json=payload),
+            atomic_client.post(endpoint, headers=headers, json=payload),
+        )
 
     assert sorted((first.status_code, second.status_code)) == [200, 201]
     assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
     async with database.sessions() as session:
-        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        profiles = list(await session.scalars(select(SubjectProfile)))
+        assert [str(profile.id) for profile in profiles] == [existing["profile_id"]]
         assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1

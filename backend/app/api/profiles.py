@@ -314,6 +314,23 @@ async def confirm_profile_draft_and_start_preview_reading(
             payload.profile,
         )
     except ProfileNotFoundError as error:
+        await session.rollback()
+        try:
+            replayed, _ = await reading_service.replay_confirm_profile_preview(
+                owner,
+                draft_id=draft_id,
+                profile_payload=payload.profile.model_dump(mode="json"),
+                query=reading.query,
+                dimension_ids=reading.dimension_ids,
+                target_year=reading.target_year,
+                target_month=reading.target_month,
+                target_date=reading.target_date,
+                idempotency_key=idempotency_key,
+            )
+        except ReadingServiceError as replay_error:
+            raise _reading_problem(replay_error) from replay_error
+        if replayed is not None:
+            return _mark_reading_start((replayed, False), response)
         raise ApiProblem(
             status=404,
             title="Profile Draft not found",
