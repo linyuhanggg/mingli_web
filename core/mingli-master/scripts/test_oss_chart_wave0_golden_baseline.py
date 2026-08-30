@@ -19,6 +19,7 @@ import unittest
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Mapping
+from unittest import mock
 
 
 SCRIPT_DIR = Path(__file__).resolve().parent
@@ -26,11 +27,15 @@ CORE_ROOT = SCRIPT_DIR.parent
 REPO_ROOT = CORE_ROOT.parents[1]
 FIXTURE_ROOT = CORE_ROOT / "references" / "fixtures" / "oss-chart-wave0"
 MANIFEST_PATH = FIXTURE_ROOT / "manifest.json"
-BASELINE_COMMIT = "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6"
-BASELINE_TREE = "e36435068294f9501cc06eb882fd3ddbffa01542"
+BASELINE_COMMIT = "853a462e608b5f702184aeedc35f60ada4ca7f14"
+BASELINE_TREE = "6bc75801b042d7d9980abfe011390aaa278463a4"
 CASE_SCHEMA = "mingli-oss-chart-golden-case-v1"
 MANIFEST_SCHEMA = "mingli-oss-chart-golden-manifest-v1"
 SOURCE_TYPE = "accepted_runtime_replay"
+BAZI_EVIDENCE_SOURCE_REFS = (
+    "references/index/evidence-rules.jsonl",
+    "references/matrices/classical-evidence-bindings-v1.json",
+)
 FORBIDDEN_RAW_KEYS = {
     "candidate_oss_output",
     "engine_raw",
@@ -288,6 +293,8 @@ def _source_refs(system: str) -> list[str]:
         f"scripts/test_{system}_fact_adapter.py",
         "scripts/reading_engine/calendar_core.py",
     ]
+    if system == "bazi":
+        refs.extend(BAZI_EVIDENCE_SOURCE_REFS)
     if system == "ziwei":
         refs.append("references/fixtures/ziwei-v51.yaml")
     return refs
@@ -331,6 +338,10 @@ def _assert_refresh_source_matches_baseline() -> None:
         "core/mingli-master/scripts/ziwei_runtime.js",
         "core/mingli-master/scripts/reading_engine/calendar_core.py",
         "core/mingli-master/vendor/iztro-2.5.8",
+        *(
+            f"core/mingli-master/{source_ref}"
+            for source_ref in BAZI_EVIDENCE_SOURCE_REFS
+        ),
     ]
     source_diff = subprocess.run(
         ["git", "diff", "--quiet", BASELINE_COMMIT, "--", *source_paths],
@@ -406,6 +417,48 @@ def _walk_keys(value: Any) -> set[str]:
 
 
 class GoldenBaselineTests(unittest.TestCase):
+    def test_reviewed_baseline_is_current_main(self) -> None:
+        self.assertEqual(
+            BASELINE_COMMIT,
+            "853a462e608b5f702184aeedc35f60ada4ca7f14",
+        )
+        self.assertEqual(
+            BASELINE_TREE,
+            "6bc75801b042d7d9980abfe011390aaa278463a4",
+        )
+
+    def test_refresh_guard_rejects_each_evidence_source_drift(self) -> None:
+        for source_ref in BAZI_EVIDENCE_SOURCE_REFS:
+            source_path = f"core/mingli-master/{source_ref}"
+
+            def fake_run(
+                command: list[str],
+                **_: Any,
+            ) -> subprocess.CompletedProcess[str]:
+                if command[:2] == ["git", "rev-parse"]:
+                    return subprocess.CompletedProcess(
+                        command,
+                        0,
+                        stdout=f"{BASELINE_TREE}\n",
+                    )
+                if command[:3] == ["git", "diff", "--quiet"]:
+                    return subprocess.CompletedProcess(
+                        command,
+                        1 if source_path in command else 0,
+                    )
+                raise AssertionError(f"unexpected git command: {command}")
+
+            with self.subTest(source_ref=source_ref), mock.patch.object(
+                subprocess,
+                "run",
+                side_effect=fake_run,
+            ):
+                with self.assertRaisesRegex(
+                    RuntimeError,
+                    "accepted Runtime sources differ from BASELINE_COMMIT",
+                ):
+                    _assert_refresh_source_matches_baseline()
+
     def test_manifest_schema_and_case_uniqueness(self) -> None:
         manifest = _load_manifest()
         self.assertEqual(manifest["schema_version"], MANIFEST_SCHEMA)
@@ -419,6 +472,14 @@ class GoldenBaselineTests(unittest.TestCase):
         self.assertEqual(len(paths), len(set(paths)))
         expected_files = {definition.filename for definition in CASES}
         self.assertEqual(set(paths), expected_files)
+        self.assertEqual(
+            manifest["source_policy"],
+            {
+                "allowed_expected_source_types": [SOURCE_TYPE],
+                "candidate_oss_output_role": "differential_actual_only",
+                "pii_policy": "synthetic_inputs_only",
+            },
+        )
         for entry, case in zip(manifest["cases"], _load_cases()):
             with self.subTest(case=entry["case_id"]):
                 self.assertNotIn("content_sha256", entry)
@@ -449,6 +510,22 @@ class GoldenBaselineTests(unittest.TestCase):
                 self.assertEqual(provenance["baseline_commit"], BASELINE_COMMIT)
                 self.assertEqual(provenance["baseline_tree"], BASELINE_TREE)
                 self.assertTrue(provenance["source_refs"])
+                self.assertEqual(
+                    provenance["source_refs"],
+                    _source_refs(case["system"]),
+                )
+                if case["system"] == "bazi":
+                    self.assertTrue(
+                        set(BAZI_EVIDENCE_SOURCE_REFS).issubset(
+                            provenance["source_refs"]
+                        )
+                    )
+                else:
+                    self.assertTrue(
+                        set(BAZI_EVIDENCE_SOURCE_REFS).isdisjoint(
+                            provenance["source_refs"]
+                        )
+                    )
                 self.assertEqual(
                     provenance["candidate_oss_role"],
                     "future_differential_actual_only_never_expected",
