@@ -333,6 +333,13 @@ describe("Bazi deep task state contract", () => {
     );
     expect(css).not.toMatch(/\.flow\[data-chart-first="true"\]\s*>\s*\.chartLead\s*\{[^}]*order\s*:/s);
     expect(css).toMatch(/\.toolbar\[data-compact="true"\]\s+\.backButton\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
+    const mediumChartLayout = css.slice(
+      css.indexOf("@media (min-width: 64rem) and (max-width: 79.999rem)"),
+      css.indexOf("@media (max-width: 47.999rem)"),
+    );
+    expect(mediumChartLayout).toMatch(
+      /\.flow\[data-chart-first="true"\]\s+\.result\s+:global\(\[data-bazi-chart-host="true"\]\)\s*\{[^}]*margin-inline:\s*0/s,
+    );
   });
 
   it("keeps a ready chart first through fulfillment, checkout, queue, and running states", async () => {

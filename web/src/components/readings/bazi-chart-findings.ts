@@ -9,6 +9,9 @@ export type NatalFindingCard = {
 };
 
 const TITLE_BY_UNIT: Readonly<Record<string, string>> = {
+  "month-order-state": "月令状态",
+  "ziping-pattern-entry": "子平格局入口",
+  "tiaohou-priority": "调候候选次序",
   "pillar-roles": "柱位职分",
   "three-yuan-structure": "三元结构",
   "element-flow-inventory": "五行流转盘点",

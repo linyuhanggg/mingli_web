@@ -124,6 +124,10 @@
   .result :global([data-bazi-chart-host="true"]) {
     margin-inline: -3.2rem;
   }
+
+  .flow[data-chart-first="true"] .result :global([data-bazi-chart-host="true"]) {
+    margin-inline: 0;
+  }
 }
 
 @media (max-width: 47.999rem) {

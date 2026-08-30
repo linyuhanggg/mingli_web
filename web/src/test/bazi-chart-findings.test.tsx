@@ -48,6 +48,59 @@ describe("natalFindingCards", () => {
       ]),
     ).toEqual([{ title: "柱位职分", body: PILLAR_BODY }]);
   });
+
+  it("keeps every admitted Runtime claim unit and fails closed for unknown ids", () => {
+    const monthOrderBody =
+      "月令主气五行为火，日主五行火在该月令状态表中为“旺”；这只确定月令季节状态，整盘身强身弱仍未裁定。";
+    const zipingBody =
+      "子平月令入口按日干与月令主气的关系确定为“正财格入口”；这里只确定格局入口，格局成败、救应、旺衰和行运仍未裁定。";
+    const tiaohouBody =
+      "按丙日主、巳月的已核验调候规则，候选次序为“壬、庚”；当前只记录候选与显藏缺失，唯一用神或吉凶仍未裁定。";
+
+    expect(
+      natalFindingCards([
+        {
+          ref: "finding:subject:test/bazi/public-claim/month-order-state",
+          kind_id: "kind.tendency",
+          data: {
+            claim_unit_id: "bazi.month-order-state-v1",
+            seasonal_state: "旺",
+            hard_verdict: null,
+          },
+          public_text: monthOrderBody,
+        },
+        {
+          ref: "finding:subject:test/bazi/public-claim/ziping-pattern-entry",
+          kind_id: "kind.tendency",
+          data: {
+            claim_unit_id: "bazi.ziping-pattern-entry-v1",
+            status: "adjudicated_pattern_entry",
+            hard_verdict: null,
+          },
+          public_text: zipingBody,
+        },
+        {
+          ref: "finding:subject:test/bazi/public-claim/tiaohou-priority",
+          kind_id: "kind.tendency",
+          data: {
+            claim_unit_id: "bazi.tiaohou-priority-v1",
+            priority_stems: ["壬", "庚"],
+            hard_verdict: null,
+          },
+          public_text: tiaohouBody,
+        },
+        {
+          kind_id: "kind.tendency",
+          data: { claim_unit_id: "bazi.future-opaque-unit-v1" },
+          public_text: "未知工程单元不得直接上屏。",
+        },
+      ]),
+    ).toEqual([
+      { title: "月令状态", body: monthOrderBody },
+      { title: "子平格局入口", body: zipingBody },
+      { title: "调候候选次序", body: tiaohouBody },
+    ]);
+  });
 });
 
 describe("F3 product copy lock", () => {
