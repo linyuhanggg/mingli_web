@@ -3508,6 +3508,7 @@ components:
         target_date:
           type: [string, "null"]
           format: date
+          pattern: '^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$'
     ConfirmProfileDraftAndStartPreviewRequest:
       type: object
       additionalProperties: false
@@ -3722,6 +3723,7 @@ components:
         target_date:
           type: [string, "null"]
           format: date
+          pattern: '^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$'
     BaziDeepStartRequest:
       type: object
       additionalProperties: false

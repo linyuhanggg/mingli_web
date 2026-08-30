@@ -716,6 +716,8 @@ def test_queued_prepared_reading_keeps_polling_until_job_is_complete() -> None:
     [
         ({"target_year": 2026}, "year", "2026"),
         ({"target_month": "2026-08"}, "month", "2026-08"),
+        ({"target_date": "1800-01-01"}, "day", "1800-01-01"),
+        ({"target_date": "2199-12-31"}, "day", "2199-12-31"),
         ({"target_date": "2026-08-15"}, "day", "2026-08-15"),
     ],
 )
@@ -756,6 +758,8 @@ async def test_guest_starts_targeted_bazi_preview_with_public_horizon_boundary(
         {"target_month": "2026-08", "target_date": "2026-08-15"},
         {"target_month": "1799-12"},
         {"target_month": "2200-01"},
+        {"target_date": "1799-12-31"},
+        {"target_date": "2200-01-01"},
     ],
 )
 async def test_preview_rejects_invalid_time_targets_during_validation(

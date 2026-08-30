@@ -4,9 +4,12 @@ from types import UnionType
 from typing import Any, Literal, Union, get_args, get_origin
 from uuid import uuid4
 
+import pytest
 import yaml
+from app.profiles.schemas import ProfileReadingPreviewOptions
 from app.readings.api_schemas import (
     CapabilityProjection,
+    PreviewStartRequest,
     ReadingResultResponse,
     TimeLayerCapabilityItemResponse,
     TimeLayerEntitlementCapabilityResponse,
@@ -20,6 +23,7 @@ from app.readings.runtime_contracts import (
     TimeLayerEntitlementV1,
 )
 from jsonschema import Draft202012Validator
+from pydantic import ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]
 USER_OPENAPI_PATH = ROOT / "contracts" / "openapi" / "v1.yaml"
@@ -243,6 +247,8 @@ def test_preview_time_target_constraints_are_aligned_and_enforced() -> None:
         {"target_year": 2199},
         {"target_month": "1800-01"},
         {"target_month": "2199-12"},
+        {"target_date": "1800-01-01"},
+        {"target_date": "2199-12-31"},
         {"target_date": "2026-08-15"},
         {"target_year": None, "target_month": None, "target_date": None},
     ]
@@ -257,6 +263,8 @@ def test_preview_time_target_constraints_are_aligned_and_enforced() -> None:
         },
         {"target_month": "1799-12"},
         {"target_month": "2200-01"},
+        {"target_date": "1799-12-31"},
+        {"target_date": "2200-01-01"},
     ]
 
     for name in ("ProfileReadingPreviewOptions", "PreviewStartRequest"):
@@ -271,6 +279,14 @@ def test_preview_time_target_constraints_are_aligned_and_enforced() -> None:
                 if item.get("type") == "string"
             )["pattern"]
         )
+        assert (
+            frozen["properties"]["target_date"]["pattern"]
+            == next(
+                item
+                for item in runtime["properties"]["target_date"]["anyOf"]
+                if item.get("type") == "string"
+            )["pattern"]
+        )
 
         base = {"profile_version_id": str(uuid4())} if name == "PreviewStartRequest" else {}
         for schema in (frozen, runtime):
@@ -279,6 +295,22 @@ def test_preview_time_target_constraints_are_aligned_and_enforced() -> None:
                 assert not list(validator.iter_errors({**base, **target})), (name, target)
             for target in invalid_targets:
                 assert list(validator.iter_errors({**base, **target})), (name, target)
+
+
+def test_preview_time_target_live_models_enforce_date_boundaries() -> None:
+    models_and_bases = [
+        (ProfileReadingPreviewOptions, {}),
+        (PreviewStartRequest, {"profile_version_id": str(uuid4())}),
+    ]
+
+    for model, base in models_and_bases:
+        for target_date in ("1800-01-01", "2199-12-31"):
+            validated = model.model_validate({**base, "target_date": target_date})
+            assert validated.target_date is not None
+            assert validated.target_date.isoformat() == target_date
+        for target_date in ("1799-12-31", "2200-01-01"):
+            with pytest.raises(ValidationError):
+                model.model_validate({**base, "target_date": target_date})
 
 
 def test_verification_summary_contract_is_four_value_and_aligned() -> None:

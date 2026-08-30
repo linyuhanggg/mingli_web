@@ -831,6 +831,8 @@ async def test_atomic_profile_preview_rejects_invalid_dimensions_during_validati
         {"target_year": 2026, "target_date": "2026-08-15"},
         {"target_month": "1799-12"},
         {"target_month": "2200-01"},
+        {"target_date": "1799-12-31"},
+        {"target_date": "2200-01-01"},
     ],
 )
 async def test_atomic_profile_preview_rejects_invalid_time_targets_during_validation(

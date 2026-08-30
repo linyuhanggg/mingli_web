@@ -33,6 +33,17 @@ _TIME_TARGET_AT_MOST_ONE_SCHEMA: dict[str, Any] = {
         ]
     }
 }
+_TIME_TARGET_DATE_PATTERN = (
+    r"^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$"
+)
+_TimeTargetDate = Annotated[
+    date,
+    Field(
+        ge=date(1800, 1, 1),
+        le=date(2199, 12, 31),
+        json_schema_extra={"pattern": _TIME_TARGET_DATE_PATTERN},
+    ),
+]
 
 
 class ProfileDraftRequest(BaseModel):
@@ -113,7 +124,7 @@ class ProfileReadingPreviewOptions(BaseModel):
         default=None,
         pattern=r"^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])$",
     )
-    target_date: date | None = None
+    target_date: _TimeTargetDate | None = None
 
     @field_validator("dimension_ids")
     @classmethod
