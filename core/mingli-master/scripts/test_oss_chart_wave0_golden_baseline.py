@@ -15,12 +15,13 @@ import json
 import platform
 import subprocess
 import sys
+import tempfile
 import unittest
+from collections.abc import Mapping
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any
 from unittest import mock
-
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 CORE_ROOT = SCRIPT_DIR.parent
@@ -32,9 +33,12 @@ BASELINE_TREE = "6bc75801b042d7d9980abfe011390aaa278463a4"
 CASE_SCHEMA = "mingli-oss-chart-golden-case-v1"
 MANIFEST_SCHEMA = "mingli-oss-chart-golden-manifest-v1"
 SOURCE_TYPE = "accepted_runtime_replay"
-BAZI_EVIDENCE_SOURCE_REFS = (
+BAZI_PROVENANCE_SOURCE_REFS = (
     "references/index/evidence-rules.jsonl",
     "references/matrices/classical-evidence-bindings-v1.json",
+    "scripts/bazi_reasoning_tools.py",
+    "scripts/reading_engine/evidence_rules.py",
+    "scripts/build_evidence_index.py",
 )
 FORBIDDEN_RAW_KEYS = {
     "candidate_oss_output",
@@ -294,7 +298,7 @@ def _source_refs(system: str) -> list[str]:
         "scripts/reading_engine/calendar_core.py",
     ]
     if system == "bazi":
-        refs.extend(BAZI_EVIDENCE_SOURCE_REFS)
+        refs.extend(BAZI_PROVENANCE_SOURCE_REFS)
     if system == "ziwei":
         refs.append("references/fixtures/ziwei-v51.yaml")
     return refs
@@ -340,7 +344,7 @@ def _assert_refresh_source_matches_baseline() -> None:
         "core/mingli-master/vendor/iztro-2.5.8",
         *(
             f"core/mingli-master/{source_ref}"
-            for source_ref in BAZI_EVIDENCE_SOURCE_REFS
+            for source_ref in BAZI_PROVENANCE_SOURCE_REFS
         ),
     ]
     source_diff = subprocess.run(
@@ -407,9 +411,7 @@ def _load_cases() -> list[dict[str, Any]]:
 def _walk_keys(value: Any) -> set[str]:
     if isinstance(value, dict):
         return set(value) | {
-            key
-            for child in value.values()
-            for key in _walk_keys(child)
+            key for child in value.values() for key in _walk_keys(child)
         }
     if isinstance(value, list):
         return {key for child in value for key in _walk_keys(child)}
@@ -427,12 +429,16 @@ class GoldenBaselineTests(unittest.TestCase):
             "6bc75801b042d7d9980abfe011390aaa278463a4",
         )
 
-    def test_refresh_guard_rejects_each_evidence_source_drift(self) -> None:
-        for source_ref in BAZI_EVIDENCE_SOURCE_REFS:
+    def test_refresh_guard_rejects_each_bazi_provenance_drift_before_writes(
+        self,
+    ) -> None:
+        module = sys.modules[__name__]
+        for source_ref in BAZI_PROVENANCE_SOURCE_REFS:
             source_path = f"core/mingli-master/{source_ref}"
 
             def fake_run(
                 command: list[str],
+                drift_path: str = source_path,
                 **_: Any,
             ) -> subprocess.CompletedProcess[str]:
                 if command[:2] == ["git", "rev-parse"]:
@@ -444,20 +450,49 @@ class GoldenBaselineTests(unittest.TestCase):
                 if command[:3] == ["git", "diff", "--quiet"]:
                     return subprocess.CompletedProcess(
                         command,
-                        1 if source_path in command else 0,
+                        1 if drift_path in command else 0,
                     )
                 raise AssertionError(f"unexpected git command: {command}")
 
-            with self.subTest(source_ref=source_ref), mock.patch.object(
-                subprocess,
-                "run",
-                side_effect=fake_run,
+            with (
+                self.subTest(source_ref=source_ref),
+                tempfile.TemporaryDirectory() as temp_dir,
             ):
-                with self.assertRaisesRegex(
-                    RuntimeError,
-                    "accepted Runtime sources differ from BASELINE_COMMIT",
+                fixture_root = Path(temp_dir) / "fixtures"
+                fixture_root.mkdir()
+                sentinel = fixture_root / "sentinel.txt"
+                sentinel.write_text("unchanged\n", encoding="utf-8")
+
+                def snapshot(root: Path = fixture_root) -> dict[str, bytes]:
+                    return {
+                        str(path.relative_to(root)): path.read_bytes()
+                        for path in root.rglob("*")
+                        if path.is_file()
+                    }
+
+                before = snapshot()
+                with (
+                    mock.patch.object(subprocess, "run", side_effect=fake_run),
+                    mock.patch.object(module, "FIXTURE_ROOT", fixture_root),
+                    mock.patch.object(
+                        module,
+                        "MANIFEST_PATH",
+                        fixture_root / "manifest.json",
+                    ),
+                    mock.patch.object(module, "CASES", (CASES[0],)),
+                    mock.patch.object(
+                        module,
+                        "_build_case",
+                        return_value={"case_id": CASES[0].case_id},
+                    ),
+                    self.assertRaisesRegex(
+                        RuntimeError,
+                        "accepted Runtime sources differ from BASELINE_COMMIT",
+                    ),
                 ):
-                    _assert_refresh_source_matches_baseline()
+                    refresh_baseline()
+
+                self.assertEqual(snapshot(), before)
 
     def test_manifest_schema_and_case_uniqueness(self) -> None:
         manifest = _load_manifest()
@@ -480,7 +515,7 @@ class GoldenBaselineTests(unittest.TestCase):
                 "pii_policy": "synthetic_inputs_only",
             },
         )
-        for entry, case in zip(manifest["cases"], _load_cases()):
+        for entry, case in zip(manifest["cases"], _load_cases(), strict=True):
             with self.subTest(case=entry["case_id"]):
                 self.assertNotIn("content_sha256", entry)
                 self.assertEqual(case["schema_version"], CASE_SCHEMA)
@@ -501,7 +536,19 @@ class GoldenBaselineTests(unittest.TestCase):
             self.assertIn("zi_hour_boundary", by_system[system])
             self.assertIn("true_solar_time", by_system[system])
 
-    def test_provenance_is_complete_and_never_uses_candidate_oss_as_expected(self) -> None:
+    def test_provenance_is_complete_and_never_uses_candidate_oss_as_expected(
+        self,
+    ) -> None:
+        self.assertEqual(
+            BAZI_PROVENANCE_SOURCE_REFS,
+            (
+                "references/index/evidence-rules.jsonl",
+                "references/matrices/classical-evidence-bindings-v1.json",
+                "scripts/bazi_reasoning_tools.py",
+                "scripts/reading_engine/evidence_rules.py",
+                "scripts/build_evidence_index.py",
+            ),
+        )
         for case in _load_cases():
             with self.subTest(case=case["case_id"]):
                 provenance = case["provenance"]
@@ -516,13 +563,13 @@ class GoldenBaselineTests(unittest.TestCase):
                 )
                 if case["system"] == "bazi":
                     self.assertTrue(
-                        set(BAZI_EVIDENCE_SOURCE_REFS).issubset(
+                        set(BAZI_PROVENANCE_SOURCE_REFS).issubset(
                             provenance["source_refs"]
                         )
                     )
                 else:
                     self.assertTrue(
-                        set(BAZI_EVIDENCE_SOURCE_REFS).isdisjoint(
+                        set(BAZI_PROVENANCE_SOURCE_REFS).isdisjoint(
                             provenance["source_refs"]
                         )
                     )
@@ -545,7 +592,9 @@ class GoldenBaselineTests(unittest.TestCase):
                     case["expected_canonical_facts"]["schema_version"],
                 )
 
-    def test_inputs_are_synthetic_and_third_party_raw_containers_do_not_cross(self) -> None:
+    def test_inputs_are_synthetic_and_third_party_raw_containers_do_not_cross(
+        self,
+    ) -> None:
         for case in _load_cases():
             with self.subTest(case=case["case_id"]):
                 input_payload = case["input"]
