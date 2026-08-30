@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
-import { act, render, screen, waitFor, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StrictMode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -1553,6 +1553,88 @@ describe("fortune period timeline", () => {
 });
 
 describe("waiting_input requirements[].any_of[]", () => {
+  it("starts a fresh automatic polling window after old waiting input is submitted", async () => {
+    vi.useFakeTimers();
+    const startedAt = Date.parse("2026-08-29T12:00:00Z");
+    vi.setSystemTime(startedAt);
+    const inputRequest = {
+      requirements: [
+        {
+          any_of: [
+            {
+              id: "fixture_input",
+              label: "合同测试输入",
+              type_id: "text",
+              description: null,
+              choices: [],
+            },
+          ],
+        },
+      ],
+    };
+    let summaryRequestCount = 0;
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === "/api/v1/guest-sessions") return guestSession();
+      if (path.endsWith("/input")) {
+        return jsonResponse(readingSummary("input_ready"), 201);
+      }
+      if (path.endsWith("/result")) return jsonResponse(readingResult());
+      summaryRequestCount += 1;
+      if (summaryRequestCount === 1) {
+        return jsonResponse(readingSummary("waiting_input", {
+          created_at: new Date(startedAt).toISOString(),
+          input_request: inputRequest,
+        }));
+      }
+      if (summaryRequestCount === 2) {
+        return jsonResponse(readingSummary("input_ready", {
+          created_at: new Date(startedAt).toISOString(),
+          poll_after_seconds: 1,
+          poll_required: true,
+        }));
+      }
+      return jsonResponse(readingSummary("accepted", {
+        created_at: new Date(startedAt).toISOString(),
+        poll_required: false,
+        result_available: true,
+      }));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult headingLevel={2} readingId={VERSION_ID} startedAt={startedAt} />);
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(screen.getByText("补充资料")).toBeVisible();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10 * 60_000);
+    });
+    fireEvent.change(screen.getByLabelText("合同测试输入"), {
+      target: { value: "已补充" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /提交补充资料/ }));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+    expect(callsTo(fetchMock, "/input")).toHaveLength(1);
+    expect(summaryRequestCount).toBe(2);
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+    expect(summaryRequestCount).toBe(3);
+    expect(screen.getByRole("heading", { level: 2, name: "运势" })).toBeVisible();
+    expect(screen.queryByRole("heading", { level: 1 })).not.toBeInTheDocument();
+    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+  });
+
   it("renders real runtime fields, focuses the first error, and posts only typed values", async () => {
     const inputRequest = {
       requirements: [

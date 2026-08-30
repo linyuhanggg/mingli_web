@@ -452,6 +452,49 @@ describe("Bazi deep task state contract", () => {
     expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
   });
 
+  it("recovers a confirmed checkout after fulfillment binding fails", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading
+      .mockResolvedValueOnce(previewSummary)
+      .mockImplementation(() => new Promise(() => undefined));
+    mockStartBaziDeepReading.mockResolvedValue({
+      ...deepSummary,
+      status: "input_ready",
+      delivery_state: "payment_required",
+    });
+    mockCreateBaziDeepCheckout.mockResolvedValue(checkoutPending);
+    mockGetBaziDeepCheckout.mockResolvedValue(checkoutConfirmed);
+    mockBindReadingFulfillment
+      .mockRejectedValueOnce(new Error("fulfillment binding unavailable"))
+      .mockResolvedValueOnce({ status: "running" });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("fulfillment binding unavailable")).toBeVisible();
+    expect(mockBindReadingFulfillment).toHaveBeenCalledTimes(1);
+    const originalFulfillmentKey = mockBindReadingFulfillment.mock.calls[0]?.[2];
+
+    await userEvent.click(screen.getByRole("button", { name: "重试状态读取" }));
+
+    await waitFor(() => expect(mockGetBaziDeepCheckout).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockBindReadingFulfillment).toHaveBeenCalledTimes(2));
+    expect(mockBindReadingFulfillment).toHaveBeenNthCalledWith(
+      2,
+      "deep-1",
+      { payment_id: "confirmed-payment-from-server" },
+      originalFulfillmentKey,
+    );
+    expect(await screen.findByText("已进入深读队列")).toBeVisible();
+  });
+
   it("does not treat the fake/unavailable gateway as a successful payment", async () => {
     mockSessionStatus.value = "signedIn";
     mockPollReading.mockResolvedValue(previewSummary);
