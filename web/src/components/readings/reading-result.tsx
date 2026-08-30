@@ -194,15 +194,29 @@ function resultErrorState(error: unknown): {
 }
 
 function ArchiveRail({
+  elapsedMs,
+  onRetry,
   readingId,
   summary,
   result,
 }: Readonly<{
+  elapsedMs?: number;
+  onRetry?: () => void;
   readingId: string;
   summary: ReadingVersionSummary;
   result: ReadingResultResponse | null;
 }>) {
   const meta = statusMeta(summary.status);
+  const showCappedPartialStatus =
+    elapsedMs !== undefined &&
+    elapsedMs >= POLLING_CAP_MS &&
+    onRetry !== undefined &&
+    result !== null &&
+    (summary.status === "prepared" || summary.status === "completing") &&
+    shouldKeepPolling({
+      status: result.status,
+      poll_required: result.poll_required ?? summary.poll_required,
+    });
 
   return (
     <aside className={surface.evidenceRail} aria-labelledby="reading-summary-title">
@@ -223,6 +237,9 @@ function ArchiveRail({
           这份报告保留当前版本，后续修改不会覆盖本次内容。
         </p>
       </div>
+      {showCappedPartialStatus ? (
+        <WaitingStatus elapsedMs={elapsedMs} onRetry={onRetry} />
+      ) : null}
       {summary.status === "accepted" && result?.document?.actions.share.enabled === true ? (
         <ReadingSharePanel readingId={readingId} />
       ) : null}
@@ -857,7 +874,13 @@ function ReadingResultForVersion({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -1011,7 +1034,13 @@ function ReadingResultForVersion({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -1141,7 +1170,13 @@ function ReadingResultForVersion({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -1246,7 +1281,13 @@ function ReadingResultForVersion({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -1356,7 +1397,13 @@ function ReadingResultForVersion({
             </section>
           ) : null}
         </article>
-        <ArchiveRail readingId={readingId} summary={summary} result={result} />
+        <ArchiveRail
+          elapsedMs={elapsedMs}
+          onRetry={handleRetry}
+          readingId={readingId}
+          summary={summary}
+          result={result}
+        />
       </div>
     );
   }

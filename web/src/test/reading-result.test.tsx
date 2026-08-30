@@ -885,6 +885,97 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     expect(fetchMock).toHaveBeenCalledTimes(callsAtCap + 1);
   });
 
+  it("keeps a partial report visible at the cap and completes one manual check", async () => {
+    vi.useFakeTimers();
+    const startedAt = Date.parse("2026-08-29T12:00:00Z");
+    vi.setSystemTime(startedAt + 599_000);
+    const partialCopy = "阶段性盘面已经返回，完整正文仍在生成。";
+    let summaryCount = 0;
+    let resultCount = 0;
+    let automaticSignal: AbortSignal | undefined;
+    let manualSummarySignal: AbortSignal | undefined;
+    let manualResultSignal: AbortSignal | undefined;
+    const fetchMock = vi.fn<typeof fetch>((url, init) => {
+      const signal = init?.signal ?? undefined;
+      if (String(url).endsWith("/result")) {
+        resultCount += 1;
+        if (resultCount === 1) {
+          automaticSignal = signal;
+          return Promise.resolve(jsonResponse(readingResult({
+            status: "prepared",
+            accepted_copy: partialCopy,
+            poll_after_seconds: 30,
+            poll_required: true,
+          })));
+        }
+        manualResultSignal = signal;
+        return Promise.resolve(jsonResponse(readingResult()));
+      }
+
+      summaryCount += 1;
+      if (summaryCount === 1) {
+        return Promise.resolve(jsonResponse(readingSummary("prepared", {
+          created_at: new Date(startedAt).toISOString(),
+          poll_after_seconds: 30,
+          poll_required: true,
+          result_available: true,
+        })));
+      }
+      manualSummarySignal = signal;
+      return Promise.resolve(jsonResponse(readingSummary("accepted", {
+        created_at: new Date(startedAt).toISOString(),
+        poll_required: false,
+        result_available: true,
+      })));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ReadingResult
+        headingLevel={2}
+        readingId={VERSION_ID}
+        startedAt={startedAt}
+      />,
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(screen.getByText(partialCopy)).toBeVisible();
+    expect(screen.queryByText("自动检查已暂停")).not.toBeInTheDocument();
+
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1_000);
+    });
+
+    expect(screen.getByText(partialCopy)).toBeVisible();
+    expect(screen.getByText("自动检查已暂停")).toBeVisible();
+    expect(screen.getByRole("button", { name: "重新检查状态" })).toBeEnabled();
+    expect(automaticSignal?.aborted).toBe(true);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    act(() => {
+      screen.getByRole("button", { name: "重新检查状态" }).click();
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+    expect(summaryCount).toBe(2);
+    expect(resultCount).toBe(2);
+    expect(manualSummarySignal).toBeDefined();
+    expect(manualSummarySignal).not.toBe(automaticSignal);
+    expect(manualResultSignal).toBe(manualSummarySignal);
+    expect(screen.queryByText("自动检查已暂停")).not.toBeInTheDocument();
+
+    const callsAfterManualCheck = fetchMock.mock.calls.length;
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(2 * 60_000);
+    });
+    expect(fetchMock).toHaveBeenCalledTimes(callsAfterManualCheck);
+  });
+
   it("aborts an in-flight automatic request at the cap and gives a manual check a fresh controller", async () => {
     vi.useFakeTimers();
     const startedAt = Date.parse("2026-08-29T12:00:00Z");
