@@ -1978,7 +1978,10 @@
       "scripts/test_bazi_fact_adapter.py",
       "scripts/reading_engine/calendar_core.py",
       "references/index/evidence-rules.jsonl",
-      "references/matrices/classical-evidence-bindings-v1.json"
+      "references/matrices/classical-evidence-bindings-v1.json",
+      "scripts/bazi_reasoning_tools.py",
+      "scripts/reading_engine/evidence_rules.py",
+      "scripts/build_evidence_index.py"
     ],
     "source_type": "accepted_runtime_replay"
   },
