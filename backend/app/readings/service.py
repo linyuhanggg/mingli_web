@@ -204,11 +204,13 @@ class ChartFastPathUnavailableError(ReadingServiceError):
         *,
         code: str | None = None,
         prepared_checkpoint: Prepared | None = None,
+        waiting_input_checkpoint: Stopped | None = None,
     ) -> None:
         super().__init__(detail)
         self.detail = detail
         self.code = code or detail
         self.prepared_checkpoint = prepared_checkpoint
+        self.waiting_input_checkpoint = waiting_input_checkpoint
 
 
 class InvalidReadingInputError(ReadingServiceError):
@@ -2626,6 +2628,23 @@ class ReadingService:
                         idempotency=idempotency,
                         initial_job_status=initial_job_status,
                     )
+                elif (
+                    rollback_on_failure
+                    and prepare.state_token is None
+                    and error.waiting_input_checkpoint is not None
+                ):
+                    await self.session.rollback()
+                    await self._persist_waiting_input_checkpoint_quarantine(
+                        owner,
+                        prepare,
+                        error.waiting_input_checkpoint,
+                        capability_id=capability_id,
+                        product_id=product_id,
+                        runtime_capability_ids=resolved_runtime_capability_ids,
+                        relationship_type=relationship_type,
+                        idempotency=idempotency,
+                        initial_job_status=initial_job_status,
+                    )
                 raise
         summary = await self._summary(root, version)
         if direct_chart:
@@ -2742,6 +2761,55 @@ class ReadingService:
         await self.session.flush()
         await self.session.commit()
 
+    async def _persist_waiting_input_checkpoint_quarantine(
+        self,
+        owner: OwnerProtocol,
+        prepare: Prepare,
+        stopped: Stopped,
+        *,
+        capability_id: str,
+        product_id: str | None,
+        runtime_capability_ids: tuple[str, ...],
+        relationship_type: str | None,
+        idempotency: IdempotencyContext | None,
+        initial_job_status: str,
+    ) -> None:
+        """Persist a correctable Runtime stop without confirming its Profile draft."""
+
+        user_id, guest_id = owner_ids(owner)
+        release = await self._runtime_release()
+        root = await self.repository.create_root(
+            capability_id=capability_id,
+            product_id=product_id,
+            runtime_capability_ids=runtime_capability_ids,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+            relationship_type=relationship_type,
+        )
+        version = await self.repository.create_version(
+            reading_root_id=root.id,
+            runtime_release_id=release.id,
+            prepare_command=prepare,
+            relationship_type=relationship_type,
+        )
+        await self.session.refresh(version)
+        job = await self._create_job(version.id, status=initial_job_status)
+        if idempotency is not None:
+            replayed = await self._save_idempotency_or_replay(
+                idempotency,
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+                reading_version_id=version.id,
+            )
+            if replayed is not None:
+                return
+        await self.repository.record_waiting_input(
+            str(job.id),
+            stopped,
+            datetime.now(UTC),
+        )
+        await self.session.commit()
+
     async def _run_chart_fast_path(
         self,
         job: ReadingJobRecord,
@@ -2842,6 +2910,12 @@ class ReadingService:
             await self.session.flush()
         elif isinstance(result, Stopped) and result.reason == "need_input":
             await self.repository.record_waiting_input(str(job.id), result, now)
+            if not commit_failures:
+                raise ChartFastPathUnavailableError(
+                    "chart_runtime_need_input",
+                    code="chart_runtime_need_input",
+                    waiting_input_checkpoint=result,
+                )
         elif isinstance(result, Stopped):
             await self.repository.record_terminal_stopped(str(job.id), result, now)
             if commit_failures:

@@ -66,8 +66,12 @@ class NeedInputChartRuntime:
 
     adapter_kind = "test-need-input"
 
+    def __init__(self) -> None:
+        self.calls = 0
+
     async def execute(self, command: Any) -> Stopped:
         del command
+        self.calls += 1
         return Stopped(
             reason="need_input",
             public_copy="还需要补充排盘信息。",
@@ -1474,8 +1478,9 @@ async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
     test_settings: Any,
 ) -> None:
     main = __import__("app.main", fromlist=["create_app"])
+    runtime = NeedInputChartRuntime()
     application = main.create_app(settings=test_settings, database=database)
-    application.state.chart_runtime = NeedInputChartRuntime()
+    application.state.chart_runtime = runtime
     payload = confirm_and_preview_payload()
 
     async with AsyncClient(
@@ -1512,32 +1517,67 @@ async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
             headers=headers,
             json=payload,
         )
-
-        assert need_input.status_code == 400, need_input.text
-        assert need_input.json()["code"] == "chart_runtime_need_input"
-        listed_after_failure = await atomic_client.get("/api/v1/profiles")
-        assert listed_after_failure.json() == {"profiles": []}
-        async with database.sessions() as session:
-            counts_after = (
-                await session.scalar(select(func.count()).select_from(SubjectProfile)),
-                await session.scalar(select(func.count()).select_from(ProfileVersion)),
-                await session.scalar(select(func.count()).select_from(ReadingRoot)),
-                await session.scalar(select(func.count()).select_from(ReadingVersion)),
-                await session.scalar(
-                    select(func.count()).select_from(ReadingIdempotencyKey)
-                ),
-            )
-        assert counts_after == counts_before
-
-        application.state.chart_runtime = RenderableChartRuntime()
-        succeeded = await atomic_client.post(
+        replay = await atomic_client.post(
             f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
             headers=headers,
             json=payload,
         )
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
 
-    assert succeeded.status_code == 201, succeeded.text
-    assert succeeded.json()["result_available"] is True
+    assert need_input.status_code == 400, need_input.text
+    assert need_input.json()["title"] == "Chart generation unavailable"
+    assert need_input.json()["type"] == (
+        "urn:mingli:problem:chart_runtime_need_input"
+    )
+    assert need_input.json()["detail"] == "chart_runtime_need_input"
+    assert need_input.json()["code"] == "chart_runtime_need_input"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "waiting_input"
+    assert replay.json()["profile_version_id"] is None
+    assert replay.json()["input_request"] == {
+        "requirements": [
+            {
+                "any_of": [
+                    {
+                        "id": "missing_chart_input",
+                        "label": "补充信息",
+                        "type_id": "text",
+                        "description": None,
+                        "choices": [],
+                    }
+                ]
+            }
+        ]
+    }
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        version = await session.scalar(select(ReadingVersion))
+        assert root is not None
+        assert version is not None
+        assert root.profile_version_id is None
+        assert version.state_token_ciphertext is not None
+        assert version.state_token_fingerprint is not None
+        assert version.prepare_has_state_token is False
+        counts_after = (
+            await session.scalar(select(func.count()).select_from(SubjectProfile)),
+            await session.scalar(select(func.count()).select_from(ProfileVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingRoot)),
+            await session.scalar(select(func.count()).select_from(ReadingVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)),
+        )
+        assert counts_after[:2] == counts_before[:2]
+        assert counts_after[2:] == (1, 1, 1)
+        assert (
+            await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        )
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "waiting_input"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "waiting_input"
+        ]
 
 
 async def test_confirm_and_preview_replays_a_concurrent_idempotent_request(

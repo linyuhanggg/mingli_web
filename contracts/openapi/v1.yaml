@@ -3468,8 +3468,10 @@ components:
           type: [array, "null"]
           minItems: 1
           maxItems: 4
+          uniqueItems: true
           items:
             type: string
+            enum: [overview, career]
         target_year:
           type: [integer, "null"]
           minimum: 1800

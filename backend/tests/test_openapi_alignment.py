@@ -191,6 +191,25 @@ def test_profile_latest_reading_and_atomic_preview_contracts_are_aligned() -> No
         assert set(frozen_schemas[name]["required"]) == required
         assert set(runtime_schemas[name]["required"]) == required
 
+    combined_dimensions = frozen_schemas["ProfileReadingPreviewOptions"]["properties"][
+        "dimension_ids"
+    ]
+    preview_dimensions = frozen_schemas["PreviewStartRequest"]["properties"][
+        "dimension_ids"
+    ]
+    assert combined_dimensions["uniqueItems"] is True
+    assert combined_dimensions["items"]["enum"] == ["overview", "career"]
+    assert combined_dimensions["uniqueItems"] == preview_dimensions["uniqueItems"]
+    assert combined_dimensions["items"]["enum"] == preview_dimensions["items"]["enum"]
+    combined_validator = _openapi_component_validator("ProfileReadingPreviewOptions")
+    assert not list(
+        combined_validator.iter_errors({"dimension_ids": ["overview", "career"]})
+    )
+    assert list(combined_validator.iter_errors({"dimension_ids": ["health"]}))
+    assert list(
+        combined_validator.iter_errors({"dimension_ids": ["overview", "overview"]})
+    )
+
 
 def test_verification_summary_contract_is_four_value_and_aligned() -> None:
     frozen_schemas = _frozen_schemas()
