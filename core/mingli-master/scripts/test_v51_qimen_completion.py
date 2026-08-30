@@ -23,6 +23,7 @@ from reading_engine.factory import build_production_engine
 from reading_engine.fact_index import build_fact_index
 from reading_engine.providers import QimenProvider, STRUCTURED_SYSTEMS
 from reading_engine.providers import PROVIDER_CAPABILITIES, missing_required_inputs
+from simplified_canonical import canonicalize
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -84,6 +85,46 @@ def _request(**changes: object) -> ReadingRequest:
 
 
 class QimenFixtureContractTests(unittest.TestCase):
+    def test_audit_bridges_canonical_p16_p37_quotes_to_raw_source_profiles(self) -> None:
+        rules = {
+            rule.local_rule_id: rule
+            for rule in production_evidence_rules()
+            if rule.local_rule_id in {"QM-P16", "QM-P37"}
+        }
+        profiles = {
+            row["id"]: row
+            for row in qimen.source_table()["named_pattern_predicates"]
+            if row["id"] in {"QM-P16", "QM-P37"}
+        }
+        expected_quotes = {
+            "QM-P16": (
+                "三奇入墓 乙奇坤宫 丙奇干宫 丁奇艮宫",
+                "三奇入墓 乙奇坤宫 丙奇乾宫 丁奇艮宫",
+            ),
+            "QM-P37": (
+                "六仪受制 休加离 伤加坤 杜加艮 景加干 生加兑 "
+                "死加坎 开加震 惊加巽",
+                "六仪受制 休加离 伤加坤 杜加艮 景加乾 生加兑 "
+                "死加坎 开加震 惊加巽",
+            ),
+        }
+
+        self.assertEqual(set(rules), set(expected_quotes))
+        self.assertEqual(set(profiles), set(expected_quotes))
+        for identifier, (canonical_quote, raw_quote) in expected_quotes.items():
+            with self.subTest(pattern=identifier):
+                self.assertEqual(rules[identifier].quote, canonical_quote)
+                self.assertEqual(profiles[identifier]["evidence_quote"], raw_quote)
+                self.assertNotEqual(canonical_quote, raw_quote)
+                self.assertEqual(canonical_quote, canonicalize(raw_quote))
+
+        report = audit_qimen_provider.audit_qimen_provider()
+
+        self.assertTrue(
+            report["source_checks"]["evidence_source_identity_bridge_verified"],
+            report,
+        )
+
     def test_machine_readable_completeness_audit_passes_before_activation(self) -> None:
         report = audit_qimen_provider.audit_qimen_provider()
 
@@ -978,7 +1019,7 @@ class QimenEvidenceActivationTests(unittest.TestCase):
                     else "san-shi/qimen-dunjia-tongzhi"
                 )
                 self.assertEqual(rule.source_pack, expected_pack)
-                self.assertEqual(rule.quote, profile["evidence_quote"])
+                self.assertEqual(rule.quote, canonicalize(profile["evidence_quote"]))
                 self.assertEqual(rule.source_anchor, profile["evidence_anchor"])
                 self.assertEqual(len(rule.required_fact_predicates), 1)
                 predicate = rule.required_fact_predicates[0]
