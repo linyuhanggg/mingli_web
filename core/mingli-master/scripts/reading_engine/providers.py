@@ -25,6 +25,7 @@ import reading_evidence_bundle
 import reading_source_plan
 import ziwei_fact_adapter
 from fact_contracts.bazi import BaziFactContract
+from fact_contracts.ziwei import ZiweiFactContract
 from runtime_python import runtime_command
 
 from .contracts import (
@@ -6884,11 +6885,10 @@ class ZiweiProvider(_AdapterSeam, _SourceRouteMixin):
         )
         facts = engine_result.canonical_facts.to_payload()
         facts["adapter"]["generated_at"] = "deterministic-chart-identity"
-        facts = (
-            ziwei_fact_adapter.ZiweiEngineAdapter()
-            .bind_canonical_facts(engine_request, facts)
-            .canonical_facts.to_payload()
-        )
+        facts = ZiweiFactContract().bind_canonical_facts(
+            facts,
+            engine_result.provenance,
+        ).to_payload()
         validation = adapter_validate.validate_payload("ziwei", facts)
         if not validation["ok"]:
             raise RuntimeError(
@@ -6958,10 +6958,13 @@ class ZiweiProvider(_AdapterSeam, _SourceRouteMixin):
                 },
             )
         try:
-            facts = ziwei_fact_adapter.build_horizon_fact_extensions(
-                base.facts.get("chart_facts") or {},
-                horizon=horizon,
+            engine_result = ziwei_fact_adapter.ZiweiEngineAdapter().adapt(
+                ziwei_fact_adapter.ZiweiTemporalEngineRequest.for_horizon(
+                    base.facts.get("chart_facts") or {},
+                    horizon,
+                )
             )
+            facts = engine_result.canonical_facts.to_payload()
         except (KeyError, TypeError, ValueError):
             return _unsupported_extension(base, requested_dimensions, horizon)
         validation = adapter_validate.validate_ziwei_extension(facts)
