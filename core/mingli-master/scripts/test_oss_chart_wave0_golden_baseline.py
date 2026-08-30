@@ -37,6 +37,7 @@ BAZI_PROVENANCE_SOURCE_REFS = (
     "references/index/evidence-rules.jsonl",
     "references/matrices/classical-evidence-bindings-v1.json",
     "scripts/bazi_reasoning_tools.py",
+    "scripts/evidence_contract.py",
     "scripts/reading_engine/evidence_rules.py",
     "scripts/build_evidence_index.py",
 )
@@ -545,6 +546,7 @@ class GoldenBaselineTests(unittest.TestCase):
                 "references/index/evidence-rules.jsonl",
                 "references/matrices/classical-evidence-bindings-v1.json",
                 "scripts/bazi_reasoning_tools.py",
+                "scripts/evidence_contract.py",
                 "scripts/reading_engine/evidence_rules.py",
                 "scripts/build_evidence_index.py",
             ),
