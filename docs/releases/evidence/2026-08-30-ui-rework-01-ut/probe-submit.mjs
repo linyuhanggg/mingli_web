@@ -12,6 +12,44 @@ const BASE = "http://106.14.10.235:18080";
 const CHROME = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 const dir = path.join(ROOT, "probe");
 fs.mkdirSync(dir, { recursive: true });
+const GUEST_SESSION_PATH = /\/api\/v1\/guest-sessions(?:[\/?#]|$)/i;
+const REDACTED_GUEST_SESSION_BODY = "[redacted guest-session response]";
+
+function isGuestSessionResponse(url) {
+  try {
+    return GUEST_SESSION_PATH.test(new URL(url).pathname);
+  } catch {
+    return GUEST_SESSION_PATH.test(url);
+  }
+}
+
+function stripResponseUrlQuery(url) {
+  try {
+    const parsed = new URL(url);
+    parsed.search = "";
+    parsed.hash = "";
+    return parsed.toString();
+  } catch {
+    return url;
+  }
+}
+
+async function captureResponse(res, url) {
+  if (isGuestSessionResponse(url)) {
+    return {
+      status: res.status(),
+      url: stripResponseUrlQuery(url),
+      body: REDACTED_GUEST_SESSION_BODY,
+      bodyRedacted: true,
+    };
+  }
+
+  let body = "";
+  try {
+    body = (await res.text()).slice(0, 800);
+  } catch {}
+  return { status: res.status(), url, body };
+}
 
 async function pickSelect(page, label, needle) {
   const loc = page.getByLabel(label);
@@ -47,11 +85,7 @@ page.on("console", (msg) => cons.push({ type: msg.type(), text: msg.text() }));
 page.on("response", async (res) => {
   const url = res.url();
   if (!/api\/v1|prepare|readings|bazi|health/.test(url)) return;
-  let body = "";
-  try {
-    body = (await res.text()).slice(0, 800);
-  } catch {}
-  net.push({ status: res.status(), url, body });
+  net.push(await captureResponse(res, url));
 });
 
 await page.goto(`${BASE}/bazi`, { waitUntil: "domcontentloaded", timeout: 45000 });
