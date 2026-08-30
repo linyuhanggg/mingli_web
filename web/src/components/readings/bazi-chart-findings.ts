@@ -25,6 +25,12 @@ const NESTED_UNIT_KEYS = ["claim_unit_id", "unit_id", "kind_id"] as const;
 
 /** Runtime 工程边界句 → 中文产品语（禁止英文 / snake_case 上屏） */
 const PRODUCT_BOUNDARY_LABELS: Readonly<Record<string, string>> = {
+  "counts and season are inputs, not a strong/weak verdict":
+    "五行计数与月令季节状态只是旺衰证据，不能据此认定整盘身强或身弱",
+  "month command opens a candidate; success, failure, and rescue require classical adjudication":
+    "月令只开启格局候选，格局成败与救应仍待古法裁决",
+  "a combination or one-sided inventory does not prove following or transformation":
+    "干支相合或某一五行偏多只形成从格、化气候选，不能据此认定从格或化气",
   "no Shensha item may override month command, structure, strength, Tiaohou, Ten Gods, or luck/transit facts":
     "神煞只作辅助标注，不覆盖月令、格局、旺衰、调候、十神或大运流年事实",
   "inventory only; these counts do not determine 旺衰 or 用神":

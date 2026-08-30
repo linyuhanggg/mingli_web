@@ -144,6 +144,19 @@ describe("natalFindingCards", () => {
 describe("F3 product copy lock", () => {
   it("maps engineering boundaries and domain keys to Chinese", () => {
     expect(
+      visibleProductBoundary("counts and season are inputs, not a strong/weak verdict"),
+    ).toBe("五行计数与月令季节状态只是旺衰证据，不能据此认定整盘身强或身弱");
+    expect(
+      visibleProductBoundary(
+        "month command opens a candidate; success, failure, and rescue require classical adjudication",
+      ),
+    ).toBe("月令只开启格局候选，格局成败与救应仍待古法裁决");
+    expect(
+      visibleProductBoundary(
+        "a combination or one-sided inventory does not prove following or transformation",
+      ),
+    ).toBe("干支相合或某一五行偏多只形成从格、化气候选，不能据此认定从格或化气");
+    expect(
       visibleProductBoundary(
         "no Shensha item may override month command, structure, strength, Tiaohou, Ten Gods, or luck/transit facts",
       ),
@@ -162,6 +175,7 @@ describe("F3 product copy lock", () => {
         "transit_facts",
       ]),
     ).toBe("月令、格局、旺衰、调候、十神、大运、流年流月事实");
+    expect(visibleProductBoundary("future opaque boundary")).toBe("服务端已记录");
   });
 
   it("does not leak snake_case or English engineering sentences from findings", () => {
