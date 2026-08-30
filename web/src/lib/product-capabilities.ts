@@ -34,11 +34,11 @@ export type ProductCapability = {
 export const PRODUCT_CAPABILITIES = [
   {
     id: "bazi",
-    href: "/app/profile/new",
+    href: "/account/profiles/new",
     navigationLabel: "建立档案",
     footerLabel: "建立命理档案",
     icon: "archive",
-    activePrefixes: ["/app/profile", "/app/bazi"],
+    activePrefixes: ["/account/profiles", "/app/bazi"],
     home: {
       eyebrow: "TASK 01 · 先建档",
       title: "建立档案 · 八字概览",

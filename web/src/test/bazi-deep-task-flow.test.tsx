@@ -1,5 +1,6 @@
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { useEffect } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mockPollReading = vi.hoisted(() => vi.fn());
@@ -15,6 +16,7 @@ const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
 const mockListProfiles = vi.hoisted(() => vi.fn());
 const mockSearch = vi.hoisted(() => ({ value: new URLSearchParams() }));
 const mockSessionStatus = vi.hoisted(() => ({ value: "signedOut" as "checking" | "signedOut" | "signedIn" }));
+const readingSummaryCallbacks = vi.hoisted(() => new Map<string, (summary: unknown) => void>());
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
@@ -45,17 +47,57 @@ vi.mock("@/components/readings/reading-result", () => ({
   ReadingResult: ({
     readingId,
     baziDeepFulfilled = false,
+    onPollError,
+    onSummary,
   }: {
     readingId: string;
     baziDeepFulfilled?: boolean;
-  }) => (
-    <div
-      data-bazi-deep-fulfilled={String(baziDeepFulfilled)}
-      data-testid={`reading-result-${readingId}`}
-    >
-      服务端结果 renderer
-    </div>
-  ),
+    onPollError?: (error: unknown) => void;
+    onSummary?: (summary: typeof previewSummary) => void;
+  }) => {
+    useEffect(() => {
+      if (onSummary) readingSummaryCallbacks.set(readingId, onSummary as (summary: unknown) => void);
+      return () => {
+        readingSummaryCallbacks.delete(readingId);
+      };
+    }, [onSummary, readingId]);
+
+    useEffect(() => {
+      let active = true;
+      let timer: ReturnType<typeof setTimeout> | null = null;
+
+      async function run() {
+        try {
+          const summary = await mockPollReading(readingId);
+          if (!active) return;
+          onSummary?.(summary);
+          const record = summary as Record<string, unknown>;
+          const terminal = ["accepted", "runtime_unknown", "terminal_stopped"]
+            .includes(String(record.status));
+          if (!terminal && record.poll_required !== false) {
+            timer = setTimeout(run, 2000);
+          }
+        } catch (error) {
+          if (active) onPollError?.(error);
+        }
+      }
+
+      void run();
+      return () => {
+        active = false;
+        if (timer) clearTimeout(timer);
+      };
+    }, [onPollError, onSummary, readingId]);
+
+    return (
+      <div
+        data-bazi-deep-fulfilled={String(baziDeepFulfilled)}
+        data-testid={`reading-result-${readingId}`}
+      >
+        服务端结果 renderer
+      </div>
+    );
+  },
 }));
 
 import {
@@ -129,6 +171,7 @@ const checkoutConfirmed = {
 
 beforeEach(() => {
   window.sessionStorage.clear();
+  readingSummaryCallbacks.clear();
   mockSessionStatus.value = "signedOut";
   mockSearch.value = new URLSearchParams();
   mockPollReading.mockReset();
@@ -174,6 +217,7 @@ describe("Bazi deep task state contract", () => {
     expect(stateForReadingStatus("input_ready", "deep")).toBe("awaiting_fulfillment");
     expect(stateForReadingStatus("prepared", "deep")).toBe("running");
     expect(stateForReadingStatus("completing", "deep")).toBe("running");
+    expect(stateForReadingStatus("delayed", "preview")).toBe("preview_loading");
     expect(stateForReadingStatus("accepted", "deep")).toBe("succeeded");
     expect(stateForReadingStatus("delayed", "deep")).toBe("failed");
     expect(stateForReadingStatus("terminal_stopped", "deep")).toBe("failed");
@@ -238,7 +282,7 @@ describe("Bazi deep task state contract", () => {
     });
 
     expect(screen.getByText("正在准备免费盘面")).toBeVisible();
-    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
     expect(mockPollReading).toHaveBeenCalledTimes(1);
 
     await act(async () => {
@@ -359,6 +403,33 @@ describe("Bazi deep task state contract", () => {
     expect(screen.getByTestId("reading-result-deep-1")).toBeVisible();
   });
 
+  it("does not let a late preview summary roll checkout progress back to unpaid", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(previewSummary);
+    mockStartBaziDeepReading.mockReturnValue(new Promise(() => undefined));
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByText("尚未确认付费")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("正在准备履约")).toBeVisible();
+
+    act(() => {
+      readingSummaryCallbacks.get("preview-1")?.(previewSummary);
+    });
+
+    expect(screen.getByText("正在准备履约")).toBeVisible();
+    expect(screen.queryByText("尚未确认付费")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "开始安全结账" })).not.toBeInTheDocument();
+  });
+
   it("fails closed when payment or fulfillment is rejected", async () => {
     mockSessionStatus.value = "signedIn";
     mockPollReading.mockResolvedValue(previewSummary);
@@ -379,6 +450,49 @@ describe("Bazi deep task state contract", () => {
     await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
     expect(await screen.findByText("confirmed payment is required")).toBeVisible();
     expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
+  });
+
+  it("recovers a confirmed checkout after fulfillment binding fails", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading
+      .mockResolvedValueOnce(previewSummary)
+      .mockImplementation(() => new Promise(() => undefined));
+    mockStartBaziDeepReading.mockResolvedValue({
+      ...deepSummary,
+      status: "input_ready",
+      delivery_state: "payment_required",
+    });
+    mockCreateBaziDeepCheckout.mockResolvedValue(checkoutPending);
+    mockGetBaziDeepCheckout.mockResolvedValue(checkoutConfirmed);
+    mockBindReadingFulfillment
+      .mockRejectedValueOnce(new Error("fulfillment binding unavailable"))
+      .mockResolvedValueOnce({ status: "running" });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("fulfillment binding unavailable")).toBeVisible();
+    expect(mockBindReadingFulfillment).toHaveBeenCalledTimes(1);
+    const originalFulfillmentKey = mockBindReadingFulfillment.mock.calls[0]?.[2];
+
+    await userEvent.click(screen.getByRole("button", { name: "重试状态读取" }));
+
+    await waitFor(() => expect(mockGetBaziDeepCheckout).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(mockBindReadingFulfillment).toHaveBeenCalledTimes(2));
+    expect(mockBindReadingFulfillment).toHaveBeenNthCalledWith(
+      2,
+      "deep-1",
+      { payment_id: "confirmed-payment-from-server" },
+      originalFulfillmentKey,
+    );
+    expect(await screen.findByText("已进入深读队列")).toBeVisible();
   });
 
   it("does not treat the fake/unavailable gateway as a successful payment", async () => {
@@ -638,7 +752,7 @@ describe("guest bazi preview restore", () => {
     });
 
     expect(screen.getByText("正在准备免费盘面")).toBeVisible();
-    expect(screen.queryByTestId("reading-result-preview-1")).not.toBeInTheDocument();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
     expect(mockPollReading).toHaveBeenCalledTimes(1);
 
     await act(async () => {

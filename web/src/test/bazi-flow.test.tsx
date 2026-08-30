@@ -53,6 +53,17 @@ beforeEach(() => {
 });
 
 describe("BaziFlow", () => {
+  it("sends the empty-state action to the canonical new-profile route", async () => {
+    api.listProfiles.mockResolvedValue({ profiles: [] });
+
+    render(<BaziFlow />);
+
+    expect(await screen.findByRole("link", { name: "去建档" })).toHaveAttribute(
+      "href",
+      "/account/profiles/new",
+    );
+  });
+
   it("states the currently supported narrative scope before submitting", async () => {
     const user = userEvent.setup();
     render(<BaziFlow />);

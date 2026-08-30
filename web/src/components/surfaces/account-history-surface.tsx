@@ -47,7 +47,9 @@ function AccountHistoryContent({ readingId }: AccountHistorySurfaceProps) {
     );
   }
 
-  return readingId ? <ReadingResult readingId={readingId} /> : <ReadingHistory accountScoped />;
+  return readingId
+    ? <ReadingResult headingLevel={2} readingId={readingId} />
+    : <ReadingHistory accountScoped />;
 }
 
 export function AccountHistorySurface({ readingId }: AccountHistorySurfaceProps) {

@@ -73,7 +73,7 @@ describe("private P0 surfaces", () => {
     ).toBeVisible();
     expect(screen.getByRole("link", { name: "建立第一份档案" })).toHaveAttribute(
       "href",
-      "/app/profile/new",
+      "/account/profiles/new",
     );
     expect(
       screen.getByRole("link", { name: "不建档，直接一事一问" }),
@@ -278,7 +278,7 @@ describe("private P0 surfaces", () => {
       ).toBeVisible();
       expect(
         screen.getByRole("link", { name: "开始建立档案" }),
-      ).toHaveAttribute("href", "/app/profile/new");
+      ).toHaveAttribute("href", "/account/profiles/new");
     });
   });
 
