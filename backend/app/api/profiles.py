@@ -53,6 +53,7 @@ from app.readings.service import (
     ReadingServiceError,
     RuntimeReleaseUnavailableError,
 )
+from app.readings.status import ReadingStatus
 
 router = APIRouter(prefix="/profiles", tags=["Profiles"])
 
@@ -385,6 +386,12 @@ async def confirm_profile_draft_and_start_preview_reading(
         raise ApiProblem(status=400, title="Invalid request") from error
     except ReadingServiceError as error:
         raise _reading_problem(error) from error
+    if result[0].status is ReadingStatus.WAITING_INPUT:
+        unavailable = ChartFastPathUnavailableError(
+            "chart_runtime_need_input",
+            code="chart_runtime_need_input",
+        )
+        raise _reading_problem(unavailable) from unavailable
     if not result[0].result_available:
         unavailable = ChartFastPathUnavailableError(
             "chart_view_model_projection_failed",

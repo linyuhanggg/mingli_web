@@ -60,6 +60,35 @@ class UnsupportedChartRuntime:
         )
 
 
+class NeedInputChartRuntime:
+    """Correctable Runtime stop used to preserve the public 400 contract."""
+
+    adapter_kind = "test-need-input"
+
+    async def execute(self, command: Any) -> Stopped:
+        del command
+        return Stopped(
+            reason="need_input",
+            public_copy="还需要补充排盘信息。",
+            state_token="need-input-chart-token",
+            input_request={
+                "requirements": [
+                    {
+                        "any_of": [
+                            {
+                                "id": "missing_chart_input",
+                                "label": "补充信息",
+                                "type_id": "text",
+                                "description": None,
+                                "choices": [],
+                            }
+                        ]
+                    }
+                ]
+            },
+        )
+
+
 class RenderableChartRuntime:
     adapter_kind = "test-renderable"
 
@@ -1315,6 +1344,77 @@ async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = NeedInputChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "need-input-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        async with database.sessions() as session:
+            counts_before = (
+                await session.scalar(select(func.count()).select_from(SubjectProfile)),
+                await session.scalar(select(func.count()).select_from(ProfileVersion)),
+                await session.scalar(select(func.count()).select_from(ReadingRoot)),
+                await session.scalar(select(func.count()).select_from(ReadingVersion)),
+                await session.scalar(
+                    select(func.count()).select_from(ReadingIdempotencyKey)
+                ),
+            )
+
+        need_input = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+        assert need_input.status_code == 400, need_input.text
+        assert need_input.json()["code"] == "chart_runtime_need_input"
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+        assert listed_after_failure.json() == {"profiles": []}
+        async with database.sessions() as session:
+            counts_after = (
+                await session.scalar(select(func.count()).select_from(SubjectProfile)),
+                await session.scalar(select(func.count()).select_from(ProfileVersion)),
+                await session.scalar(select(func.count()).select_from(ReadingRoot)),
+                await session.scalar(select(func.count()).select_from(ReadingVersion)),
+                await session.scalar(
+                    select(func.count()).select_from(ReadingIdempotencyKey)
+                ),
+            )
+        assert counts_after == counts_before
+
+        application.state.chart_runtime = RenderableChartRuntime()
+        succeeded = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+    assert succeeded.status_code == 201, succeeded.text
+    assert succeeded.json()["result_available"] is True
 
 
 async def test_confirm_and_preview_replays_a_concurrent_idempotent_request(
