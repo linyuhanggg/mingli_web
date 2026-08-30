@@ -147,17 +147,13 @@
   gap: var(--space-sm);
 }
 
-.flow[data-chart-first="true"] > .chartLead {
-  order: -1;
-}
-
 .toolbar[data-compact="true"] {
   gap: var(--space-sm);
   padding: 0.45rem 0.75rem;
 }
 
 .toolbar[data-compact="true"] .backButton {
-  min-height: 2.25rem;
+  min-height: var(--target-min);
 }
 
 .toolbar[data-compact="true"] .title {

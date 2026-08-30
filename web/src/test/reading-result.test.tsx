@@ -424,6 +424,45 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     ]);
   });
 
+  it("keeps accepted share and export actions in chart-first density", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        return jsonResponse(
+          readingSummary("accepted", {
+            capability_id: "bazi",
+            product_id: "bazi",
+            object_id: "natal",
+          }),
+        );
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return jsonResponse(
+          readingResult({
+            capability: baziCapabilityA,
+            view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+            document: {
+              ...readingDocument(),
+              actions: {
+                ...readingDocument().actions,
+                export: { enabled: true },
+              },
+            },
+          }),
+        );
+      }
+      return problemResponse("Unexpected request", 500);
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult density="chart-first" readingId={VERSION_ID} />);
+
+    const actions = await screen.findByRole("complementary", { name: "报告操作" });
+    expect(within(actions).getByRole("heading", { name: "分享" })).toBeVisible();
+    expect(within(actions).getByRole("heading", { name: "导出报告" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "报告信息" })).not.toBeInTheDocument();
+  });
+
   it("finishes an old prepared result final-summary refresh before applying the polling cap", async () => {
     vi.useFakeTimers();
     const now = Date.parse("2026-08-29T12:11:00Z");

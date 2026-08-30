@@ -546,6 +546,48 @@ export function BaziDeepTaskFlow({
     accessState === "free"
     || accessState === "unauthenticated"
     || accessState === "unpaid";
+  const showFreeResult =
+    accessState === "preview_loading"
+    || accessState === "free"
+    || accessState === "unauthenticated"
+    || accessState === "unpaid"
+    || accessState === "awaiting_fulfillment"
+    || accessState === "checkout_pending"
+    || accessState === "checkout_unavailable"
+    || accessState === "checkout_failed"
+    || accessState === "queued"
+    || accessState === "running"
+    || showDeepResult;
+  const freeResultSection = showFreeResult ? (
+    <section
+      className={chartReady ? styles.chartLead : styles.section}
+      aria-labelledby="bazi-free-result-title"
+      data-chart-lead={chartReady ? "true" : undefined}
+      key="bazi-free-result"
+    >
+      <div className={styles.statusCopy}>
+        <h2
+          className={chartReady ? styles.chartLeadTitle : undefined}
+          id="bazi-free-result-title"
+        >
+          {chartReady ? "免费盘面" : "免费确定性盘面"}
+        </h2>
+        {chartReady ? null : (
+          <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
+        )}
+      </div>
+      <div className={styles.result}>
+        <ReadingResult
+          baziDeepFulfilled={accessState === "succeeded"}
+          density={chartReady ? "chart-first" : "default"}
+          key={`preview-${previewReadingId}-${previewRetryKey}`}
+          onPollError={handlePreviewPollError}
+          onSummary={handlePreviewSummary}
+          readingId={previewReadingId}
+        />
+      </div>
+    </section>
+  ) : null;
 
   return (
     <section
@@ -553,6 +595,7 @@ export function BaziDeepTaskFlow({
       data-chart-first={chartReady ? "true" : undefined}
       aria-labelledby="bazi-deep-task-title"
     >
+      {chartReady ? freeResultSection : null}
       <header className={styles.toolbar} data-compact={chartReady ? "true" : undefined}>
         <button className={styles.backButton} onClick={handleBack} type="button">
           <ArrowLeft aria-hidden="true" size={17} />
@@ -637,47 +680,7 @@ export function BaziDeepTaskFlow({
       </section>
       )}
 
-      {(
-        accessState === "preview_loading"
-        || accessState === "free"
-        || accessState === "unauthenticated"
-        || accessState === "unpaid"
-        || accessState === "awaiting_fulfillment"
-        || accessState === "checkout_pending"
-        || accessState === "checkout_unavailable"
-        || accessState === "checkout_failed"
-        || accessState === "queued"
-        || accessState === "running"
-        || showDeepResult
-      ) ? (
-        <section
-          className={chartReady ? styles.chartLead : styles.section}
-          aria-labelledby="bazi-free-result-title"
-          data-chart-lead={chartReady ? "true" : undefined}
-        >
-          <div className={styles.statusCopy}>
-            <h2
-              className={chartReady ? styles.chartLeadTitle : undefined}
-              id="bazi-free-result-title"
-            >
-              {chartReady ? "免费盘面" : "免费确定性盘面"}
-            </h2>
-            {chartReady ? null : (
-              <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
-            )}
-          </div>
-          <div className={styles.result}>
-            <ReadingResult
-              baziDeepFulfilled={accessState === "succeeded"}
-              density={chartReady ? "chart-first" : "default"}
-              key={`preview-${previewReadingId}-${previewRetryKey}`}
-              onPollError={handlePreviewPollError}
-              onSummary={handlePreviewSummary}
-              readingId={previewReadingId}
-            />
-          </div>
-        </section>
-      ) : null}
+      {chartReady ? null : freeResultSection}
 
       {accessState === "free" && sessionChecking ? (
         <Status state="loading" title="正在确认深读资格" description="只确认账户状态，不会创建深读任务。" />

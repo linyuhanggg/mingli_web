@@ -194,6 +194,27 @@ function resultErrorState(error: unknown): {
   return { state: "error", title: "读取失败，请重试", description };
 }
 
+function ReadingActions({
+  readingId,
+  summary,
+  result,
+}: Readonly<{
+  readingId: string;
+  summary: ReadingVersionSummary;
+  result: ReadingResultResponse | null;
+}>) {
+  return (
+    <>
+      {summary.status === "accepted" && result?.document?.actions.share.enabled === true ? (
+        <ReadingSharePanel readingId={readingId} />
+      ) : null}
+      {summary.status === "accepted" && result?.document?.actions.export.enabled === true ? (
+        <ReadingExportPanel readingId={readingId} />
+      ) : null}
+    </>
+  );
+}
+
 function ArchiveRail({
   elapsedMs,
   onRetry,
@@ -241,12 +262,7 @@ function ArchiveRail({
       {showCappedPartialStatus ? (
         <WaitingStatus elapsedMs={elapsedMs} onRetry={onRetry} />
       ) : null}
-      {summary.status === "accepted" && result?.document?.actions.share.enabled === true ? (
-        <ReadingSharePanel readingId={readingId} />
-      ) : null}
-      {summary.status === "accepted" && result?.document?.actions.export.enabled === true ? (
-        <ReadingExportPanel readingId={readingId} />
-      ) : null}
+      <ReadingActions readingId={readingId} summary={summary} result={result} />
     </aside>
   );
 }
@@ -1300,6 +1316,11 @@ function ReadingResultForVersion({
     }
 
     const chartFirst = density === "chart-first";
+    const hasChartFirstActions =
+      chartFirst &&
+      summary.status === "accepted" &&
+      (result.document?.actions.share.enabled === true ||
+        result.document?.actions.export.enabled === true);
 
     return (
       <div
@@ -1415,6 +1436,11 @@ function ReadingResultForVersion({
                 {canFollowUp ? <FollowUpForm readingId={readingId} /> : null}
               </div>
             </section>
+          ) : null}
+          {hasChartFirstActions ? (
+            <aside className={surface.evidenceRail} aria-label="报告操作">
+              <ReadingActions readingId={readingId} summary={summary} result={result} />
+            </aside>
           ) : null}
         </article>
         {chartFirst ? null : (

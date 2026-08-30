@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
+
 import { act, cleanup, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { useEffect } from "react";
@@ -47,11 +50,13 @@ vi.mock("@/components/readings/reading-result", () => ({
   ReadingResult: ({
     readingId,
     baziDeepFulfilled = false,
+    density = "default",
     onPollError,
     onSummary,
   }: {
     readingId: string;
     baziDeepFulfilled?: boolean;
+    density?: "default" | "chart-first";
     onPollError?: (error: unknown) => void;
     onSummary?: (summary: typeof previewSummary) => void;
   }) => {
@@ -95,6 +100,7 @@ vi.mock("@/components/readings/reading-result", () => ({
         data-testid={`reading-result-${readingId}`}
       >
         服务端结果 renderer
+        {density === "chart-first" ? <button type="button">盘面操作</button> : null}
       </div>
     );
   },
@@ -286,6 +292,7 @@ describe("Bazi deep task state contract", () => {
   });
 
   it("F2: chart-ready shell leads with chart and compresses task chrome", async () => {
+    const user = userEvent.setup();
     mockPollReading.mockResolvedValue({
       ...previewSummary,
       status: "prepared",
@@ -305,8 +312,26 @@ describe("Bazi deep task state contract", () => {
     expect(await screen.findByTestId("reading-result-preview-1")).toBeVisible();
     const flow = screen.getByRole("region", { name: "八字工作台" });
     expect(flow).toHaveAttribute("data-chart-first", "true");
-    expect(screen.getByRole("heading", { name: "免费盘面" })).toBeVisible();
+    const chartHeading = screen.getByRole("heading", { name: "免费盘面" });
+    const toolbarHeading = screen.getByRole("heading", { name: "八字工作台" });
+    expect(chartHeading).toBeVisible();
+    expect(
+      chartHeading.compareDocumentPosition(toolbarHeading)
+        & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(screen.queryByRole("heading", { name: "任务进度" })).not.toBeInTheDocument();
+
+    await user.tab();
+    expect(screen.getByRole("button", { name: "盘面操作" })).toHaveFocus();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "返回录入" })).toHaveFocus();
+
+    const css = readFileSync(
+      join(process.cwd(), "src/components/task/bazi-deep-task-flow.module.css"),
+      "utf8",
+    );
+    expect(css).not.toMatch(/\.flow\[data-chart-first="true"\]\s*>\s*\.chartLead\s*\{[^}]*order\s*:/s);
+    expect(css).toMatch(/\.toolbar\[data-compact="true"\]\s+\.backButton\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
   });
 
   it("keeps preview loading and continues polling while input_ready", async () => {
