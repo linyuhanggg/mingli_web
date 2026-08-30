@@ -97,6 +97,7 @@ vi.mock("@/components/readings/reading-result", () => ({
     return (
       <div
         data-bazi-deep-fulfilled={String(baziDeepFulfilled)}
+        data-density={density}
         data-testid={`reading-result-${readingId}`}
       >
         服务端结果 renderer
@@ -332,6 +333,90 @@ describe("Bazi deep task state contract", () => {
     );
     expect(css).not.toMatch(/\.flow\[data-chart-first="true"\]\s*>\s*\.chartLead\s*\{[^}]*order\s*:/s);
     expect(css).toMatch(/\.toolbar\[data-compact="true"\]\s+\.backButton\s*\{[^}]*min-height:\s*var\(--target-min\)/s);
+  });
+
+  it("keeps a ready chart first through fulfillment, checkout, queue, and running states", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading
+      .mockResolvedValueOnce(previewSummary)
+      .mockImplementation(() => new Promise(() => undefined));
+    let releaseDeepStart: ((value: unknown) => void) | undefined;
+    mockStartBaziDeepReading.mockReturnValue(
+      new Promise((resolve) => {
+        releaseDeepStart = resolve;
+      }),
+    );
+    mockCreateBaziDeepCheckout.mockResolvedValue(checkoutPending);
+    let releaseCheckout: ((value: typeof checkoutConfirmed) => void) | undefined;
+    mockGetBaziDeepCheckout.mockReturnValue(
+      new Promise((resolve) => {
+        releaseCheckout = resolve;
+      }),
+    );
+    let releaseBinding: ((value: { status: string }) => void) | undefined;
+    mockBindReadingFulfillment.mockReturnValue(
+      new Promise((resolve) => {
+        releaseBinding = resolve;
+      }),
+    );
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    const preview = await screen.findByTestId("reading-result-preview-1");
+    const flow = screen.getByRole("region", { name: "八字工作台" });
+    const chartHeading = screen.getByRole("heading", { name: "免费盘面" });
+    const toolbarHeading = screen.getByRole("heading", { name: "八字工作台" });
+    const expectChartFirst = () => {
+      expect(flow).toHaveAttribute("data-chart-first", "true");
+      expect(screen.getByTestId("reading-result-preview-1")).toBe(preview);
+      expect(preview).toHaveAttribute("data-density", "chart-first");
+      expect(
+        chartHeading.compareDocumentPosition(toolbarHeading)
+          & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(screen.getAllByRole("button")[0]).toHaveAccessibleName("盘面操作");
+    };
+
+    expectChartFirst();
+    await userEvent.click(screen.getByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("正在准备履约")).toBeVisible();
+    expectChartFirst();
+
+    releaseDeepStart?.({
+      ...deepSummary,
+      status: "input_ready",
+      delivery_state: "payment_required",
+    });
+    expect((await screen.findAllByText("等待支付确认")).length).toBeGreaterThan(0);
+    expectChartFirst();
+
+    releaseCheckout?.(checkoutConfirmed);
+    await waitFor(() => expect(mockBindReadingFulfillment).toHaveBeenCalled());
+    expectChartFirst();
+
+    releaseBinding?.({ status: "running" });
+    expect(await screen.findByText("已进入深读队列")).toBeVisible();
+    expectChartFirst();
+
+    await waitFor(() => expect(readingSummaryCallbacks.has("deep-1")).toBe(true));
+    act(() => {
+      readingSummaryCallbacks.get("deep-1")?.({
+        ...deepSummary,
+        status: "prepared",
+        delivery_state: "processing",
+      });
+    });
+    expect(await screen.findByText("深读生成中")).toBeVisible();
+    expectChartFirst();
+    expect(mockPollReading.mock.calls.filter(([readingId]) => readingId === "preview-1"))
+      .toHaveLength(1);
   });
 
   it("keeps preview loading and continues polling while input_ready", async () => {

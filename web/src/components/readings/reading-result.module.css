@@ -142,3 +142,9 @@
   margin: 0;
   font-size: var(--font-size-label);
 }
+
+@media (min-width: 80rem) {
+  .chartFirst[data-density="chart-first"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

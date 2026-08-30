@@ -267,6 +267,7 @@ export function BaziDeepTaskFlow({
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [readyPreviewReadingId, setReadyPreviewReadingId] = useState<string | null>(null);
   const [previewRetryKey, setPreviewRetryKey] = useState(0);
   const [deepRetryKey, setDeepRetryKey] = useState(0);
   const deepStartKeyRef = useRef<string | null>(null);
@@ -310,8 +311,16 @@ export function BaziDeepTaskFlow({
     if (!previewCallbacksEnabledRef.current) return;
     setError(null);
     setErrorStatus(null);
-    setState(stateForReadingStatus(summary.status, "preview", previewPollHints(summary)));
-  }, []);
+    const nextState = stateForReadingStatus(
+      summary.status,
+      "preview",
+      previewPollHints(summary),
+    );
+    if (nextState === "free") {
+      setReadyPreviewReadingId(previewReadingId);
+    }
+    setState(nextState);
+  }, [previewReadingId]);
 
   const handleDeepSummary = useCallback((summary: ReadingVersionSummary) => {
     setError(null);
@@ -542,10 +551,17 @@ export function BaziDeepTaskFlow({
     setPreviewRetryKey((value) => value + 1);
   }
 
-  const chartReady =
-    accessState === "free"
-    || accessState === "unauthenticated"
-    || accessState === "unpaid";
+  const chartReady = readyPreviewReadingId === previewReadingId;
+  const showTaskProgress =
+    accessState === "preview_loading"
+    || accessState === "awaiting_fulfillment"
+    || accessState === "checkout_pending"
+    || accessState === "checkout_unavailable"
+    || accessState === "checkout_failed"
+    || accessState === "queued"
+    || accessState === "running"
+    || accessState === "succeeded"
+    || accessState === "failed";
   const showFreeResult =
     accessState === "preview_loading"
     || accessState === "free"
@@ -609,7 +625,7 @@ export function BaziDeepTaskFlow({
         )}
       </header>
 
-      {chartReady ? null : (
+      {showTaskProgress ? (
       <section
         className={styles.section}
         aria-labelledby="bazi-deep-status-title"
@@ -678,7 +694,7 @@ export function BaziDeepTaskFlow({
           <Status state="success" title={phase.title} description={phase.text} />
         ) : null}
       </section>
-      )}
+      ) : null}
 
       {chartReady ? null : freeResultSection}
 

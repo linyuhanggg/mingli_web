@@ -461,6 +461,14 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     expect(within(actions).getByRole("heading", { name: "分享" })).toBeVisible();
     expect(within(actions).getByRole("heading", { name: "导出报告" })).toBeVisible();
     expect(screen.queryByRole("heading", { name: "报告信息" })).not.toBeInTheDocument();
+
+    const css = readFileSync(
+      join(process.cwd(), "src/components/readings/reading-result.module.css"),
+      "utf8",
+    );
+    expect(css).toMatch(
+      /@media \(min-width: 80rem\)[^{]*\{\s*\.chartFirst\[data-density="chart-first"\]\s*\{[^}]*grid-template-columns:\s*minmax\(0, 1fr\)/s,
+    );
   });
 
   it("finishes an old prepared result final-summary refresh before applying the polling cap", async () => {
