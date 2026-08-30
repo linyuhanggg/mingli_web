@@ -233,6 +233,54 @@ def test_profile_latest_reading_and_atomic_preview_contracts_are_aligned() -> No
     )
 
 
+def test_preview_time_target_constraints_are_aligned_and_enforced() -> None:
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = _runtime_spec()["components"]["schemas"]
+
+    valid_targets = [
+        {},
+        {"target_year": 1800},
+        {"target_year": 2199},
+        {"target_month": "1800-01"},
+        {"target_month": "2199-12"},
+        {"target_date": "2026-08-15"},
+        {"target_year": None, "target_month": None, "target_date": None},
+    ]
+    invalid_targets = [
+        {"target_year": 2026, "target_month": "2026-08"},
+        {"target_year": 2026, "target_date": "2026-08-15"},
+        {"target_month": "2026-08", "target_date": "2026-08-15"},
+        {
+            "target_year": 2026,
+            "target_month": "2026-08",
+            "target_date": "2026-08-15",
+        },
+        {"target_month": "1799-12"},
+        {"target_month": "2200-01"},
+    ]
+
+    for name in ("ProfileReadingPreviewOptions", "PreviewStartRequest"):
+        frozen = frozen_schemas[name]
+        runtime = runtime_schemas[name]
+        assert frozen["not"] == runtime["not"]
+        assert (
+            frozen["properties"]["target_month"]["pattern"]
+            == next(
+                item
+                for item in runtime["properties"]["target_month"]["anyOf"]
+                if item.get("type") == "string"
+            )["pattern"]
+        )
+
+        base = {"profile_version_id": str(uuid4())} if name == "PreviewStartRequest" else {}
+        for schema in (frozen, runtime):
+            validator = Draft202012Validator(schema)
+            for target in valid_targets:
+                assert not list(validator.iter_errors({**base, **target})), (name, target)
+            for target in invalid_targets:
+                assert list(validator.iter_errors({**base, **target})), (name, target)
+
+
 def test_verification_summary_contract_is_four_value_and_aligned() -> None:
     frozen_schemas = _frozen_schemas()
     runtime_schemas = _runtime_spec()["components"]["schemas"]

@@ -38,10 +38,40 @@ MeihuaCastingMethod = Literal[
     "supplied_hexagram",
 ]
 LiuyaoQuestionClass = Literal["finance"]
+_TIME_TARGET_AT_MOST_ONE_SCHEMA: dict[str, Any] = {
+    "not": {
+        "anyOf": [
+            {
+                "required": ["target_year", "target_month"],
+                "properties": {
+                    "target_year": {"not": {"type": "null"}},
+                    "target_month": {"not": {"type": "null"}},
+                },
+            },
+            {
+                "required": ["target_year", "target_date"],
+                "properties": {
+                    "target_year": {"not": {"type": "null"}},
+                    "target_date": {"not": {"type": "null"}},
+                },
+            },
+            {
+                "required": ["target_month", "target_date"],
+                "properties": {
+                    "target_month": {"not": {"type": "null"}},
+                    "target_date": {"not": {"type": "null"}},
+                },
+            },
+        ]
+    }
+}
 
 
 class PreviewStartRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra=_TIME_TARGET_AT_MOST_ONE_SCHEMA,
+    )
 
     profile_version_id: UUID
     query: str | None = Field(default=None, min_length=1, max_length=300)
@@ -53,7 +83,7 @@ class PreviewStartRequest(BaseModel):
     target_year: int | None = Field(default=None, ge=1800, le=2199)
     target_month: str | None = Field(
         default=None,
-        pattern=r"^\d{4}-(?:0[1-9]|1[0-2])$",
+        pattern=r"^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])$",
     )
     target_date: date | None = None
 

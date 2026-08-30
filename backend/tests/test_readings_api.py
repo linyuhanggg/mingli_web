@@ -750,6 +750,37 @@ async def test_guest_starts_targeted_bazi_preview_with_public_horizon_boundary(
 
 
 @pytest.mark.parametrize(
+    "target",
+    [
+        {"target_year": 2026, "target_month": "2026-08"},
+        {"target_month": "2026-08", "target_date": "2026-08-15"},
+        {"target_month": "1799-12"},
+        {"target_month": "2200-01"},
+    ],
+)
+async def test_preview_rejects_invalid_time_targets_during_validation(
+    client: AsyncClient,
+    target: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fail_if_service_runs(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("request validation must reject before ReadingService")
+
+    monkeypatch.setattr(ReadingService, "start_preview", fail_if_service_runs)
+    headers = await create_guest(client)
+
+    response = await client.post(
+        "/api/v1/readings/preview",
+        headers={**headers, "Idempotency-Key": "invalid-time-target-v1"},
+        json={"profile_version_id": str(uuid4()), **target},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid request"
+
+
+@pytest.mark.parametrize(
     "path, payload, expected_capability, expected_object",
     [
         (
