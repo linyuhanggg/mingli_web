@@ -1741,6 +1741,267 @@ async def test_confirm_and_preview_abandoned_claim_expires_and_replays_after_res
         assert job.lease_expires_at is None
 
 
+@pytest.mark.parametrize("expire_claim", [False, True], ids=["active", "expired"])
+async def test_foreign_owner_reads_do_not_stabilize_atomic_profile_preview_claim(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    expire_claim: bool,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = UnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_winner = asyncio.Event()
+    claimed_version_id: UUID | None = None
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal claimed_version_id
+        result = await original_claim(service, *args, **kwargs)
+        claim = service._atomic_profile_preview_claim
+        if result is None and claim is not None:
+            claimed_version_id = claim.reading_version_id
+            claim_committed.set()
+            await release_winner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with (
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as owner_client,
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as foreign_client,
+    ):
+        owner_guest = await create_guest(owner_client)
+        owner_login = await login_current_guest(
+            owner_client,
+            owner_guest,
+            destination="13800138000",
+        )
+        owner_headers = {
+            "X-CSRF-Token": owner_login["csrf_token"],
+            "Idempotency-Key": "foreign-read-ownership-v1",
+        }
+        foreign_guest = await create_guest(foreign_client)
+        await login_current_guest(
+            foreign_client,
+            foreign_guest,
+            destination="13900139000",
+        )
+        draft = await owner_client.post(
+            "/api/v1/profiles/drafts",
+            headers=owner_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        winner = asyncio.create_task(
+            owner_client.post(endpoint, headers=owner_headers, json=payload)
+        )
+        await asyncio.wait_for(claim_committed.wait(), timeout=5)
+        assert claimed_version_id is not None
+        if expire_claim:
+            async with database.sessions() as session:
+                job = await session.scalar(
+                    select(ReadingJobRecord).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+                assert job is not None
+                job.lease_expires_at = datetime.now(UTC) - timedelta(seconds=1)
+                await session.commit()
+        try:
+            foreign_summary = await foreign_client.get(
+                f"/api/v1/readings/{claimed_version_id}"
+            )
+            foreign_result = await foreign_client.get(
+                f"/api/v1/readings/{claimed_version_id}/result"
+            )
+            async with database.sessions() as session:
+                observed_generation = await session.scalar(
+                    select(ReadingJobRecord.lease_generation).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+                observed_job_status = await session.scalar(
+                    select(ReadingJobRecord.status).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+                observed_version_status = await session.scalar(
+                    select(ReadingVersion.status).where(
+                        ReadingVersion.id == claimed_version_id
+                    )
+                )
+        finally:
+            release_winner.set()
+        failed = await asyncio.wait_for(winner, timeout=10)
+
+    assert foreign_summary.status_code == 404, foreign_summary.text
+    assert foreign_result.status_code == 404, foreign_result.text
+    assert observed_generation == 1
+    assert observed_job_status == "claim_pending"
+    assert observed_version_status == "input_ready"
+    assert failed.status_code == 503, failed.text
+    async with database.sessions() as session:
+        if expire_claim:
+            assert failed.json()["code"] == "chart_runtime_transport"
+            assert runtime.calls == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 1
+            assert await session.scalar(select(ReadingVersion.status)) == "runtime_unknown"
+            assert await session.scalar(select(ReadingJobRecord.status)) == "runtime_unknown"
+        else:
+            assert failed.json()["code"] == "chart_runtime_unsupported"
+            assert runtime.calls == 1
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 0
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 0
+
+
+@pytest.mark.parametrize(
+    "listing_path",
+    ["/api/v1/readings", "/api/v1/account/history"],
+    ids=["reading-summaries", "account-history"],
+)
+async def test_listing_provisional_preview_claim_keeps_returned_id_replayable(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    listing_path: str,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = UnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_winner = asyncio.Event()
+    claimed_version_id: UUID | None = None
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal claimed_version_id
+        result = await original_claim(service, *args, **kwargs)
+        claim = service._atomic_profile_preview_claim
+        if result is None and claim is not None:
+            claimed_version_id = claim.reading_version_id
+            claim_committed.set()
+            await release_winner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        guest_headers = await create_guest(client)
+        logged_in = await login_current_guest(client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": f"list-exposes-preview-{listing_path.rsplit('/', 1)[-1]}-v1",
+        }
+        draft = await client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        winner = asyncio.create_task(client.post(endpoint, headers=headers, json=payload))
+        await asyncio.wait_for(claim_committed.wait(), timeout=5)
+        assert claimed_version_id is not None
+        try:
+            listing = await client.get(listing_path)
+            async with database.sessions() as session:
+                observed_generation = await session.scalar(
+                    select(ReadingJobRecord.lease_generation).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+        finally:
+            release_winner.set()
+        failed = await asyncio.wait_for(winner, timeout=10)
+        fetched = await client.get(f"/api/v1/readings/{claimed_version_id}")
+
+    assert listing.status_code == 200, listing.text
+    if listing_path == "/api/v1/readings":
+        listed_version_ids = {
+            item["reading_version_id"] for item in listing.json()["readings"]
+        }
+    else:
+        listed_version_ids = {
+            item["reading_version_id"]
+            for root in listing.json()["roots"]
+            for item in root["versions"]
+        }
+    assert str(claimed_version_id) in listed_version_ids
+    assert observed_generation == 2
+    assert failed.status_code == 503, failed.text
+    assert failed.json()["code"] == "chart_runtime_unsupported"
+    assert fetched.status_code == 200, fetched.text
+    assert fetched.json()["reading_version_id"] == str(claimed_version_id)
+    assert fetched.json()["status"] == "terminal_stopped"
+    assert fetched.json()["poll_required"] is False
+    assert runtime.calls == 1
+
+
 async def test_confirm_and_preview_expired_claim_beats_late_winner(
     database: Any,
     test_settings: Any,
@@ -1886,6 +2147,153 @@ async def test_confirm_and_preview_expired_claim_beats_late_winner(
         assert list(await session.scalars(select(ReadingJobRecord.status))) == [
             "runtime_unknown"
         ]
+
+
+async def test_confirm_and_preview_late_winner_replay_survives_recovery_rollback(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    readings_service_module = __import__(
+        "app.readings.service",
+        fromlist=["_ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS"],
+    )
+    repository_module = __import__(
+        "app.readings.repository",
+        fromlist=["SqlReadingRepository"],
+    )
+    runtime = RenderableChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    monkeypatch.setattr(
+        readings_service_module,
+        "_ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS",
+        1,
+    )
+    payload = confirm_and_preview_payload()
+    winner_at_attach = asyncio.Event()
+    release_late_winner = asyncio.Event()
+    recovery_at_version_lock = asyncio.Event()
+    release_recovery = asyncio.Event()
+    claimed_version_id: UUID | None = None
+    recovery_paused = False
+    original_attach = repository_module.SqlReadingRepository.attach_start_claim_profile
+    original_recover = ReadingService._recover_expired_atomic_profile_preview_claim
+
+    async def pause_after_claim_validation(
+        repository: Any,
+        version_id: UUID,
+        profile_version_id: UUID,
+    ) -> Any:
+        nonlocal claimed_version_id
+        claimed_version_id = version_id
+        winner_at_attach.set()
+        await release_late_winner.wait()
+        return await original_attach(repository, version_id, profile_version_id)
+
+    monkeypatch.setattr(
+        repository_module.SqlReadingRepository,
+        "attach_start_claim_profile",
+        pause_after_claim_validation,
+    )
+
+    async def pause_recovery_before_version_lock(
+        service: ReadingService,
+        version_id: UUID,
+    ) -> bool:
+        nonlocal recovery_paused
+        original_scalar = service.session.scalar
+
+        async def pausing_scalar(statement: Any, *args: Any, **kwargs: Any) -> Any:
+            nonlocal recovery_paused
+            entity = statement.column_descriptions[0].get("entity")
+            if (
+                not recovery_paused
+                and getattr(statement, "_for_update_arg", None) is not None
+                and entity is ReadingVersion
+            ):
+                recovery_paused = True
+                recovery_at_version_lock.set()
+                await release_recovery.wait()
+            return await original_scalar(statement, *args, **kwargs)
+
+        service.session.scalar = pausing_scalar  # type: ignore[method-assign]
+        try:
+            return await original_recover(service, version_id)
+        finally:
+            service.session.scalar = original_scalar  # type: ignore[method-assign]
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_recover_expired_atomic_profile_preview_claim",
+        pause_recovery_before_version_lock,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "expired-late-winner-rollback-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application, raise_app_exceptions=False),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as replay_client:
+            late_winner = asyncio.create_task(
+                first_client.post(endpoint, headers=headers, json=payload)
+            )
+            await asyncio.wait_for(winner_at_attach.wait(), timeout=5)
+            assert claimed_version_id is not None
+            await asyncio.sleep(1.1)
+
+            replay_task = asyncio.create_task(
+                replay_client.post(endpoint, headers=headers, json=payload)
+            )
+            try:
+                await asyncio.wait_for(recovery_at_version_lock.wait(), timeout=5)
+                release_late_winner.set()
+                late = await asyncio.wait_for(late_winner, timeout=10)
+            finally:
+                release_late_winner.set()
+                release_recovery.set()
+            replay = await asyncio.wait_for(replay_task, timeout=10)
+
+    assert late.status_code == 201, late.text
+    assert late.json()["status"] == "prepared"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["reading_version_id"] == str(claimed_version_id)
+    assert replay.json()["status"] == "prepared"
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
 
 
 async def test_confirm_and_preview_exposed_claim_keeps_terminal_failure_replayable(

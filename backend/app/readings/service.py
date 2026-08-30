@@ -653,6 +653,66 @@ class ReadingService:
             return
         await self._recover_expired_atomic_profile_preview_claim(version_id)
 
+    async def _stabilize_atomic_profile_preview_claims_for_list(
+        self,
+        version_ids: Sequence[UUID],
+    ) -> bool:
+        """Stabilize owned provisional rows before a list exposes their IDs."""
+
+        if not version_ids:
+            return False
+        provisional_ids = tuple(
+            await self.session.scalars(
+                select(ReadingJobRecord.reading_version_id).where(
+                    ReadingJobRecord.reading_version_id.in_(version_ids),
+                    ReadingJobRecord.status
+                    == _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
+                )
+            )
+        )
+        for version_id in dict.fromkeys(provisional_ids):
+            await self._stabilize_atomic_profile_preview_claim_for_read(version_id)
+        return bool(provisional_ids)
+
+    async def _load_stabilized_owned_version_for_ids(
+        self,
+        version_id: UUID,
+        *,
+        user_id: UUID | None,
+        guest_id: UUID | None,
+    ) -> tuple[Any, Any]:
+        """Verify ownership before any provisional-claim state transition."""
+
+        try:
+            await self.repository.load_owned_version(
+                version_id,
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+            )
+        except LookupError as error:
+            raise ReadingNotFoundError("Reading Version not found") from error
+        await self._stabilize_atomic_profile_preview_claim_for_read(version_id)
+        try:
+            return await self.repository.load_owned_version(
+                version_id,
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+            )
+        except LookupError as error:
+            raise ReadingNotFoundError("Reading Version not found") from error
+
+    async def _load_stabilized_owned_version(
+        self,
+        owner: OwnerProtocol,
+        version_id: UUID,
+    ) -> tuple[Any, Any]:
+        user_id, guest_id = owner_ids(owner)
+        return await self._load_stabilized_owned_version_for_ids(
+            version_id,
+            user_id=user_id,
+            guest_id=guest_id,
+        )
+
     async def _load_atomic_profile_preview_claim(
         self,
         version_id: UUID,
@@ -2502,8 +2562,7 @@ class ReadingService:
         owner: OwnerProtocol,
         version_id: UUID,
     ) -> ReadingStartResponse:
-        await self._stabilize_atomic_profile_preview_claim_for_read(version_id)
-        root, version = await self._load_owned_version(
+        root, version = await self._load_stabilized_owned_version(
             owner,
             version_id,
         )
@@ -2520,6 +2579,14 @@ class ReadingService:
             owner_guest_session_id=guest_id,
             limit=READING_HISTORY_LIMIT,
         )
+        if await self._stabilize_atomic_profile_preview_claims_for_list(
+            tuple(version.id for _root, version in rows)
+        ):
+            rows = await self.repository.list_owned_versions(
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+                limit=READING_HISTORY_LIMIT,
+            )
         return [await self._summary(root, version) for root, version in rows]
 
     async def get_latest_profile_reading(
@@ -2586,6 +2653,14 @@ class ReadingService:
             owner_guest_session_id=None,
             limit=READING_HISTORY_LIMIT,
         )
+        if await self._stabilize_atomic_profile_preview_claims_for_list(
+            tuple(version.id for _root, version in rows)
+        ):
+            rows = await self.repository.list_owned_versions(
+                owner_user_id=user_id,
+                owner_guest_session_id=None,
+                limit=READING_HISTORY_LIMIT,
+            )
         grouped: dict[UUID, AccountHistoryRootResponse] = {}
         for root, version in rows:
             history_root = grouped.get(root.id)
@@ -2638,8 +2713,7 @@ class ReadingService:
         owner: OwnerProtocol,
         version_id: UUID,
     ) -> ReadingResultResponse:
-        await self._stabilize_atomic_profile_preview_claim_for_read(version_id)
-        root, version = await self._load_owned_version(
+        root, version = await self._load_stabilized_owned_version(
             owner,
             version_id,
         )
@@ -3783,17 +3857,12 @@ class ReadingService:
             raise IdempotencyConflictError(
                 "Idempotency-Key belongs to a different action or payload"
             )
-        await self._stabilize_atomic_profile_preview_claim_for_read(
-            record.reading_version_id
+        reading_version_id = record.reading_version_id
+        root, version = await self._load_stabilized_owned_version_for_ids(
+            reading_version_id,
+            user_id=user_id,
+            guest_id=guest_id,
         )
-        try:
-            root, version = await self.repository.load_owned_version(
-                record.reading_version_id,
-                owner_user_id=user_id,
-                owner_guest_session_id=guest_id,
-            )
-        except LookupError as error:
-            raise ReadingNotFoundError("Reading Version not found") from error
         return await self._summary(root, version)
 
     def _idempotency_context(
