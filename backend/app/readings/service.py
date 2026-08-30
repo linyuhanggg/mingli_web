@@ -36,6 +36,7 @@ from app.commerce.service import CommerceError, CommerceService
 from app.config import Settings
 from app.entitlements.service import EntitlementDeniedError, EntitlementService
 from app.profiles.models import ProfileVersion
+from app.profiles.schemas import ProfileConfirmRequest
 from app.profiles.service import OwnerProtocol, ProfileService, owner_ids
 from app.readings.api_schemas import (
     AccountHistoryResponse,
@@ -265,6 +266,12 @@ class IdempotencyContext:
 
 
 @dataclass(frozen=True, slots=True)
+class AtomicProfilePreviewClaim:
+    context: IdempotencyContext
+    reading_version_id: UUID
+
+
+@dataclass(frozen=True, slots=True)
 class InputFieldPolicy:
     target: str
     type_ids: frozenset[str]
@@ -321,6 +328,7 @@ class ReadingService:
         self._idempotency_secret = settings.identity_hash_key.get_secret_value().encode(
             "utf-8"
         )
+        self._atomic_profile_preview_claim: AtomicProfilePreviewClaim | None = None
 
     async def _require_paid_action(self, owner: OwnerProtocol, *, action: str) -> None:
         try:
@@ -372,7 +380,158 @@ class ReadingService:
             },
         )
         assert context is not None
-        return await self._replay_idempotency(owner, context), context
+        replayed = await self._replay_idempotency(owner, context)
+        if replayed is not None:
+            return replayed, context
+        claimed = await self._claim_atomic_profile_preview(
+            owner,
+            draft_id=draft_id,
+            profile_payload=profile_payload,
+            query=resolved_query,
+            dimension_ids=resolved_dimensions,
+            target_year=target_year,
+            target_month=target_month,
+            target_date=target_date,
+            idempotency=context,
+        )
+        return claimed, context
+
+    async def _claim_atomic_profile_preview(
+        self,
+        owner: OwnerProtocol,
+        *,
+        draft_id: UUID,
+        profile_payload: Mapping[str, object],
+        query: str,
+        dimension_ids: Sequence[str],
+        target_year: int | None,
+        target_month: str | None,
+        target_date: date | None,
+        idempotency: IdempotencyContext,
+    ) -> ReadingStartResponse | None:
+        """Commit the cross-process claim before Profile confirmation or Runtime I/O."""
+
+        user_id, guest_id = owner_ids(owner)
+        try:
+            await self.profiles.repository.lock_profile_owner(
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+            )
+        except LookupError:
+            # Preserve the endpoint's existing Profile error mapping. No Runtime
+            # can be reached because confirm_draft will fail on the same owner.
+            return None
+
+        # Reuse the authoritative Profile confirmation path as a validation and
+        # compilation probe. Rolling back only this savepoint leaves the owner
+        # lock in the outer transaction while discarding all Profile writes.
+        savepoint = await self.session.begin_nested()
+        try:
+            profile_request = ProfileConfirmRequest.model_validate(profile_payload)
+            profile = await self.profiles.confirm_draft(owner, draft_id, profile_request)
+            confirmed = await self._owned_confirmed_profile(
+                owner,
+                profile.profile_version_id,
+            )
+            prepare = self._compile_profile_preview_prepare(
+                confirmed,
+                query=query,
+                dimension_ids=dimension_ids,
+                target_year=target_year,
+                target_month=target_month,
+                target_date=target_date,
+            )
+        except (IntegrityError, LookupError, ValueError):
+            await savepoint.rollback()
+            # Let the endpoint's real confirmation attempt return its established
+            # validation/conflict contract without leaving a provisional claim.
+            return None
+        except Exception:
+            await savepoint.rollback()
+            raise
+        await savepoint.rollback()
+
+        release = await self._runtime_release()
+        require_public_runtime_capabilities(
+            ("bazi",),
+            environment=self.settings.environment,
+            real_traffic_enabled=self.settings.real_traffic_enabled,
+        )
+        require_public_product_exposure(
+            None,
+            environment=self.settings.environment,
+            real_traffic_enabled=self.settings.real_traffic_enabled,
+        )
+        root = await self.repository.create_root(
+            capability_id="bazi",
+            runtime_capability_ids=("bazi",),
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        version = await self.repository.create_version(
+            reading_root_id=root.id,
+            runtime_release_id=release.id,
+            prepare_command=prepare,
+        )
+        await self.session.refresh(version)
+        await self._create_job(version.id, status="queued")
+        replayed = await self._save_idempotency_or_replay(
+            idempotency,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+            reading_version_id=version.id,
+        )
+        if replayed is not None:
+            return replayed
+        await self.session.commit()
+        self._atomic_profile_preview_claim = AtomicProfilePreviewClaim(
+            context=idempotency,
+            reading_version_id=version.id,
+        )
+        return None
+
+    @staticmethod
+    def _compile_profile_preview_prepare(
+        profile: ConfirmedProfileVersion,
+        *,
+        query: str,
+        dimension_ids: Sequence[str],
+        target_year: int | None,
+        target_month: str | None,
+        target_date: date | None,
+    ) -> Prepare:
+        resolved_dimensions = tuple(dimension_ids)
+        if target_year is None and target_month is None and target_date is None:
+            return compile_bazi_prepare(
+                action="profile_preview",
+                query=query,
+                profile=profile,
+                dimension_ids=resolved_dimensions,
+            )
+        if target_year is not None:
+            return compile_bazi_year_prepare(
+                action="bazi_year_preview",
+                query=query,
+                profile=profile,
+                year=target_year,
+                dimension_ids=resolved_dimensions,
+            )
+        if target_month is not None:
+            return compile_bazi_month_prepare(
+                action="bazi_month_preview",
+                query=query,
+                profile=profile,
+                month=target_month,
+                dimension_ids=resolved_dimensions,
+            )
+        assert target_date is not None
+        return compile_bazi_day_prepare(
+            action="bazi_day_preview",
+            query=query,
+            profile=profile,
+            target_date=target_date,
+            dimension_ids=resolved_dimensions,
+        )
 
     async def start_preview(
         self,
@@ -416,42 +575,21 @@ class ReadingService:
                 "target_date": target_date.isoformat() if target_date else None,
             },
         )
-        replayed = await self._replay_idempotency(owner, idempotency)
-        if replayed is not None:
-            return replayed, False
+        claim = self._atomic_profile_preview_claim
+        owns_claim = claim is not None and claim.context == idempotency
+        if not owns_claim:
+            replayed = await self._replay_idempotency(owner, idempotency)
+            if replayed is not None:
+                return replayed, False
         profile = await self._owned_confirmed_profile(owner, profile_version_id)
-        if target_year is None and target_month is None and target_date is None:
-            prepare = compile_bazi_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        elif target_year is not None:
-            prepare = compile_bazi_year_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                year=target_year,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        elif target_month is not None:
-            prepare = compile_bazi_month_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                month=target_month,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        else:
-            assert target_date is not None
-            prepare = compile_bazi_day_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                target_date=target_date,
-                dimension_ids=tuple(resolved_dimensions),
-            )
+        prepare = self._compile_profile_preview_prepare(
+            profile,
+            query=resolved_query,
+            dimension_ids=resolved_dimensions,
+            target_year=target_year,
+            target_month=target_month,
+            target_date=target_date,
+        )
         return await self._persist_start(
             owner,
             prepare,
@@ -2532,10 +2670,18 @@ class ReadingService:
         if direct_chart and idempotency is None:
             raise InvalidReadingInputError(
                 "Idempotency-Key is required for direct Runtime starts"
-            )
+        )
         started_at = perf_counter()
         user_id, guest_id = owner_ids(owner)
-        release = await self._runtime_release()
+        claim = self._atomic_profile_preview_claim
+        owns_atomic_claim = (
+            rollback_on_failure
+            and direct_chart
+            and idempotency is not None
+            and claim is not None
+            and claim.context == idempotency
+        )
+        release = None if owns_atomic_claim else await self._runtime_release()
         resolved_runtime_capability_ids = runtime_capability_ids
         if resolved_runtime_capability_ids is None:
             raw_comparisons = prepare.intent.get("comparisons", ())
@@ -2557,25 +2703,38 @@ class ReadingService:
             environment=self.settings.environment,
             real_traffic_enabled=self.settings.real_traffic_enabled,
         )
-        root = await self.repository.create_root(
-            capability_id=capability_id,
-            product_id=product_id,
-            runtime_capability_ids=resolved_runtime_capability_ids,
-            owner_user_id=user_id,
-            owner_guest_session_id=guest_id,
-            profile_version_id=profile_version_id,
-            profile_version_ids=profile_version_ids,
-            relationship_type=relationship_type,
-        )
-        version = await self.repository.create_version(
-            reading_root_id=root.id,
-            runtime_release_id=release.id,
-            prepare_command=prepare,
-            relationship_type=relationship_type,
-        )
-        await self.session.refresh(version)
-        job = await self._create_job(version.id, status=initial_job_status)
-        if idempotency is not None:
+        if owns_atomic_claim:
+            assert claim is not None
+            assert profile_version_id is not None
+            root, version, job = await self.repository.attach_start_claim_profile(
+                claim.reading_version_id,
+                profile_version_id,
+            )
+            version = await self.repository.replace_start_claim_prepare(
+                version.id,
+                prepare,
+            )
+        else:
+            root = await self.repository.create_root(
+                capability_id=capability_id,
+                product_id=product_id,
+                runtime_capability_ids=resolved_runtime_capability_ids,
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+                profile_version_id=profile_version_id,
+                profile_version_ids=profile_version_ids,
+                relationship_type=relationship_type,
+            )
+            assert release is not None
+            version = await self.repository.create_version(
+                reading_root_id=root.id,
+                runtime_release_id=release.id,
+                prepare_command=prepare,
+                relationship_type=relationship_type,
+            )
+            await self.session.refresh(version)
+            job = await self._create_job(version.id, status=initial_job_status)
+        if idempotency is not None and not owns_atomic_claim:
             replayed = await self._save_idempotency_or_replay(
                 idempotency,
                 owner_user_id=user_id,
@@ -2645,6 +2804,12 @@ class ReadingService:
                         idempotency=idempotency,
                         initial_job_status=initial_job_status,
                     )
+                elif owns_atomic_claim:
+                    assert claim is not None
+                    claim_version_id = claim.reading_version_id
+                    await self.session.rollback()
+                    await self.repository.delete_start_claim(claim_version_id)
+                    await self.session.commit()
                 raise
         summary = await self._summary(root, version)
         if direct_chart:
@@ -2683,6 +2848,19 @@ class ReadingService:
         initial_job_status: str,
     ) -> None:
         """Persist an uncertain tokenless call without confirming its Profile draft."""
+
+        claim = self._atomic_profile_preview_claim
+        if claim is not None and claim.context == idempotency:
+            await self.repository.replace_start_claim_prepare(
+                claim.reading_version_id,
+                prepare,
+            )
+            _root, _version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+            await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
+            await self.session.commit()
+            return
 
         user_id, guest_id = owner_ids(owner)
         release = await self._runtime_release()
@@ -2728,6 +2906,25 @@ class ReadingService:
         initial_job_status: str,
     ) -> None:
         """Persist a received Runtime checkpoint without confirming its Profile draft."""
+
+        claim = self._atomic_profile_preview_claim
+        if claim is not None and claim.context == idempotency:
+            await self.repository.replace_start_claim_prepare(
+                claim.reading_version_id,
+                prepare,
+            )
+            _root, _version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+            await self.repository.record_prepared(
+                str(job.id),
+                prepared,
+                datetime.now(UTC),
+            )
+            job.status = "complete"
+            await self.session.flush()
+            await self.session.commit()
+            return
 
         user_id, guest_id = owner_ids(owner)
         release = await self._runtime_release()
@@ -2775,6 +2972,23 @@ class ReadingService:
         initial_job_status: str,
     ) -> None:
         """Persist a correctable Runtime stop without confirming its Profile draft."""
+
+        claim = self._atomic_profile_preview_claim
+        if claim is not None and claim.context == idempotency:
+            await self.repository.replace_start_claim_prepare(
+                claim.reading_version_id,
+                prepare,
+            )
+            _root, _version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+            await self.repository.record_waiting_input(
+                str(job.id),
+                stopped,
+                datetime.now(UTC),
+            )
+            await self.session.commit()
+            return
 
         user_id, guest_id = owner_ids(owner)
         release = await self._runtime_release()

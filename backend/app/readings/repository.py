@@ -5,7 +5,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import Text, func, or_, select
+from sqlalchemy import Text, delete, func, or_, select
 from sqlalchemy import cast as sql_cast
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -649,6 +649,113 @@ class SqlReadingRepository:
         self.session.add(record)
         await self.session.flush()
         return record
+
+    async def load_start_claim(
+        self,
+        version_id: UUID,
+    ) -> tuple[ReadingRoot, ReadingVersion, ReadingJobRecord]:
+        """Lock one provisional direct-start claim and its only Job."""
+
+        version = await self.session.scalar(
+            select(ReadingVersion)
+            .where(ReadingVersion.id == version_id)
+            .with_for_update()
+        )
+        if version is None:
+            raise LookupError("Reading Version claim not found")
+        root = await self.session.scalar(
+            select(ReadingRoot)
+            .where(ReadingRoot.id == version.reading_root_id)
+            .with_for_update()
+        )
+        if root is None:
+            raise LookupError("Reading Root claim not found")
+        jobs = list(
+            await self.session.scalars(
+                select(ReadingJobRecord)
+                .where(ReadingJobRecord.reading_version_id == version.id)
+                .with_for_update()
+            )
+        )
+        if len(jobs) != 1:
+            raise LookupError("Reading Version claim must have exactly one Job")
+        return root, version, jobs[0]
+
+    async def attach_start_claim_profile(
+        self,
+        version_id: UUID,
+        profile_version_id: UUID,
+    ) -> tuple[ReadingRoot, ReadingVersion, ReadingJobRecord]:
+        """Attach a durable provisional claim to the transaction's ProfileVersion."""
+
+        root, version, job = await self.load_start_claim(version_id)
+        profile_version = await self.session.get(ProfileVersion, profile_version_id)
+        if profile_version is None:
+            raise LookupError("ProfileVersion not found")
+        profile = await self.session.scalar(
+            select(SubjectProfile)
+            .where(SubjectProfile.id == profile_version.profile_id)
+            .with_for_update()
+        )
+        if profile is None:
+            raise LookupError("SubjectProfile not found")
+        if (
+            profile.owner_user_id != root.owner_user_id
+            or profile.owner_guest_session_id != root.owner_guest_session_id
+        ):
+            raise ValueError("ProfileVersion owner must match the Reading Root owner")
+        root.profile_version_id = profile_version.id
+        root.profile_version_ids = [str(profile_version.id)]
+        await self.session.flush()
+        return root, version, job
+
+    async def replace_start_claim_prepare(
+        self,
+        version_id: UUID,
+        prepare: Prepare,
+    ) -> ReadingVersion:
+        """Replace a provisional claim payload before its sole Runtime call."""
+
+        version = await self.session.scalar(
+            select(ReadingVersion)
+            .where(ReadingVersion.id == version_id)
+            .with_for_update()
+        )
+        if version is None:
+            raise LookupError("Reading Version claim not found")
+        if version.status != ReadingStatus.INPUT_READY.value:
+            raise ValueError("Reading Version claim is no longer input-ready")
+        encrypted = self.cipher.encrypt_json(
+            prepare.to_dict(),
+            context=f"reading-version:{version.id}:prepare",
+        )
+        version.prepare_key_id = encrypted.key_id
+        version.prepare_nonce = encrypted.nonce
+        version.prepare_ciphertext = encrypted.ciphertext
+        version.prepare_digest = encrypted.fingerprint
+        version.prepare_has_state_token = prepare.state_token is not None
+        await self.session.flush()
+        return version
+
+    async def delete_start_claim(self, version_id: UUID) -> None:
+        """Release a provisional claim after a known-safe terminal response."""
+
+        root, version, _job = await self.load_start_claim(version_id)
+        await self.session.execute(
+            delete(ReadingIdempotencyKey).where(
+                ReadingIdempotencyKey.reading_version_id == version.id
+            )
+        )
+        await self.session.execute(
+            delete(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version.id
+            )
+        )
+        await self.session.execute(
+            delete(ReadingVersion).where(ReadingVersion.id == version.id)
+        )
+        await self.session.execute(delete(ReadingRoot).where(ReadingRoot.id == root.id))
+        await self.session.flush()
 
     async def load_job(self, job_id: str) -> ReadingJob:
         job, version = await self._job_and_version(job_id)

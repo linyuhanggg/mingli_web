@@ -99,19 +99,28 @@ class TransportUnknownChartRuntime:
 
     adapter_kind = "test-transport-unknown"
 
-    def __init__(self) -> None:
+    def __init__(self, fault: str = "transport") -> None:
         self.calls = 0
+        self.fault = fault
 
     async def execute(self, command: Any) -> None:
         del command
         self.calls += 1
+        if self.fault == "timeout":
+            raise TimeoutError
+        if self.fault == "eof":
+            raise RuntimeTransportError("runtime_pipe_eof")
         raise RuntimeTransportError("runtime_pipe_unavailable")
 
 
 class RenderableChartRuntime:
     adapter_kind = "test-renderable"
 
+    def __init__(self) -> None:
+        self.calls = 0
+
     async def execute(self, command: Any) -> Prepared:
+        self.calls += 1
         subject_ref = next(iter(command.facts))
         return Prepared(
             state_token="renderable-chart-token",
@@ -1473,6 +1482,107 @@ async def test_confirm_and_preview_persists_transport_unknown_without_saving_pro
         ]
 
 
+@pytest.mark.parametrize(
+    ("runtime_fault", "expected_code"),
+    [
+        ("timeout", "chart_runtime_timeout"),
+        ("eof", "chart_runtime_transport"),
+        ("transport", "chart_runtime_transport"),
+    ],
+)
+async def test_confirm_and_preview_claims_unknown_before_cross_process_runtime(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    runtime_fault: str,
+    expected_code: str,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = TransportUnknownChartRuntime(runtime_fault)
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    first_unknown_rolled_back = asyncio.Event()
+    release_first_quarantine = asyncio.Event()
+    quarantine_calls = 0
+    original_quarantine = ReadingService._persist_runtime_unknown_quarantine
+
+    async def expose_rollback_to_detached_claim_window(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        nonlocal quarantine_calls
+        quarantine_calls += 1
+        if quarantine_calls == 1:
+            first_unknown_rolled_back.set()
+            await release_first_quarantine.wait()
+        await original_quarantine(service, *args, **kwargs)
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_persist_runtime_unknown_quarantine",
+        expose_rollback_to_detached_claim_window,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "cross-process-transport-unknown-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            first_request = asyncio.create_task(
+                first_client.post(endpoint, headers=headers, json=payload)
+            )
+            await first_unknown_rolled_back.wait()
+            second = await second_client.post(endpoint, headers=headers, json=payload)
+            release_first_quarantine.set()
+            first = await first_request
+            replay = await second_client.post(endpoint, headers=headers, json=payload)
+            listed_after_failure = await second_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == expected_code
+    assert second.status_code in {200, 503}, second.text
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
 async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
     database: Any,
     test_settings: Any,
@@ -1641,9 +1751,9 @@ async def test_confirm_and_preview_replays_cross_process_overwrite_race(
 ) -> None:
     main = __import__("app.main", fromlist=["create_app"])
     profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
-    profile_service = __import__("app.profiles.service", fromlist=["ProfileService"])
     application = main.create_app(settings=test_settings, database=database)
-    application.state.chart_runtime = RenderableChartRuntime()
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
 
     async def bypass_process_local_lock() -> None:
         return None
@@ -1670,55 +1780,25 @@ async def test_confirm_and_preview_replays_cross_process_overwrite_race(
         assert draft.status_code == 201, draft.text
         await seed_runtime_release(database, test_settings)
 
-        initial_replays_ready = asyncio.Event()
-        first_commit_finished = asyncio.Event()
-        initial_replay_count = 0
-        confirm_count = 0
-        original_replay = ReadingService.replay_confirm_profile_preview
-        original_confirm = profile_service.ProfileService.confirm_draft
-        original_commit = AsyncSession.commit
+        claim_committed = asyncio.Event()
+        release_winner = asyncio.Event()
+        original_claim = ReadingService._claim_atomic_profile_preview
 
-        async def synchronize_initial_replay_misses(
+        async def pause_winner_after_durable_claim(
             service: ReadingService,
             *args: Any,
             **kwargs: Any,
         ) -> Any:
-            nonlocal initial_replay_count
-            result = await original_replay(service, *args, **kwargs)
-            if initial_replay_count < 2:
-                assert result[0] is None
-                await service.session.rollback()
-                initial_replay_count += 1
-                if initial_replay_count == 2:
-                    initial_replays_ready.set()
-                await initial_replays_ready.wait()
+            result = await original_claim(service, *args, **kwargs)
+            if result is None and service._atomic_profile_preview_claim is not None:
+                claim_committed.set()
+                await release_winner.wait()
             return result
-
-        async def commit_then_release_duplicate(session: AsyncSession) -> None:
-            await original_commit(session)
-            first_commit_finished.set()
-
-        async def confirm_after_winner_commits(
-            service: Any,
-            *args: Any,
-            **kwargs: Any,
-        ) -> Any:
-            nonlocal confirm_count
-            confirm_count += 1
-            if confirm_count == 2:
-                await first_commit_finished.wait()
-            return await original_confirm(service, *args, **kwargs)
 
         monkeypatch.setattr(
             ReadingService,
-            "replay_confirm_profile_preview",
-            synchronize_initial_replay_misses,
-        )
-        monkeypatch.setattr(AsyncSession, "commit", commit_then_release_duplicate)
-        monkeypatch.setattr(
-            profile_service.ProfileService,
-            "confirm_draft",
-            confirm_after_winner_commits,
+            "_claim_atomic_profile_preview",
+            pause_winner_after_durable_claim,
         )
         headers = {
             **csrf_headers,
@@ -1728,13 +1808,17 @@ async def test_confirm_and_preview_replays_cross_process_overwrite_race(
             f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
         )
 
-        first, second = await asyncio.gather(
-            atomic_client.post(endpoint, headers=headers, json=payload),
-            atomic_client.post(endpoint, headers=headers, json=payload),
+        winner = asyncio.create_task(
+            atomic_client.post(endpoint, headers=headers, json=payload)
         )
+        await claim_committed.wait()
+        second = await atomic_client.post(endpoint, headers=headers, json=payload)
+        release_winner.set()
+        first = await winner
 
     assert sorted((first.status_code, second.status_code)) == [200, 201]
     assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
+    assert runtime.calls == 1
     async with database.sessions() as session:
         profiles = list(await session.scalars(select(SubjectProfile)))
         assert [str(profile.id) for profile in profiles] == [existing["profile_id"]]
