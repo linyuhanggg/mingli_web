@@ -5,7 +5,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import Text, delete, func, or_, select
+from sqlalchemy import cast as sql_cast
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
@@ -373,6 +374,72 @@ class SqlReadingRepository:
         found = rows.all()
         return [(root, version) for root, version in found]
 
+    async def list_owned_profile_versions(
+        self,
+        profile_id: UUID,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> list[tuple[ReadingRoot, ReadingVersion, UUID]]:
+        """List every Reading Version linked through any version of one Profile.
+
+        This intentionally has no history-window limit.  Profile lookup must be
+        able to recover an older successful chart even after an owner creates
+        more than the account-history projection's newest 50 versions.
+        """
+
+        profile_version_ids = tuple(
+            await self.session.scalars(
+                select(ProfileVersion.id)
+                .join(SubjectProfile, SubjectProfile.id == ProfileVersion.profile_id)
+                .where(
+                    SubjectProfile.id == profile_id,
+                    SubjectProfile.status == "active",
+                    SubjectProfile.owner_user_id == owner_user_id,
+                    SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                )
+            )
+        )
+        if not profile_version_ids:
+            return []
+        profile_version_id_set = set(profile_version_ids)
+        secondary_membership = tuple(
+            sql_cast(ReadingRoot.profile_version_ids, Text).contains(f'"{version_id}"')
+            for version_id in profile_version_ids
+        )
+        rows = await self.session.execute(
+            select(ReadingRoot, ReadingVersion)
+            .join(ReadingVersion, ReadingVersion.reading_root_id == ReadingRoot.id)
+            .where(
+                ReadingRoot.owner_user_id == owner_user_id,
+                ReadingRoot.owner_guest_session_id == owner_guest_session_id,
+                or_(
+                    ReadingRoot.profile_version_id.in_(profile_version_ids),
+                    *secondary_membership,
+                ),
+            )
+            .order_by(
+                ReadingVersion.created_at.desc(),
+                ReadingVersion.id.desc(),
+            )
+        )
+        found: list[tuple[ReadingRoot, ReadingVersion, UUID]] = []
+        for root, version in rows.all():
+            linked_ids = (
+                UUID(str(value))
+                for value in (
+                    root.profile_version_ids
+                    or ([root.profile_version_id] if root.profile_version_id else [])
+                )
+            )
+            matched_profile_version_id = next(
+                (value for value in linked_ids if value in profile_version_id_set),
+                None,
+            )
+            if matched_profile_version_id is not None:
+                found.append((root, version, matched_profile_version_id))
+        return found
+
     async def load_prepare(self, version_id: UUID) -> Prepare:
         version = await self.session.get(ReadingVersion, version_id)
         if version is None:
@@ -582,6 +649,113 @@ class SqlReadingRepository:
         self.session.add(record)
         await self.session.flush()
         return record
+
+    async def load_start_claim(
+        self,
+        version_id: UUID,
+    ) -> tuple[ReadingRoot, ReadingVersion, ReadingJobRecord]:
+        """Lock one provisional direct-start claim and its only Job."""
+
+        version = await self.session.scalar(
+            select(ReadingVersion)
+            .where(ReadingVersion.id == version_id)
+            .with_for_update()
+        )
+        if version is None:
+            raise LookupError("Reading Version claim not found")
+        root = await self.session.scalar(
+            select(ReadingRoot)
+            .where(ReadingRoot.id == version.reading_root_id)
+            .with_for_update()
+        )
+        if root is None:
+            raise LookupError("Reading Root claim not found")
+        jobs = list(
+            await self.session.scalars(
+                select(ReadingJobRecord)
+                .where(ReadingJobRecord.reading_version_id == version.id)
+                .with_for_update()
+            )
+        )
+        if len(jobs) != 1:
+            raise LookupError("Reading Version claim must have exactly one Job")
+        return root, version, jobs[0]
+
+    async def attach_start_claim_profile(
+        self,
+        version_id: UUID,
+        profile_version_id: UUID,
+    ) -> tuple[ReadingRoot, ReadingVersion, ReadingJobRecord]:
+        """Attach a durable provisional claim to the transaction's ProfileVersion."""
+
+        root, version, job = await self.load_start_claim(version_id)
+        profile_version = await self.session.get(ProfileVersion, profile_version_id)
+        if profile_version is None:
+            raise LookupError("ProfileVersion not found")
+        profile = await self.session.scalar(
+            select(SubjectProfile)
+            .where(SubjectProfile.id == profile_version.profile_id)
+            .with_for_update()
+        )
+        if profile is None:
+            raise LookupError("SubjectProfile not found")
+        if (
+            profile.owner_user_id != root.owner_user_id
+            or profile.owner_guest_session_id != root.owner_guest_session_id
+        ):
+            raise ValueError("ProfileVersion owner must match the Reading Root owner")
+        root.profile_version_id = profile_version.id
+        root.profile_version_ids = [str(profile_version.id)]
+        await self.session.flush()
+        return root, version, job
+
+    async def replace_start_claim_prepare(
+        self,
+        version_id: UUID,
+        prepare: Prepare,
+    ) -> ReadingVersion:
+        """Replace a provisional claim payload before its sole Runtime call."""
+
+        version = await self.session.scalar(
+            select(ReadingVersion)
+            .where(ReadingVersion.id == version_id)
+            .with_for_update()
+        )
+        if version is None:
+            raise LookupError("Reading Version claim not found")
+        if version.status != ReadingStatus.INPUT_READY.value:
+            raise ValueError("Reading Version claim is no longer input-ready")
+        encrypted = self.cipher.encrypt_json(
+            prepare.to_dict(),
+            context=f"reading-version:{version.id}:prepare",
+        )
+        version.prepare_key_id = encrypted.key_id
+        version.prepare_nonce = encrypted.nonce
+        version.prepare_ciphertext = encrypted.ciphertext
+        version.prepare_digest = encrypted.fingerprint
+        version.prepare_has_state_token = prepare.state_token is not None
+        await self.session.flush()
+        return version
+
+    async def delete_start_claim(self, version_id: UUID) -> None:
+        """Release a provisional claim after a known-safe terminal response."""
+
+        root, version, _job = await self.load_start_claim(version_id)
+        await self.session.execute(
+            delete(ReadingIdempotencyKey).where(
+                ReadingIdempotencyKey.reading_version_id == version.id
+            )
+        )
+        await self.session.execute(
+            delete(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == version.id
+            )
+        )
+        await self.session.execute(
+            delete(ReadingVersion).where(ReadingVersion.id == version.id)
+        )
+        await self.session.execute(delete(ReadingRoot).where(ReadingRoot.id == root.id))
+        await self.session.flush()
 
     async def load_job(self, job_id: str) -> ReadingJob:
         job, version = await self._job_and_version(job_id)

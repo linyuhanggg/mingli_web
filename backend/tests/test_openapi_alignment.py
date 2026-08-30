@@ -4,9 +4,12 @@ from types import UnionType
 from typing import Any, Literal, Union, get_args, get_origin
 from uuid import uuid4
 
+import pytest
 import yaml
+from app.profiles.schemas import ProfileReadingPreviewOptions
 from app.readings.api_schemas import (
     CapabilityProjection,
+    PreviewStartRequest,
     ReadingResultResponse,
     TimeLayerCapabilityItemResponse,
     TimeLayerEntitlementCapabilityResponse,
@@ -20,6 +23,7 @@ from app.readings.runtime_contracts import (
     TimeLayerEntitlementV1,
 )
 from jsonschema import Draft202012Validator
+from pydantic import ValidationError
 
 ROOT = Path(__file__).resolve().parents[2]
 USER_OPENAPI_PATH = ROOT / "contracts" / "openapi" / "v1.yaml"
@@ -146,6 +150,167 @@ def test_profile_summary_display_name_constraints_are_aligned() -> None:
         "minLength": 1,
         "maxLength": 80,
     }
+
+
+def test_profile_latest_reading_and_atomic_preview_contracts_are_aligned() -> None:
+    frozen_paths = load_paths(USER_OPENAPI_PATH)
+    runtime = _runtime_spec()
+    runtime_paths = runtime["paths"]
+    latest_path = "/api/v1/profiles/{profile_id}/readings/latest"
+    atomic_path = "/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+    assert (
+        frozen_paths[latest_path]["get"]["operationId"]
+        == (runtime_paths[latest_path]["get"]["operationId"])
+        == "getLatestProfileReading"
+    )
+    assert (
+        frozen_paths[atomic_path]["post"]["operationId"]
+        == (runtime_paths[atomic_path]["post"]["operationId"])
+        == "confirmProfileDraftAndStartPreviewReading"
+    )
+    latest_parameter = next(
+        item
+        for item in frozen_paths[latest_path]["get"]["parameters"]
+        if item["name"] == "product_id"
+    )
+    assert latest_parameter["required"] is True
+
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = runtime["components"]["schemas"]
+    for name, required in {
+        "ConfirmProfileDraftAndStartPreviewRequest": {"profile", "reading"},
+        "LatestProfileReadingResponse": {
+            "profile_id",
+            "profile_version_id",
+            "reading_root_id",
+            "reading_version_id",
+            "capability_id",
+            "product_id",
+            "status",
+            "result_available",
+            "created_at",
+        },
+    }.items():
+        assert set(frozen_schemas[name]["required"]) == required
+        assert set(runtime_schemas[name]["required"]) == required
+
+    combined_dimensions = frozen_schemas["ProfileReadingPreviewOptions"]["properties"][
+        "dimension_ids"
+    ]
+    runtime_combined_dimensions = runtime_schemas["ProfileReadingPreviewOptions"][
+        "properties"
+    ]["dimension_ids"]
+    preview_dimensions = frozen_schemas["PreviewStartRequest"]["properties"][
+        "dimension_ids"
+    ]
+    assert combined_dimensions["uniqueItems"] is True
+    assert combined_dimensions["items"]["enum"] == ["overview", "career"]
+    assert runtime_combined_dimensions["uniqueItems"] is True
+    runtime_combined_array = next(
+        item
+        for item in runtime_combined_dimensions["anyOf"]
+        if item.get("type") == "array"
+    )
+    assert runtime_combined_array["items"]["enum"] == ["overview", "career"]
+    assert runtime_combined_dimensions["uniqueItems"] == combined_dimensions["uniqueItems"]
+    assert runtime_combined_array["items"]["enum"] == combined_dimensions["items"][
+        "enum"
+    ]
+    runtime_dimensions_validator = Draft202012Validator(runtime_combined_dimensions)
+    assert not list(
+        runtime_dimensions_validator.iter_errors(["overview", "career"])
+    )
+    assert list(runtime_dimensions_validator.iter_errors(["health"]))
+    assert list(
+        runtime_dimensions_validator.iter_errors(["overview", "overview"])
+    )
+    assert combined_dimensions["uniqueItems"] == preview_dimensions["uniqueItems"]
+    assert combined_dimensions["items"]["enum"] == preview_dimensions["items"]["enum"]
+    combined_validator = _openapi_component_validator("ProfileReadingPreviewOptions")
+    assert not list(
+        combined_validator.iter_errors({"dimension_ids": ["overview", "career"]})
+    )
+    assert list(combined_validator.iter_errors({"dimension_ids": ["health"]}))
+    assert list(
+        combined_validator.iter_errors({"dimension_ids": ["overview", "overview"]})
+    )
+
+
+def test_preview_time_target_constraints_are_aligned_and_enforced() -> None:
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = _runtime_spec()["components"]["schemas"]
+
+    valid_targets = [
+        {},
+        {"target_year": 1800},
+        {"target_year": 2199},
+        {"target_month": "1800-01"},
+        {"target_month": "2199-12"},
+        {"target_date": "1800-01-01"},
+        {"target_date": "2199-12-31"},
+        {"target_date": "2026-08-15"},
+        {"target_year": None, "target_month": None, "target_date": None},
+    ]
+    invalid_targets = [
+        {"target_year": 2026, "target_month": "2026-08"},
+        {"target_year": 2026, "target_date": "2026-08-15"},
+        {"target_month": "2026-08", "target_date": "2026-08-15"},
+        {
+            "target_year": 2026,
+            "target_month": "2026-08",
+            "target_date": "2026-08-15",
+        },
+        {"target_month": "1799-12"},
+        {"target_month": "2200-01"},
+        {"target_date": "1799-12-31"},
+        {"target_date": "2200-01-01"},
+    ]
+
+    for name in ("ProfileReadingPreviewOptions", "PreviewStartRequest"):
+        frozen = frozen_schemas[name]
+        runtime = runtime_schemas[name]
+        assert frozen["not"] == runtime["not"]
+        assert (
+            frozen["properties"]["target_month"]["pattern"]
+            == next(
+                item
+                for item in runtime["properties"]["target_month"]["anyOf"]
+                if item.get("type") == "string"
+            )["pattern"]
+        )
+        assert (
+            frozen["properties"]["target_date"]["pattern"]
+            == next(
+                item
+                for item in runtime["properties"]["target_date"]["anyOf"]
+                if item.get("type") == "string"
+            )["pattern"]
+        )
+
+        base = {"profile_version_id": str(uuid4())} if name == "PreviewStartRequest" else {}
+        for schema in (frozen, runtime):
+            validator = Draft202012Validator(schema)
+            for target in valid_targets:
+                assert not list(validator.iter_errors({**base, **target})), (name, target)
+            for target in invalid_targets:
+                assert list(validator.iter_errors({**base, **target})), (name, target)
+
+
+def test_preview_time_target_live_models_enforce_date_boundaries() -> None:
+    models_and_bases = [
+        (ProfileReadingPreviewOptions, {}),
+        (PreviewStartRequest, {"profile_version_id": str(uuid4())}),
+    ]
+
+    for model, base in models_and_bases:
+        for target_date in ("1800-01-01", "2199-12-31"):
+            validated = model.model_validate({**base, "target_date": target_date})
+            assert validated.target_date is not None
+            assert validated.target_date.isoformat() == target_date
+        for target_date in ("1799-12-31", "2200-01-01"):
+            with pytest.raises(ValidationError):
+                model.model_validate({**base, "target_date": target_date})
 
 
 def test_verification_summary_contract_is_four_value_and_aligned() -> None:

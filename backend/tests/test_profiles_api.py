@@ -773,6 +773,112 @@ async def test_confirm_rejects_an_unknown_timezone(
     assert response.json()["title"] == "Invalid request"
 
 
+@pytest.mark.parametrize(
+    "dimension_ids",
+    [
+        ["health"],
+        ["overview", "overview"],
+    ],
+)
+async def test_atomic_profile_preview_rejects_invalid_dimensions_during_validation(
+    client: AsyncClient,
+    dimension_ids: list[str],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    readings = __import__("app.readings.service", fromlist=["ReadingService"])
+
+    async def fail_if_service_runs(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("request validation must reject before ReadingService")
+
+    monkeypatch.setattr(
+        readings.ReadingService,
+        "replay_confirm_profile_preview",
+        fail_if_service_runs,
+    )
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    response = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview",
+        headers={**headers, "Idempotency-Key": "invalid-dimensions-preview-v1"},
+        json={
+            "profile": {
+                "birth_datetime": "1994-04-30T05:55:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "北京市朝阳区",
+                "gender": "female",
+                "time_basis_policy": "civil",
+                "zi_hour_policy": "midnight",
+            },
+            "reading": {"dimension_ids": dimension_ids},
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid request"
+
+
+@pytest.mark.parametrize(
+    "reading_options",
+    [
+        {"target_year": 2026, "target_month": "2026-08"},
+        {"target_year": 2026, "target_date": "2026-08-15"},
+        {"target_month": "1799-12"},
+        {"target_month": "2200-01"},
+        {"target_date": "1799-12-31"},
+        {"target_date": "2200-01-01"},
+    ],
+)
+async def test_atomic_profile_preview_rejects_invalid_time_targets_during_validation(
+    client: AsyncClient,
+    reading_options: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    readings = __import__("app.readings.service", fromlist=["ReadingService"])
+
+    async def fail_if_service_runs(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("request validation must reject before ReadingService")
+
+    monkeypatch.setattr(
+        readings.ReadingService,
+        "replay_confirm_profile_preview",
+        fail_if_service_runs,
+    )
+    headers = await create_guest(client)
+    draft = await client.post(
+        "/api/v1/profiles/drafts",
+        headers=headers,
+        json={"label": "本人"},
+    )
+    assert draft.status_code == 201, draft.text
+
+    response = await client.post(
+        f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview",
+        headers={**headers, "Idempotency-Key": "invalid-time-target-preview-v1"},
+        json={
+            "profile": {
+                "birth_datetime": "1994-04-30T05:55:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "北京市朝阳区",
+                "gender": "female",
+                "time_basis_policy": "civil",
+                "zi_hour_policy": "midnight",
+            },
+            "reading": reading_options,
+        },
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid request"
+
+
 async def test_profile_ids_are_owner_scoped_with_cross_owner_404(
     database: Any,
     test_settings: Any,

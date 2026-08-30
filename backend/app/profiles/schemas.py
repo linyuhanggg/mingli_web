@@ -1,10 +1,49 @@
 from datetime import date, datetime
-from typing import Annotated, Literal
+from typing import Annotated, Any, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.api.validators import validate_iana_timezone
+
+_TIME_TARGET_AT_MOST_ONE_SCHEMA: dict[str, Any] = {
+    "not": {
+        "anyOf": [
+            {
+                "required": ["target_year", "target_month"],
+                "properties": {
+                    "target_year": {"not": {"type": "null"}},
+                    "target_month": {"not": {"type": "null"}},
+                },
+            },
+            {
+                "required": ["target_year", "target_date"],
+                "properties": {
+                    "target_year": {"not": {"type": "null"}},
+                    "target_date": {"not": {"type": "null"}},
+                },
+            },
+            {
+                "required": ["target_month", "target_date"],
+                "properties": {
+                    "target_month": {"not": {"type": "null"}},
+                    "target_date": {"not": {"type": "null"}},
+                },
+            },
+        ]
+    }
+}
+_TIME_TARGET_DATE_PATTERN = (
+    r"^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[12]\d|3[01])$"
+)
+_TimeTargetDate = Annotated[
+    date,
+    Field(
+        ge=date(1800, 1, 1),
+        le=date(2199, 12, 31),
+        json_schema_extra={"pattern": _TIME_TARGET_DATE_PATTERN},
+    ),
+]
 
 
 class ProfileDraftRequest(BaseModel):
@@ -65,6 +104,53 @@ class ProfileVersionRequest(ProfileConfirmRequest):
     model_config = ConfigDict(extra="forbid")
 
     difference_acknowledged: bool
+
+
+class ProfileReadingPreviewOptions(BaseModel):
+    model_config = ConfigDict(
+        extra="forbid",
+        json_schema_extra=_TIME_TARGET_AT_MOST_ONE_SCHEMA,
+    )
+
+    query: str | None = Field(default=None, min_length=1, max_length=300)
+    dimension_ids: list[Literal["overview", "career"]] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4,
+        json_schema_extra={"uniqueItems": True},
+    )
+    target_year: int | None = Field(default=None, ge=1800, le=2199)
+    target_month: str | None = Field(
+        default=None,
+        pattern=r"^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])$",
+    )
+    target_date: _TimeTargetDate | None = None
+
+    @field_validator("dimension_ids")
+    @classmethod
+    def _dimension_ids_must_be_unique(
+        cls,
+        value: list[Literal["overview", "career"]] | None,
+    ) -> list[Literal["overview", "career"]] | None:
+        if value is not None and len(value) != len(set(value)):
+            raise ValueError("dimension_ids must contain unique values")
+        return value
+
+    @model_validator(mode="after")
+    def _only_one_time_target(self) -> Self:
+        supplied = sum(
+            value is not None for value in (self.target_year, self.target_month, self.target_date)
+        )
+        if supplied > 1:
+            raise ValueError("target_year, target_month, and target_date are mutually exclusive")
+        return self
+
+
+class ConfirmProfileDraftAndStartPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: ProfileConfirmRequest
+    reading: ProfileReadingPreviewOptions
 
 
 class ProfileDisplayNameUpdateRequest(BaseModel):

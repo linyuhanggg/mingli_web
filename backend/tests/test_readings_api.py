@@ -1,11 +1,22 @@
+import asyncio
 import hashlib
+import importlib
+import os
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
 
 import pytest
-from app.adapters.runtime import FakeMingliRuntimeAdapter
+from app.adapters.runtime import (
+    FakeMingliRuntimeAdapter,
+    RuntimeTurnAudit,
+    generic_runtime_stopped,
+    runtime_command_digest,
+)
 from app.identity.models import GuestSession
+from app.profiles.models import ProfileVersion, SubjectProfile
+from app.readings.errors import RuntimeTransportError
 from app.readings.models import (
     FactBrief,
     GenerationAttempt,
@@ -30,7 +41,12 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from worker.readings import build_reading_worker
 
 # isort: split
@@ -42,6 +58,242 @@ from test_profiles_api import (
 )
 
 ACCEPTED_COPY = "本命格局以稳定积累为主线。\n\n本解读仅供传统文化参考，不构成现实决策保证。"
+
+
+class PostgresApiDatabaseHarness:
+    def __init__(self, engine: Any) -> None:
+        self.engine = engine
+        self.sessions = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def dispose(self) -> None:
+        await self.engine.dispose()
+
+
+@pytest.fixture
+async def postgres_api_database() -> AsyncIterator[Any]:
+    url = os.environ.get("MINGLI_TEST_POSTGRES_URL")
+    if not url:
+        pytest.skip("MINGLI_TEST_POSTGRES_URL is required for PostgreSQL concurrency tests")
+    identity_models = importlib.import_module("app.identity.models")
+    importlib.import_module("app.profiles.models")
+    importlib.import_module("app.readings.models")
+    importlib.import_module("app.admin.models")
+    importlib.import_module("app.support.models")
+    importlib.import_module("app.entitlements.models")
+    importlib.import_module("app.commerce.models")
+    importlib.import_module("app.referrals.models")
+    importlib.import_module("app.content.models")
+    importlib.import_module("app.privacy.models")
+    importlib.import_module("app.media.models")
+    schema = f"mingli_api_test_{uuid4().hex}"
+    admin_engine = create_async_engine(url, pool_pre_ping=True)
+    async with admin_engine.begin() as connection:
+        await connection.execute(text(f'CREATE SCHEMA "{schema}"'))
+    engine = create_async_engine(
+        url,
+        pool_pre_ping=True,
+        connect_args={"server_settings": {"search_path": schema}},
+    )
+    database = PostgresApiDatabaseHarness(engine)
+    try:
+        async with engine.begin() as connection:
+            await connection.run_sync(identity_models.Base.metadata.create_all)
+        yield database
+    finally:
+        await database.dispose()
+        async with admin_engine.begin() as connection:
+            await connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
+        await admin_engine.dispose()
+
+
+class UnsupportedChartRuntime:
+    """Terminal Runtime result used to prove atomic Profile rollback."""
+
+    adapter_kind = "fake"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> Stopped:
+        del command
+        self.calls += 1
+        return Stopped(
+            reason="unsupported",
+            public_copy="当前排盘能力暂不可用。",
+        )
+
+
+class NeedInputChartRuntime:
+    """Correctable Runtime stop used to preserve the public 400 contract."""
+
+    adapter_kind = "test-need-input"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> Stopped:
+        del command
+        self.calls += 1
+        return Stopped(
+            reason="need_input",
+            public_copy="还需要补充排盘信息。",
+            state_token="need-input-chart-token",
+            input_request={
+                "requirements": [
+                    {
+                        "any_of": [
+                            {
+                                "id": "missing_chart_input",
+                                "label": "补充信息",
+                                "type_id": "text",
+                                "description": None,
+                                "choices": [],
+                            }
+                        ]
+                    }
+                ]
+            },
+        )
+
+
+class TransportUnknownChartRuntime:
+    """Tokenless transport fault that may have created a Runtime Root."""
+
+    adapter_kind = "test-transport-unknown"
+
+    def __init__(self, fault: str = "transport") -> None:
+        self.calls = 0
+        self.fault = fault
+
+    async def execute(self, command: Any) -> None:
+        del command
+        self.calls += 1
+        if self.fault == "timeout":
+            raise TimeoutError
+        if self.fault == "eof":
+            raise RuntimeTransportError("runtime_pipe_eof")
+        raise RuntimeTransportError("runtime_pipe_unavailable")
+
+
+class PostWriteGenericStoppedChartRuntime:
+    """Adapter-shaped post-write protocol fault returned as a generic Stopped."""
+
+    adapter_kind = "runtime-worker-v2"
+
+    def __init__(self, transport_fault: str) -> None:
+        self.calls = 0
+        self._last_sequence = 0
+        self.last_turn: RuntimeTurnAudit | None = None
+        self.transport_fault = transport_fault
+
+    async def execute(self, command: Any) -> Stopped:
+        self.calls += 1
+        self._last_sequence = self.calls
+        result = generic_runtime_stopped()
+        self.last_turn = RuntimeTurnAudit(
+            command_digest=runtime_command_digest(command),
+            command_kind=command.kind,
+            worker_pid=1234,
+            worker_boot_nonce="test-boot",
+            sequence=self.calls,
+            result_kind=result.kind,
+            failure=(
+                None if result.failure is None else result.failure.to_audit_dict()
+            ),
+            transport_fault=self.transport_fault,
+            isolated=True,
+            store_root="test-runtime-store",
+        )
+        return result
+
+
+class AuditPersistenceFailureChartRuntime:
+    """WorkerV2-shaped Runtime whose valid result audit cannot be persisted."""
+
+    adapter_kind = "runtime-worker-v2"
+
+    def __init__(self) -> None:
+        self.calls = 0
+        self._last_sequence = 0
+        self.last_turn: RuntimeTurnAudit | None = None
+        self.result: Prepared | None = None
+        self.published_result_kind: str | None = None
+
+    async def execute(self, command: Any) -> Prepared:
+        self.calls += 1
+        self._last_sequence = self.calls
+        subject_ref = next(iter(command.facts))
+        result = Prepared(
+            state_token="audit-persistence-failure-chart-token",
+            brief=_bazi_chart_brief(subject_ref),
+        )
+        self.result = result
+        self.published_result_kind = result.kind
+        self.last_turn = RuntimeTurnAudit(
+            command_digest=runtime_command_digest(command),
+            command_kind=command.kind,
+            worker_pid=1234,
+            worker_boot_nonce="test-boot",
+            sequence=self.calls,
+            result_kind=result.kind,
+            failure=None,
+            transport_fault=None,
+            isolated=False,
+            store_root="test-runtime-store",
+        )
+        raise OSError("runtime audit state is read-only")
+
+
+class RenderableChartRuntime:
+    adapter_kind = "test-renderable"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> Prepared:
+        self.calls += 1
+        subject_ref = next(iter(command.facts))
+        return Prepared(
+            state_token="renderable-chart-token",
+            brief=_bazi_chart_brief(subject_ref),
+        )
+
+
+class UnrenderableChartRuntime:
+    adapter_kind = "test-unrenderable"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> Prepared:
+        self.calls += 1
+        subject_ref = next(iter(command.facts))
+        payload = brief_payload(
+            subject_ref,
+            {"kind_id": "life", "start": None, "end": None},
+        )
+        payload["request_view"]["capability_ids"] = ["unsupported-test-capability"]
+        return Prepared(
+            state_token="unrenderable-chart-token",
+            brief=ReadingBrief.from_dict(payload),
+        )
+
+
+def confirm_and_preview_payload() -> dict[str, Any]:
+    return {
+        "profile": {
+            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "北京市朝阳区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "longitude": 116.4074,
+            "latitude": 39.9042,
+            "coordinate_source": "user_confirmed",
+        },
+        "reading": {"dimension_ids": ["career"]},
+    }
 
 
 async def seed_runtime_release(
@@ -556,6 +808,8 @@ def test_queued_prepared_reading_keeps_polling_until_job_is_complete() -> None:
     [
         ({"target_year": 2026}, "year", "2026"),
         ({"target_month": "2026-08"}, "month", "2026-08"),
+        ({"target_date": "1800-01-01"}, "day", "1800-01-01"),
+        ({"target_date": "2199-12-31"}, "day", "2199-12-31"),
         ({"target_date": "2026-08-15"}, "day", "2026-08-15"),
     ],
 )
@@ -587,6 +841,39 @@ async def test_guest_starts_targeted_bazi_preview_with_public_horizon_boundary(
         "start": expected_boundary,
         "end": expected_boundary,
     }
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        {"target_year": 2026, "target_month": "2026-08"},
+        {"target_month": "2026-08", "target_date": "2026-08-15"},
+        {"target_month": "1799-12"},
+        {"target_month": "2200-01"},
+        {"target_date": "1799-12-31"},
+        {"target_date": "2200-01-01"},
+    ],
+)
+async def test_preview_rejects_invalid_time_targets_during_validation(
+    client: AsyncClient,
+    target: dict[str, object],
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    async def fail_if_service_runs(*args: Any, **kwargs: Any) -> None:
+        del args, kwargs
+        raise AssertionError("request validation must reject before ReadingService")
+
+    monkeypatch.setattr(ReadingService, "start_preview", fail_if_service_runs)
+    headers = await create_guest(client)
+
+    response = await client.post(
+        "/api/v1/readings/preview",
+        headers={**headers, "Idempotency-Key": "invalid-time-target-v1"},
+        json={"profile_version_id": str(uuid4()), **target},
+    )
+
+    assert response.status_code == 400
+    assert response.json()["title"] == "Invalid request"
 
 
 @pytest.mark.parametrize(
@@ -1145,6 +1432,2462 @@ async def test_same_idempotency_key_returns_the_same_reading_version(
     assert len(keys[0].request_fingerprint) == 64
     assert keys[0].action == "profile_preview"
     assert str(keys[0].reading_version_id) == first["reading_version_id"]
+
+
+async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = UnsupportedChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "atomic-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+
+        failed = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+        assert failed.status_code == 503, failed.text
+        assert failed.json()["code"] == "chart_runtime_unsupported"
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+        assert listed_after_failure.json() == {"profiles": []}
+        async with database.sessions() as session:
+            assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+            assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+            assert (
+                await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 0
+            )
+
+        application.state.chart_runtime = RenderableChartRuntime()
+        succeeded = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+        original_replay = ReadingService.replay_confirm_profile_preview
+        discard_replay_once = True
+
+        async def simulate_precommit_replay_miss(
+            service: ReadingService,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
+            nonlocal discard_replay_once
+            replay_result, context = await original_replay(service, *args, **kwargs)
+            if discard_replay_once:
+                discard_replay_once = False
+                return None, context
+            return replay_result, context
+
+        monkeypatch.setattr(
+            ReadingService,
+            "replay_confirm_profile_preview",
+            simulate_precommit_replay_miss,
+        )
+        replayed = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+    assert succeeded.status_code == 201, succeeded.text
+    assert succeeded.json()["status"] == "prepared"
+    assert succeeded.json()["result_available"] is True
+    assert replayed.status_code == 200, replayed.text
+    assert replayed.json()["reading_version_id"] == succeeded.json()["reading_version_id"]
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_persists_unrenderable_prepared_checkpoint_without_saving_profile(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = UnrenderableChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "unrenderable-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+        first = await atomic_client.post(endpoint, headers=headers, json=payload)
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == "chart_view_model_projection_failed"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "prepared"
+    assert replay.json()["result_available"] is False
+    assert replay.json()["poll_required"] is False
+    assert replay.json()["profile_version_id"] is None
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        version = await session.scalar(select(ReadingVersion))
+        assert version is not None
+        assert version.state_token_ciphertext is not None
+        assert version.state_token_fingerprint is not None
+        assert version.prepare_has_state_token is False
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+        assert await session.scalar(select(func.count()).select_from(FactBrief)) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == ["prepared"]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == ["complete"]
+
+
+async def test_confirm_and_preview_persists_transport_unknown_without_saving_profile(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = TransportUnknownChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "transport-unknown-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+        first = await atomic_client.post(endpoint, headers=headers, json=payload)
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == "chart_runtime_transport"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
+
+
+@pytest.mark.parametrize(
+    "transport_fault",
+    ["unbound-result", "result-decode", "unbound-idle"],
+)
+async def test_confirm_and_preview_quarantines_post_write_generic_stopped_and_replays(
+    database: Any,
+    test_settings: Any,
+    transport_fault: str,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = PostWriteGenericStoppedChartRuntime(transport_fault)
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": f"post-write-{transport_fault}-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+
+        first = await atomic_client.post(endpoint, headers=headers, json=payload)
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == "chart_runtime_transport"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert replay.json()["profile_version_id"] is None
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert (
+            await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey))
+            == 1
+        )
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
+
+
+async def test_confirm_and_preview_quarantines_valid_result_when_audit_persistence_fails(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = AuditPersistenceFailureChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "audit-persistence-failure-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+
+        first = await atomic_client.post(endpoint, headers=headers, json=payload)
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert isinstance(runtime.result, Prepared)
+    assert runtime.published_result_kind == "prepared"
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == "chart_runtime_transport"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert replay.json()["profile_version_id"] is None
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert (
+            await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey))
+            == 1
+        )
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
+
+
+@pytest.mark.parametrize(
+    ("runtime_fault", "expected_code"),
+    [
+        ("timeout", "chart_runtime_timeout"),
+        ("eof", "chart_runtime_transport"),
+        ("transport", "chart_runtime_transport"),
+    ],
+)
+async def test_confirm_and_preview_claims_unknown_before_cross_process_runtime(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    runtime_fault: str,
+    expected_code: str,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = TransportUnknownChartRuntime(runtime_fault)
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    first_unknown_rolled_back = asyncio.Event()
+    release_first_quarantine = asyncio.Event()
+    quarantine_calls = 0
+    original_quarantine = ReadingService._persist_runtime_unknown_quarantine
+
+    async def expose_rollback_to_detached_claim_window(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> None:
+        nonlocal quarantine_calls
+        quarantine_calls += 1
+        if quarantine_calls == 1:
+            first_unknown_rolled_back.set()
+            await release_first_quarantine.wait()
+        await original_quarantine(service, *args, **kwargs)
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_persist_runtime_unknown_quarantine",
+        expose_rollback_to_detached_claim_window,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "cross-process-transport-unknown-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            first_request = asyncio.create_task(
+                first_client.post(endpoint, headers=headers, json=payload)
+            )
+            await first_unknown_rolled_back.wait()
+            second = await second_client.post(endpoint, headers=headers, json=payload)
+            release_first_quarantine.set()
+            first = await first_request
+            replay = await second_client.post(endpoint, headers=headers, json=payload)
+            listed_after_failure = await second_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == expected_code
+    assert second.status_code == 200, second.text
+    assert second.json()["status"] == "input_ready"
+    assert second.json()["result_available"] is False
+    assert second.json()["poll_required"] is True
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert replay.json()["reading_version_id"] == second.json()["reading_version_id"]
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
+
+
+async def test_confirm_and_preview_abandoned_claim_expires_and_replays_after_restart(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = RenderableChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    hold_abandoned_owner = asyncio.Event()
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def abandon_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed.set()
+            await hold_abandoned_owner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        abandon_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "abandoned-profile-preview-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        abandoned = asyncio.create_task(
+            first_client.post(endpoint, headers=headers, json=payload)
+        )
+        await claim_committed.wait()
+        abandoned.cancel()
+        await asyncio.gather(abandoned, return_exceptions=True)
+
+        before_expiry = await first_client.post(endpoint, headers=headers, json=payload)
+        assert before_expiry.status_code == 200, before_expiry.text
+        assert before_expiry.json()["status"] == "input_ready"
+        assert before_expiry.json()["result_available"] is False
+        assert before_expiry.json()["poll_required"] is True
+        assert await run_worker_once(database, test_settings, runtime=runtime) is False
+
+        reading_version_id = before_expiry.json()["reading_version_id"]
+        async with database.sessions() as session:
+            job = await session.scalar(
+                select(ReadingJobRecord).where(
+                    ReadingJobRecord.reading_version_id == UUID(reading_version_id)
+                )
+            )
+            assert job is not None
+            assert job.status == "claim_pending"
+            assert job.lease_owner == "profile-preview-direct"
+            assert job.lease_token is not None
+            assert job.lease_expires_at is not None
+            job.lease_expires_at = datetime.now(UTC) - timedelta(seconds=1)
+            await session.commit()
+
+        restarted = main.create_app(settings=test_settings, database=database)
+        restarted_runtime = RenderableChartRuntime()
+        restarted.state.chart_runtime = restarted_runtime
+        restarted.dependency_overrides[
+            profiles_api._serialize_draft_preview
+        ] = bypass_process_local_lock
+        async with AsyncClient(
+            transport=ASGITransport(app=restarted),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as restarted_client:
+            summary_after_expiry = await restarted_client.get(
+                f"/api/v1/readings/{reading_version_id}"
+            )
+            after_expiry = await restarted_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+            fetched = await restarted_client.get(
+                f"/api/v1/readings/{reading_version_id}/result"
+            )
+            stable_replay = await restarted_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+
+    assert summary_after_expiry.status_code == 200, summary_after_expiry.text
+    assert summary_after_expiry.json()["status"] == "runtime_unknown"
+    assert after_expiry.status_code == 200, after_expiry.text
+    assert after_expiry.json()["status"] == "runtime_unknown"
+    assert after_expiry.json()["reading_version_id"] == reading_version_id
+    assert fetched.status_code == 200, fetched.text
+    assert fetched.json()["status"] == "runtime_unknown"
+    assert stable_replay.status_code == 200, stable_replay.text
+    assert stable_replay.json()["reading_version_id"] == reading_version_id
+    assert runtime.calls == 0
+    assert restarted_runtime.calls == 0
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+        job = await session.scalar(select(ReadingJobRecord))
+        assert job is not None
+        assert job.status == "runtime_unknown"
+        assert job.lease_owner is None
+        assert job.lease_token is None
+        assert job.lease_expires_at is None
+
+
+@pytest.mark.parametrize("expire_claim", [False, True], ids=["active", "expired"])
+async def test_foreign_owner_reads_do_not_stabilize_atomic_profile_preview_claim(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    expire_claim: bool,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = UnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_winner = asyncio.Event()
+    claimed_version_id: UUID | None = None
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal claimed_version_id
+        result = await original_claim(service, *args, **kwargs)
+        claim = service._atomic_profile_preview_claim
+        if result is None and claim is not None:
+            claimed_version_id = claim.reading_version_id
+            claim_committed.set()
+            await release_winner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with (
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as owner_client,
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as foreign_client,
+    ):
+        owner_guest = await create_guest(owner_client)
+        owner_login = await login_current_guest(
+            owner_client,
+            owner_guest,
+            destination="13800138000",
+        )
+        owner_headers = {
+            "X-CSRF-Token": owner_login["csrf_token"],
+            "Idempotency-Key": "foreign-read-ownership-v1",
+        }
+        foreign_guest = await create_guest(foreign_client)
+        await login_current_guest(
+            foreign_client,
+            foreign_guest,
+            destination="13900139000",
+        )
+        draft = await owner_client.post(
+            "/api/v1/profiles/drafts",
+            headers=owner_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        winner = asyncio.create_task(
+            owner_client.post(endpoint, headers=owner_headers, json=payload)
+        )
+        await asyncio.wait_for(claim_committed.wait(), timeout=5)
+        assert claimed_version_id is not None
+        if expire_claim:
+            async with database.sessions() as session:
+                job = await session.scalar(
+                    select(ReadingJobRecord).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+                assert job is not None
+                job.lease_expires_at = datetime.now(UTC) - timedelta(seconds=1)
+                await session.commit()
+        try:
+            foreign_summary = await foreign_client.get(
+                f"/api/v1/readings/{claimed_version_id}"
+            )
+            foreign_result = await foreign_client.get(
+                f"/api/v1/readings/{claimed_version_id}/result"
+            )
+            async with database.sessions() as session:
+                observed_generation = await session.scalar(
+                    select(ReadingJobRecord.lease_generation).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+                observed_job_status = await session.scalar(
+                    select(ReadingJobRecord.status).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+                observed_version_status = await session.scalar(
+                    select(ReadingVersion.status).where(
+                        ReadingVersion.id == claimed_version_id
+                    )
+                )
+        finally:
+            release_winner.set()
+        failed = await asyncio.wait_for(winner, timeout=10)
+
+    assert foreign_summary.status_code == 404, foreign_summary.text
+    assert foreign_result.status_code == 404, foreign_result.text
+    assert observed_generation == 1
+    assert observed_job_status == "claim_pending"
+    assert observed_version_status == "input_ready"
+    assert failed.status_code == 503, failed.text
+    async with database.sessions() as session:
+        if expire_claim:
+            assert failed.json()["code"] == "chart_runtime_transport"
+            assert runtime.calls == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 1
+            assert await session.scalar(select(ReadingVersion.status)) == "runtime_unknown"
+            assert await session.scalar(select(ReadingJobRecord.status)) == "runtime_unknown"
+        else:
+            assert failed.json()["code"] == "chart_runtime_unsupported"
+            assert runtime.calls == 1
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 0
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 0
+
+
+@pytest.mark.parametrize(
+    "listing_path",
+    ["/api/v1/readings", "/api/v1/account/history"],
+    ids=["reading-summaries", "account-history"],
+)
+async def test_listing_provisional_preview_claim_keeps_returned_id_replayable(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    listing_path: str,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = UnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_winner = asyncio.Event()
+    claimed_version_id: UUID | None = None
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal claimed_version_id
+        result = await original_claim(service, *args, **kwargs)
+        claim = service._atomic_profile_preview_claim
+        if result is None and claim is not None:
+            claimed_version_id = claim.reading_version_id
+            claim_committed.set()
+            await release_winner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as client:
+        guest_headers = await create_guest(client)
+        logged_in = await login_current_guest(client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": f"list-exposes-preview-{listing_path.rsplit('/', 1)[-1]}-v1",
+        }
+        draft = await client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        winner = asyncio.create_task(client.post(endpoint, headers=headers, json=payload))
+        await asyncio.wait_for(claim_committed.wait(), timeout=5)
+        assert claimed_version_id is not None
+        try:
+            listing = await client.get(listing_path)
+            async with database.sessions() as session:
+                observed_generation = await session.scalar(
+                    select(ReadingJobRecord.lease_generation).where(
+                        ReadingJobRecord.reading_version_id == claimed_version_id
+                    )
+                )
+        finally:
+            release_winner.set()
+        failed = await asyncio.wait_for(winner, timeout=10)
+        fetched = await client.get(f"/api/v1/readings/{claimed_version_id}")
+
+    assert listing.status_code == 200, listing.text
+    if listing_path == "/api/v1/readings":
+        listed_version_ids = {
+            item["reading_version_id"] for item in listing.json()["readings"]
+        }
+    else:
+        listed_version_ids = {
+            item["reading_version_id"]
+            for root in listing.json()["roots"]
+            for item in root["versions"]
+        }
+    assert str(claimed_version_id) in listed_version_ids
+    assert observed_generation == 2
+    assert failed.status_code == 503, failed.text
+    assert failed.json()["code"] == "chart_runtime_unsupported"
+    assert fetched.status_code == 200, fetched.text
+    assert fetched.json()["reading_version_id"] == str(claimed_version_id)
+    assert fetched.json()["status"] == "terminal_stopped"
+    assert fetched.json()["poll_required"] is False
+    assert runtime.calls == 1
+
+
+async def test_confirm_and_preview_expired_claim_beats_late_winner(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = RenderableChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_late_winner = asyncio.Event()
+    recovery_lock_orders: list[tuple[type[Any], ...]] = []
+    original_claim = ReadingService._claim_atomic_profile_preview
+    original_recover = ReadingService._recover_expired_atomic_profile_preview_claim
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed.set()
+            await release_late_winner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async def record_recovery_lock_order(
+        service: ReadingService,
+        version_id: UUID,
+    ) -> bool:
+        locked_entities: list[type[Any]] = []
+        original_scalar = service.session.scalar
+
+        async def recording_scalar(statement: Any, *args: Any, **kwargs: Any) -> Any:
+            if getattr(statement, "_for_update_arg", None) is not None:
+                entity = statement.column_descriptions[0].get("entity")
+                if entity in (ReadingVersion, ReadingJobRecord):
+                    locked_entities.append(entity)
+            return await original_scalar(statement, *args, **kwargs)
+
+        service.session.scalar = recording_scalar  # type: ignore[method-assign]
+        try:
+            recovered = await original_recover(service, version_id)
+        finally:
+            service.session.scalar = original_scalar  # type: ignore[method-assign]
+        if recovered:
+            recovery_lock_orders.append(tuple(locked_entities))
+        return recovered
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_recover_expired_atomic_profile_preview_claim",
+        record_recovery_lock_order,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "expired-late-winner-preview-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            late_winner = asyncio.create_task(
+                first_client.post(endpoint, headers=headers, json=payload)
+            )
+            await claim_committed.wait()
+            provisional = await second_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+            reading_version_id = provisional.json()["reading_version_id"]
+            async with database.sessions() as session:
+                job = await session.scalar(select(ReadingJobRecord))
+                assert job is not None
+                job.lease_expires_at = datetime.now(UTC) - timedelta(seconds=1)
+                await session.commit()
+
+            recovered = await second_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+            release_late_winner.set()
+            late = await late_winner
+            stable = await second_client.post(endpoint, headers=headers, json=payload)
+
+    assert provisional.status_code == 200, provisional.text
+    assert provisional.json()["status"] == "input_ready"
+    assert recovered.status_code == 200, recovered.text
+    assert recovered.json()["status"] == "runtime_unknown"
+    assert recovered.json()["reading_version_id"] == reading_version_id
+    assert late.status_code == 503, late.text
+    assert late.json()["code"] == "chart_runtime_transport"
+    assert stable.status_code == 200, stable.text
+    assert stable.json()["reading_version_id"] == reading_version_id
+    assert stable.json()["status"] == "runtime_unknown"
+    assert runtime.calls == 0
+    assert recovery_lock_orders == [(ReadingVersion, ReadingJobRecord)]
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
+
+
+async def test_confirm_and_preview_late_winner_replay_survives_recovery_rollback(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    readings_service_module = __import__(
+        "app.readings.service",
+        fromlist=["_ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS"],
+    )
+    repository_module = __import__(
+        "app.readings.repository",
+        fromlist=["SqlReadingRepository"],
+    )
+    runtime = RenderableChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    monkeypatch.setattr(
+        readings_service_module,
+        "_ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS",
+        1,
+    )
+    payload = confirm_and_preview_payload()
+    winner_at_attach = asyncio.Event()
+    release_late_winner = asyncio.Event()
+    recovery_at_version_lock = asyncio.Event()
+    release_recovery = asyncio.Event()
+    claimed_version_id: UUID | None = None
+    recovery_paused = False
+    original_attach = repository_module.SqlReadingRepository.attach_start_claim_profile
+    original_recover = ReadingService._recover_expired_atomic_profile_preview_claim
+
+    async def pause_after_claim_validation(
+        repository: Any,
+        version_id: UUID,
+        profile_version_id: UUID,
+    ) -> Any:
+        nonlocal claimed_version_id
+        claimed_version_id = version_id
+        winner_at_attach.set()
+        await release_late_winner.wait()
+        return await original_attach(repository, version_id, profile_version_id)
+
+    monkeypatch.setattr(
+        repository_module.SqlReadingRepository,
+        "attach_start_claim_profile",
+        pause_after_claim_validation,
+    )
+
+    async def pause_recovery_before_version_lock(
+        service: ReadingService,
+        version_id: UUID,
+    ) -> bool:
+        nonlocal recovery_paused
+        original_scalar = service.session.scalar
+
+        async def pausing_scalar(statement: Any, *args: Any, **kwargs: Any) -> Any:
+            nonlocal recovery_paused
+            entity = statement.column_descriptions[0].get("entity")
+            if (
+                not recovery_paused
+                and getattr(statement, "_for_update_arg", None) is not None
+                and entity is ReadingVersion
+            ):
+                recovery_paused = True
+                recovery_at_version_lock.set()
+                await release_recovery.wait()
+            return await original_scalar(statement, *args, **kwargs)
+
+        service.session.scalar = pausing_scalar  # type: ignore[method-assign]
+        try:
+            return await original_recover(service, version_id)
+        finally:
+            service.session.scalar = original_scalar  # type: ignore[method-assign]
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_recover_expired_atomic_profile_preview_claim",
+        pause_recovery_before_version_lock,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "expired-late-winner-rollback-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application, raise_app_exceptions=False),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as replay_client:
+            late_winner = asyncio.create_task(
+                first_client.post(endpoint, headers=headers, json=payload)
+            )
+            await asyncio.wait_for(winner_at_attach.wait(), timeout=5)
+            assert claimed_version_id is not None
+            await asyncio.sleep(1.1)
+
+            replay_task = asyncio.create_task(
+                replay_client.post(endpoint, headers=headers, json=payload)
+            )
+            try:
+                await asyncio.wait_for(recovery_at_version_lock.wait(), timeout=5)
+                release_late_winner.set()
+                late = await asyncio.wait_for(late_winner, timeout=10)
+            finally:
+                release_late_winner.set()
+                release_recovery.set()
+            replay = await asyncio.wait_for(replay_task, timeout=10)
+
+    assert late.status_code == 201, late.text
+    assert late.json()["status"] == "prepared"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["reading_version_id"] == str(claimed_version_id)
+    assert replay.json()["status"] == "prepared"
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+
+
+async def test_confirm_and_preview_exposed_claim_keeps_terminal_failure_replayable(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime = UnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_winner = asyncio.Event()
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed.set()
+            await release_winner.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "exposed-terminal-failure-preview-v1",
+        }
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            winner = asyncio.create_task(
+                first_client.post(endpoint, headers=headers, json=payload)
+            )
+            await claim_committed.wait()
+            provisional = await second_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+            reading_version_id = provisional.json()["reading_version_id"]
+            release_winner.set()
+            failed = await winner
+            replay = await second_client.post(endpoint, headers=headers, json=payload)
+            fetched = await second_client.get(
+                f"/api/v1/readings/{reading_version_id}/result"
+            )
+
+    assert provisional.status_code == 200, provisional.text
+    assert provisional.json()["status"] == "input_ready"
+    assert failed.status_code == 503, failed.text
+    assert failed.json()["code"] == "chart_runtime_unsupported"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["reading_version_id"] == reading_version_id
+    assert replay.json()["status"] == "terminal_stopped"
+    assert replay.json()["poll_required"] is False
+    assert fetched.status_code == 200, fetched.text
+    assert fetched.json()["status"] == "terminal_stopped"
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        job = await session.scalar(select(ReadingJobRecord))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert job is not None
+        assert job.status == "stopped"
+        assert job.lease_owner is None
+        assert job.lease_token is None
+        assert job.lease_expires_at is None
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+
+
+async def test_postgresql_late_identical_preview_replay_keeps_failure_stable(
+    postgres_api_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime_started = asyncio.Event()
+    release_runtime = asyncio.Event()
+    runtime_returned = asyncio.Event()
+    settlement_commit_started = asyncio.Event()
+    release_settlement_commit = asyncio.Event()
+    replay_intent_started = asyncio.Event()
+
+    class BlockingUnsupportedChartRuntime:
+        adapter_kind = "fake"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def execute(self, command: Any) -> Stopped:
+            del command
+            self.calls += 1
+            runtime_started.set()
+            await release_runtime.wait()
+            runtime_returned.set()
+            return Stopped(
+                reason="unsupported",
+                public_copy="当前排盘能力暂不可用。",
+            )
+
+    runtime = BlockingUnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=postgres_api_database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    original_hold_intent = ReadingService._hold_atomic_profile_preview_replay_intent
+    original_commit = AsyncSession.commit
+    settlement_commit_paused = False
+
+    async def observe_replay_intent(
+        service: ReadingService,
+        idempotency: Any,
+    ) -> None:
+        replay_intent_started.set()
+        await original_hold_intent(service, idempotency)
+
+    async def pause_settlement_commit(session: AsyncSession) -> None:
+        nonlocal settlement_commit_paused
+        if runtime_returned.is_set() and not settlement_commit_paused:
+            settlement_commit_paused = True
+            settlement_commit_started.set()
+            await release_settlement_commit.wait()
+        await original_commit(session)
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_hold_atomic_profile_preview_replay_intent",
+        observe_replay_intent,
+    )
+    monkeypatch.setattr(
+        AsyncSession,
+        "commit",
+        pause_settlement_commit,
+    )
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as winner_client:
+        guest_headers = await create_guest(winner_client)
+        logged_in = await login_current_guest(winner_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "postgres-blocked-terminal-preview-v1",
+        }
+        draft = await winner_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(postgres_api_database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=winner_client.cookies,
+        ) as replay_client:
+            winner_task = asyncio.create_task(
+                winner_client.post(endpoint, headers=headers, json=payload)
+            )
+            await asyncio.wait_for(runtime_started.wait(), timeout=5)
+            release_runtime.set()
+            await asyncio.wait_for(settlement_commit_started.wait(), timeout=5)
+            replay_task = asyncio.create_task(
+                replay_client.post(endpoint, headers=headers, json=payload)
+            )
+            try:
+                await asyncio.wait_for(replay_intent_started.wait(), timeout=5)
+                await asyncio.sleep(0.1)
+                assert not replay_task.done()
+                release_settlement_commit.set()
+                failed = await asyncio.wait_for(winner_task, timeout=10)
+                replay = await asyncio.wait_for(replay_task, timeout=10)
+            finally:
+                release_runtime.set()
+                release_settlement_commit.set()
+            stable_replay = await replay_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+            assert runtime.calls == 1
+            different_key_headers = {
+                **headers,
+                "Idempotency-Key": "postgres-different-terminal-preview-v1",
+            }
+            different_key_failed = await winner_client.post(
+                endpoint,
+                headers=different_key_headers,
+                json=payload,
+            )
+            different_key_replay = await replay_client.post(
+                endpoint,
+                headers=different_key_headers,
+                json=payload,
+            )
+
+    assert failed.status_code == 503, failed.text
+    assert failed.json()["code"] == "chart_runtime_unsupported"
+    assert settlement_commit_paused is True
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "terminal_stopped"
+    assert replay.json()["poll_required"] is False
+    assert stable_replay.status_code == 200, stable_replay.text
+    assert stable_replay.json()["reading_version_id"] == replay.json()["reading_version_id"]
+    assert stable_replay.json()["status"] == "terminal_stopped"
+    assert different_key_failed.status_code == 503, different_key_failed.text
+    assert different_key_failed.json()["code"] == "chart_runtime_unsupported"
+    assert different_key_replay.status_code == 200, different_key_replay.text
+    assert different_key_replay.json()["status"] == "terminal_stopped"
+    assert (
+        different_key_replay.json()["reading_version_id"]
+        != replay.json()["reading_version_id"]
+    )
+    assert runtime.calls == 2
+    async with postgres_api_database.sessions() as session:
+        jobs = list(await session.scalars(select(ReadingJobRecord)))
+        assert len(jobs) == 2
+        assert all(job.status == "stopped" for job in jobs)
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 2
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 2
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 2
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 2
+
+
+async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = NeedInputChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "need-input-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        async with database.sessions() as session:
+            counts_before = (
+                await session.scalar(select(func.count()).select_from(SubjectProfile)),
+                await session.scalar(select(func.count()).select_from(ProfileVersion)),
+                await session.scalar(select(func.count()).select_from(ReadingRoot)),
+                await session.scalar(select(func.count()).select_from(ReadingVersion)),
+                await session.scalar(
+                    select(func.count()).select_from(ReadingIdempotencyKey)
+                ),
+            )
+
+        need_input = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+        replay = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert need_input.status_code == 400, need_input.text
+    assert need_input.json()["title"] == "Chart generation unavailable"
+    assert need_input.json()["type"] == (
+        "urn:mingli:problem:chart_runtime_need_input"
+    )
+    assert need_input.json()["detail"] == "chart_runtime_need_input"
+    assert need_input.json()["code"] == "chart_runtime_need_input"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "waiting_input"
+    assert replay.json()["profile_version_id"] is None
+    assert replay.json()["input_request"] == {
+        "requirements": [
+            {
+                "any_of": [
+                    {
+                        "id": "missing_chart_input",
+                        "label": "补充信息",
+                        "type_id": "text",
+                        "description": None,
+                        "choices": [],
+                    }
+                ]
+            }
+        ]
+    }
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        version = await session.scalar(select(ReadingVersion))
+        assert root is not None
+        assert version is not None
+        assert root.profile_version_id is None
+        assert version.state_token_ciphertext is not None
+        assert version.state_token_fingerprint is not None
+        assert version.prepare_has_state_token is False
+        counts_after = (
+            await session.scalar(select(func.count()).select_from(SubjectProfile)),
+            await session.scalar(select(func.count()).select_from(ProfileVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingRoot)),
+            await session.scalar(select(func.count()).select_from(ReadingVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)),
+        )
+        assert counts_after[:2] == counts_before[:2]
+        assert counts_after[2:] == (1, 1, 1)
+        assert (
+            await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        )
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "waiting_input"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "waiting_input"
+        ]
+
+
+async def test_confirm_and_preview_replays_a_concurrent_idempotent_request(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "concurrent-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+        first, second = await asyncio.gather(
+            atomic_client.post(endpoint, headers=headers, json=payload),
+            atomic_client.post(endpoint, headers=headers, json=payload),
+        )
+        conflicting_payload = confirm_and_preview_payload()
+        conflicting_payload["profile"]["on_name_conflict"] = "overwrite"
+        conflicting_payload["reading"]["dimension_ids"] = ["overview"]
+        conflict = await atomic_client.post(
+            endpoint,
+            headers=headers,
+            json=conflicting_payload,
+        )
+
+    assert sorted((first.status_code, second.status_code)) == [200, 201]
+    assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
+    assert conflict.status_code == 409, conflict.text
+    assert conflict.json()["title"] == "Idempotency-Key conflict"
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_replays_cross_process_overwrite_race(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    payload["profile"]["on_name_conflict"] = "overwrite"
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        existing = await create_confirmed_profile(atomic_client, csrf_headers)
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+
+        claim_committed = asyncio.Event()
+        release_winner = asyncio.Event()
+        original_claim = ReadingService._claim_atomic_profile_preview
+
+        async def pause_winner_after_durable_claim(
+            service: ReadingService,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
+            result = await original_claim(service, *args, **kwargs)
+            if result is None and service._atomic_profile_preview_claim is not None:
+                claim_committed.set()
+                await release_winner.wait()
+            return result
+
+        monkeypatch.setattr(
+            ReadingService,
+            "_claim_atomic_profile_preview",
+            pause_winner_after_durable_claim,
+        )
+        headers = {
+            **csrf_headers,
+            "Idempotency-Key": "cross-process-overwrite-preview-v1",
+        }
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+
+        winner = asyncio.create_task(
+            atomic_client.post(endpoint, headers=headers, json=payload)
+        )
+        await claim_committed.wait()
+        second = await atomic_client.post(endpoint, headers=headers, json=payload)
+        async with database.sessions() as session:
+            provisional_root = await session.scalar(select(ReadingRoot))
+            assert provisional_root is not None
+            assert provisional_root.profile_version_id is None
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingRoot)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingVersion)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 1
+            assert list(await session.scalars(select(ReadingVersion.status))) == [
+                "input_ready"
+            ]
+            assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+                "claim_pending"
+            ]
+        release_winner.set()
+        first = await winner
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+
+    assert sorted((first.status_code, second.status_code)) == [200, 201]
+    assert second.json()["status"] == "input_ready"
+    assert second.json()["result_available"] is False
+    assert second.json()["poll_required"] is True
+    assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "prepared"
+    assert replay.json()["result_available"] is True
+    assert replay.json()["reading_version_id"] == first.json()["reading_version_id"]
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        profiles = list(await session.scalars(select(SubjectProfile)))
+        assert [str(profile.id) for profile in profiles] == [existing["profile_id"]]
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_discards_different_key_overwrite_loser_claim(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    payload["profile"]["on_name_conflict"] = "overwrite"
+    claim_committed = [asyncio.Event(), asyncio.Event()]
+    release_claim = [asyncio.Event(), asyncio.Event()]
+    claim_index = 0
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_each_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal claim_index
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            index = claim_index
+            claim_index += 1
+            claim_committed[index].set()
+            await release_claim[index].wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_each_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        existing = await create_confirmed_profile(first_client, csrf_headers)
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+        winner_headers = {
+            **csrf_headers,
+            "Idempotency-Key": "different-key-overwrite-winner-v1",
+        }
+        loser_headers = {
+            **csrf_headers,
+            "Idempotency-Key": "different-key-overwrite-loser-v1",
+        }
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            winner_request = asyncio.create_task(
+                first_client.post(endpoint, headers=winner_headers, json=payload)
+            )
+            await claim_committed[0].wait()
+            loser_request = asyncio.create_task(
+                second_client.post(endpoint, headers=loser_headers, json=payload)
+            )
+            await claim_committed[1].wait()
+
+            release_claim[0].set()
+            winner = await winner_request
+            release_claim[1].set()
+            loser = await loser_request
+            replay = await second_client.post(
+                endpoint,
+                headers=winner_headers,
+                json=payload,
+            )
+            conflicting_payload = confirm_and_preview_payload()
+            conflicting_payload["profile"]["on_name_conflict"] = "overwrite"
+            conflicting_payload["reading"]["dimension_ids"] = ["overview"]
+            conflict = await second_client.post(
+                endpoint,
+                headers=winner_headers,
+                json=conflicting_payload,
+            )
+
+    assert winner.status_code == 201, winner.text
+    assert loser.status_code == 404, loser.text
+    assert loser.json()["code"] == "profile_not_found"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["reading_version_id"] == winner.json()["reading_version_id"]
+    assert replay.json()["status"] == "prepared"
+    assert conflict.status_code == 409, conflict.text
+    assert conflict.json()["title"] == "Idempotency-Key conflict"
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        profiles = list(await session.scalars(select(SubjectProfile)))
+        assert [str(profile.id) for profile in profiles] == [existing["profile_id"]]
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+
+
+@pytest.mark.parametrize("expose_claim", [False, True], ids=["unexposed", "exposed"])
+async def test_confirm_and_preview_cleans_claim_when_confirmation_loses_race(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+    expose_claim: bool,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_loser = asyncio.Event()
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed.set()
+            await release_loser.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+        combined_headers = {
+            **csrf_headers,
+            "Idempotency-Key": "losing-confirm-race-preview-v1",
+        }
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            loser_request = asyncio.create_task(
+                first_client.post(endpoint, headers=combined_headers, json=payload)
+            )
+            await claim_committed.wait()
+            provisional = (
+                await second_client.post(
+                    endpoint,
+                    headers=combined_headers,
+                    json=payload,
+                )
+                if expose_claim
+                else None
+            )
+            winner = await second_client.post(
+                f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+                headers=csrf_headers,
+                json=payload["profile"],
+            )
+            release_loser.set()
+            loser = await loser_request
+            retry = await second_client.post(
+                endpoint,
+                headers=combined_headers,
+                json=payload,
+            )
+
+    assert winner.status_code == 201, winner.text
+    assert runtime.calls == 0
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        if expose_claim:
+            assert provisional is not None
+            reading_version_id = provisional.json()["reading_version_id"]
+            assert provisional.status_code == 200, provisional.text
+            assert provisional.json()["status"] == "input_ready"
+            assert loser.status_code == 200, loser.text
+            assert loser.json()["status"] == "terminal_stopped"
+            assert loser.json()["reading_version_id"] == reading_version_id
+            assert retry.status_code == 200, retry.text
+            assert retry.json()["status"] == "terminal_stopped"
+            assert retry.json()["reading_version_id"] == reading_version_id
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 1
+        else:
+            assert provisional is None
+            assert loser.status_code == 409, loser.text
+            assert loser.json()["title"] == "Profile Draft is already confirmed"
+            assert retry.status_code == 409, retry.text
+            assert retry.json()["title"] == "Profile Draft is already confirmed"
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 0
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 0
+
+
+async def test_confirm_and_preview_cleans_claim_after_late_name_conflict(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed: dict[UUID, asyncio.Event] = {}
+    release_claim: dict[UUID, asyncio.Event] = {}
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        draft_id = kwargs["draft_id"]
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed[draft_id].set()
+            await release_claim[draft_id].wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        first_draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        second_draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert first_draft.status_code == 201, first_draft.text
+        assert second_draft.status_code == 201, second_draft.text
+        await seed_runtime_release(database, test_settings)
+        first_draft_id = UUID(first_draft.json()["draft_id"])
+        second_draft_id = UUID(second_draft.json()["draft_id"])
+        claim_committed = {
+            first_draft_id: asyncio.Event(),
+            second_draft_id: asyncio.Event(),
+        }
+        release_claim = {
+            first_draft_id: asyncio.Event(),
+            second_draft_id: asyncio.Event(),
+        }
+
+        async with (
+            AsyncClient(
+                transport=ASGITransport(app=application),
+                base_url="https://testserver",
+                cookies=first_client.cookies,
+            ) as second_client,
+            AsyncClient(
+                transport=ASGITransport(app=application),
+                base_url="https://testserver",
+                cookies=first_client.cookies,
+            ) as confirm_client,
+        ):
+            first_headers = {
+                **csrf_headers,
+                "Idempotency-Key": "late-name-conflict-first-v1",
+            }
+            second_headers = {
+                **csrf_headers,
+                "Idempotency-Key": "late-name-conflict-second-v1",
+            }
+            first_endpoint = (
+                f"/api/v1/profiles/drafts/{first_draft_id}/readings/preview"
+            )
+            second_endpoint = (
+                f"/api/v1/profiles/drafts/{second_draft_id}/readings/preview"
+            )
+            first_request = asyncio.create_task(
+                first_client.post(first_endpoint, headers=first_headers, json=payload)
+            )
+            await claim_committed[first_draft_id].wait()
+            second_request = asyncio.create_task(
+                second_client.post(second_endpoint, headers=second_headers, json=payload)
+            )
+            await claim_committed[second_draft_id].wait()
+
+            confirmed = await confirm_client.post(
+                f"/api/v1/profiles/drafts/{first_draft_id}/confirm",
+                headers=csrf_headers,
+                json=payload["profile"],
+            )
+            assert confirmed.status_code == 201, confirmed.text
+
+            release_claim[first_draft_id].set()
+            already_confirmed = await first_request
+            release_claim[second_draft_id].set()
+            name_conflict = await second_request
+            replay = await confirm_client.post(
+                second_endpoint,
+                headers=second_headers,
+                json=payload,
+            )
+
+    assert already_confirmed.status_code == 409, already_confirmed.text
+    assert already_confirmed.json()["title"] == "Profile Draft is already confirmed"
+    assert name_conflict.status_code == 409, name_conflict.text
+    assert name_conflict.json()["code"] == "profile_name_conflict"
+    assert replay.status_code == 409, replay.text
+    assert replay.json()["code"] == "profile_name_conflict"
+    assert runtime.calls == 0
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 2
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 0
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 0
+
+
+async def test_confirm_and_preview_timing_includes_final_commit(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "profile-preview-timing-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+
+        original_commit = AsyncSession.commit
+        commit_delay_seconds = 0.05
+
+        async def delayed_commit(session: AsyncSession) -> None:
+            await asyncio.sleep(commit_delay_seconds)
+            await original_commit(session)
+
+        monkeypatch.setattr(AsyncSession, "commit", delayed_commit)
+        response = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+    assert response.status_code == 201, response.text
+    timing = response.json()["fast_path_timing"]
+    minimum_commit_ms = commit_delay_seconds * 1000 * 0.8
+    assert timing["db_persistence_ms"] >= minimum_commit_ms
+    assert timing["total_ms"] >= minimum_commit_ms
+    server_timing = {
+        item.split(";dur=", maxsplit=1)[0]: float(item.split(";dur=", maxsplit=1)[1])
+        for item in response.headers["Server-Timing"].split(", ")
+        if ";dur=" in item
+    }
+    assert server_timing["chart-db"] == pytest.approx(
+        timing["db_persistence_ms"],
+        abs=0.001,
+    )
+    assert server_timing["chart-direct"] == pytest.approx(
+        timing["total_ms"],
+        abs=0.001,
+    )
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "product_id", "request_fields"),
+    (
+        (
+            "/api/v1/readings/bazi-relationship",
+            "bazi-relationship",
+            {"relationship_type": "romantic"},
+        ),
+        (
+            "/api/v1/readings/chart-similarity",
+            "chart-similarity",
+            {"dimension_ids": ["state"]},
+        ),
+    ),
+)
+async def test_latest_profile_reading_finds_secondary_participant(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    endpoint: str,
+    product_id: str,
+    request_fields: dict[str, Any],
+) -> None:
+    from test_relationship_readings import RelationshipFakeRuntime
+
+    guest_headers = await create_guest(client)
+    first = await create_confirmed_profile(client, guest_headers, label="本人甲")
+    second = await create_confirmed_profile(
+        client,
+        guest_headers,
+        label="本人乙",
+        location="上海市浦东新区",
+    )
+    logged_in = await login_current_guest(client, guest_headers)
+    headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(
+        endpoint,
+        headers=headers,
+        json={
+            "profile_version_ids": [
+                first["profile_version_id"],
+                second["profile_version_id"],
+            ],
+            **request_fields,
+        },
+    )
+    assert started.status_code == 201, started.text
+    assert await run_worker_once(
+        database,
+        test_settings,
+        runtime=RelationshipFakeRuntime(),
+    ) is True
+
+    latest = await client.get(
+        f"/api/v1/profiles/{second['profile_id']}/readings/latest",
+        params={"product_id": product_id},
+    )
+
+    assert latest.status_code == 200, latest.text
+    assert latest.json()["profile_version_id"] == second["profile_version_id"]
+    assert latest.json()["reading_root_id"] == started.json()["reading_root_id"]
+    assert latest.json()["reading_version_id"] == started.json()["reading_version_id"]
+    assert latest.json()["product_id"] == product_id
+    assert latest.json()["result_available"] is True
+
+
+async def test_latest_profile_reading_crosses_versions_and_ignores_history_limit(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    guest_headers = await create_guest(client)
+    first_profile = await create_confirmed_profile(client, guest_headers)
+    logged_in = await login_current_guest(client, guest_headers)
+    headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    await seed_runtime_release(database, test_settings)
+    first = await start_preview(
+        client,
+        headers,
+        first_profile["profile_version_id"],
+        idempotency_key="latest-profile-first-v1",
+    )
+    appended = await client.post(
+        f"/api/v1/profiles/{first_profile['profile_id']}/versions",
+        headers=headers,
+        json={
+            **confirm_and_preview_payload()["profile"],
+            "birth_datetime": "1994-04-30T06:05:00+08:00",
+            "difference_acknowledged": True,
+        },
+    )
+    assert appended.status_code == 201, appended.text
+    latest = await start_preview(
+        client,
+        headers,
+        appended.json()["profile_version_id"],
+        idempotency_key="latest-profile-second-v1",
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=first["reading_version_id"],
+        brief=_bazi_chart_brief(f"profile-version:{first_profile['profile_version_id']}"),
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=latest["reading_version_id"],
+        brief=_bazi_chart_brief(f"profile-version:{appended.json()['profile_version_id']}"),
+    )
+
+    readings = __import__(
+        "app.readings.repository",
+        fromlist=["SqlReadingRepository"],
+    )
+    cipher = EnvelopeCipher.from_settings(test_settings)
+    async with database.sessions() as session:
+        first_version = await session.get(
+            ReadingVersion,
+            UUID(first["reading_version_id"]),
+        )
+        latest_version = await session.get(
+            ReadingVersion,
+            UUID(latest["reading_version_id"]),
+        )
+        assert first_version is not None
+        assert latest_version is not None
+        tied_created_at = datetime.now(UTC) - timedelta(days=1)
+        first_version.created_at = tied_created_at
+        latest_version.created_at = tied_created_at
+        expected_reading = max(
+            (first, latest),
+            key=lambda item: UUID(item["reading_version_id"]),
+        )
+        expected_profile_version_id = (
+            first_profile["profile_version_id"]
+            if expected_reading is first
+            else appended.json()["profile_version_id"]
+        )
+        expected_latest_created_at = tied_created_at.replace(tzinfo=None).isoformat()
+        repository = readings.SqlReadingRepository(session, cipher)
+        prepare = await repository.load_prepare(latest_version.id)
+        for _ in range(51):
+            root = await repository.create_root(
+                capability_id="bazi",
+                owner_user_id=UUID(logged_in["user_id"]),
+                profile_version_id=UUID(appended.json()["profile_version_id"]),
+            )
+            await repository.create_version(
+                reading_root_id=root.id,
+                runtime_release_id=latest_version.runtime_release_id,
+                prepare_command=prepare,
+            )
+        await session.commit()
+
+    async with database.sessions() as session:
+        before = (
+            await session.scalar(select(func.count()).select_from(SubjectProfile)),
+            await session.scalar(select(func.count()).select_from(ProfileVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingRoot)),
+            await session.scalar(select(func.count()).select_from(ReadingVersion)),
+        )
+    response = await client.get(
+        f"/api/v1/profiles/{first_profile['profile_id']}/readings/latest",
+        params={"product_id": "bazi"},
+    )
+    async with database.sessions() as session:
+        after = (
+            await session.scalar(select(func.count()).select_from(SubjectProfile)),
+            await session.scalar(select(func.count()).select_from(ProfileVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingRoot)),
+            await session.scalar(select(func.count()).select_from(ReadingVersion)),
+        )
+
+    assert response.status_code == 200, response.text
+    assert_private_headers(response)
+    assert response.json() == {
+        "profile_id": first_profile["profile_id"],
+        "profile_version_id": expected_profile_version_id,
+        "reading_root_id": expected_reading["reading_root_id"],
+        "reading_version_id": expected_reading["reading_version_id"],
+        "capability_id": "bazi",
+        "product_id": "bazi",
+        "status": "prepared",
+        "result_available": True,
+        "created_at": expected_latest_created_at,
+    }
+    assert before == after
+
+
+async def test_latest_profile_reading_returns_stable_reasons_and_hides_ownership(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
+    async with (
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as first_client,
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as second_client,
+    ):
+        first_guest = await create_guest(first_client)
+        never_profile = await create_confirmed_profile(
+            first_client,
+            first_guest,
+            label="未排盘",
+        )
+        successful_profile = await create_confirmed_profile(
+            first_client,
+            first_guest,
+            label="已有八字",
+            birth_datetime="2001-07-12T09:30:00+08:00",
+        )
+        unrenderable_profile = await create_confirmed_profile(
+            first_client,
+            first_guest,
+            label="无可渲染结果",
+            birth_datetime="2002-08-13T10:40:00+08:00",
+        )
+        logged_in = await login_current_guest(first_client, first_guest)
+        headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        await seed_runtime_release(database, test_settings)
+        await start_preview(
+            first_client,
+            headers,
+            successful_profile["profile_version_id"],
+            idempotency_key="latest-profile-incompatible-v1",
+        )
+        unrenderable = await start_preview(
+            first_client,
+            headers,
+            unrenderable_profile["profile_version_id"],
+            idempotency_key="latest-profile-unrenderable-v1",
+        )
+        async with database.sessions() as session:
+            brief = await session.scalar(
+                select(FactBrief).where(
+                    FactBrief.reading_version_id
+                    == UUID(unrenderable["reading_version_id"]),
+                )
+            )
+            assert brief is not None
+            await session.delete(brief)
+            await session.commit()
+
+        never = await first_client.get(
+            f"/api/v1/profiles/{never_profile['profile_id']}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+        unrenderable_only = await first_client.get(
+            f"/api/v1/profiles/{unrenderable_profile['profile_id']}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+        incompatible = await first_client.get(
+            f"/api/v1/profiles/{successful_profile['profile_id']}/readings/latest",
+            params={"product_id": "ziwei"},
+        )
+        await create_guest(second_client)
+        forbidden = await second_client.get(
+            f"/api/v1/profiles/{successful_profile['profile_id']}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+        absent = await second_client.get(
+            f"/api/v1/profiles/{uuid4()}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+
+    assert never.status_code == 409, never.text
+    assert never.json()["code"] == "never_succeeded"
+    assert unrenderable_only.status_code == 409, unrenderable_only.text
+    assert unrenderable_only.json()["code"] == "never_succeeded"
+    assert incompatible.status_code == 409, incompatible.text
+    assert incompatible.json()["code"] == "unavailable_or_incompatible"
+    assert forbidden.status_code == absent.status_code == 404
+    assert forbidden.json()["code"] == absent.json()["code"] == "profile_not_found"
+    assert forbidden.json()["title"] == absent.json()["title"]
 
 
 async def test_same_idempotency_key_with_different_payload_returns_conflict(
