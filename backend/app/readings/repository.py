@@ -373,6 +373,40 @@ class SqlReadingRepository:
         found = rows.all()
         return [(root, version) for root, version in found]
 
+    async def list_owned_profile_versions(
+        self,
+        profile_id: UUID,
+        *,
+        owner_user_id: UUID | None,
+        owner_guest_session_id: UUID | None,
+    ) -> list[tuple[ReadingRoot, ReadingVersion]]:
+        """List every Reading Version linked through any version of one Profile.
+
+        This intentionally has no history-window limit.  Profile lookup must be
+        able to recover an older successful chart even after an owner creates
+        more than the account-history projection's newest 50 versions.
+        """
+
+        rows = await self.session.execute(
+            select(ReadingRoot, ReadingVersion)
+            .join(ReadingVersion, ReadingVersion.reading_root_id == ReadingRoot.id)
+            .join(ProfileVersion, ProfileVersion.id == ReadingRoot.profile_version_id)
+            .join(SubjectProfile, SubjectProfile.id == ProfileVersion.profile_id)
+            .where(
+                SubjectProfile.id == profile_id,
+                SubjectProfile.status == "active",
+                SubjectProfile.owner_user_id == owner_user_id,
+                SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                ReadingRoot.owner_user_id == owner_user_id,
+                ReadingRoot.owner_guest_session_id == owner_guest_session_id,
+            )
+            .order_by(
+                ReadingVersion.created_at.desc(),
+                ReadingVersion.id.desc(),
+            )
+        )
+        return [(root, version) for root, version in rows.all()]
+
     async def load_prepare(self, version_id: UUID) -> Prepare:
         version = await self.session.get(ReadingVersion, version_id)
         if version is None:

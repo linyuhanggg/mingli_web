@@ -913,6 +913,58 @@ paths:
           $ref: "#/components/responses/Conflict"
         "429":
           $ref: "#/components/responses/TooManyRequests"
+  /api/v1/profiles/drafts/{draft_id}/readings/preview:
+    post:
+      operationId: confirmProfileDraftAndStartPreviewReading
+      tags: [Profiles, Readings]
+      summary: Atomically confirm one Profile Draft and prepare its first Bazi chart
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - name: Idempotency-Key
+          in: header
+          required: true
+          description: Persisted per owner across the combined Profile and Reading transaction
+          schema:
+            type: string
+            minLength: 8
+            maxLength: 128
+        - name: draft_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ConfirmProfileDraftAndStartPreviewRequest"
+      responses:
+        "201":
+          description: Profile confirmation and first renderable Reading committed together
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed the same combined transaction for this Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/profiles/{profile_id}/versions:
     post:
       operationId: appendProfileVersion
@@ -971,6 +1023,39 @@ paths:
           $ref: "#/components/responses/Unauthorized"
         "404":
           $ref: "#/components/responses/NotFound"
+  /api/v1/profiles/{profile_id}/readings/latest:
+    get:
+      operationId: getLatestProfileReading
+      tags: [Profiles, Readings]
+      summary: Resolve the newest successful renderable Reading across all Profile Versions
+      parameters:
+        - name: profile_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: product_id
+          in: query
+          required: true
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 80
+            pattern: "^[a-z0-9-]+$"
+      responses:
+        "200":
+          description: Stable identity of the newest compatible renderable Reading
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LatestProfileReadingResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
   /api/v1/profiles:
     get:
       operationId: listProfiles
@@ -3371,6 +3456,39 @@ components:
           type: string
           enum: [reject, save_as, overwrite]
           default: reject
+    ProfileReadingPreviewOptions:
+      type: object
+      additionalProperties: false
+      properties:
+        query:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 300
+        dimension_ids:
+          type: [array, "null"]
+          minItems: 1
+          maxItems: 4
+          items:
+            type: string
+        target_year:
+          type: [integer, "null"]
+          minimum: 1800
+          maximum: 2199
+        target_month:
+          type: [string, "null"]
+          pattern: '^\d{4}-(0[1-9]|1[0-2])$'
+        target_date:
+          type: [string, "null"]
+          format: date
+    ConfirmProfileDraftAndStartPreviewRequest:
+      type: object
+      additionalProperties: false
+      required: [profile, reading]
+      properties:
+        profile:
+          $ref: "#/components/schemas/ProfileConfirmRequest"
+        reading:
+          $ref: "#/components/schemas/ProfileReadingPreviewOptions"
     ProfileVersionRequest:
       type: object
       additionalProperties: false
@@ -3469,6 +3587,38 @@ components:
           type: [string, "null"]
           format: date
           description: Owner-only calendar-date projection; more precise birth fields stay encrypted
+        created_at:
+          type: string
+          format: date-time
+    LatestProfileReadingResponse:
+      type: object
+      additionalProperties: false
+      required:
+        [profile_id, profile_version_id, reading_root_id, reading_version_id,
+         capability_id, product_id, status, result_available, created_at]
+      properties:
+        profile_id:
+          type: string
+          format: uuid
+        profile_version_id:
+          type: string
+          format: uuid
+        reading_root_id:
+          type: string
+          format: uuid
+        reading_version_id:
+          type: string
+          format: uuid
+        capability_id:
+          type: string
+        product_id:
+          type: string
+        status:
+          type: string
+          enum: [prepared, accepted]
+        result_available:
+          type: boolean
+          const: true
         created_at:
           type: string
           format: date-time

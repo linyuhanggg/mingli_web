@@ -6,6 +6,7 @@ from uuid import UUID, uuid4
 import pytest
 from app.adapters.runtime import FakeMingliRuntimeAdapter
 from app.identity.models import GuestSession
+from app.profiles.models import ProfileVersion, SubjectProfile
 from app.readings.models import (
     FactBrief,
     GenerationAttempt,
@@ -30,7 +31,7 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import func, select
 from worker.readings import build_reading_worker
 
 # isort: split
@@ -42,6 +43,63 @@ from test_profiles_api import (
 )
 
 ACCEPTED_COPY = "本命格局以稳定积累为主线。\n\n本解读仅供传统文化参考，不构成现实决策保证。"
+
+
+class UnsupportedChartRuntime:
+    """Terminal Runtime result used to prove atomic Profile rollback."""
+
+    adapter_kind = "fake"
+
+    async def execute(self, command: Any) -> Stopped:
+        del command
+        return Stopped(
+            reason="unsupported",
+            public_copy="当前排盘能力暂不可用。",
+        )
+
+
+class RenderableChartRuntime:
+    adapter_kind = "test-renderable"
+
+    async def execute(self, command: Any) -> Prepared:
+        subject_ref = next(iter(command.facts))
+        return Prepared(
+            state_token="renderable-chart-token",
+            brief=_bazi_chart_brief(subject_ref),
+        )
+
+
+class UnrenderableChartRuntime:
+    adapter_kind = "test-unrenderable"
+
+    async def execute(self, command: Any) -> Prepared:
+        subject_ref = next(iter(command.facts))
+        payload = brief_payload(
+            subject_ref,
+            {"kind_id": "life", "start": None, "end": None},
+        )
+        payload["request_view"]["capability_ids"] = ["unsupported-test-capability"]
+        return Prepared(
+            state_token="unrenderable-chart-token",
+            brief=ReadingBrief.from_dict(payload),
+        )
+
+
+def confirm_and_preview_payload() -> dict[str, Any]:
+    return {
+        "profile": {
+            "birth_datetime": "1994-04-30T05:55:00+08:00",
+            "timezone": "Asia/Shanghai",
+            "location": "北京市朝阳区",
+            "gender": "female",
+            "time_basis_policy": "civil",
+            "zi_hour_policy": "midnight",
+            "longitude": 116.4074,
+            "latitude": 39.9042,
+            "coordinate_source": "user_confirmed",
+        },
+        "reading": {"dimension_ids": ["career"]},
+    }
 
 
 async def seed_runtime_release(
@@ -1145,6 +1203,305 @@ async def test_same_idempotency_key_returns_the_same_reading_version(
     assert len(keys[0].request_fingerprint) == 64
     assert keys[0].action == "profile_preview"
     assert str(keys[0].reading_version_id) == first["reading_version_id"]
+
+
+async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = UnsupportedChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "atomic-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+
+        failed = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+        assert failed.status_code == 503, failed.text
+        assert failed.json()["code"] == "chart_runtime_unsupported"
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+        assert listed_after_failure.json() == {"profiles": []}
+        async with database.sessions() as session:
+            assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+            assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+            assert (
+                await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 0
+            )
+
+        application.state.chart_runtime = UnrenderableChartRuntime()
+        unrenderable = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+        assert unrenderable.status_code == 503, unrenderable.text
+        assert unrenderable.json()["code"] == "chart_view_model_projection_failed"
+        async with database.sessions() as session:
+            assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+            assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+            assert (
+                await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 0
+            )
+
+        application.state.chart_runtime = RenderableChartRuntime()
+        succeeded = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+        original_replay = ReadingService.replay_confirm_profile_preview
+        discard_replay_once = True
+
+        async def simulate_precommit_replay_miss(
+            service: ReadingService,
+            *args: Any,
+            **kwargs: Any,
+        ) -> Any:
+            nonlocal discard_replay_once
+            replay_result, context = await original_replay(service, *args, **kwargs)
+            if discard_replay_once:
+                discard_replay_once = False
+                return None, context
+            return replay_result, context
+
+        monkeypatch.setattr(
+            ReadingService,
+            "replay_confirm_profile_preview",
+            simulate_precommit_replay_miss,
+        )
+        replayed = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+    assert succeeded.status_code == 201, succeeded.text
+    assert succeeded.json()["status"] == "prepared"
+    assert succeeded.json()["result_available"] is True
+    assert replayed.status_code == 200, replayed.text
+    assert replayed.json()["reading_version_id"] == succeeded.json()["reading_version_id"]
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_latest_profile_reading_crosses_versions_and_ignores_history_limit(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    guest_headers = await create_guest(client)
+    first_profile = await create_confirmed_profile(client, guest_headers)
+    logged_in = await login_current_guest(client, guest_headers)
+    headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    await seed_runtime_release(database, test_settings)
+    first = await start_preview(
+        client,
+        headers,
+        first_profile["profile_version_id"],
+        idempotency_key="latest-profile-first-v1",
+    )
+    appended = await client.post(
+        f"/api/v1/profiles/{first_profile['profile_id']}/versions",
+        headers=headers,
+        json={
+            **confirm_and_preview_payload()["profile"],
+            "birth_datetime": "1994-04-30T06:05:00+08:00",
+            "difference_acknowledged": True,
+        },
+    )
+    assert appended.status_code == 201, appended.text
+    latest = await start_preview(
+        client,
+        headers,
+        appended.json()["profile_version_id"],
+        idempotency_key="latest-profile-second-v1",
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=first["reading_version_id"],
+        brief=_bazi_chart_brief(f"profile-version:{first_profile['profile_version_id']}"),
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=latest["reading_version_id"],
+        brief=_bazi_chart_brief(f"profile-version:{appended.json()['profile_version_id']}"),
+    )
+
+    readings = __import__(
+        "app.readings.repository",
+        fromlist=["SqlReadingRepository"],
+    )
+    cipher = EnvelopeCipher.from_settings(test_settings)
+    async with database.sessions() as session:
+        first_version = await session.get(
+            ReadingVersion,
+            UUID(first["reading_version_id"]),
+        )
+        latest_version = await session.get(
+            ReadingVersion,
+            UUID(latest["reading_version_id"]),
+        )
+        assert first_version is not None
+        assert latest_version is not None
+        tied_created_at = datetime.now(UTC) - timedelta(days=1)
+        first_version.created_at = tied_created_at
+        latest_version.created_at = tied_created_at
+        expected_reading = max(
+            (first, latest),
+            key=lambda item: UUID(item["reading_version_id"]),
+        )
+        expected_profile_version_id = (
+            first_profile["profile_version_id"]
+            if expected_reading is first
+            else appended.json()["profile_version_id"]
+        )
+        expected_latest_created_at = tied_created_at.replace(tzinfo=None).isoformat()
+        repository = readings.SqlReadingRepository(session, cipher)
+        prepare = await repository.load_prepare(latest_version.id)
+        for _ in range(51):
+            root = await repository.create_root(
+                capability_id="bazi",
+                owner_user_id=UUID(logged_in["user_id"]),
+                profile_version_id=UUID(appended.json()["profile_version_id"]),
+            )
+            await repository.create_version(
+                reading_root_id=root.id,
+                runtime_release_id=latest_version.runtime_release_id,
+                prepare_command=prepare,
+            )
+        await session.commit()
+
+    async with database.sessions() as session:
+        before = (
+            await session.scalar(select(func.count()).select_from(SubjectProfile)),
+            await session.scalar(select(func.count()).select_from(ProfileVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingRoot)),
+            await session.scalar(select(func.count()).select_from(ReadingVersion)),
+        )
+    response = await client.get(
+        f"/api/v1/profiles/{first_profile['profile_id']}/readings/latest",
+        params={"product_id": "bazi"},
+    )
+    async with database.sessions() as session:
+        after = (
+            await session.scalar(select(func.count()).select_from(SubjectProfile)),
+            await session.scalar(select(func.count()).select_from(ProfileVersion)),
+            await session.scalar(select(func.count()).select_from(ReadingRoot)),
+            await session.scalar(select(func.count()).select_from(ReadingVersion)),
+        )
+
+    assert response.status_code == 200, response.text
+    assert_private_headers(response)
+    assert response.json() == {
+        "profile_id": first_profile["profile_id"],
+        "profile_version_id": expected_profile_version_id,
+        "reading_root_id": expected_reading["reading_root_id"],
+        "reading_version_id": expected_reading["reading_version_id"],
+        "capability_id": "bazi",
+        "product_id": "bazi",
+        "status": "prepared",
+        "result_available": True,
+        "created_at": expected_latest_created_at,
+    }
+    assert before == after
+
+
+async def test_latest_profile_reading_returns_stable_reasons_and_hides_ownership(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    async with (
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as first_client,
+        AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+        ) as second_client,
+    ):
+        first_guest = await create_guest(first_client)
+        never_profile = await create_confirmed_profile(
+            first_client,
+            first_guest,
+            label="未排盘",
+        )
+        successful_profile = await create_confirmed_profile(
+            first_client,
+            first_guest,
+            label="已有八字",
+            birth_datetime="2001-07-12T09:30:00+08:00",
+        )
+        logged_in = await login_current_guest(first_client, first_guest)
+        headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        await seed_runtime_release(database, test_settings)
+        await start_preview(
+            first_client,
+            headers,
+            successful_profile["profile_version_id"],
+            idempotency_key="latest-profile-incompatible-v1",
+        )
+
+        never = await first_client.get(
+            f"/api/v1/profiles/{never_profile['profile_id']}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+        incompatible = await first_client.get(
+            f"/api/v1/profiles/{successful_profile['profile_id']}/readings/latest",
+            params={"product_id": "ziwei"},
+        )
+        await create_guest(second_client)
+        forbidden = await second_client.get(
+            f"/api/v1/profiles/{successful_profile['profile_id']}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+        absent = await second_client.get(
+            f"/api/v1/profiles/{uuid4()}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+
+    assert never.status_code == 409, never.text
+    assert never.json()["code"] == "never_succeeded"
+    assert incompatible.status_code == 409, incompatible.text
+    assert incompatible.json()["code"] == "unavailable_or_incompatible"
+    assert forbidden.status_code == absent.status_code == 404
+    assert forbidden.json()["code"] == absent.json()["code"] == "profile_not_found"
+    assert forbidden.json()["title"] == absent.json()["title"]
 
 
 async def test_same_idempotency_key_with_different_payload_returns_conflict(

@@ -45,6 +45,7 @@ from app.readings.api_schemas import (
     ChartFastPathTiming,
     DeliveryState,
     Horizon,
+    LatestProfileReadingResponse,
     ReadingResultResponse,
     ReadingStartResponse,
     ReadingVerificationSummary,
@@ -114,6 +115,10 @@ _PAID_PRODUCT_IDS = frozenset({"bazi-deep", "qimen-deep", "liuyao-deep"})
 _DIRECT_CHART_PRODUCT_IDS = frozenset(
     {"bazi", "ziwei", "liuyao", "meihua", "daliuren", "liuren"}
 )
+_PROFILE_PRODUCT_ALIASES = {
+    "qizheng": "xingming",
+    "daliuren": "liuren",
+}
 _POLL_STOP_STATUSES = frozenset(
     {
         ReadingStatus.ACCEPTED,
@@ -205,6 +210,18 @@ class InvalidReadingInputError(ReadingServiceError):
 
 class ProfileVersionNotOwnedError(ReadingServiceError):
     """The requested Profile Version is missing or belongs to another owner."""
+
+
+class ProfileNotOwnedError(ReadingServiceError):
+    """The requested Profile is missing or belongs to another owner."""
+
+
+class ProfileReadingUnavailableError(ReadingServiceError):
+    """No successful renderable Reading satisfies the Profile lookup."""
+
+    def __init__(self, code: str) -> None:
+        super().__init__(code)
+        self.code = code
 
 
 class IdempotencyConflictError(ReadingServiceError):
@@ -306,6 +323,48 @@ class ReadingService:
                 code=error.code or "paid_reading_not_granted",
             ) from error
 
+    async def replay_confirm_profile_preview(
+        self,
+        owner: OwnerProtocol,
+        *,
+        draft_id: UUID,
+        profile_payload: Mapping[str, object],
+        query: str | None,
+        dimension_ids: Sequence[str] | None,
+        target_year: int | None,
+        target_month: str | None,
+        target_date: date | None,
+        idempotency_key: str,
+    ) -> tuple[ReadingStartResponse | None, IdempotencyContext]:
+        """Resolve the combined Profile+Reading idempotency key before writes."""
+
+        action = (
+            "bazi_year_preview"
+            if target_year is not None
+            else "bazi_month_preview"
+            if target_month is not None
+            else "bazi_day_preview"
+            if target_date is not None
+            else "profile_preview"
+        )
+        resolved_query = query or DEFAULT_QUERIES[action]
+        resolved_dimensions = list(dimension_ids or ("career",))
+        context = self._idempotency_context(
+            idempotency_key,
+            action="confirm_profile_preview",
+            payload={
+                "draft_id": str(draft_id),
+                "profile": dict(profile_payload),
+                "query": resolved_query,
+                "dimension_ids": resolved_dimensions,
+                "target_year": target_year,
+                "target_month": target_month,
+                "target_date": target_date.isoformat() if target_date else None,
+            },
+        )
+        assert context is not None
+        return await self._replay_idempotency(owner, context), context
+
     async def start_preview(
         self,
         owner: OwnerProtocol,
@@ -317,6 +376,8 @@ class ReadingService:
         target_year: int | None = None,
         target_month: str | None = None,
         target_date: date | None = None,
+        idempotency_context: IdempotencyContext | None = None,
+        rollback_on_failure: bool = False,
     ) -> tuple[ReadingStartResponse, bool]:
         target_count = sum(
             value is not None for value in (target_year, target_month, target_date)
@@ -334,7 +395,7 @@ class ReadingService:
         )
         resolved_query = query or DEFAULT_QUERIES[action]
         resolved_dimensions = list(dimension_ids or ("career",))
-        idempotency = self._idempotency_context(
+        idempotency = idempotency_context or self._idempotency_context(
             idempotency_key,
             action=action,
             payload={
@@ -389,6 +450,7 @@ class ReadingService:
             profile_version_id=profile_version_id,
             idempotency=idempotency,
             direct_chart=True,
+            rollback_on_failure=rollback_on_failure,
         )
 
     async def start_bazi_deep(
@@ -2092,6 +2154,63 @@ class ReadingService:
         )
         return [await self._summary(root, version) for root, version in rows]
 
+    async def get_latest_profile_reading(
+        self,
+        owner: OwnerProtocol,
+        *,
+        profile_id: UUID,
+        product_id: str,
+    ) -> LatestProfileReadingResponse:
+        """Return the newest successful renderable result for an owned Profile."""
+
+        user_id, guest_id = owner_ids(owner)
+        profile = await self.profiles.repository.get_owned_profile(
+            profile_id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        if profile is None:
+            raise ProfileNotOwnedError("Profile not found")
+        rows = await self.repository.list_owned_profile_versions(
+            profile.id,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+        )
+        successful_seen = False
+        for root, version in rows:
+            try:
+                reading_status = ReadingStatus(version.status)
+            except ValueError:
+                continue
+            if reading_status not in {
+                ReadingStatus.PREPARED,
+                ReadingStatus.ACCEPTED,
+            }:
+                continue
+            successful_seen = True
+            effective_product_id = version.product_id or root.product_id or root.capability_id
+            if not _profile_product_matches(product_id, effective_product_id):
+                continue
+            try:
+                summary = await self._summary(root, version)
+            except (KeyError, TypeError, ValueError):
+                continue
+            if not summary.result_available or summary.profile_version_id is None:
+                continue
+            return LatestProfileReadingResponse(
+                profile_id=profile.id,
+                profile_version_id=summary.profile_version_id,
+                reading_root_id=summary.reading_root_id,
+                reading_version_id=summary.reading_version_id,
+                capability_id=summary.capability_id,
+                product_id=product_id,
+                status=summary.status,
+                result_available=True,
+                created_at=summary.created_at,
+            )
+        code = "unavailable_or_incompatible" if successful_seen else "never_succeeded"
+        raise ProfileReadingUnavailableError(code)
+
     async def list_account_history(self, user_id: UUID) -> AccountHistoryResponse:
         """Project owned Reading Roots with their public version summaries."""
         rows = await self.repository.list_owned_versions(
@@ -2399,6 +2518,7 @@ class ReadingService:
         idempotency: IdempotencyContext | None,
         initial_job_status: str = "queued",
         direct_chart: bool = False,
+        rollback_on_failure: bool = False,
     ) -> tuple[ReadingStartResponse, bool]:
         if direct_chart and idempotency is None:
             raise InvalidReadingInputError(
@@ -2462,6 +2582,7 @@ class ReadingService:
                 job,
                 version,
                 product_id=version.product_id or root.product_id or root.capability_id,
+                commit_failures=not rollback_on_failure,
             )
         summary = await self._summary(root, version)
         if direct_chart:
@@ -2493,6 +2614,7 @@ class ReadingService:
         version: ReadingVersion,
         *,
         product_id: str,
+        commit_failures: bool = True,
     ) -> tuple[float, float]:
         """Prepare one deterministic base chart without exposing it to the Worker."""
 
@@ -2506,14 +2628,22 @@ class ReadingService:
         try:
             result = await self._execute_chart_runtime(prepare)
         except TimeoutError as error:
-            await self._record_chart_runtime_timeout(job, prepare)
+            await self._record_chart_runtime_timeout(
+                job,
+                prepare,
+                commit_failure=commit_failures,
+            )
             raise ChartFastPathUnavailableError(
                 "chart_runtime_timeout",
                 code="chart_runtime_timeout",
             ) from error
         except RuntimeTransportError as error:
             if str(error) == "runtime_timed_out":
-                await self._record_chart_runtime_timeout(job, prepare)
+                await self._record_chart_runtime_timeout(
+                    job,
+                    prepare,
+                    commit_failure=commit_failures,
+                )
                 raise ChartFastPathUnavailableError(
                     "chart_runtime_timeout",
                     code="chart_runtime_timeout",
@@ -2522,6 +2652,7 @@ class ReadingService:
                 job,
                 prepare,
                 fault=f"transport:{type(error).__name__}",
+                commit_failure=commit_failures,
             )
             raise ChartFastPathUnavailableError(
                 f"chart_runtime_transport:{error}",
@@ -2558,13 +2689,15 @@ class ReadingService:
                     relationship_type=version.relationship_type,
                 )
             except Exception as error:
-                await self.session.commit()
+                if commit_failures:
+                    await self.session.commit()
                 raise ChartFastPathUnavailableError(
                     "chart_view_model_projection_failed",
                     code="chart_view_model_projection_failed",
                 ) from error
             if view_model is None and getattr(self.chart_runtime, "adapter_kind", None) != "fake":
-                await self.session.commit()
+                if commit_failures:
+                    await self.session.commit()
                 raise ChartFastPathUnavailableError(
                     "chart_view_model_projection_failed",
                     code="chart_view_model_projection_failed",
@@ -2575,7 +2708,8 @@ class ReadingService:
             await self.repository.record_waiting_input(str(job.id), result, now)
         elif isinstance(result, Stopped):
             await self.repository.record_terminal_stopped(str(job.id), result, now)
-            await self.session.commit()
+            if commit_failures:
+                await self.session.commit()
             await self._remember_chart_runtime_audit(prepare, result)
             code = f"chart_runtime_{result.reason}"
             raise ChartFastPathUnavailableError(
@@ -2610,8 +2744,15 @@ class ReadingService:
         self,
         job: ReadingJobRecord,
         prepare: Prepare,
+        *,
+        commit_failure: bool = True,
     ) -> None:
-        await self._record_chart_runtime_fault(job, prepare, fault="timeout")
+        await self._record_chart_runtime_fault(
+            job,
+            prepare,
+            fault="timeout",
+            commit_failure=commit_failure,
+        )
 
     async def _record_chart_runtime_fault(
         self,
@@ -2619,12 +2760,14 @@ class ReadingService:
         prepare: Prepare,
         *,
         fault: str,
+        commit_failure: bool = True,
     ) -> None:
         if prepare.state_token is None:
             await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
             # The API maps this outcome to a 503 and the request dependency rolls
             # back raised errors. Commit the non-replayable no-token claim first.
-            await self.session.commit()
+            if commit_failure:
+                await self.session.commit()
         await self._remember_chart_runtime_audit(prepare, None, fault=fault)
 
     async def _remember_chart_runtime_audit(
@@ -3104,6 +3247,12 @@ def _canonical_json(payload: Mapping[str, object]) -> str:
         separators=(",", ":"),
         sort_keys=True,
     )
+
+
+def _profile_product_matches(requested: str, persisted: str) -> bool:
+    if requested == persisted:
+        return True
+    return _PROFILE_PRODUCT_ALIASES.get(requested) == persisted
 
 
 def _hmac_digest(secret: bytes, domain: str, value: str) -> str:

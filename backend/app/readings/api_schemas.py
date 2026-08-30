@@ -615,6 +615,22 @@ class ReadingStartResponse(ReadingVersionSummary):
     fast_path_timing: ChartFastPathTiming | None = None
 
 
+class LatestProfileReadingResponse(BaseModel):
+    """Stable identity for the newest renderable result of one Profile."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile_id: UUID
+    profile_version_id: UUID
+    reading_root_id: UUID
+    reading_version_id: UUID
+    capability_id: str
+    product_id: str
+    status: Literal["prepared", "accepted"]
+    result_available: Literal[True]
+    created_at: datetime
+
+
 class FulfillmentBindingRequest(BaseModel):
     """Bind one verified payment to an owned Reading Job."""
 

@@ -1,8 +1,8 @@
 from datetime import date, datetime
-from typing import Annotated, Literal
+from typing import Annotated, Literal, Self
 from uuid import UUID
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from app.api.validators import validate_iana_timezone
 
@@ -65,6 +65,39 @@ class ProfileVersionRequest(ProfileConfirmRequest):
     model_config = ConfigDict(extra="forbid")
 
     difference_acknowledged: bool
+
+
+class ProfileReadingPreviewOptions(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    query: str | None = Field(default=None, min_length=1, max_length=300)
+    dimension_ids: list[str] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=4,
+    )
+    target_year: int | None = Field(default=None, ge=1800, le=2199)
+    target_month: str | None = Field(
+        default=None,
+        pattern=r"^\d{4}-(?:0[1-9]|1[0-2])$",
+    )
+    target_date: date | None = None
+
+    @model_validator(mode="after")
+    def _only_one_time_target(self) -> Self:
+        supplied = sum(
+            value is not None for value in (self.target_year, self.target_month, self.target_date)
+        )
+        if supplied > 1:
+            raise ValueError("target_year, target_month, and target_date are mutually exclusive")
+        return self
+
+
+class ConfirmProfileDraftAndStartPreviewRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: ProfileConfirmRequest
+    reading: ProfileReadingPreviewOptions
 
 
 class ProfileDisplayNameUpdateRequest(BaseModel):

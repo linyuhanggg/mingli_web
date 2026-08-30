@@ -148,6 +148,50 @@ def test_profile_summary_display_name_constraints_are_aligned() -> None:
     }
 
 
+def test_profile_latest_reading_and_atomic_preview_contracts_are_aligned() -> None:
+    frozen_paths = load_paths(USER_OPENAPI_PATH)
+    runtime = _runtime_spec()
+    runtime_paths = runtime["paths"]
+    latest_path = "/api/v1/profiles/{profile_id}/readings/latest"
+    atomic_path = "/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+    assert (
+        frozen_paths[latest_path]["get"]["operationId"]
+        == (runtime_paths[latest_path]["get"]["operationId"])
+        == "getLatestProfileReading"
+    )
+    assert (
+        frozen_paths[atomic_path]["post"]["operationId"]
+        == (runtime_paths[atomic_path]["post"]["operationId"])
+        == "confirmProfileDraftAndStartPreviewReading"
+    )
+    latest_parameter = next(
+        item
+        for item in frozen_paths[latest_path]["get"]["parameters"]
+        if item["name"] == "product_id"
+    )
+    assert latest_parameter["required"] is True
+
+    frozen_schemas = _frozen_schemas()
+    runtime_schemas = runtime["components"]["schemas"]
+    for name, required in {
+        "ConfirmProfileDraftAndStartPreviewRequest": {"profile", "reading"},
+        "LatestProfileReadingResponse": {
+            "profile_id",
+            "profile_version_id",
+            "reading_root_id",
+            "reading_version_id",
+            "capability_id",
+            "product_id",
+            "status",
+            "result_available",
+            "created_at",
+        },
+    }.items():
+        assert set(frozen_schemas[name]["required"]) == required
+        assert set(runtime_schemas[name]["required"]) == required
+
+
 def test_verification_summary_contract_is_four_value_and_aligned() -> None:
     frozen_schemas = _frozen_schemas()
     runtime_schemas = _runtime_spec()["components"]["schemas"]
