@@ -10,6 +10,7 @@ export type NatalFindingCard = {
 
 const TITLE_BY_UNIT: Readonly<Record<string, string>> = {
   "month-order-state": "月令状态",
+  "day-master-root-support": "日主根气与生扶",
   "ziping-pattern-entry": "子平格局入口",
   "tiaohou-priority": "调候候选次序",
   "pillar-roles": "柱位职分",
