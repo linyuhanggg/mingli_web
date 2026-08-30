@@ -17,6 +17,7 @@ from audit_provider_preflight import provider_preflight_failure
 from reading_engine import calendar_core, qimen
 from reading_engine.contracts import ReadingRequest, canonical_digest
 from reading_engine.providers import PROVIDER_CAPABILITIES, QimenProvider
+from simplified_canonical import canonicalize
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -856,7 +857,8 @@ def audit_qimen_provider(
         source_path = ROOT / str(evidence.get("source_path") or "")
         valid = (
             evidence.get("source_pack") == expected_pack
-            and evidence.get("quote") == profile.get("evidence_quote")
+            and evidence.get("quote")
+            == canonicalize(str(profile.get("evidence_quote") or ""))
             and evidence.get("source_anchor") == profile.get("evidence_anchor")
             and source_path.is_file()
             and _sha256(source_path) == evidence.get("source_sha256")
