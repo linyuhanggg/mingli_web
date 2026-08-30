@@ -71,10 +71,11 @@ class ProfileReadingPreviewOptions(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     query: str | None = Field(default=None, min_length=1, max_length=300)
-    dimension_ids: list[str] | None = Field(
+    dimension_ids: list[Literal["overview", "career"]] | None = Field(
         default=None,
         min_length=1,
         max_length=4,
+        json_schema_extra={"uniqueItems": True},
     )
     target_year: int | None = Field(default=None, ge=1800, le=2199)
     target_month: str | None = Field(
@@ -82,6 +83,16 @@ class ProfileReadingPreviewOptions(BaseModel):
         pattern=r"^\d{4}-(?:0[1-9]|1[0-2])$",
     )
     target_date: date | None = None
+
+    @field_validator("dimension_ids")
+    @classmethod
+    def _dimension_ids_must_be_unique(
+        cls,
+        value: list[Literal["overview", "career"]] | None,
+    ) -> list[Literal["overview", "career"]] | None:
+        if value is not None and len(value) != len(set(value)):
+            raise ValueError("dimension_ids must contain unique values")
+        return value
 
     @model_validator(mode="after")
     def _only_one_time_target(self) -> Self:

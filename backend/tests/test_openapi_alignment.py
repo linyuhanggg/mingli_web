@@ -194,11 +194,33 @@ def test_profile_latest_reading_and_atomic_preview_contracts_are_aligned() -> No
     combined_dimensions = frozen_schemas["ProfileReadingPreviewOptions"]["properties"][
         "dimension_ids"
     ]
+    runtime_combined_dimensions = runtime_schemas["ProfileReadingPreviewOptions"][
+        "properties"
+    ]["dimension_ids"]
     preview_dimensions = frozen_schemas["PreviewStartRequest"]["properties"][
         "dimension_ids"
     ]
     assert combined_dimensions["uniqueItems"] is True
     assert combined_dimensions["items"]["enum"] == ["overview", "career"]
+    assert runtime_combined_dimensions["uniqueItems"] is True
+    runtime_combined_array = next(
+        item
+        for item in runtime_combined_dimensions["anyOf"]
+        if item.get("type") == "array"
+    )
+    assert runtime_combined_array["items"]["enum"] == ["overview", "career"]
+    assert runtime_combined_dimensions["uniqueItems"] == combined_dimensions["uniqueItems"]
+    assert runtime_combined_array["items"]["enum"] == combined_dimensions["items"][
+        "enum"
+    ]
+    runtime_dimensions_validator = Draft202012Validator(runtime_combined_dimensions)
+    assert not list(
+        runtime_dimensions_validator.iter_errors(["overview", "career"])
+    )
+    assert list(runtime_dimensions_validator.iter_errors(["health"]))
+    assert list(
+        runtime_dimensions_validator.iter_errors(["overview", "overview"])
+    )
     assert combined_dimensions["uniqueItems"] == preview_dimensions["uniqueItems"]
     assert combined_dimensions["items"]["enum"] == preview_dimensions["items"]["enum"]
     combined_validator = _openapi_component_validator("ProfileReadingPreviewOptions")

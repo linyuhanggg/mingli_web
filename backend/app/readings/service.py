@@ -132,6 +132,15 @@ _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS = "claim_pending"
 _ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS = 10.0
 _ATOMIC_PROFILE_PREVIEW_CLAIM_UNEXPOSED_GENERATION = 1
 _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION = 2
+_POST_WRITE_RUNTIME_TRANSPORT_FAULTS = frozenset(
+    {
+        "invalid-result",
+        "process-exited",
+        "result-decode",
+        "unbound-idle",
+        "unbound-result",
+    }
+)
 _logger = logging.getLogger("mingli.chart_fast_path")
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
@@ -170,6 +179,33 @@ DEFAULT_QUERIES = {
     "selection_preview": "请比较日期范围内的择日候选事实。",
     "fengshui_preview": "请展示已确认空间观察与风水结构事实。",
 }
+
+
+def _post_write_runtime_transport_fault(
+    runtime: MingliRuntime | None,
+    prepare: Prepare,
+    result: Stopped,
+) -> str | None:
+    """Return the Worker audit fault only when a tokenless turn was written."""
+
+    if (
+        prepare.state_token is not None
+        or getattr(runtime, "adapter_kind", None) != "runtime-worker-v2"
+    ):
+        return None
+    audit = getattr(runtime, "last_turn", None)
+    if (
+        not isinstance(audit, RuntimeTurnAudit)
+        or audit.command_digest != runtime_command_digest(prepare)
+        or audit.result_kind != result.kind
+    ):
+        return None
+    fault = audit.transport_fault
+    if fault in _POST_WRITE_RUNTIME_TRANSPORT_FAULTS or (
+        isinstance(fault, str) and fault.startswith("worker-isolate:")
+    ):
+        return fault
+    return None
 
 
 class ReadingServiceError(RuntimeError):
@@ -3575,6 +3611,23 @@ class ReadingService:
                 )
             job.status = "complete"
             await self.session.flush()
+        elif isinstance(result, Stopped) and (
+            transport_fault := _post_write_runtime_transport_fault(
+                self.chart_runtime,
+                prepare,
+                result,
+            )
+        ) is not None:
+            await self._record_chart_runtime_fault(
+                job,
+                prepare,
+                fault=transport_fault,
+                commit_failure=commit_failures,
+            )
+            raise ChartFastPathUnavailableError(
+                "chart_runtime_transport",
+                code="chart_runtime_transport",
+            )
         elif isinstance(result, Stopped) and result.reason == "need_input":
             await self.repository.record_waiting_input(str(job.id), result, now)
             if not commit_failures:
