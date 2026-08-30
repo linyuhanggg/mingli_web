@@ -342,7 +342,6 @@ export function BaziDeepTaskFlow({
   }, []);
 
   const handlePreviewPollError = useCallback((reason: unknown) => {
-    if (!previewCallbacksEnabledRef.current) return;
     setReadyPreviewReadingId((current) => (
       current === previewReadingId ? null : current
     ));

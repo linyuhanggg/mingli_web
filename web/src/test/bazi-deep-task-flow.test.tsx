@@ -330,6 +330,46 @@ describe("Bazi deep task state contract", () => {
     );
   });
 
+  it("clears pinned chart readiness when result loading fails during checkout", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockImplementation(() => new Promise(() => undefined));
+    mockStartBaziDeepReading.mockImplementation(() => new Promise(() => undefined));
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    await waitFor(() => expect(readingSummaryCallbacks.has("preview-1")).toBe(true));
+    act(() => {
+      readingSummaryCallbacks.get("preview-1")?.({
+        ...previewSummary,
+        status: "prepared",
+        result_available: true,
+        poll_required: false,
+      });
+    });
+
+    const flow = screen.getByRole("region", { name: "八字工作台" });
+    expect(flow).toHaveAttribute("data-chart-first", "true");
+    expect(screen.getByText("免费盘面已就绪")).toBeVisible();
+
+    await userEvent.click(screen.getByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("正在准备履约")).toBeVisible();
+
+    act(() => {
+      readingPollErrorCallbacks.get("preview-1")?.(new Error("result payload failed"));
+    });
+
+    expect(screen.getByText("任务暂未完成")).toBeVisible();
+    expect(screen.queryByText("免费盘面已就绪")).not.toBeInTheDocument();
+    expect(flow).not.toHaveAttribute("data-chart-first");
+  });
+
   it("F2: chart-ready shell leads with chart and compresses task chrome", async () => {
     const user = userEvent.setup();
     mockPollReading.mockResolvedValue({
