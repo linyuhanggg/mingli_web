@@ -273,6 +273,7 @@ export function BaziDeepTaskFlow({
   const checkoutStartKeyRef = useRef<string | null>(null);
   const fulfillmentKeyRef = useRef<string | null>(null);
   const bindingPaymentKeyRef = useRef<string | null>(null);
+  const bindingFailurePendingRef = useRef(false);
   const previewCallbacksEnabledRef = useRef(true);
   const mountedRef = useRef(true);
 
@@ -325,6 +326,7 @@ export function BaziDeepTaskFlow({
   }, []);
 
   const handleReadingPollError = useCallback((reason: unknown) => {
+    bindingFailurePendingRef.current = false;
     setState("failed");
     setErrorStatus(errorHttpStatus(reason));
     setError(readableError(reason));
@@ -352,6 +354,7 @@ export function BaziDeepTaskFlow({
     const bindingKey = `${readingId}:${normalizedPaymentId}`;
     if (bindingPaymentKeyRef.current === bindingKey) return true;
     bindingPaymentKeyRef.current = bindingKey;
+    bindingFailurePendingRef.current = false;
     setError(null);
     setErrorStatus(null);
     setState("awaiting_fulfillment");
@@ -364,10 +367,12 @@ export function BaziDeepTaskFlow({
         fulfillmentKey,
       );
       if (!mountedRef.current) return false;
+      bindingFailurePendingRef.current = false;
       setState("queued");
       return true;
     } catch (reason) {
       if (!mountedRef.current) return false;
+      bindingFailurePendingRef.current = true;
       setState("failed");
       setErrorStatus(errorHttpStatus(reason));
         setError(readableError(reason));
@@ -378,6 +383,7 @@ export function BaziDeepTaskFlow({
   async function beginCheckout() {
     if (accessState !== "unpaid" || session?.state.status !== "signedIn") return;
     previewCallbacksEnabledRef.current = false;
+    bindingFailurePendingRef.current = false;
     if (!profileVersionId) {
       setState("checkout_failed");
       setError("当前资料版本尚未确认，不能创建深读结账。");
@@ -508,6 +514,12 @@ export function BaziDeepTaskFlow({
     setError(null);
     setErrorStatus(null);
     if (state === "failed") {
+      if (bindingFailurePendingRef.current && checkoutOrderId) {
+        bindingFailurePendingRef.current = false;
+        bindingPaymentKeyRef.current = null;
+        setState("checkout_pending");
+        return;
+      }
       if (deepReadingId) {
         setState("running");
         setDeepRetryKey((value) => value + 1);

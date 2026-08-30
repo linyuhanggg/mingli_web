@@ -290,6 +290,7 @@ function WaitingStatus({
 
 export type ReadingResultProps = Readonly<{
   baziDeepFulfilled?: boolean;
+  headingLevel?: 1 | 2;
   onPollError?: (error: unknown) => void;
   onRestart?: () => void;
   onSummary?: (summary: ReadingVersionSummary) => void;
@@ -305,11 +306,13 @@ export function ReadingResult(props: ReadingResultProps) {
 function ReadingResultForVersion({
   readingId,
   baziDeepFulfilled = false,
+  headingLevel = 1,
   onPollError,
   onRestart,
   onSummary,
   startedAt,
 }: ReadingResultProps) {
+  const ResultHeading = headingLevel === 2 ? "h2" : "h1";
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
   const [result, setResult] = useState<ReadingResultResponse | null>(null);
@@ -320,6 +323,7 @@ function ReadingResultForVersion({
   );
   const [elapsedMs, setElapsedMs] = useState(0);
   const timerStartedAtRef = useRef(timerStartedAt);
+  const supplementalWindowStartedAtRef = useRef<number | null>(null);
   const automaticPollControllerRef = useRef<AbortController | null>(null);
   const automaticPollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const onPollErrorRef = useRef(onPollError);
@@ -412,7 +416,8 @@ function ReadingResultForVersion({
         if (cancelled || pollController.signal.aborted) return;
         const authoritativeStartedAt = serverStartedAt(response.created_at);
         if (
-          authoritativeStartedAt !== null
+          supplementalWindowStartedAtRef.current === null
+          && authoritativeStartedAt !== null
           && authoritativeStartedAt !== timerStartedAtRef.current
         ) {
           timerStartedAtRef.current = authoritativeStartedAt;
@@ -507,6 +512,11 @@ function ReadingResultForVersion({
   }
 
   function handleInputSubmitted() {
+    const nextStartedAt = Date.now();
+    supplementalWindowStartedAtRef.current = nextStartedAt;
+    timerStartedAtRef.current = nextStartedAt;
+    setTimerStartedAt(nextStartedAt);
+    setElapsedMs(0);
     setLoading(true);
     setError(null);
     setSummary(null);
@@ -873,7 +883,7 @@ function ReadingResultForVersion({
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
-              <h1>{pageTitle}</h1>
+              <ResultHeading>{pageTitle}</ResultHeading>
               <p>
                 {pageIntro} 目标日期 {formatHorizon(summary.horizon)}。
               </p>
@@ -1022,7 +1032,7 @@ function ReadingResultForVersion({
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
-              <h1>{pageTitle}</h1>
+              <ResultHeading>{pageTitle}</ResultHeading>
               <p>
                 {pageIntro} 目标日期 {formatHorizon(summary.horizon)}。
               </p>
@@ -1147,7 +1157,7 @@ function ReadingResultForVersion({
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
-              <h1>{natalTitle}</h1>
+              <ResultHeading>{natalTitle}</ResultHeading>
               <p>{natalIntro}</p>
             </header>
 

@@ -1339,6 +1339,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             inlineRestartFailure
           ) : (
             <ReadingResult
+              headingLevel={2}
               readingId={liuyaoPreviewReadingId}
               onRestart={activeInlineRecovery ? () => void restartInlineReading() : undefined}
               startedAt={activeInlineRecovery?.startedAt}
