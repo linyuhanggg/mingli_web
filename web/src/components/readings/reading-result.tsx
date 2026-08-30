@@ -33,7 +33,6 @@ import { FactPanel } from "./fact-panel";
 import { FollowUpForm } from "./follow-up-form";
 import { FortunePeriodTimeline } from "./fortune-period-timeline";
 import { LimitNotice } from "./limit-notice";
-import { LiuyaoHexagram } from "./liuyao-hexagram";
 import { NeedInputForm } from "./need-input-form";
 import { ReadingSharePanel } from "./reading-share-panel";
 import { ReadingExportPanel } from "./reading-export-panel";
@@ -650,10 +649,14 @@ function ReadingResultForVersion({
     const showRuntimeChart = capabilityTier === "A" || capabilityTier === "B";
     const isFortune = summary.capability_id === "fortune";
     const isLiuyao = summary.capability_id === "liuyao";
+    const isMeihua =
+      summary.capability_id === "meihua" ||
+      summary.product_id === "meihua" ||
+      result.view_model?.schema_version === "meihua-chart/v1";
     const isQimen = summary.capability_id === "qimen";
     const isDaliuren = summary.capability_id === "daliuren";
     const hasTypedLiuyao = result.view_model?.schema_version === "liuyao-chart/v1";
-    const hasRawLiuyao = isLiuyao && !hasTypedLiuyao;
+    const hasTypedMeihua = result.view_model?.schema_version === "meihua-chart/v1";
     const hasRuntimeChart = Boolean(
       result.view_model && RUNTIME_CHART_VERSIONS.has(result.view_model.schema_version),
     );
@@ -729,7 +732,14 @@ function ReadingResultForVersion({
       );
     }
 
-    if (!isNatalChart && !isFortune && !isLiuyao && !isQimen && !isDaliuren) {
+    if (
+      !isNatalChart &&
+      !isFortune &&
+      !isLiuyao &&
+      !isMeihua &&
+      !isQimen &&
+      !isDaliuren
+    ) {
       return (
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
@@ -771,34 +781,13 @@ function ReadingResultForVersion({
               </section>
             ) : null}
 
-            {hasRawLiuyao ? (
-              <section
-                className={surface.readingSection}
-                aria-labelledby="reading-liuyao-title"
-              >
-                <span className={surface.sectionIndex} aria-hidden="true">
-                  02
-                </span>
-                <div>
-                  <h2 id="reading-liuyao-title">盘面事实</h2>
-                  <p className={surface.inlineNote}>
-                    本卦、变卦与六个爻位只复述服务端公开事实，浏览器不重新起卦。
-                  </p>
-                  <LiuyaoHexagram
-                    facts={result.fact_panel?.facts ?? []}
-                    evidence={result.fact_panel?.evidence ?? []}
-                  />
-                </div>
-              </section>
-            ) : null}
-
             {hasRuntimeChart && result.view_model && showRuntimeChart ? (
               <section
                 className={surface.readingSection}
                 aria-labelledby="reading-runtime-chart-title"
               >
                 <span className={surface.sectionIndex} aria-hidden="true">
-                  {String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0)).padStart(2, "0")}
+                  {String(2 + (hasFortuneTimeline ? 1 : 0)).padStart(2, "0")}
                 </span>
                 <div>
                   <h2 id="reading-runtime-chart-title">盘面事实</h2>
@@ -830,7 +819,7 @@ function ReadingResultForVersion({
               aria-labelledby="reading-fact-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                {String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
+                {String(2 + (hasFortuneTimeline ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
               </span>
               <div>
                 <h2 id="reading-fact-title">事实</h2>
@@ -843,7 +832,7 @@ function ReadingResultForVersion({
               aria-labelledby="reading-evidence-title"
             >
               <span className={surface.sectionIndex} aria-hidden="true">
-                {String(3 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
+                {String(3 + (hasFortuneTimeline ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
               </span>
               <div>
                 <h2 id="reading-evidence-title">依据与边界</h2>
@@ -861,7 +850,7 @@ function ReadingResultForVersion({
                 aria-labelledby="reading-review-title"
               >
                 <span className={surface.sectionIndex} aria-hidden="true">
-                  {String(4 + (hasFortuneTimeline ? 1 : 0) + (hasRawLiuyao ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
+                  {String(4 + (hasFortuneTimeline ? 1 : 0) + (hasRuntimeChart ? 1 : 0)).padStart(2, "0")}
                 </span>
                 <div>
                   <h2 id="reading-review-title">复核与追问</h2>
@@ -885,11 +874,13 @@ function ReadingResultForVersion({
       );
     }
 
-    if (isFortune || isLiuyao) {
-      const pageTitle = isFortune ? "运势" : "六爻";
+    if (isFortune || isLiuyao || isMeihua) {
+      const pageTitle = isFortune ? "运势" : isLiuyao ? "六爻" : "梅花易数";
       const pageIntro = isFortune
         ? "只展示已返回的周期与事实。"
-        : "只展示已返回的卦象事实。";
+        : isLiuyao
+          ? "只展示已返回的卦象与爻位事实。"
+          : "只展示已返回的本互变卦、体用与关系事实。";
       const typedFortuneReady =
         capabilityTier !== "C" &&
         showRuntimeChart &&
@@ -899,16 +890,22 @@ function ReadingResultForVersion({
         showRuntimeChart &&
         hasTypedLiuyao &&
         result.view_model != null;
+      const typedMeihuaReady =
+        capabilityTier !== "C" &&
+        showRuntimeChart &&
+        hasTypedMeihua &&
+        result.view_model != null;
       const remainingFacts = generalFactPanel?.facts ?? [];
       const hasExactCitation = (result.fact_panel?.evidence ?? []).length > 0;
-      const hasPlate =
-        hasFortuneTimeline ||
-        hasRawLiuyao ||
-        typedFortuneReady ||
-        typedLiuyaoReady ||
-        remainingFacts.length > 0 ||
-        result.accepted_copy != null ||
-        hasExactCitation;
+      const hasPlate = isFortune
+        ? hasFortuneTimeline ||
+          typedFortuneReady ||
+          remainingFacts.length > 0 ||
+          result.accepted_copy != null ||
+          hasExactCitation
+        : isLiuyao
+          ? typedLiuyaoReady
+          : typedMeihuaReady;
 
       return (
         <div className={surface.readingLayout}>
@@ -954,18 +951,8 @@ function ReadingResultForVersion({
                         <FortunePeriodTimeline markers={fortuneMarkers} />
                       </section>
                     ) : null}
-                    {hasRawLiuyao ? (
-                      <>
-                        <p className={surface.inlineNote}>
-                          本卦、变卦与六个爻位只复述服务端公开事实，浏览器不重新起卦。
-                        </p>
-                        <LiuyaoHexagram
-                          facts={result.fact_panel?.facts ?? []}
-                          evidence={result.fact_panel?.evidence ?? []}
-                        />
-                      </>
-                    ) : null}
-                    {(typedFortuneReady || typedLiuyaoReady) && result.view_model ? (
+                    {(typedFortuneReady || typedLiuyaoReady || typedMeihuaReady) &&
+                    result.view_model ? (
                       <RuntimeChart
                         viewModel={result.view_model}
                         capability={result.capability}
@@ -1059,11 +1046,12 @@ function ReadingResultForVersion({
           : result.view_model.schema_version === "daliuren-chart/v1");
       const remainingFacts = result.fact_panel?.facts ?? [];
       const hasExactCitation = (result.fact_panel?.evidence ?? []).length > 0;
-      const hasPlate =
-        typedReady ||
-        remainingFacts.length > 0 ||
-        result.accepted_copy != null ||
-        hasExactCitation;
+      const hasPlate = isDaliuren
+        ? typedReady
+        : typedReady ||
+          remainingFacts.length > 0 ||
+          result.accepted_copy != null ||
+          hasExactCitation;
 
       return (
         <div className={surface.readingLayout}>

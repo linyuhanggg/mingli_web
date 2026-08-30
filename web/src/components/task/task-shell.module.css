@@ -268,6 +268,143 @@
   font-size: var(--font-size-emphasis);
 }
 
+.liuyaoSkeleton,
+.meihuaSkeleton,
+.daliurenSkeleton ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.liuyaoSkeleton {
+  display: grid;
+  border-top: 1px solid var(--ds-line-strong);
+}
+
+.liuyaoSkeleton li {
+  display: grid;
+  grid-template-columns: 3.25rem minmax(4rem, 1fr) minmax(0, 1.4fr);
+  align-items: center;
+  gap: var(--ds-space-3);
+  min-height: var(--ds-touch-min);
+  border-bottom: 1px solid var(--ds-line);
+  color: var(--ds-muted);
+  font-size: var(--ds-text-11);
+}
+
+.liuyaoSkeleton i {
+  height: 0.35rem;
+  border-radius: var(--ds-radius-1);
+  background: var(--ds-line-strong);
+}
+
+.liuyaoSkeleton small {
+  color: var(--ds-muted);
+  font-size: var(--ds-text-11);
+}
+
+.meihuaSkeleton {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border-top: 1px solid var(--ds-line-strong);
+  border-bottom: 1px solid var(--ds-line-strong);
+}
+
+.meihuaSkeleton li {
+  display: grid;
+  gap: var(--ds-space-2);
+  min-width: 0;
+  min-height: 5.5rem;
+  align-content: center;
+  padding: var(--ds-space-3);
+  border-right: 1px solid var(--ds-line);
+}
+
+.meihuaSkeleton li:last-child {
+  border-right: 0;
+}
+
+.meihuaSkeleton strong {
+  color: var(--ds-ink);
+  font-size: var(--ds-text-14);
+}
+
+.meihuaSkeleton span {
+  color: var(--ds-muted);
+  font-size: var(--ds-text-11);
+  line-height: var(--ds-leading-body);
+}
+
+.daliurenSkeleton {
+  display: grid;
+  gap: var(--ds-space-4);
+  min-width: 0;
+  padding: var(--ds-space-3);
+  border-top: 1px solid var(--ds-line-strong);
+  border-bottom: 1px solid var(--ds-line-strong);
+}
+
+.daliurenSkeleton ol:first-child {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  direction: rtl;
+}
+
+.daliurenSkeleton ol:first-child li {
+  min-width: 0;
+  padding: var(--ds-space-2);
+  border-right: 1px solid var(--ds-line);
+  color: var(--ds-ink-soft);
+  font-size: var(--ds-text-11);
+  text-align: center;
+}
+
+.daliurenSkeleton ol:last-child {
+  display: grid;
+  gap: var(--ds-space-1);
+}
+
+.daliurenSkeleton ol:last-child li {
+  min-height: var(--ds-touch-min);
+  padding: var(--ds-space-2) var(--ds-space-3);
+  border-bottom: 1px solid var(--ds-line);
+  color: var(--ds-ink-soft);
+  font-size: var(--ds-text-12);
+}
+
+.daliurenSkeleton ol:last-child li:nth-child(2) {
+  margin-inline-start: var(--ds-space-4);
+}
+
+.daliurenSkeleton ol:last-child li:nth-child(3) {
+  margin-inline-start: var(--ds-space-8);
+}
+
+.sourceBoundary {
+  display: grid;
+  gap: var(--ds-space-2);
+  padding: var(--ds-space-4);
+  border-top: 1px solid var(--ds-line-strong);
+  border-bottom: 1px solid var(--ds-line);
+  background: var(--ds-surface);
+}
+
+.sourceBoundary h2,
+.sourceBoundary p {
+  margin: 0;
+}
+
+.sourceBoundary h2 {
+  color: var(--ds-ink);
+  font-size: var(--ds-text-14);
+}
+
+.sourceBoundary p {
+  color: var(--ds-ink-soft);
+  font-size: var(--ds-text-12);
+  line-height: var(--ds-leading-reading);
+}
+
 .citationSample blockquote {
   margin: 0;
   padding-left: var(--space-md);

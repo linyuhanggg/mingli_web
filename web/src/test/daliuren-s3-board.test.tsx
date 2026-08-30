@@ -4051,7 +4051,7 @@ describe("大六壬 S3 M7 免费摘要 + 深读入口", () => {
 
   it("uses locked and fake-gateway copy without treating them as paid", () => {
     const { rerender } = render(<DaliurenBoard view={chart()} s4Phase="locked" />);
-    expect(screen.getByRole("status", { name: "已锁定" })).toHaveAttribute("data-state", "locked");
+    expect(screen.getByRole("status", { name: "深读暂未解锁" })).toHaveAttribute("data-state", "locked");
     expect(screen.queryByRole("status", { name: "测试期未开放" })).not.toBeInTheDocument();
 
     rerender(<DaliurenBoard view={chart()} offer={OFFER} s4Phase="gateway_unavailable" />);

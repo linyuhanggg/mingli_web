@@ -1,3 +1,11 @@
+"use client";
+
+import {
+  useRef,
+  useState,
+  type KeyboardEvent,
+} from "react";
+
 import { displayPublicText, type PublicKeyLabel } from "@/lib/public-labels";
 
 import type {
@@ -37,6 +45,7 @@ import {
 } from "@/lib/reading-display";
 
 import { DaliurenBoard } from "./daliuren-board";
+import { MeihuaWorkspace } from "./meihua-workspace";
 import { ZiweiWorkspace } from "./ziwei-palace-board";
 import styles from "./runtime-chart.module.css";
 
@@ -115,11 +124,21 @@ const FACT_STATUS_LABELS: Record<string, string> = {
   sequence_only: "仅展示顺序",
 };
 
+const LIUYAO_LINE_LABELS = ["", "初爻", "二爻", "三爻", "四爻", "五爻", "上爻"] as const;
+
 function factStatusLabel(
   value: string,
   labels?: readonly PublicKeyLabel[],
 ): string {
   return displayPublicText(labels, value, FACT_STATUS_LABELS) || "—";
+}
+
+function LiuyaoYaoGlyph({ kind }: Readonly<{ kind: "yin" | "yang" }>) {
+  return (
+    <span aria-hidden="true" className={styles.liuyaoGlyph} data-kind={kind}>
+      {kind === "yin" ? <><i /><i /></> : <i />}
+    </span>
+  );
 }
 
 function structuredValueSummary(
@@ -191,13 +210,6 @@ function structuredEntries(value: StructuredFactObject): string[][] {
     `第${index + 1}项`,
     structuredValueSummary(item),
   ]);
-}
-
-function coreFactRows(value: StructuredFactObject | null): string[][] {
-  if (!value) return [];
-  return Object.entries(value)
-    .filter(([, item]) => item !== null)
-    .map(([key, item]) => [key, structuredValueSummary(item)]);
 }
 
 const POSITION_LABELS: Record<"year" | "month" | "day" | "hour", string> = {
@@ -459,35 +471,209 @@ function LiuyaoChart({
   view: LiuyaoChartViewModel;
   showInterpretiveSections: boolean;
 }>) {
-  const coreRows = view.core_facts
-    ? coreFactRows(view.core_facts as unknown as StructuredFactObject)
-    : [];
+  const displayLines = [...view.lines].reverse();
+  const lineRefs = useRef<Array<HTMLLIElement | null>>([]);
+  const [tabStopPosition, setTabStopPosition] = useState<number | null>(
+    displayLines[0]?.position ?? null,
+  );
+  const activeTabStopPosition = displayLines.some(
+    (line) => line.position === tabStopPosition,
+  )
+    ? tabStopPosition
+    : (displayLines[0]?.position ?? null);
+  const coreLineFacts = view.core_facts?.lines ?? view.core_facts?.line_facts ?? [];
+  const changedLineFacts = view.core_facts?.changed_plate_lines ?? [];
   const roleAdjudicationRows = formatLiuyaoRoleAdjudicationRows(
     view.core_facts?.useful_spirit_selection ?? null,
   );
+
+  function lineFact(position: number): StructuredFactObject | null {
+    const matched = coreLineFacts.find((item) => (
+      typeof item.line === "number" && item.line === position
+    ));
+    return matched ?? coreLineFacts[position - 1] ?? null;
+  }
+
+  function changedLineFact(position: number): StructuredFactObject | null {
+    const matched = changedLineFacts.find((item) => (
+      typeof item.line === "number" && item.line === position
+    ));
+    return matched ?? changedLineFacts[position - 1] ?? null;
+  }
+
+  function factObject(value: StructuredFactValue | undefined): StructuredFactObject | null {
+    return isStructuredObject(value) ? value : null;
+  }
+
+  function factStrings(value: StructuredFactValue | undefined): readonly string[] {
+    return Array.isArray(value)
+      ? value.filter((item): item is string => typeof item === "string" && Boolean(item.trim()))
+      : [];
+  }
+
+  function lineElement(fact: StructuredFactObject | null): string | null {
+    const najia = fact ? factObject(fact.najia) : null;
+    return najia ? structuredText(najia, ["element"]) : null;
+  }
+
+  function lineGanzhi(fact: StructuredFactObject | null): string | null {
+    const najia = fact ? factObject(fact.najia) : null;
+    return najia ? structuredText(najia, ["ganzhi", "branch"]) : null;
+  }
+
+  function elementId(value: string | null): string | undefined {
+    return value
+      ? ({ 木: "wood", 火: "fire", 土: "earth", 金: "metal", 水: "water" } as const)[
+          value as "木" | "火" | "土" | "金" | "水"
+        ]
+      : undefined;
+  }
+
+  function elementShape(value: string | null): string | null {
+    return value
+      ? ({ 木: "▯", 火: "△", 土: "■", 金: "●", 水: "〜" } as const)[
+          value as "木" | "火" | "土" | "金" | "水"
+        ] ?? null
+      : null;
+  }
+
+  function lineKind(value: LiuyaoChartViewModel["lines"][number]["value"]): "yin" | "yang" {
+    return value === 6 || value === 8 ? "yin" : "yang";
+  }
+
+  function changedKind(value: LiuyaoChartViewModel["lines"][number]["value"]): "yin" | "yang" {
+    if (value === 6) return "yang";
+    if (value === 9) return "yin";
+    return lineKind(value);
+  }
+
+  function focusLine(index: number) {
+    if (index < 0 || index >= displayLines.length) return;
+    setTabStopPosition(displayLines[index].position);
+    lineRefs.current[index]?.focus();
+  }
+
+  function handleLineKeyDown(
+    event: KeyboardEvent<HTMLLIElement>,
+    index: number,
+  ) {
+    if (event.key === "ArrowDown" || event.key === "ArrowRight") {
+      event.preventDefault();
+      focusLine((index + 1) % displayLines.length);
+    } else if (event.key === "ArrowUp" || event.key === "ArrowLeft") {
+      event.preventDefault();
+      focusLine((index - 1 + displayLines.length) % displayLines.length);
+    } else if (event.key === "Home") {
+      event.preventDefault();
+      focusLine(0);
+    } else if (event.key === "End") {
+      event.preventDefault();
+      focusLine(displayLines.length - 1);
+    }
+  }
+
   return (
-    <div className={styles.wrap} data-schema={view.schema_version}>
-      <dl className={styles.meta}>
+    <section
+      aria-label="六爻排盘工作台"
+      className={styles.liuyaoWorkspace}
+      data-schema={view.schema_version}
+    >
+      <header className={styles.liuyaoHeader}>
         <div>
-          <dt>本卦</dt>
-          <dd>{view.primary_hexagram.name}</dd>
+          <h2>卦象与六爻</h2>
+          <p>自上爻向初爻核对；爻值与变卦只采用服务端返回。</p>
         </div>
-        <div>
-          <dt>变卦</dt>
-          <dd>{view.changed_hexagram?.name ?? "无"}</dd>
-        </div>
-      </dl>
-      <Table
-        caption="六爻"
-        headers={["爻位", "数值", "状态"]}
-        rows={[...view.lines]
-          .reverse()
-          .map((line) => [
-            `第${line.position}爻`,
-            String(line.value),
-            line.moving ? "动爻" : "静爻",
-          ])}
-      />
+        <dl className={styles.liuyaoMeta}>
+          <div>
+            <dt>本卦</dt>
+            <dd>{view.primary_hexagram.name}</dd>
+          </div>
+          <div>
+            <dt>变卦</dt>
+            <dd>{view.changed_hexagram?.name ?? "无变卦"}</dd>
+          </div>
+          <div>
+            <dt>起卦记录</dt>
+            <dd>{view.core_facts?.casting_method ? "服务端已确认" : "ALGO-GAP"}</dd>
+          </div>
+        </dl>
+      </header>
+
+      <div
+        className={styles.liuyaoColumns}
+        aria-hidden="true"
+        data-changed={view.changed_hexagram ? "true" : "false"}
+      >
+        <span>爻位</span>
+        <span>本卦</span>
+        <span>六亲 · 六神 · 纳甲</span>
+        {view.changed_hexagram ? <span>变卦</span> : null}
+      </div>
+      <ol className={styles.liuyaoLines} aria-label="六爻，自上而下">
+        {displayLines.map((line, index) => {
+          const fact = lineFact(line.position);
+          const changedFact = changedLineFact(line.position)
+            ?? (fact ? factObject(fact.changed_line) : null);
+          const roles = factStrings(fact?.roles);
+          const element = lineElement(fact);
+          const shape = elementShape(element);
+          const changedElement = lineElement(changedFact);
+          const changedShape = elementShape(changedElement);
+          return (
+            <li
+              ref={(element) => {
+                lineRefs.current[index] = element;
+              }}
+              aria-label={`${LIUYAO_LINE_LABELS[line.position] ?? `${line.position}爻`}，${line.moving ? "动爻" : "静爻"}，爻值 ${line.value}`}
+              className={styles.liuyaoLine}
+              data-changed={view.changed_hexagram ? "true" : "false"}
+              data-moving={line.moving ? "true" : "false"}
+              key={line.position}
+              tabIndex={line.position === activeTabStopPosition ? 0 : -1}
+              onFocus={() => setTabStopPosition(line.position)}
+              onKeyDown={(event) => handleLineKeyDown(event, index)}
+            >
+              <div className={styles.liuyaoPosition}>
+                <strong>{LIUYAO_LINE_LABELS[line.position] ?? `${line.position}爻`}</strong>
+                <span>{line.moving ? "动爻" : "静爻"}</span>
+              </div>
+              <div className={styles.liuyaoYao}>
+                <LiuyaoYaoGlyph kind={lineKind(line.value)} />
+                <span className={styles.liuyaoValue}>{line.value}</span>
+              </div>
+              <div className={styles.liuyaoFacts}>
+                <span>{fact ? structuredText(fact, ["six_relative"]) ?? "六亲 ALGO-GAP" : "六亲 ALGO-GAP"}</span>
+                <span>{fact ? structuredText(fact, ["six_spirit"]) ?? "六神 ALGO-GAP" : "六神 ALGO-GAP"}</span>
+                <span
+                  className={styles.liuyaoElementFact}
+                  data-element={elementId(element)}
+                >
+                  {shape ? <i aria-hidden="true">{shape}</i> : null}
+                  {lineGanzhi(fact) ?? "纳甲 ALGO-GAP"}
+                  {element ? ` · ${element}` : ""}
+                </span>
+                {roles.map((role) => <b className={styles.liuyaoRole} key={role}>{role}</b>)}
+                {fact?.xunkong === true ? <b className={styles.liuyaoVoid}>空</b> : null}
+              </div>
+              {view.changed_hexagram ? (
+                <div className={styles.liuyaoChanged}>
+                  <LiuyaoYaoGlyph kind={changedKind(line.value)} />
+                  {line.moving ? (
+                    <span
+                      className={styles.liuyaoElementFact}
+                      data-element={elementId(changedElement)}
+                    >
+                      {changedShape ? <i aria-hidden="true">{changedShape}</i> : null}
+                      {lineGanzhi(changedFact) ?? "变爻事实 ALGO-GAP"}
+                    </span>
+                  ) : <span>随本爻</span>}
+                </div>
+              ) : null}
+            </li>
+          );
+        })}
+      </ol>
+
       {showInterpretiveSections && roleAdjudicationRows.length ? (
         <Table
           caption="六爻问题角色裁决"
@@ -495,17 +681,10 @@ function LiuyaoChart({
           rows={roleAdjudicationRows}
         />
       ) : null}
-      {coreRows.length ? (
-        <Table
-          caption="六爻结构事实"
-          headers={["事实项", "状态"]}
-          rows={coreRows}
-        />
-      ) : null}
-      <p className={styles.note}>
-        卦象与爻位由服务端固定；求财角色、唯一可见妻财爻，以及妻财两现时唯一发动的一爻可由核验规则裁定。月令仅显示旺相/休囚季节带；页面不自行排序同动静候选，也不补写综合旺衰、成败或应期。
+      <p className={styles.liuyaoBoundary}>
+        求财角色与可见候选只在服务端证据完整时展示；页面不重起卦、不排序候选，也不补写综合旺衰、成败或应期。
       </p>
-    </div>
+    </section>
   );
 }
 
@@ -516,156 +695,7 @@ function MeihuaChart({
   view: MeihuaChartViewModel;
   showInterpretiveSections: boolean;
 }>) {
-  const labels = view.public_labels;
-  const relationPolarityLabels = {
-    supportive: "用生体（支持体）",
-    depleting: "体生用（体有耗）",
-    adverse: "用克体（克体）",
-    favorable: "体克用（体制用）",
-    harmonious: "体用比和",
-  } as const;
-  const hexagramRows = [
-    [
-      "本卦",
-      view.primary_hexagram.name,
-      view.primary_hexagram.upper_trigram,
-      view.primary_hexagram.lower_trigram,
-    ],
-    view.mutual_hexagram
-      ? [
-          "互卦",
-          view.mutual_hexagram.name,
-          view.mutual_hexagram.upper_trigram,
-          view.mutual_hexagram.lower_trigram,
-        ]
-      : ["互卦", "无", "—", "—"],
-    view.changed_hexagram
-      ? [
-          "变卦",
-          view.changed_hexagram.name,
-          view.changed_hexagram.upper_trigram,
-          view.changed_hexagram.lower_trigram,
-        ]
-      : ["变卦", "无", "—", "—"],
-  ];
-  const bodyRelationRows = (view.core_facts?.body_relation_facts ?? []).map(
-    (item) => [
-      structuredText(item, ["position"]) ?? "—",
-      structuredText(item, ["trigram"]) ?? "—",
-      structuredText(item, ["element"]) ?? "—",
-      structuredText(item, ["relation"]) ?? "—",
-      structuredPrimitive(item.status, labels),
-    ],
-  );
-  const seasonalRows = view.core_facts?.seasonal_strength
-    ? Object.entries(view.core_facts.seasonal_strength).flatMap(
-        ([name, value]) => {
-          if (!isStructuredObject(value)) return [];
-          const caption =
-            displayPublicText(labels, name) ||
-            structuredText(value, ["trigram"]);
-          if (!caption) return [];
-          return [
-            [
-              caption,
-              structuredText(value, ["trigram"]) ?? "—",
-              structuredText(value, ["month_branch"]) ?? "—",
-              displayPublicText(
-                labels,
-                structuredText(value, ["season"]) ?? "",
-              ) ||
-                structuredText(value, ["season"]) ||
-                "—",
-              structuredPrimitive(value.state, labels),
-              structuredPrimitive(value.status, labels),
-            ],
-          ];
-        },
-      )
-    : [];
-  const interpretiveCandidates = view.core_facts?.interpretive_candidates;
-  const relationCandidateRows =
-    interpretiveCandidates?.relation_candidates.map((value) => [
-      value.source_plate,
-      value.position,
-      value.relation,
-      value.seasonal_state ?? "—",
-      relationPolarityLabels[value.relation_adjudication.source_polarity],
-      "关系极性已裁定",
-    ]) ?? [];
-  const bodyUseStatus = factStatusLabel(view.body_use.status, labels);
-  return (
-    <div className={styles.wrap} data-schema={view.schema_version}>
-      <dl className={styles.meta}>
-        <div>
-          <dt>起卦方式</dt>
-          <dd>
-            {view.casting_method === "time"
-              ? "按时间起卦"
-              : view.casting_method}
-          </dd>
-        </div>
-        <div>
-          <dt>动爻</dt>
-          <dd>
-            {view.moving_lines.length
-              ? view.moving_lines.map((line) => `第${line}爻`).join("、")
-              : "无"}
-          </dd>
-        </div>
-      </dl>
-      <Table
-        caption="卦象结构"
-        headers={["层次", "卦名", "上卦", "下卦"]}
-        rows={hexagramRows}
-      />
-      <Table
-        caption="体用关系"
-        headers={["位置", "卦", "五行", "关系", "状态"]}
-        rows={[
-          [
-            "体",
-            view.body_use.body.trigram,
-            view.body_use.body.element,
-            view.body_use.relation,
-            bodyUseStatus,
-          ],
-          [
-            "用",
-            view.body_use.use.trigram,
-            view.body_use.use.element,
-            view.body_use.relation,
-            bodyUseStatus,
-          ],
-        ]}
-      />
-      {bodyRelationRows.length ? (
-        <Table
-          caption="体用关系明细"
-          headers={["位置", "卦", "五行", "关系", "状态"]}
-          rows={bodyRelationRows}
-        />
-      ) : null}
-      {seasonalRows.length ? (
-        <Table
-          caption="月令状态事实"
-          headers={["对象", "卦", "月支", "季节", "状态", "事实状态"]}
-          rows={seasonalRows}
-        />
-      ) : null}
-      {showInterpretiveSections && relationCandidateRows.length ? (
-        <Table
-          caption="体用关系来源裁定（未形成事件结论）"
-          headers={["盘层", "位置", "关系", "月令状态", "来源极性", "裁定状态"]}
-          rows={relationCandidateRows}
-        />
-      ) : null}
-      <p className={styles.note}>
-        Runtime
-        已按核验古籍裁定每条体用生克的来源极性；多条关系、月令、具体问题的综合成败与应期仍待正式合成裁决。
-      </p>
-    </div>
-  );
+  return <MeihuaWorkspace view={view} showInterpretiveSections={showInterpretiveSections} />;
 }
 
 function LumingNayinChart({
@@ -1228,12 +1258,33 @@ function DaliurenChart({
   view: DaliurenChartViewModel;
   showInterpretiveSections: boolean;
 }>) {
+  const publicFactLabels = (view.public_labels ?? []).filter(({ key }) =>
+    [
+      "transmissions_to_day",
+      "initial_final_relation",
+      "subject_object_relation",
+      "stage_flow",
+    ].includes(key),
+  );
+
   return (
     <div className={styles.wrap} data-schema={view.schema_version}>
       <DaliurenBoard
         view={view}
         showInterpretiveSections={showInterpretiveSections}
       />
+      {publicFactLabels.length ? (
+        <>
+          <Table
+            caption="服务端公开字段名称"
+            headers={["可核对字段"]}
+            rows={publicFactLabels.map(({ label }) => [label])}
+          />
+          <p className={styles.note}>
+            字段名称只说明公开口径，不代表本次结果已经返回对应事实。
+          </p>
+        </>
+      ) : null}
     </div>
   );
 }

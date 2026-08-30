@@ -93,6 +93,30 @@ function VoidMark() {
   );
 }
 
+function ElementMark({ value }: Readonly<{ value: string }>) {
+  const element = branchElement(value);
+  if (!element) return null;
+  const labels: Readonly<Record<string, { name: string; shape: string }>> = {
+    wood: { name: "木", shape: "▯" },
+    fire: { name: "火", shape: "△" },
+    earth: { name: "土", shape: "■" },
+    metal: { name: "金", shape: "●" },
+    water: { name: "水", shape: "〜" },
+  };
+  const label = labels[element];
+  if (!label) return null;
+  return (
+    <span
+      aria-hidden="true"
+      className={styles.elementMark}
+      data-element={element}
+      title={label.name}
+    >
+      {label.shape}
+    </span>
+  );
+}
+
 function parseLesson(id: CellId): { index: LessonIndex; part: LessonPart } | null {
   const match = /^lesson-([0-3])-(upper|lower)$/.exec(id);
   if (!match) return null;
@@ -397,6 +421,7 @@ function DaliurenBoardSession({
                     onPointerLeave={() => stopHoverPreview(lesson.upper)}
                   >
                     {lesson.upper}
+                    <ElementMark value={lesson.upper} />
                     {isVoidCell(lesson.upper, voids) ? <VoidMark /> : null}
                   </button>
                 ) : (
@@ -425,6 +450,7 @@ function DaliurenBoardSession({
                     onPointerLeave={() => stopHoverPreview(lesson.lower)}
                   >
                     {lesson.lower}
+                    <ElementMark value={lesson.lower} />
                     {isVoidCell(lesson.lower, voids) ? <VoidMark /> : null}
                   </button>
                 ) : (
@@ -463,6 +489,7 @@ function DaliurenBoardSession({
                     <span className={styles.stage}>{STAGE_LABEL[item.stage]}</span>
                     <span className={styles.branch} data-element={branchElement(item.branch)}>
                       {item.branch}
+                      <ElementMark value={item.branch} />
                     </span>
                     <span
                       className={styles.general}

@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ReadingResult } from "@/components/readings/reading-result";
@@ -182,6 +183,50 @@ function liuyaoFacts() {
   ];
 }
 
+function liuyaoView() {
+  const facts = liuyaoFacts();
+  return {
+    schema_version: "liuyao-chart/v1",
+    subject_ref: "liuyao:public-cast",
+    question: "这次岗位面试能否进入下一轮？",
+    primary_hexagram: { name: "水山蹇", upper_trigram: "坎", lower_trigram: "艮" },
+    changed_hexagram: { name: "水风井", upper_trigram: "坎", lower_trigram: "巽" },
+    lines: [
+      { position: 1, value: 8, moving: false },
+      { position: 2, value: 9, moving: true },
+      { position: 3, value: 7, moving: false },
+      { position: 4, value: 8, moving: false },
+      { position: 5, value: 7, moving: false },
+      { position: 6, value: 8, moving: false },
+    ],
+    core_facts: {
+      calendar: null,
+      casting: null,
+      casting_method: "supplied_complete_cast",
+      changed_najia: null,
+      changed_plate_lines: null,
+      changed_six_relatives: null,
+      hidden_lines: null,
+      interpretation_status: "facts_only",
+      line_facts: facts[4].value,
+      lines: facts[4].value,
+      month_day_strength: null,
+      moving_lines: [2],
+      najia: null,
+      relation_facts: null,
+      returning_relations: null,
+      requested_useful_spirit_candidates: null,
+      shi_ying: { shi: 4, ying: 1 },
+      shi_ying_moving_relations: null,
+      six_relatives: null,
+      six_spirit_profile: null,
+      six_spirits: null,
+      useful_spirit_candidates: null,
+      useful_spirit_selection: null,
+    },
+  };
+}
+
 function stubReady(
   capabilityId: "fortune" | "liuyao",
   overrides: Record<string, unknown> = {},
@@ -205,7 +250,7 @@ function stubReady(
           claim_scopes: [],
           limits: [],
         },
-        view_model: capabilityId === "fortune" ? fortuneView() : null,
+        view_model: capabilityId === "fortune" ? fortuneView() : liuyaoView(),
         capability: capability(capabilityId),
         verification: null,
         document: null,
@@ -242,16 +287,26 @@ describe("fortune + liuyao result shell", () => {
   });
 
   it("puts liuyao plate facts first and does not invent a hexagram", async () => {
+    const user = userEvent.setup();
     stubReady("liuyao");
     render(<ReadingResult readingId={VERSION_ID} />);
 
     expect(await screen.findByRole("heading", { level: 1, name: "六爻" })).toBeVisible();
-    const plate = screen.getByRole("region", { name: "六爻卦象" });
+    const plate = screen.getByRole("region", { name: "六爻排盘工作台" });
     expect(plate).toBeVisible();
     expect(plate.compareDocumentPosition(screen.getByRole("heading", { name: "阅读说明" })) &
       Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText("水山蹇")).toBeVisible();
     expect(screen.getByText("水风井")).toBeVisible();
+    const lines = within(plate).getAllByRole("listitem");
+    expect(lines[0]).toHaveAccessibleName(/上爻，静爻，爻值 8/);
+    expect(lines[0]).toHaveAttribute("tabindex", "0");
+    expect(lines[1]).toHaveAttribute("tabindex", "-1");
+    lines[0].focus();
+    await user.keyboard("{ArrowDown}");
+    expect(lines[1]).toHaveFocus();
+    await user.keyboard("{End}");
+    expect(lines.at(-1)).toHaveFocus();
     expect(screen.queryByText("待接入")).not.toBeInTheDocument();
     expect(screen.queryByText(/Runtime|Provider|适配器/)).not.toBeInTheDocument();
   });
