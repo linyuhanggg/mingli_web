@@ -424,6 +424,62 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     ]);
   });
 
+  it("finishes an old prepared result final-summary refresh before applying the polling cap", async () => {
+    vi.useFakeTimers();
+    const now = Date.parse("2026-08-29T12:11:00Z");
+    vi.setSystemTime(now);
+    let summaryCount = 0;
+    let finalSummarySignal: AbortSignal | undefined;
+    let resolveFinalSummary!: (response: Response) => void;
+    const pendingFinalSummary = new Promise<Response>((resolve) => {
+      resolveFinalSummary = resolve;
+    });
+    const onPollError = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>((url, init) => {
+      const path = String(url);
+      if (path === `/api/v1/readings/${VERSION_ID}`) {
+        summaryCount += 1;
+        if (summaryCount === 1) {
+          return Promise.resolve(jsonResponse(readingSummary("prepared", {
+            created_at: new Date(now - 11 * 60_000).toISOString(),
+          })));
+        }
+        finalSummarySignal = init?.signal ?? undefined;
+        return pendingFinalSummary;
+      }
+      if (path === `/api/v1/readings/${VERSION_ID}/result`) {
+        return Promise.resolve(jsonResponse(readingResult()));
+      }
+      return Promise.resolve(problemResponse("Unexpected request", 500));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ReadingResult
+        headingLevel={2}
+        onPollError={onPollError}
+        readingId={VERSION_ID}
+      />,
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(summaryCount).toBe(2);
+    expect(finalSummarySignal).toBeDefined();
+    expect(finalSummarySignal?.aborted).toBe(false);
+
+    await act(async () => {
+      resolveFinalSummary(jsonResponse(readingSummary("accepted", {
+        created_at: new Date(now - 11 * 60_000).toISOString(),
+      })));
+      await Promise.resolve();
+    });
+    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+    expect(screen.getByText("已交付")).toBeVisible();
+    expect(onPollError).not.toHaveBeenCalled();
+  });
+
   it("keeps an accepted result visible while retrying a failed final summary refresh", async () => {
     let summaryCount = 0;
     let resolveRetrySummary!: (response: Response) => void;
@@ -901,6 +957,51 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
       await vi.advanceTimersByTimeAsync(2 * 60_000);
     });
     expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("finishes an old accepted history result fetch before applying the polling cap", async () => {
+    vi.useFakeTimers();
+    const now = Date.parse("2026-08-29T12:11:00Z");
+    vi.setSystemTime(now);
+    let resultSignal: AbortSignal | undefined;
+    let resolveResult!: (response: Response) => void;
+    const pendingResult = new Promise<Response>((resolve) => {
+      resolveResult = resolve;
+    });
+    const onPollError = vi.fn();
+    const fetchMock = vi.fn<typeof fetch>((url, init) => {
+      if (String(url).endsWith("/result")) {
+        resultSignal = init?.signal ?? undefined;
+        return pendingResult;
+      }
+      return Promise.resolve(jsonResponse(readingSummary("accepted", {
+        created_at: new Date(now - 11 * 60_000).toISOString(),
+        poll_required: false,
+        result_available: true,
+      })));
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(
+      <ReadingResult
+        headingLevel={2}
+        onPollError={onPollError}
+        readingId={VERSION_ID}
+      />,
+    );
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(0);
+    });
+
+    expect(resultSignal).toBeDefined();
+    expect(resultSignal?.aborted).toBe(false);
+
+    await act(async () => {
+      resolveResult(jsonResponse(readingResult()));
+      await Promise.resolve();
+    });
+    expect(screen.getByText(acceptedCopyQuery)).toBeVisible();
+    expect(onPollError).not.toHaveBeenCalled();
   });
 
   it("reports typed summaries and poll failures to the parent owner", async () => {
