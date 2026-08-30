@@ -261,6 +261,54 @@ describe("Bazi deep task state contract", () => {
     expect(mockPollReading).toHaveBeenCalledTimes(1);
   });
 
+
+  it("F1: prepared + result_available renders free chart without worker-queue copy", async () => {
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "prepared",
+      result_available: true,
+      poll_required: false,
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByTestId("reading-result-preview-1")).toBeVisible();
+    expect(screen.getByText("免费盘面已就绪")).toBeVisible();
+    expect(screen.queryByText("正在准备免费盘面")).not.toBeInTheDocument();
+    expect(screen.queryByText(/离开页面后任务仍会继续/)).not.toBeInTheDocument();
+  });
+
+  it("F2: chart-ready shell leads with chart and compresses task chrome", async () => {
+    mockPollReading.mockResolvedValue({
+      ...previewSummary,
+      status: "prepared",
+      result_available: true,
+      poll_required: false,
+    });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByTestId("reading-result-preview-1")).toBeVisible();
+    const flow = screen.getByRole("region", { name: "八字工作台" });
+    expect(flow).toHaveAttribute("data-chart-first", "true");
+    expect(screen.getByRole("heading", { name: "免费盘面" })).toBeVisible();
+    expect(screen.queryByRole("heading", { name: "任务进度" })).not.toBeInTheDocument();
+  });
+
   it("keeps preview loading and continues polling while input_ready", async () => {
     vi.useFakeTimers();
     mockPollReading.mockResolvedValue({

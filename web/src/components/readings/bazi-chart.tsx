@@ -45,6 +45,16 @@ import {
 import { ChartWorkspaceShell } from "./chart-workspace-shell";
 
 import styles from "./bazi-chart.module.css";
+import {
+  natalFindingCards,
+  visibleFactDomainLabels,
+  visibleProductBoundary,
+} from "./bazi-chart-findings";
+
+export {
+  visibleFactDomainLabels,
+  visibleProductBoundary,
+} from "./bazi-chart-findings";
 
 /**
  * Focusable pillar board: roving tabindex with arrow-key movement and
@@ -737,6 +747,9 @@ function ElementInventoryChart({
           </tbody>
         </table>
       </div>
+      {typeof inventory.scope === "string" && inventory.scope.trim() ? (
+        <p className={styles.elementFootnote}>{visibleProductBoundary(inventory.scope)}</p>
+      ) : null}
     </section>
   );
 }
@@ -1385,10 +1398,10 @@ function BaziCandidateSection({
           <h5>候选与待裁定</h5>
           <ul>
             <li>
-              结构候选：月令主气 {candidates.structure.month_main_qi} · {candidates.structure.month_main_qi_ten_god}；主气可见：{candidates.structure.main_qi_visible ? "是" : "否"}；可见位置：{candidates.structure.visible_positions.map((position) => POSITION_LABELS[position] ?? position).join("、") || "无"}；{candidates.structure.boundary}；候选，待裁定
+              结构候选：月令主气 {candidates.structure.month_main_qi} · {candidates.structure.month_main_qi_ten_god}；主气可见：{candidates.structure.main_qi_visible ? "是" : "否"}；可见位置：{candidates.structure.visible_positions.map((position) => POSITION_LABELS[position] ?? position).join("、") || "无"}；{visibleProductBoundary(candidates.structure.boundary)}；候选，待裁定
             </li>
             <li>
-              合化 / 从格候选：天干 {stemCandidates.length} 项，地支成局 {branchCandidates.length} 项；{candidates.following_and_transformation.boundary}；候选，待裁定
+              合化 / 从格候选：天干 {stemCandidates.length} 项，地支成局 {branchCandidates.length} 项；{visibleProductBoundary(candidates.following_and_transformation.boundary)}；候选，待裁定
             </li>
           </ul>
         </div>
@@ -1396,7 +1409,7 @@ function BaziCandidateSection({
       <dl className={styles.candidateBoundary}>
         <div>
           <dt>证据边界</dt>
-          <dd>{strength.boundary}</dd>
+          <dd>{visibleProductBoundary(strength.boundary)}</dd>
         </div>
       </dl>
     </section>
@@ -1903,16 +1916,35 @@ function BaziCoreFactSummary({
     });
   }
   if (facts.shensha_auxiliary) {
+    const aux = facts.shensha_auxiliary;
+    const overrideKeys = Array.isArray(aux.cannot_override)
+      ? aux.cannot_override.filter((item): item is string => typeof item === "string")
+      : [];
+    const overrideLabel = visibleFactDomainLabels(overrideKeys);
+    const boundaryText =
+      typeof aux.boundary === "string" && aux.boundary.trim()
+        ? visibleProductBoundary(aux.boundary)
+        : null;
     rows.push({
       label: "神煞辅助",
-      content: facts.shensha_auxiliary.calculated_items.length
-        ? facts.shensha_auxiliary.calculated_items.map((item, index) => (
-            <span key={`${item.item_id}-${index}`}>
-              {index > 0 ? "；" : null}
-              {item.name}（{item.matched_positions.join("、")}）
-            </span>
-          ))
-        : "本命未命中已声明的辅助项",
+      content: (
+        <>
+          {aux.calculated_items.length
+            ? aux.calculated_items.map((item, index) => (
+                <span key={`${item.item_id}-${index}`}>
+                  {index > 0 ? "；" : null}
+                  {item.name}（{item.matched_positions.join("、")}）
+                </span>
+              ))
+            : "本命未命中已声明的辅助项"}
+          {boundaryText ? (
+            <span className={styles.coreFactsNote}>；{boundaryText}</span>
+          ) : null}
+          {overrideLabel ? (
+            <span className={styles.coreFactsNote}>；不可覆盖：{overrideLabel}</span>
+          ) : null}
+        </>
+      ),
     });
   }
   const sourcePatterns = facts.source_conditioned_patterns ?? [];
@@ -2039,15 +2071,18 @@ export function BaziChart({
   chart,
   title = "八字命盘",
   evidence = [],
+  findings,
   showInterpretiveSections = true,
   timeLayerEntitlement = null,
 }: Readonly<{
   chart: BaziChartView;
   title?: string;
   evidence?: ReadonlyArray<ReadingEvidence>;
+  findings?: unknown;
   showInterpretiveSections?: boolean;
   timeLayerEntitlement?: TimeLayerEntitlement | null;
 }>) {
+  const findingCards = natalFindingCards(findings);
   const detailId = `bazi-focus-${useId()}`;
   const view = useMemo(
     () => buildBaziWorkspaceView(
@@ -2209,6 +2244,16 @@ export function BaziChart({
           }}
           sourceCounts={pillarSourceCounts}
         />
+        {findingCards.length > 0 ? (
+          <section className={styles.findingsSection} aria-label="盘面说明">
+            {findingCards.map((card) => (
+              <article className={styles.findingCard} key={`${card.title}-${card.body.slice(0, 24)}`}>
+                <h3>{card.title}</h3>
+                <p>{card.body}</p>
+              </article>
+            ))}
+          </section>
+        ) : null}
 
         {displayMode === "professional" ? <BaziFactMatrix chart={chart} /> : null}
 

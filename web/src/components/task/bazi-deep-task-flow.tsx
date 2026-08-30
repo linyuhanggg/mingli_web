@@ -542,18 +542,35 @@ export function BaziDeepTaskFlow({
     setPreviewRetryKey((value) => value + 1);
   }
 
+  const chartReady =
+    accessState === "free"
+    || accessState === "unauthenticated"
+    || accessState === "unpaid";
+
   return (
-    <section className={styles.flow} aria-labelledby="bazi-deep-task-title">
-      <header className={styles.toolbar}>
+    <section
+      className={styles.flow}
+      data-chart-first={chartReady ? "true" : undefined}
+      aria-labelledby="bazi-deep-task-title"
+    >
+      <header className={styles.toolbar} data-compact={chartReady ? "true" : undefined}>
         <button className={styles.backButton} onClick={handleBack} type="button">
           <ArrowLeft aria-hidden="true" size={17} />
           返回录入
         </button>
         <h2 className={styles.title} id="bazi-deep-task-title">八字工作台</h2>
-        <p className={styles.toolbarNote}>当前任务状态由服务端确认</p>
+        {chartReady ? (
+          <p className={styles.toolbarNote} role="status">免费盘面已就绪</p>
+        ) : (
+          <p className={styles.toolbarNote}>当前任务状态由服务端确认</p>
+        )}
       </header>
 
-      <section className={styles.section} aria-labelledby="bazi-deep-status-title">
+      {chartReady ? null : (
+      <section
+        className={styles.section}
+        aria-labelledby="bazi-deep-status-title"
+      >
         <div className={styles.statusCopy}>
           <h2 id="bazi-deep-status-title">任务进度</h2>
           <p>{phase.text}</p>
@@ -618,6 +635,7 @@ export function BaziDeepTaskFlow({
           <Status state="success" title={phase.title} description={phase.text} />
         ) : null}
       </section>
+      )}
 
       {(
         accessState === "preview_loading"
@@ -632,14 +650,26 @@ export function BaziDeepTaskFlow({
         || accessState === "running"
         || showDeepResult
       ) ? (
-        <section className={styles.section} aria-labelledby="bazi-free-result-title">
+        <section
+          className={chartReady ? styles.chartLead : styles.section}
+          aria-labelledby="bazi-free-result-title"
+          data-chart-lead={chartReady ? "true" : undefined}
+        >
           <div className={styles.statusCopy}>
-            <h2 id="bazi-free-result-title">免费确定性盘面</h2>
-            <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
+            <h2
+              className={chartReady ? styles.chartLeadTitle : undefined}
+              id="bazi-free-result-title"
+            >
+              {chartReady ? "免费盘面" : "免费确定性盘面"}
+            </h2>
+            {chartReady ? null : (
+              <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
+            )}
           </div>
           <div className={styles.result}>
             <ReadingResult
               baziDeepFulfilled={accessState === "succeeded"}
+              density={chartReady ? "chart-first" : "default"}
               key={`preview-${previewReadingId}-${previewRetryKey}`}
               onPollError={handlePreviewPollError}
               onSummary={handlePreviewSummary}

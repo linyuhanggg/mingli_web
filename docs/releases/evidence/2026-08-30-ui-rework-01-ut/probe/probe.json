@@ -1,0 +1,623 @@
+{
+  "elapsedMs": 60295,
+  "net": [
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/bazi",
+      "body": "<!DOCTYPE html><html lang=\"zh-CN\"><head><meta charSet=\"utf-8\"/><link rel=\"preconnect\" href=\"/\" crossorigin=\"\"/><meta name=\"viewport\" content=\"width=device-width, initial-scale=1\"/><link rel=\"preload\" as=\"image\" imageSrcSet=\"/_next/image?url=%2Fbrand%2Fmingli-mark.webp&amp;w=32&amp;q=75 1x, /_next/image?url=%2Fbrand%2Fmingli-mark.webp&amp;w=48&amp;q=75 2x\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/2u8d4e3i0-wk3.css\" data-precedence=\"next\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/3a37ijs16m_1-.css\" data-precedence=\"next\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/2fu6mol6s2qzp.css\" data-precedence=\"next\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/3mac8xfdydwx1.css\" data-precedence=\"next\"/><link rel=\"stylesheet\" href=\"/_next/static/chunks/0f95s-yuj_3b6.css\" "
+    },
+    {
+      "status": 401,
+      "url": "http://106.14.10.235:18080/api/v1/account",
+      "body": "{\"type\":\"about:blank\",\"title\":\"Authentication required\",\"status\":401,\"request_id\":\"99cb26eafff844c2c117a9bbba590f38\"}"
+    },
+    {
+      "status": 201,
+      "url": "http://106.14.10.235:18080/api/v1/guest-sessions",
+      "body": "{\"status\":\"active\",\"expires_at\":\"2026-08-31T10:33:23.153528Z\",\"csrf_token\":\"QfJa-Qa91GOF7RSM3xgvZiOrxkWYqjWrk3uNFQpIQEA\"}"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/profiles",
+      "body": "{\"profiles\":[]}"
+    },
+    {
+      "status": 201,
+      "url": "http://106.14.10.235:18080/api/v1/profiles/drafts",
+      "body": "{\"draft_id\":\"0e288149-f515-4969-947c-7eedf4b7ef25\",\"status\":\"draft\"}"
+    },
+    {
+      "status": 201,
+      "url": "http://106.14.10.235:18080/api/v1/profiles/drafts/0e288149-f515-4969-947c-7eedf4b7ef25/confirm",
+      "body": "{\"profile_id\":\"0e288149-f515-4969-947c-7eedf4b7ef25\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"version\":1,\"display_name\":\"林宇航\",\"birth_date\":\"2000-10-18\",\"created_at\":\"2026-08-30T10:33:24.409340Z\"}"
+    },
+    {
+      "status": 201,
+      "url": "http://106.14.10.235:18080/api/v1/readings/preview",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    },
+    {
+      "status": 200,
+      "url": "http://106.14.10.235:18080/api/v1/readings/e430f706-84e8-4734-bcc9-f28c5304737c",
+      "body": "{\"reading_version_id\":\"e430f706-84e8-4734-bcc9-f28c5304737c\",\"reading_root_id\":\"ffe3a2a3-b125-4dcc-ba73-587ec5f23b4a\",\"profile_version_id\":\"3900b053-36c0-4c00-a1bb-03718a14f82b\",\"capability_id\":\"bazi\",\"product_id\":\"bazi\",\"runtime_capability_ids\":[\"bazi\"],\"version\":1,\"status\":\"prepared\",\"object_id\":\"natal\",\"dimension_ids\":[\"career\"],\"horizon\":{\"kind_id\":\"life\",\"start\":null,\"end\":null},\"prior_answer\":null,\"input_request\":null,\"created_at\":\"2026-08-30T10:33:24.471253Z\",\"delivery_state\":\"not_required\",\"result_available\":true,\"poll_required\":false,\"poll_after_seconds\":null,\"view_model\":{\"schema_version\":\"bazi-chart/v1\",\"subject_ref\":\"profile-version:3900b053-36c0-4c00-a1bb-03718a14f82b\",\"pillars\":[{\"position\":\"year\",\"stem\":\"庚\",\"branch\":\"辰\"},{\"position\":\"month\",\"stem\":\"丙\",\"branch\":\"戌\"},{\"positio"
+    }
+  ],
+  "cons": [
+    {
+      "type": "error",
+      "text": "The Cross-Origin-Opener-Policy header has been ignored, because the URL's origin was untrustworthy. It was defined either in the final response or a redirect. Please deliver the response using the HTTPS protocol. You can also use the 'localhost' origin instead. See https://www.w3.org/TR/powerful-features/#potentially-trustworthy-origin and https://html.spec.whatwg.org/#the-cross-origin-opener-policy-header."
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 401 (Unauthorized)"
+    },
+    {
+      "type": "error",
+      "text": "Failed to load resource: the server responded with a status of 404 (Not Found)"
+    }
+  ],
+  "samples": [
+    {
+      "sec": 1,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": false,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n出生资料\n受测对象\n性别必填\n男\n女\n出生日期必填\n年\n2026\n2025\n2024\n2023\n2022\n2021\n2020\n2019\n2018\n2017\n2016\n2015\n2014\n2013\n2012\n2011\n2010\n2009\n2008\n2007\n2006\n2005\n2004\n2003\n2002\n2001\n2000\n1999\n1998\n1997\n1996\n1995\n1994\n1993\n1992\n1991\n1990\n1989\n"
+    },
+    {
+      "sec": 2,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 3,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 4,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 5,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 6,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 7,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 8,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 9,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 10,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 11,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 12,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 13,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 14,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 15,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 16,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 17,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 18,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 19,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 20,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 21,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 22,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 23,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 24,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 25,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 26,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 27,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 28,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 29,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 30,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 31,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 32,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 33,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 34,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 35,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 36,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 37,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 38,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 39,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 40,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 41,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 42,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 43,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 44,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 45,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 46,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 47,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 48,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 49,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 50,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 51,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 52,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 53,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 54,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 55,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 56,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 57,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 58,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 59,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    },
+    {
+      "sec": 60,
+      "url": "http://106.14.10.235:18080/bazi",
+      "hasChart": false,
+      "busy": true,
+      "head": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政"
+    }
+  ],
+  "finalUrl": "http://106.14.10.235:18080/bazi",
+  "finalText": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n返回\n八字\n\n填资料 → 同步出可核对四柱\n\n录入与核对\n工作台\n报告与追问\n返回录入\n八字工作台\n\n当前任务状态由服务端确认\n\n任务进度\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n正在准备免费盘面\n\n服务端正在处理确定性盘面，离开页面后任务仍会继续。\n\n命\n命理工具\n\n中性测试版公共入口：先形成可复现的盘面事实，再提供有依据、有边界、可核对的说明。\n\n产品入口\n术数总览\n命盘合参\n工具\n每日\n知识与帮助\n知识内容\n方法与边界\n帮助与支持\n账户与政策\n账户\n隐私政策\n服务条款\n© 2026 命理工具测试版\n内容仅作传统文化参考，不替代医疗、法律、投资或其他专业意见。"
+}

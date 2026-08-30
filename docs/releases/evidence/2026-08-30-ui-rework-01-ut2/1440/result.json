@@ -1,0 +1,197 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "name": "1440"
+  },
+  "release": "ui-rework-01-fe2-f1-20260830-184242-on-rework01",
+  "homeUrl": "http://106.14.10.235:18080/",
+  "natalUrl": "http://106.14.10.235:18080/bazi",
+  "timedOut": true,
+  "checks": {
+    "F1": {
+      "id": "F1",
+      "name": "秒出：四柱迅速上屏 / 无长时间准备盘面 / 无离开页面仍继续叙事",
+      "elapsedMs": 20037,
+      "timedOut": true,
+      "sawQueueMs": 0,
+      "stuckBusy": false,
+      "afterBusy": false,
+      "leavePageNarrative": false,
+      "longStuck": true,
+      "fast": false,
+      "hasChart": false,
+      "natalUrl": "http://106.14.10.235:18080/bazi",
+      "verdict": "FAIL",
+      "wallElapsedMs": 20385,
+      "apiHits": [
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/preview",
+          "status": 201,
+          "method": "POST",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41/result",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41/result",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41/result",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41/result",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        },
+        {
+          "url": "http://106.14.10.235:18080/api/v1/readings/dd83f008-5835-486c-bac2-d431b5f4fc41/result",
+          "status": 200,
+          "method": "GET",
+          "result_available": true,
+          "poll_required": false,
+          "statusField": "prepared",
+          "hasViewModel": true
+        }
+      ]
+    },
+    "9.3": {
+      "id": "9.3",
+      "name": "结果页：四柱+日主主角 / 专业表在后 / 付费不压盘 / 待接入不刷屏 / 无内部字段",
+      "pillarEarly": true,
+      "hasPillars": false,
+      "hasDayMaster": true,
+      "chartIdx": 58,
+      "payIdx": 180,
+      "payOverChart": false,
+      "pendingCount": 1,
+      "pendingFolded": true,
+      "headingsPreview": [
+        "八字",
+        "八字工作台",
+        "任务进度",
+        "免费确定性盘面",
+        "八字命盘",
+        "排盘结果",
+        "八字命盘",
+        "干支关系",
+        "聚焦详情",
+        "大运已计算",
+        "日主与月令",
+        "五行盘点"
+      ],
+      "internal": [],
+      "snakeFiltered": [
+        "month_command",
+        "ten_gods",
+        "luck_cycles",
+        "transit_facts"
+      ],
+      "overflowX": false,
+      "verdict": "FAIL",
+      "firstViewportChartHits": [
+        {
+          "n": "八字命盘",
+          "top": 640
+        },
+        {
+          "n": "日主",
+          "top": 669
+        },
+        {
+          "n": "八字命盘",
+          "top": 783
+        },
+        {
+          "n": "八字命盘",
+          "top": 802
+        },
+        {
+          "n": "日主",
+          "top": 828
+        }
+      ],
+      "chartInFirstViewport": true
+    }
+  }
+}

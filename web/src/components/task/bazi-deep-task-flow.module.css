@@ -141,3 +141,59 @@
     order: -1;
   }
 }
+
+
+.flow[data-chart-first="true"] {
+  gap: var(--space-sm);
+}
+
+.flow[data-chart-first="true"] > .chartLead {
+  order: -1;
+}
+
+.toolbar[data-compact="true"] {
+  gap: var(--space-sm);
+  padding: 0.45rem 0.75rem;
+}
+
+.toolbar[data-compact="true"] .backButton {
+  min-height: 2.25rem;
+}
+
+.toolbar[data-compact="true"] .title {
+  font-size: var(--font-size-label);
+}
+
+.toolbar[data-compact="true"] .toolbarNote {
+  color: var(--color-accent);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+}
+
+.section[data-compact="true"] {
+  gap: var(--space-xs);
+  padding: 0.55rem 0.85rem;
+}
+
+.section[data-compact="true"] .statusCopy p {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-meta);
+}
+
+.chartLead {
+  display: grid;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.chartLeadTitle {
+  margin: 0;
+  color: var(--color-accent);
+  font-size: var(--font-size-meta);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+}

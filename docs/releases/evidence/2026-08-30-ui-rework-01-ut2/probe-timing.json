@@ -1,0 +1,331 @@
+{
+  "360": {
+    "vp": {
+      "width": 360,
+      "height": 800
+    },
+    "firstChartMs": 1564,
+    "firstReadyMs": 1564,
+    "samples": [
+      {
+        "elapsed": 290,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 460,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 544,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 460,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 797,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 460,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 1053,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 460,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 1307,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": null,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 1564,
+        "busy": false,
+        "ready": true,
+        "chart": true,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": 520,
+          "日主": 185,
+          "八字命盘": 156,
+          "任务进度": null,
+          "深读": 63,
+          "待接入": null
+        }
+      }
+    ],
+    "last": {
+      "elapsed": 1564,
+      "busy": false,
+      "ready": true,
+      "chart": true,
+      "url": "http://106.14.10.235:18080/bazi",
+      "inView": {
+        "年柱": 520,
+        "日主": 185,
+        "八字命盘": 156,
+        "任务进度": null,
+        "深读": 63,
+        "待接入": null
+      }
+    },
+    "layout": {
+      "vh": 800,
+      "taskProgress": {
+        "top": 158,
+        "bottom": 5833,
+        "h": 5676,
+        "t": "录入与核对工作台报告与追问返回录入八字工作台当前任务状态由服务端确认任务进度免费"
+      },
+      "chartTitle": {
+        "top": 555,
+        "bottom": 5566,
+        "h": 5011,
+        "t": "免费确定性盘面盘面和事实由服务端排定；这里不展示尚未生成的深读内容。八字命盘四柱"
+      },
+      "dayMasterLine": {
+        "top": 930,
+        "inFirst": false,
+        "t": "日主 己（土·阴）"
+      },
+      "pillarTops": [
+        {
+          "label": "年柱",
+          "top": 1060,
+          "inFirst": false
+        },
+        {
+          "label": "月柱",
+          "top": 1060,
+          "inFirst": false
+        },
+        {
+          "label": "日柱",
+          "top": 1060,
+          "inFirst": false
+        },
+        {
+          "label": "时柱",
+          "top": 1060,
+          "inFirst": false
+        }
+      ],
+      "pendingCount": 1,
+      "hasLeaveNarrative": false,
+      "hasPreparing": false,
+      "hasInternalEn": true,
+      "hasEnglishLeak": true,
+      "ready": true,
+      "url": "http://106.14.10.235:18080/bazi"
+    }
+  },
+  "1440": {
+    "vp": {
+      "width": 1440,
+      "height": 900
+    },
+    "firstChartMs": 1577,
+    "firstReadyMs": 1320,
+    "samples": [
+      {
+        "elapsed": 302,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 527,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 559,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 527,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 815,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 527,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 1067,
+        "busy": false,
+        "ready": false,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": null,
+          "深读": 527,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 1320,
+        "busy": false,
+        "ready": true,
+        "chart": false,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": null,
+          "日主": null,
+          "八字命盘": null,
+          "任务进度": 283,
+          "深读": 485,
+          "待接入": null
+        }
+      },
+      {
+        "elapsed": 1577,
+        "busy": false,
+        "ready": true,
+        "chart": true,
+        "url": "http://106.14.10.235:18080/bazi",
+        "inView": {
+          "年柱": 871,
+          "日主": 609,
+          "八字命盘": 580,
+          "任务进度": 283,
+          "深读": 485,
+          "待接入": null
+        }
+      }
+    ],
+    "last": {
+      "elapsed": 1577,
+      "busy": false,
+      "ready": true,
+      "chart": true,
+      "url": "http://106.14.10.235:18080/bazi",
+      "inView": {
+        "年柱": 871,
+        "日主": 609,
+        "八字命盘": 580,
+        "任务进度": 283,
+        "深读": 485,
+        "待接入": null
+      }
+    },
+    "layout": {
+      "vh": 900,
+      "taskProgress": {
+        "top": 166,
+        "bottom": 4620,
+        "h": 4454,
+        "t": "录入与核对工作台报告与追问返回录入八字工作台当前任务状态由服务端确认任务进度免费"
+      },
+      "chartTitle": {
+        "top": 484,
+        "bottom": 4388,
+        "h": 3904,
+        "t": "免费确定性盘面盘面和事实由服务端排定；这里不展示尚未生成的深读内容。八字命盘四柱"
+      },
+      "dayMasterLine": {
+        "top": 828,
+        "inFirst": true,
+        "t": "日主 己（土·阴）"
+      },
+      "pillarTops": [
+        {
+          "label": "年柱",
+          "top": 930,
+          "inFirst": false
+        },
+        {
+          "label": "月柱",
+          "top": 930,
+          "inFirst": false
+        },
+        {
+          "label": "日柱",
+          "top": 930,
+          "inFirst": false
+        },
+        {
+          "label": "时柱",
+          "top": 930,
+          "inFirst": false
+        }
+      ],
+      "pendingCount": 1,
+      "hasLeaveNarrative": false,
+      "hasPreparing": false,
+      "hasInternalEn": true,
+      "hasEnglishLeak": true,
+      "ready": true,
+      "url": "http://106.14.10.235:18080/bazi"
+    }
+  },
+  "at": "2026-08-30T10:51:47.347Z"
+}

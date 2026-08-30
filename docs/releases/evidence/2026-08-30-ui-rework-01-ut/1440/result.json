@@ -1,0 +1,112 @@
+{
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "name": "1440"
+  },
+  "releaseHint": "ui-rework-01-20260830-181606-on-revision20",
+  "homeUrl": "http://106.14.10.235:18080/",
+  "natalUrl": "http://106.14.10.235:18080/bazi",
+  "timedOut": true,
+  "checks": {
+    "1": {
+      "id": 1,
+      "name": "首页主 CTA / 非卡片墙 / 无纸墨剧场",
+      "primaryCtaCount": 2,
+      "primarySamples": [
+        "开始排八字",
+        "开始排八字"
+      ],
+      "heroCtaSamples": [
+        "开始排八字",
+        "开始排八字"
+      ],
+      "hasPrimary": true,
+      "paperInkSignals": false,
+      "darkTheaterSignals": false,
+      "firstScreenPreview": "跳到主要内容\n命理工具\n测试版\n术数\n合参\n工具\n每日\n知识内容\n更多\n登录\n\n先给可核对的盘面\n\n十三术同根，五十五部古籍为证\n\n以统一命盘为底，沿古籍证据逐层展开推演。免费盘同步出可核对四柱。\n\n开始排八字\n方法与边界\n\n13 术 · 55 籍 · 证据索引\n\n主入口\n\n先拿到一张可核对的八字盘；其他术数按需进入。\n\n最常用\n八字\n填出生资料，先拿到可核对的四柱。\n排一张八字\n事件判断\n问一件具体的事，再按发生时空逐层核对。\n命盘合参\n让八字、紫微与七政分别计算后互相参证。\n见相\n先看面相、手相与体态结构，再谈解释。\n机制\n确定性盘面免费\n同一套算法生成盘面，可复现、可核对。\n事实与解释分层\n盘面事实与模型表达分开标注，适用边界可见。\n多术互证\n同根资料多术对照，分歧与缺失明示。\n\n八字\n示意空盘\n\n\t\n年柱\n\t\n月柱\n\t\n日柱\n\t\n时柱\n\n提交后由服务端生成，可核验。占位为「—」，无示例干支。\n\n其他命盘\n\n从出生资料开始，观察长期结构与时间层。\n\n紫微\n看十二宫与大限。\n七政\n看星盘与限法。\n事件判断\n\n围绕同一件具体事情，记录问题、过程与发生时空。\n\n六爻\n问一件具体的事。\n",
+      "overflowX": false,
+      "themeColor": "#f2ebdd",
+      "bg": "rgb(244, 244, 239)",
+      "verdict": "PASS",
+      "firstScreenCta": [
+        {
+          "text": "开始排八字",
+          "top": 638,
+          "h": 62
+        }
+      ],
+      "uniquePrimaryVisible": 1,
+      "firstScreenCardishBlocks": 4
+    },
+    "2": {
+      "id": 2,
+      "name": "录入必填/摘要/无假四柱",
+      "hasSummary": true,
+      "summarySnippet": "男",
+      "fakeOnInput": false,
+      "requiredHints": true,
+      "overflowX": false,
+      "verdict": "PASS",
+      "consistentWithForm": true,
+      "summaryText": "出生资料\n受测对象\n性别必填\n男\n女\n出生日期必填\n年\n2026\n2025\n2024\n2023\n2022\n2021\n2020\n2019\n2018\n2017\n2016\n2015\n2014\n2013\n2012\n2011\n2010\n2009\n2008\n2007\n2006\n2005\n2004\n2003\n2002\n2001\n2000\n1999\n1998\n1997\n1996\n1995\n1994\n1993\n1992\n1991\n1990\n1989\n1988\n1987\n1986\n1985\n1984\n1983\n1982\n1981\n1980\n1979\n1978\n1977\n1976\n1975\n1974\n1973\n19"
+    },
+    "3": {
+      "id": 3,
+      "name": "结果四柱主角 / 付费不压盘 / 待接入不刷屏 / 无内部字段",
+      "pillarEarly": false,
+      "chartIdx": 58,
+      "payIdx": -1,
+      "payOverChart": false,
+      "pendingCount": 0,
+      "pendingFolded": true,
+      "headingsPreview": "八字 | 八字工作台 | 任务进度 | 正在准备免费盘面 | 产品入口 | 知识与帮助 | 账户与政策",
+      "internal": [],
+      "snakeFiltered": [],
+      "overflowX": false,
+      "verdict": "FAIL",
+      "firstViewportChartHits": [],
+      "chartInFirstViewport": false
+    },
+    "4": {
+      "id": 4,
+      "name": "秒出无额外排队叙事",
+      "elapsedMs": 45256,
+      "queueNarrative": false,
+      "fast": false,
+      "verdict": "FAIL_CANDIDATE"
+    },
+    "5": {
+      "id": 5,
+      "name": "视口无整页横滑",
+      "homeOverflow": false,
+      "inputOverflow": false,
+      "resultOverflow": false,
+      "sizes": {
+        "home": [
+          1440,
+          1440
+        ],
+        "input": [
+          1440,
+          1440
+        ],
+        "result": [
+          1440,
+          1440
+        ]
+      },
+      "verdict": "PASS"
+    },
+    "6": {
+      "id": 6,
+      "name": "玄序观感（灰阶+朱砂，非纸墨剧场）",
+      "themeColor": "#f2ebdd",
+      "bg": "rgb(244, 244, 239)",
+      "paperWords": false,
+      "hasAccentWords": true,
+      "verdict": "PASS",
+      "note": "最终以截图人工判定灰阶+朱砂 vs 旧纸墨宣纸剧场"
+    }
+  }
+}

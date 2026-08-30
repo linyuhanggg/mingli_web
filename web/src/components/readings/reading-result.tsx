@@ -24,6 +24,7 @@ import {
 } from "@/lib/fortune-period-markers";
 import { parseTimeLayerEntitlement } from "@/lib/chart-workspace";
 import surface from "@/components/app-surface.module.css";
+import styles from "./reading-result.module.css";
 
 import { AcceptedCopy } from "./accepted-copy";
 import { BaziChart } from "./bazi-chart";
@@ -307,6 +308,7 @@ function WaitingStatus({
 
 export type ReadingResultProps = Readonly<{
   baziDeepFulfilled?: boolean;
+  density?: "default" | "chart-first";
   headingLevel?: 1 | 2;
   onPollError?: (error: unknown) => void;
   onRestart?: () => void;
@@ -323,6 +325,7 @@ export function ReadingResult(props: ReadingResultProps) {
 function ReadingResultForVersion({
   readingId,
   baziDeepFulfilled = false,
+  density = "default",
   headingLevel = 1,
   onPollError,
   onRestart,
@@ -731,7 +734,8 @@ function ReadingResultForVersion({
 
     if (!isNatalChart && !isFortune && !isLiuyao && !isQimen && !isDaliuren) {
       return (
-        <div className={surface.readingLayout}>
+        <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
               <h2>{question}</h2>
@@ -911,7 +915,8 @@ function ReadingResultForVersion({
         hasExactCitation;
 
       return (
-        <div className={surface.readingLayout}>
+        <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
               <ResultHeading>{pageTitle}</ResultHeading>
@@ -1066,7 +1071,8 @@ function ReadingResultForVersion({
         hasExactCitation;
 
       return (
-        <div className={surface.readingLayout}>
+        <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
               <ResultHeading>{pageTitle}</ResultHeading>
@@ -1197,7 +1203,8 @@ function ReadingResultForVersion({
       const hasNatalContent = natalViewReady || result.accepted_copy != null;
 
       return (
-        <div className={surface.readingLayout}>
+        <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
               <ResultHeading>{natalTitle}</ResultHeading>
@@ -1292,17 +1299,27 @@ function ReadingResultForVersion({
       );
     }
 
+    const chartFirst = density === "chart-first";
+
     return (
-      <div className={surface.readingLayout}>
-        <article className={surface.readingBody} aria-label="解读正文">
-          <header className={surface.readingHeader}>
-            <h2>{productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}</h2>
-            <p>
-              {productId === "bazi-deep"
-                ? "盘面事实与已接纳解读分开展示，便于逐项核对。"
-                : "四柱、日主、月令、大运与已返回的盘面事实。"}
-            </p>
-          </header>
+      <div
+        className={`${surface.readingLayout}${chartFirst ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}
+      >
+        <article
+          className={chartFirst ? styles.chartFirstBody : surface.readingBody}
+          aria-label="解读正文"
+        >
+          {chartFirst ? null : (
+            <header className={surface.readingHeader}>
+              <h2>{productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}</h2>
+              <p>
+                {productId === "bazi-deep"
+                  ? "盘面事实与已接纳解读分开展示，便于逐项核对。"
+                  : "四柱、日主、月令、大运与已返回的盘面事实。"}
+              </p>
+            </header>
+          )}
 
           {productId === "bazi-deep" ? (
             <section
@@ -1318,12 +1335,12 @@ function ReadingResultForVersion({
           ) : null}
 
           <section
-            className={surface.readingSection}
+            className={chartFirst ? styles.chartFirstSection : surface.readingSection}
             data-layout="full-width-reading-section"
-            aria-labelledby="reading-workspace-title"
+            aria-labelledby={chartFirst ? undefined : "reading-workspace-title"}
           >
             <div>
-              <h2 id="reading-workspace-title">排盘结果</h2>
+              {chartFirst ? null : <h2 id="reading-workspace-title">排盘结果</h2>}
               {capabilityTier === "C" ? (
                 <Status
                   description="当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。"
@@ -1338,14 +1355,17 @@ function ReadingResultForVersion({
                 />
               ) : (
                 <>
-                  <p className={surface.inlineNote}>
-                    点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
-                  </p>
+                  {chartFirst ? null : (
+                    <p className={surface.inlineNote}>
+                      点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
+                    </p>
+                  )}
                   <div data-bazi-chart-host="true">
                     <BaziChart
                       chart={chart}
                       title="八字命盘"
                       evidence={result.fact_panel?.evidence ?? []}
+                      findings={result.fact_panel?.findings}
                       showInterpretiveSections={capabilityTier === "A"}
                       timeLayerEntitlement={timeLayerEntitlement}
                     />
@@ -1356,7 +1376,7 @@ function ReadingResultForVersion({
           </section>
 
           <section
-            className={surface.readingSection}
+            className={chartFirst ? styles.chartFirstBelow : surface.readingSection}
             data-layout="full-width-reading-section"
             aria-labelledby="reading-note-title"
           >
@@ -1397,20 +1417,23 @@ function ReadingResultForVersion({
             </section>
           ) : null}
         </article>
-        <ArchiveRail
-          elapsedMs={elapsedMs}
-          onRetry={handleRetry}
-          readingId={readingId}
-          summary={summary}
-          result={result}
-        />
+        {chartFirst ? null : (
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
+        )}
       </div>
     );
   }
 
   if (summary.status === "waiting_input") {
     return (
-      <div className={surface.readingLayout}>
+      <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
         <article className={surface.readingBody}>
           <NeedInputForm
             readingId={readingId}
@@ -1425,7 +1448,8 @@ function ReadingResultForVersion({
 
   if (summary.status === "terminal_stopped") {
     return (
-      <div className={surface.readingLayout}>
+      <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
         <article className={surface.readingBody}>
           <Status
             actions={<Link href="/app">重新发起</Link>}
@@ -1442,7 +1466,8 @@ function ReadingResultForVersion({
   const meta = statusMeta(summary.status);
   if (shouldKeepPolling(summary)) {
     return (
-      <div className={surface.readingLayout}>
+      <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
         <article className={surface.readingBody}>
           <WaitingStatus
             context={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
@@ -1456,7 +1481,8 @@ function ReadingResultForVersion({
     );
   }
   return (
-    <div className={surface.readingLayout}>
+    <div className={`${surface.readingLayout}${density === "chart-first" ? ` ${styles.chartFirst}` : ""}`}
+        data-density={density}>
       <article className={surface.readingBody}>
         <Status
           actions={
