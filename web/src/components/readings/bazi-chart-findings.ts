@@ -16,7 +16,8 @@ const TITLE_BY_UNIT: Readonly<Record<string, string>> = {
 
 const BODY_KEYS = ["public_text", "text", "display_text", "body"] as const;
 const TITLE_KEYS = ["title", "heading", "label"] as const;
-const UNIT_KEYS = ["claim_unit_id", "unit_id", "kind_id", "kind", "id"] as const;
+const DIRECT_UNIT_KEYS = ["claim_unit_id", "unit_id", "kind_id", "kind", "id"] as const;
+const NESTED_UNIT_KEYS = ["claim_unit_id", "unit_id", "kind_id"] as const;
 
 /** Runtime 工程边界句 → 中文产品语（禁止英文 / snake_case 上屏） */
 const PRODUCT_BOUNDARY_LABELS: Readonly<Record<string, string>> = {
@@ -76,21 +77,26 @@ function titleForUnit(id: string): string | null {
   return TITLE_BY_UNIT[normalized] ?? TITLE_BY_UNIT[id] ?? null;
 }
 
+function knownUnitIdFrom(...values: unknown[]): string | null {
+  for (const value of values) {
+    const candidate = firstString(value);
+    if (candidate && titleForUnit(candidate)) return candidate;
+  }
+  return null;
+}
+
 function unitIdFrom(record: Record<string, unknown>): string | null {
-  const direct = firstString(...UNIT_KEYS.map((key) => record[key]));
-  if (direct) return direct;
-  if (isRecord(record.data)) {
-    const nested = firstString(
-      record.data.claim_unit_id,
-      record.data.unit_id,
-      record.data.kind_id,
-    );
+  const data = record.data;
+  if (isRecord(data)) {
+    const nested = knownUnitIdFrom(...NESTED_UNIT_KEYS.map((key) => data[key]));
     if (nested) return nested;
   }
+  const direct = knownUnitIdFrom(...DIRECT_UNIT_KEYS.map((key) => record[key]));
+  if (direct) return direct;
   const ref = firstString(record.ref);
   if (ref?.includes("/")) {
     const last = ref.split("/").pop();
-    if (last) return last;
+    if (last && titleForUnit(last)) return last;
   }
   return null;
 }

@@ -36,6 +36,18 @@ describe("natalFindingCards", () => {
     expect(looksInternal("month_command")).toBe(true);
     expect(looksInternal("柱位职分")).toBe(false);
   });
+
+  it("reads a supported nested claim id before a generic top-level kind", () => {
+    expect(
+      natalFindingCards([
+        {
+          kind_id: "kind.tendency",
+          data: { claim_unit_id: "bazi.pillar-roles-v1" },
+          public_text: PILLAR_BODY,
+        },
+      ]),
+    ).toEqual([{ title: "柱位职分", body: PILLAR_BODY }]);
+  });
 });
 
 describe("F3 product copy lock", () => {
