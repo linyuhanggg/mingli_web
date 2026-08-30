@@ -317,7 +317,7 @@
                       "旺衰、调候与行运"
                     ]
                   },
-                  "tool_digest": "39e5fb0af93540298d1fec47db7afd7aaa5e71ead0ca2ee6de6d41427c7c41dc"
+                  "tool_digest": "f64253a9937628eb7c2b2b7717583a5f82fff545868e913ce665eae5dce2e7e5"
                 }
               },
               {
@@ -353,7 +353,7 @@
                       ],
                       "seasonal_state": "死",
                       "source_ref": {
-                        "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                        "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                         "pack": "bazi/sanming-tonghui",
                         "rule_id": "R-02-04",
                         "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -377,7 +377,7 @@
                       "month_command_element": "木",
                       "seasonal_state": "死",
                       "source_ref": {
-                        "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                        "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                         "pack": "bazi/sanming-tonghui",
                         "rule_id": "R-02-04",
                         "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -423,7 +423,7 @@
                     "visible_pressure_role_count": 2,
                     "visible_support_role_count": 1
                   },
-                  "tool_digest": "8532db6d1c8391c6d12ea2f9a27d3e87065a6f3873262d03d19109409559041a"
+                  "tool_digest": "3dd0d6dd4310b20b54d0176047d414bfe616a5635930fa9228de5b8cca075bf7"
                 }
               },
               {
@@ -536,7 +536,7 @@
                     ],
                     "seasonal_state": "死",
                     "source_ref": {
-                      "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                      "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                       "pack": "bazi/sanming-tonghui",
                       "rule_id": "R-02-04",
                       "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -560,7 +560,7 @@
                     "month_command_element": "木",
                     "seasonal_state": "死",
                     "source_ref": {
-                      "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                      "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                       "pack": "bazi/sanming-tonghui",
                       "rule_id": "R-02-04",
                       "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -694,14 +694,14 @@
             "schema_version": "mingli-bazi-reasoning-tool-v2",
             "source_refs": [
               {
-                "binding_digest": "03453f3b83f4c78c254bfbaa0d7a064e57ed6aad17b4efe5c386d3919b95c33e",
+                "binding_digest": "744ad5d0307851575694476dd44300c5c446bf1227f26f67f94d2e94511d1c82",
                 "pack": "bazi/ziping-zhenquan",
                 "rule_id": "ZPR-01",
                 "source_anchor": "references/books/bazi/ziping-zhenquan/rules.md#ZPR-01",
                 "verification_status": "verified"
               },
               {
-                "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                 "pack": "bazi/sanming-tonghui",
                 "rule_id": "R-02-04",
                 "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -715,7 +715,7 @@
                 "verification_status": "verified"
               }
             ],
-            "tool_digest": "13464c65ca761773411fb867d563603a5c86f86a9e6fdc8758408bc74c7acd16",
+            "tool_digest": "059a99c9eae5e264126606aed1aa4cd7ab99ae7d3946fc8ba54a356dd7eea8db",
             "tool_id": "bazi.tool.conflict_arbitration",
             "tool_kind": "decision_stack_conflict_policy",
             "visibility_class": "on_demand"
@@ -964,7 +964,7 @@
                 ],
                 "seasonal_state": "死",
                 "source_ref": {
-                  "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                  "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                   "pack": "bazi/sanming-tonghui",
                   "rule_id": "R-02-04",
                   "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -988,7 +988,7 @@
                 "month_command_element": "木",
                 "seasonal_state": "死",
                 "source_ref": {
-                  "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                  "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                   "pack": "bazi/sanming-tonghui",
                   "rule_id": "R-02-04",
                   "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -1053,7 +1053,7 @@
                 "rule_id": "DR-02-06"
               }
             ],
-            "tool_digest": "8532db6d1c8391c6d12ea2f9a27d3e87065a6f3873262d03d19109409559041a",
+            "tool_digest": "3dd0d6dd4310b20b54d0176047d414bfe616a5635930fa9228de5b8cca075bf7",
             "tool_id": "bazi.tool.strength_evidence",
             "tool_kind": "disputed_rule_synthesis",
             "visibility_class": "on_demand"
@@ -1257,14 +1257,14 @@
             "schema_version": "mingli-bazi-reasoning-tool-v2",
             "source_refs": [
               {
-                "binding_digest": "03453f3b83f4c78c254bfbaa0d7a064e57ed6aad17b4efe5c386d3919b95c33e",
+                "binding_digest": "744ad5d0307851575694476dd44300c5c446bf1227f26f67f94d2e94511d1c82",
                 "pack": "bazi/ziping-zhenquan",
                 "rule_id": "ZPR-01",
                 "source_anchor": "references/books/bazi/ziping-zhenquan/rules.md#ZPR-01",
                 "verification_status": "verified"
               }
             ],
-            "tool_digest": "39e5fb0af93540298d1fec47db7afd7aaa5e71ead0ca2ee6de6d41427c7c41dc",
+            "tool_digest": "f64253a9937628eb7c2b2b7717583a5f82fff545868e913ce665eae5dce2e7e5",
             "tool_id": "bazi.tool.ziping_month_pattern_adjudication",
             "tool_kind": "source_bound_pattern_entry_adjudication",
             "visibility_class": "auto_injected"
@@ -1373,7 +1373,7 @@
             ],
             "seasonal_state": "死",
             "source_ref": {
-              "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+              "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
               "pack": "bazi/sanming-tonghui",
               "rule_id": "R-02-04",
               "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -1397,7 +1397,7 @@
             "month_command_element": "木",
             "seasonal_state": "死",
             "source_ref": {
-              "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+              "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
               "pack": "bazi/sanming-tonghui",
               "rule_id": "R-02-04",
               "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -1961,8 +1961,8 @@
     "zi_hour_policy": "midnight"
   },
   "provenance": {
-    "baseline_commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
-    "baseline_tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+    "baseline_commit": "853a462e608b5f702184aeedc35f60ada4ca7f14",
+    "baseline_tree": "6bc75801b042d7d9980abfe011390aaa278463a4",
     "candidate_oss_role": "future_differential_actual_only_never_expected",
     "expected_schema_version": "mingli-bazi-fact-v1",
     "runtime": {
@@ -1976,7 +1976,9 @@
     "source_refs": [
       "scripts/bazi_fact_adapter.py",
       "scripts/test_bazi_fact_adapter.py",
-      "scripts/reading_engine/calendar_core.py"
+      "scripts/reading_engine/calendar_core.py",
+      "references/index/evidence-rules.jsonl",
+      "references/matrices/classical-evidence-bindings-v1.json"
     ],
     "source_type": "accepted_runtime_replay"
   },
