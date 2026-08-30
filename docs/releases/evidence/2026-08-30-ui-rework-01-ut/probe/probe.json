@@ -14,7 +14,7 @@
     {
       "status": 201,
       "url": "http://106.14.10.235:18080/api/v1/guest-sessions",
-      "body": "{\"status\":\"active\",\"expires_at\":\"2026-08-31T10:33:23.153528Z\",\"csrf_token\":\"QfJa-Qa91GOF7RSM3xgvZiOrxkWYqjWrk3uNFQpIQEA\"}"
+      "body": "{\"status\":\"active\"}"
     },
     {
       "status": 200,
