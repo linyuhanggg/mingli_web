@@ -357,7 +357,7 @@
                       "旺衰、调候与行运"
                     ]
                   },
-                  "tool_digest": "72e1465d51f8cbe0ef3a140735b5abb0f6a327cf212461ffb6afe31bbfec0bda"
+                  "tool_digest": "362c4ff41cbcee4956fb95ce5920b4c7c5f8bd950b4da98eae6a6cff6dc4b5db"
                 }
               },
               {
@@ -390,7 +390,7 @@
                       ],
                       "seasonal_state": "旺",
                       "source_ref": {
-                        "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                        "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                         "pack": "bazi/sanming-tonghui",
                         "rule_id": "R-02-04",
                         "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -414,7 +414,7 @@
                       "month_command_element": "土",
                       "seasonal_state": "旺",
                       "source_ref": {
-                        "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                        "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                         "pack": "bazi/sanming-tonghui",
                         "rule_id": "R-02-04",
                         "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -456,7 +456,7 @@
                     "visible_pressure_role_count": 1,
                     "visible_support_role_count": 2
                   },
-                  "tool_digest": "2bdb4c5792b0cddaadb658b07058f0a88d3f616572ffe7aa1491e0fe18aad068"
+                  "tool_digest": "757cfaa8e672af95796b2570f3c5f81356759dbd30060747cf25f8c12f6d9453"
                 }
               },
               {
@@ -560,7 +560,7 @@
                     ],
                     "seasonal_state": "旺",
                     "source_ref": {
-                      "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                      "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                       "pack": "bazi/sanming-tonghui",
                       "rule_id": "R-02-04",
                       "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -584,7 +584,7 @@
                     "month_command_element": "土",
                     "seasonal_state": "旺",
                     "source_ref": {
-                      "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                      "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                       "pack": "bazi/sanming-tonghui",
                       "rule_id": "R-02-04",
                       "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -708,14 +708,14 @@
             "schema_version": "mingli-bazi-reasoning-tool-v2",
             "source_refs": [
               {
-                "binding_digest": "03453f3b83f4c78c254bfbaa0d7a064e57ed6aad17b4efe5c386d3919b95c33e",
+                "binding_digest": "744ad5d0307851575694476dd44300c5c446bf1227f26f67f94d2e94511d1c82",
                 "pack": "bazi/ziping-zhenquan",
                 "rule_id": "ZPR-01",
                 "source_anchor": "references/books/bazi/ziping-zhenquan/rules.md#ZPR-01",
                 "verification_status": "verified"
               },
               {
-                "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                 "pack": "bazi/sanming-tonghui",
                 "rule_id": "R-02-04",
                 "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -729,7 +729,7 @@
                 "verification_status": "verified"
               }
             ],
-            "tool_digest": "0dc94bc9ca840f3524f597f78a9ab9e17b61133fe290ed75812638237c886d01",
+            "tool_digest": "5640f4d860115ac3d2c409a6f9fd25c4156c04e24bf78760731b7f9204a2838c",
             "tool_id": "bazi.tool.conflict_arbitration",
             "tool_kind": "decision_stack_conflict_policy",
             "visibility_class": "on_demand"
@@ -953,7 +953,7 @@
                 ],
                 "seasonal_state": "旺",
                 "source_ref": {
-                  "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                  "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                   "pack": "bazi/sanming-tonghui",
                   "rule_id": "R-02-04",
                   "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -977,7 +977,7 @@
                 "month_command_element": "土",
                 "seasonal_state": "旺",
                 "source_ref": {
-                  "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+                  "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
                   "pack": "bazi/sanming-tonghui",
                   "rule_id": "R-02-04",
                   "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -1038,7 +1038,7 @@
                 "rule_id": "DR-02-06"
               }
             ],
-            "tool_digest": "2bdb4c5792b0cddaadb658b07058f0a88d3f616572ffe7aa1491e0fe18aad068",
+            "tool_digest": "757cfaa8e672af95796b2570f3c5f81356759dbd30060747cf25f8c12f6d9453",
             "tool_id": "bazi.tool.strength_evidence",
             "tool_kind": "disputed_rule_synthesis",
             "visibility_class": "on_demand"
@@ -1232,14 +1232,14 @@
             "schema_version": "mingli-bazi-reasoning-tool-v2",
             "source_refs": [
               {
-                "binding_digest": "03453f3b83f4c78c254bfbaa0d7a064e57ed6aad17b4efe5c386d3919b95c33e",
+                "binding_digest": "744ad5d0307851575694476dd44300c5c446bf1227f26f67f94d2e94511d1c82",
                 "pack": "bazi/ziping-zhenquan",
                 "rule_id": "ZPR-01",
                 "source_anchor": "references/books/bazi/ziping-zhenquan/rules.md#ZPR-01",
                 "verification_status": "verified"
               }
             ],
-            "tool_digest": "72e1465d51f8cbe0ef3a140735b5abb0f6a327cf212461ffb6afe31bbfec0bda",
+            "tool_digest": "362c4ff41cbcee4956fb95ce5920b4c7c5f8bd950b4da98eae6a6cff6dc4b5db",
             "tool_id": "bazi.tool.ziping_month_pattern_adjudication",
             "tool_kind": "source_bound_pattern_entry_adjudication",
             "visibility_class": "auto_injected"
@@ -1400,7 +1400,7 @@
             ],
             "seasonal_state": "旺",
             "source_ref": {
-              "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+              "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
               "pack": "bazi/sanming-tonghui",
               "rule_id": "R-02-04",
               "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -1424,7 +1424,7 @@
             "month_command_element": "土",
             "seasonal_state": "旺",
             "source_ref": {
-              "binding_digest": "77b387e17e65b50c7cbcdba3cc8ef5b170499c6d5c07461856b710d5aa50759e",
+              "binding_digest": "55a9607c26b207883f1b9236445a1b80531b4a6462c930d47e383a26aaf7c7c4",
               "pack": "bazi/sanming-tonghui",
               "rule_id": "R-02-04",
               "source_anchor": "references/books/bazi/sanming-tonghui/rules.md#R-02-04",
@@ -1933,8 +1933,8 @@
     "zi_hour_policy": "midnight"
   },
   "provenance": {
-    "baseline_commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
-    "baseline_tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+    "baseline_commit": "853a462e608b5f702184aeedc35f60ada4ca7f14",
+    "baseline_tree": "6bc75801b042d7d9980abfe011390aaa278463a4",
     "candidate_oss_role": "future_differential_actual_only_never_expected",
     "expected_schema_version": "mingli-bazi-fact-v1",
     "runtime": {
@@ -1948,7 +1948,13 @@
     "source_refs": [
       "scripts/bazi_fact_adapter.py",
       "scripts/test_bazi_fact_adapter.py",
-      "scripts/reading_engine/calendar_core.py"
+      "scripts/reading_engine/calendar_core.py",
+      "references/index/evidence-rules.jsonl",
+      "references/matrices/classical-evidence-bindings-v1.json",
+      "scripts/bazi_reasoning_tools.py",
+      "scripts/evidence_contract.py",
+      "scripts/reading_engine/evidence_rules.py",
+      "scripts/build_evidence_index.py"
     ],
     "source_type": "accepted_runtime_replay"
   },

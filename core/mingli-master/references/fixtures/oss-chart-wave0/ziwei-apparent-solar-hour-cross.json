@@ -4277,8 +4277,8 @@
     "zi_hour_policy": "midnight"
   },
   "provenance": {
-    "baseline_commit": "fdfbee2ead72145e1c67daad6eba7f63cf4b60e6",
-    "baseline_tree": "e36435068294f9501cc06eb882fd3ddbffa01542",
+    "baseline_commit": "853a462e608b5f702184aeedc35f60ada4ca7f14",
+    "baseline_tree": "6bc75801b042d7d9980abfe011390aaa278463a4",
     "candidate_oss_role": "future_differential_actual_only_never_expected",
     "expected_schema_version": "mingli-ziwei-fact-v1",
     "runtime": {
