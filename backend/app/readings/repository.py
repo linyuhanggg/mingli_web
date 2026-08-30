@@ -5,7 +5,8 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select
+from sqlalchemy import Text, func, or_, select
+from sqlalchemy import cast as sql_cast
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import Select
@@ -379,7 +380,7 @@ class SqlReadingRepository:
         *,
         owner_user_id: UUID | None,
         owner_guest_session_id: UUID | None,
-    ) -> list[tuple[ReadingRoot, ReadingVersion]]:
+    ) -> list[tuple[ReadingRoot, ReadingVersion, UUID]]:
         """List every Reading Version linked through any version of one Profile.
 
         This intentionally has no history-window limit.  Profile lookup must be
@@ -387,25 +388,57 @@ class SqlReadingRepository:
         more than the account-history projection's newest 50 versions.
         """
 
+        profile_version_ids = tuple(
+            await self.session.scalars(
+                select(ProfileVersion.id)
+                .join(SubjectProfile, SubjectProfile.id == ProfileVersion.profile_id)
+                .where(
+                    SubjectProfile.id == profile_id,
+                    SubjectProfile.status == "active",
+                    SubjectProfile.owner_user_id == owner_user_id,
+                    SubjectProfile.owner_guest_session_id == owner_guest_session_id,
+                )
+            )
+        )
+        if not profile_version_ids:
+            return []
+        profile_version_id_set = set(profile_version_ids)
+        secondary_membership = tuple(
+            sql_cast(ReadingRoot.profile_version_ids, Text).contains(f'"{version_id}"')
+            for version_id in profile_version_ids
+        )
         rows = await self.session.execute(
             select(ReadingRoot, ReadingVersion)
             .join(ReadingVersion, ReadingVersion.reading_root_id == ReadingRoot.id)
-            .join(ProfileVersion, ProfileVersion.id == ReadingRoot.profile_version_id)
-            .join(SubjectProfile, SubjectProfile.id == ProfileVersion.profile_id)
             .where(
-                SubjectProfile.id == profile_id,
-                SubjectProfile.status == "active",
-                SubjectProfile.owner_user_id == owner_user_id,
-                SubjectProfile.owner_guest_session_id == owner_guest_session_id,
                 ReadingRoot.owner_user_id == owner_user_id,
                 ReadingRoot.owner_guest_session_id == owner_guest_session_id,
+                or_(
+                    ReadingRoot.profile_version_id.in_(profile_version_ids),
+                    *secondary_membership,
+                ),
             )
             .order_by(
                 ReadingVersion.created_at.desc(),
                 ReadingVersion.id.desc(),
             )
         )
-        return [(root, version) for root, version in rows.all()]
+        found: list[tuple[ReadingRoot, ReadingVersion, UUID]] = []
+        for root, version in rows.all():
+            linked_ids = (
+                UUID(str(value))
+                for value in (
+                    root.profile_version_ids
+                    or ([root.profile_version_id] if root.profile_version_id else [])
+                )
+            )
+            matched_profile_version_id = next(
+                (value for value in linked_ids if value in profile_version_id_set),
+                None,
+            )
+            if matched_profile_version_id is not None:
+                found.append((root, version, matched_profile_version_id))
+        return found
 
     async def load_prepare(self, version_id: UUID) -> Prepare:
         version = await self.session.get(ReadingVersion, version_id)

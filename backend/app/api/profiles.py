@@ -1,5 +1,6 @@
 import asyncio
 from collections.abc import AsyncIterator
+from time import perf_counter
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
@@ -390,7 +391,13 @@ async def confirm_profile_draft_and_start_preview_reading(
             code="chart_view_model_projection_failed",
         )
         raise _reading_problem(unavailable) from unavailable
+    commit_started_at = perf_counter()
     await session.commit()
+    commit_ms = (perf_counter() - commit_started_at) * 1000
+    timing = result[0].fast_path_timing
+    if timing is not None:
+        timing.db_persistence_ms += commit_ms
+        timing.total_ms += commit_ms
     return _mark_reading_start(result, response)
 
 

@@ -2176,8 +2176,8 @@ class ReadingService:
             owner_user_id=user_id,
             owner_guest_session_id=guest_id,
         )
-        successful_seen = False
-        for root, version in rows:
+        renderable_seen = False
+        for root, version, matched_profile_version_id in rows:
             try:
                 reading_status = ReadingStatus(version.status)
             except ValueError:
@@ -2187,19 +2187,19 @@ class ReadingService:
                 ReadingStatus.ACCEPTED,
             }:
                 continue
-            successful_seen = True
-            effective_product_id = version.product_id or root.product_id or root.capability_id
-            if not _profile_product_matches(product_id, effective_product_id):
-                continue
             try:
                 summary = await self._summary(root, version)
             except (KeyError, TypeError, ValueError):
                 continue
-            if not summary.result_available or summary.profile_version_id is None:
+            if not summary.result_available:
+                continue
+            renderable_seen = True
+            effective_product_id = version.product_id or root.product_id or root.capability_id
+            if not _profile_product_matches(product_id, effective_product_id):
                 continue
             return LatestProfileReadingResponse(
                 profile_id=profile.id,
-                profile_version_id=summary.profile_version_id,
+                profile_version_id=matched_profile_version_id,
                 reading_root_id=summary.reading_root_id,
                 reading_version_id=summary.reading_version_id,
                 capability_id=summary.capability_id,
@@ -2208,7 +2208,7 @@ class ReadingService:
                 result_available=True,
                 created_at=summary.created_at,
             )
-        code = "unavailable_or_incompatible" if successful_seen else "never_succeeded"
+        code = "unavailable_or_incompatible" if renderable_seen else "never_succeeded"
         raise ProfileReadingUnavailableError(code)
 
     async def list_account_history(self, user_id: UUID) -> AccountHistoryResponse:

@@ -33,6 +33,7 @@ from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
 from sqlalchemy import func, select
+from sqlalchemy.ext.asyncio import AsyncSession
 from worker.readings import build_reading_worker
 
 # isort: split
@@ -1360,6 +1361,136 @@ async def test_confirm_and_preview_replays_a_concurrent_idempotent_request(
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
 
 
+async def test_confirm_and_preview_timing_includes_final_commit(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "profile-preview-timing-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+
+        original_commit = AsyncSession.commit
+        commit_delay_seconds = 0.05
+
+        async def delayed_commit(session: AsyncSession) -> None:
+            await asyncio.sleep(commit_delay_seconds)
+            await original_commit(session)
+
+        monkeypatch.setattr(AsyncSession, "commit", delayed_commit)
+        response = await atomic_client.post(
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview",
+            headers=headers,
+            json=payload,
+        )
+
+    assert response.status_code == 201, response.text
+    timing = response.json()["fast_path_timing"]
+    minimum_commit_ms = commit_delay_seconds * 1000 * 0.8
+    assert timing["db_persistence_ms"] >= minimum_commit_ms
+    assert timing["total_ms"] >= minimum_commit_ms
+    server_timing = {
+        item.split(";dur=", maxsplit=1)[0]: float(item.split(";dur=", maxsplit=1)[1])
+        for item in response.headers["Server-Timing"].split(", ")
+        if ";dur=" in item
+    }
+    assert server_timing["chart-db"] == pytest.approx(
+        timing["db_persistence_ms"],
+        abs=0.001,
+    )
+    assert server_timing["chart-direct"] == pytest.approx(
+        timing["total_ms"],
+        abs=0.001,
+    )
+
+
+@pytest.mark.parametrize(
+    ("endpoint", "product_id", "request_fields"),
+    (
+        (
+            "/api/v1/readings/bazi-relationship",
+            "bazi-relationship",
+            {"relationship_type": "romantic"},
+        ),
+        (
+            "/api/v1/readings/chart-similarity",
+            "chart-similarity",
+            {"dimension_ids": ["state"]},
+        ),
+    ),
+)
+async def test_latest_profile_reading_finds_secondary_participant(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    endpoint: str,
+    product_id: str,
+    request_fields: dict[str, Any],
+) -> None:
+    from test_relationship_readings import RelationshipFakeRuntime
+
+    guest_headers = await create_guest(client)
+    first = await create_confirmed_profile(client, guest_headers, label="本人甲")
+    second = await create_confirmed_profile(
+        client,
+        guest_headers,
+        label="本人乙",
+        location="上海市浦东新区",
+    )
+    logged_in = await login_current_guest(client, guest_headers)
+    headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    await seed_runtime_release(database, test_settings)
+
+    started = await client.post(
+        endpoint,
+        headers=headers,
+        json={
+            "profile_version_ids": [
+                first["profile_version_id"],
+                second["profile_version_id"],
+            ],
+            **request_fields,
+        },
+    )
+    assert started.status_code == 201, started.text
+    assert await run_worker_once(
+        database,
+        test_settings,
+        runtime=RelationshipFakeRuntime(),
+    ) is True
+
+    latest = await client.get(
+        f"/api/v1/profiles/{second['profile_id']}/readings/latest",
+        params={"product_id": product_id},
+    )
+
+    assert latest.status_code == 200, latest.text
+    assert latest.json()["profile_version_id"] == second["profile_version_id"]
+    assert latest.json()["reading_root_id"] == started.json()["reading_root_id"]
+    assert latest.json()["reading_version_id"] == started.json()["reading_version_id"]
+    assert latest.json()["product_id"] == product_id
+    assert latest.json()["result_available"] is True
+
+
 async def test_latest_profile_reading_crosses_versions_and_ignores_history_limit(
     client: AsyncClient,
     database: Any,
@@ -1490,6 +1621,7 @@ async def test_latest_profile_reading_returns_stable_reasons_and_hides_ownership
 ) -> None:
     main = __import__("app.main", fromlist=["create_app"])
     application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
     async with (
         AsyncClient(
             transport=ASGITransport(app=application),
@@ -1512,6 +1644,12 @@ async def test_latest_profile_reading_returns_stable_reasons_and_hides_ownership
             label="已有八字",
             birth_datetime="2001-07-12T09:30:00+08:00",
         )
+        unrenderable_profile = await create_confirmed_profile(
+            first_client,
+            first_guest,
+            label="无可渲染结果",
+            birth_datetime="2002-08-13T10:40:00+08:00",
+        )
         logged_in = await login_current_guest(first_client, first_guest)
         headers = {"X-CSRF-Token": logged_in["csrf_token"]}
         await seed_runtime_release(database, test_settings)
@@ -1521,9 +1659,29 @@ async def test_latest_profile_reading_returns_stable_reasons_and_hides_ownership
             successful_profile["profile_version_id"],
             idempotency_key="latest-profile-incompatible-v1",
         )
+        unrenderable = await start_preview(
+            first_client,
+            headers,
+            unrenderable_profile["profile_version_id"],
+            idempotency_key="latest-profile-unrenderable-v1",
+        )
+        async with database.sessions() as session:
+            brief = await session.scalar(
+                select(FactBrief).where(
+                    FactBrief.reading_version_id
+                    == UUID(unrenderable["reading_version_id"]),
+                )
+            )
+            assert brief is not None
+            await session.delete(brief)
+            await session.commit()
 
         never = await first_client.get(
             f"/api/v1/profiles/{never_profile['profile_id']}/readings/latest",
+            params={"product_id": "bazi"},
+        )
+        unrenderable_only = await first_client.get(
+            f"/api/v1/profiles/{unrenderable_profile['profile_id']}/readings/latest",
             params={"product_id": "bazi"},
         )
         incompatible = await first_client.get(
@@ -1542,6 +1700,8 @@ async def test_latest_profile_reading_returns_stable_reasons_and_hides_ownership
 
     assert never.status_code == 409, never.text
     assert never.json()["code"] == "never_succeeded"
+    assert unrenderable_only.status_code == 409, unrenderable_only.text
+    assert unrenderable_only.json()["code"] == "never_succeeded"
     assert incompatible.status_code == 409, incompatible.text
     assert incompatible.json()["code"] == "unavailable_or_incompatible"
     assert forbidden.status_code == absent.status_code == 404
