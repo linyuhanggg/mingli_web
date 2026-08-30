@@ -18,6 +18,7 @@ from app.adapters.runtime import (
     WorkerV2MingliRuntimeAdapter,
     build_runtime_startup_gate,
     one_shot_spawn_argv,
+    runtime_command_digest,
 )
 from app.charts.contracts import (
     CanwenViewV1,
@@ -270,6 +271,32 @@ def test_worker_turn_audit_redacts_late_stderr_bytes(tmp_path: Path) -> None:
     assert sentinel not in rendered
     assert adapter.last_turn is not None
     assert adapter.last_turn.transport_fault == "stderr-before-write"
+
+
+async def test_worker_durable_audit_filesystem_failure_keeps_valid_result_in_memory(
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    def fail_append(_path: Path, _record: dict[str, object]) -> None:
+        raise OSError("runtime audit state is read-only")
+
+    monkeypatch.setattr(runtime_module, "append_runtime_turn_audit", fail_append)
+    adapter = _audit_only_worker(tmp_path)
+    command = Describe()
+    result = Described(
+        protocol_version="mingli-portable-interface-v2",
+        manifest_digest="0" * 64,
+        capabilities=(),
+    )
+
+    with pytest.raises(OSError, match="read-only"):
+        await adapter._publish_turn_durable(command, result)
+
+    assert adapter.last_turn is not None
+    assert adapter.last_turn.command_digest == runtime_command_digest(command)
+    assert adapter.last_turn.sequence == adapter._last_sequence
+    assert adapter.last_turn.result_kind == result.kind
+    assert adapter.last_turn.transport_fault is None
 
 
 async def test_worker_durable_audit_breaks_a_stalled_tail_without_pending_growth(

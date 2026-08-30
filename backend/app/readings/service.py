@@ -188,17 +188,8 @@ def _post_write_runtime_transport_fault(
 ) -> str | None:
     """Return the Worker audit fault only when a tokenless turn was written."""
 
-    if (
-        prepare.state_token is not None
-        or getattr(runtime, "adapter_kind", None) != "runtime-worker-v2"
-    ):
-        return None
-    audit = getattr(runtime, "last_turn", None)
-    if (
-        not isinstance(audit, RuntimeTurnAudit)
-        or audit.command_digest != runtime_command_digest(prepare)
-        or audit.result_kind != result.kind
-    ):
+    audit = _post_write_runtime_result_audit(runtime, prepare)
+    if audit is None or audit.result_kind != result.kind:
         return None
     fault = audit.transport_fault
     if fault in _POST_WRITE_RUNTIME_TRANSPORT_FAULTS or (
@@ -206,6 +197,30 @@ def _post_write_runtime_transport_fault(
     ):
         return fault
     return None
+
+
+def _post_write_runtime_result_audit(
+    runtime: MingliRuntime | None,
+    prepare: Prepare,
+) -> RuntimeTurnAudit | None:
+    """Return only a fresh WorkerV2 result emitted after a tokenless write."""
+
+    if (
+        prepare.state_token is not None
+        or getattr(runtime, "adapter_kind", None) != "runtime-worker-v2"
+    ):
+        return None
+    audit = getattr(runtime, "last_turn", None)
+    sequence = getattr(runtime, "_last_sequence", None)
+    if (
+        not isinstance(audit, RuntimeTurnAudit)
+        or audit.command_digest != runtime_command_digest(prepare)
+        or not isinstance(sequence, int)
+        or audit.sequence != sequence
+        or audit.result_kind not in {"prepared", "stopped"}
+    ):
+        return None
+    return audit
 
 
 class ReadingServiceError(RuntimeError):
@@ -3564,6 +3579,19 @@ class ReadingService:
                 code="chart_runtime_transport",
             ) from error
         except Exception as error:
+            if isinstance(error, OSError) and (
+                _post_write_runtime_result_audit(self.chart_runtime, prepare) is not None
+            ):
+                await self._record_chart_runtime_fault(
+                    job,
+                    prepare,
+                    fault="audit-persistence",
+                    commit_failure=commit_failures,
+                )
+                raise ChartFastPathUnavailableError(
+                    "chart_runtime_transport",
+                    code="chart_runtime_transport",
+                ) from error
             await self._remember_chart_runtime_audit(
                 prepare,
                 None,
