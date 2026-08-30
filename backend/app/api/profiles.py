@@ -1,3 +1,5 @@
+import asyncio
+from collections.abc import AsyncIterator
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Header, Query, Request, Response, status
@@ -52,6 +54,31 @@ from app.readings.service import (
 )
 
 router = APIRouter(prefix="/profiles", tags=["Profiles"])
+
+
+class _DraftPreviewLock:
+    def __init__(self) -> None:
+        self.lock = asyncio.Lock()
+        self.users = 0
+
+
+_draft_preview_locks: dict[tuple[str, UUID, UUID], _DraftPreviewLock] = {}
+
+
+async def _serialize_draft_preview(
+    draft_id: UUID,
+    owner: Owner = Depends(require_owner_csrf),
+) -> AsyncIterator[None]:
+    key = (owner.kind, owner.id, draft_id)
+    entry = _draft_preview_locks.setdefault(key, _DraftPreviewLock())
+    entry.users += 1
+    try:
+        async with entry.lock:
+            yield
+    finally:
+        entry.users -= 1
+        if entry.users == 0 and _draft_preview_locks.get(key) is entry:
+            del _draft_preview_locks[key]
 
 
 def _service(request: Request, session: AsyncSession) -> ProfileService:
@@ -244,6 +271,7 @@ async def confirm_profile_draft_and_start_preview_reading(
     payload: ConfirmProfileDraftAndStartPreviewRequest,
     session: AsyncSession = Depends(database_session),
     owner: Owner = Depends(require_owner_csrf),
+    _draft_serialized: None = Depends(_serialize_draft_preview),
     idempotency_key: str = Header(
         alias="Idempotency-Key",
         min_length=8,
@@ -291,6 +319,7 @@ async def confirm_profile_draft_and_start_preview_reading(
             code="profile_not_found",
         ) from error
     except ProfileAlreadyConfirmedError as error:
+        await session.rollback()
         try:
             replayed, _ = await reading_service.replay_confirm_profile_preview(
                 owner,
@@ -306,7 +335,6 @@ async def confirm_profile_draft_and_start_preview_reading(
         except ReadingServiceError as replay_error:
             raise _reading_problem(replay_error) from replay_error
         if replayed is not None:
-            await session.rollback()
             return _mark_reading_start((replayed, False), response)
         raise ApiProblem(
             status=409,

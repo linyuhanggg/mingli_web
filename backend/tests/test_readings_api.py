@@ -1,3 +1,4 @@
+import asyncio
 import hashlib
 from datetime import UTC, datetime, timedelta
 from typing import Any
@@ -1307,6 +1308,50 @@ async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
     assert succeeded.json()["result_available"] is True
     assert replayed.status_code == 200, replayed.text
     assert replayed.json()["reading_version_id"] == succeeded.json()["reading_version_id"]
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_replays_a_concurrent_idempotent_request(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = RenderableChartRuntime()
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "concurrent-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+        first, second = await asyncio.gather(
+            atomic_client.post(endpoint, headers=headers, json=payload),
+            atomic_client.post(endpoint, headers=headers, json=payload),
+        )
+
+    assert sorted((first.status_code, second.status_code)) == [200, 201]
+    assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
     async with database.sessions() as session:
         assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
         assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
