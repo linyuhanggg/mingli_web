@@ -17,6 +17,7 @@ const WEB_ROUTES = [
   "/account/notifications",
   "/account/orders",
   "/account/profiles",
+  "/account/profiles/new",
   "/account/profiles/demo-profile",
   "/account/settings",
   "/account/settings/preferences",

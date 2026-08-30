@@ -125,7 +125,7 @@ describe("Profile contract", () => {
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     await waitFor(() =>
-      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+      expect(routerPush).toHaveBeenCalledWith("/account/profiles?created=1"),
     );
     const draftCall = callsTo(fetchMock, "/api/v1/profiles/drafts")[0];
     expect(JSON.parse(String(draftCall[1]?.body))).toEqual({});
@@ -220,7 +220,7 @@ describe("Profile contract", () => {
     await user.click(screen.getByRole("button", { name: /保存档案/ }));
 
     await waitFor(() =>
-      expect(routerPush).toHaveBeenCalledWith("/app/profiles?created=1"),
+      expect(routerPush).toHaveBeenCalledWith("/account/profiles?created=1"),
     );
     expect(guestCalls).toBe(2);
     expect(draftCalls).toBe(2);
@@ -436,7 +436,7 @@ describe("split fortune start endpoints", () => {
   });
 });
 
-  it("sends empty-state 去建档 to /account/profiles and freezes submit errors", async () => {
+  it("sends empty-state 去建档 to the canonical create route and freezes submit errors", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path === "/api/v1/guest-sessions") return guestSession();
@@ -447,7 +447,7 @@ describe("split fortune start endpoints", () => {
 
     render(<FortuneFlow mode="today" />);
     const create = await screen.findByRole("link", { name: "去建档" });
-    expect(create).toHaveAttribute("href", "/account/profiles");
+    expect(create).toHaveAttribute("href", "/account/profiles/new");
     expect(screen.queryByText(/fortune 事实面板|不在此处生成结果|结果按版本留痕/)).not.toBeInTheDocument();
   });
 

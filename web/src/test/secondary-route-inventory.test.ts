@@ -19,6 +19,7 @@ const requiredRoutes = [
   "/auth/consent",
   "/auth/recover",
   "/account/profiles",
+  "/account/profiles/new",
   "/account/profiles/[profileId]",
   "/account/history",
   "/account/history/[rootId]",
@@ -55,6 +56,7 @@ const secondaryFamilyRoutes = {
   ],
   account: [
     "/account/profiles",
+    "/account/profiles/new",
     "/account/profiles/[profileId]",
     "/account/history",
     "/account/history/[rootId]",
@@ -89,6 +91,7 @@ const authRouteMarkers = {
 const routeMarkers: Record<string, string> = {
   ...authRouteMarkers,
   "/account/profiles": "AccountProfilesSurface",
+  "/account/profiles/new": "AccountNewProfileSurface",
   "/account/profiles/[profileId]": "AccountProfileDetailSurface",
   "/account/history": "AccountHistorySurface",
   "/account/history/[rootId]": "AccountHistorySurface",

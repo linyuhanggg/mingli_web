@@ -41,6 +41,9 @@ import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
 
 const DEFAULT_POLL_MS = 2000;
+const HISTORY_ESCAPE_MS = 15 * 1000;
+const RESTART_ESCAPE_MS = 60 * 1000;
+const POLLING_CAP_MS = 10 * 60 * 1000;
 // The earlier loading label “正在读取结果” is retained here only as migration context;
 // bazi synchronization now uses the frozen public wording “正在同步出盘”.
 const RUNTIME_CHART_VERSIONS = new Set([
@@ -74,6 +77,19 @@ const RELATIONSHIP_PRODUCT_IDS = new Set([
   "qizheng-relationship",
 ]);
 const RESULT_READY_STATUSES = new Set(["prepared", "completing", "accepted"]);
+
+function validStartedAt(value: number | undefined): value is number {
+  return typeof value === "number" && Number.isFinite(value) && value > 0;
+}
+
+function elapsedSince(startedAt: number): number {
+  return Math.max(0, Date.now() - startedAt);
+}
+
+function serverStartedAt(value: string | undefined): number | null {
+  const parsed = typeof value === "string" ? Date.parse(value) : Number.NaN;
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
+}
 
 type StatusTone = "processing" | "success" | "error";
 
@@ -178,15 +194,29 @@ function resultErrorState(error: unknown): {
 }
 
 function ArchiveRail({
+  elapsedMs,
+  onRetry,
   readingId,
   summary,
   result,
 }: Readonly<{
+  elapsedMs?: number;
+  onRetry?: () => void;
   readingId: string;
   summary: ReadingVersionSummary;
   result: ReadingResultResponse | null;
 }>) {
   const meta = statusMeta(summary.status);
+  const showCappedPartialStatus =
+    elapsedMs !== undefined &&
+    elapsedMs >= POLLING_CAP_MS &&
+    onRetry !== undefined &&
+    result !== null &&
+    (summary.status === "prepared" || summary.status === "completing") &&
+    shouldKeepPolling({
+      status: result.status,
+      poll_required: result.poll_required ?? summary.poll_required,
+    });
 
   return (
     <aside className={surface.evidenceRail} aria-labelledby="reading-summary-title">
@@ -207,6 +237,9 @@ function ArchiveRail({
           这份报告保留当前版本，后续修改不会覆盖本次内容。
         </p>
       </div>
+      {showCappedPartialStatus ? (
+        <WaitingStatus elapsedMs={elapsedMs} onRetry={onRetry} />
+      ) : null}
       {summary.status === "accepted" && result?.document?.actions.share.enabled === true ? (
         <ReadingSharePanel readingId={readingId} />
       ) : null}
@@ -217,41 +250,206 @@ function ArchiveRail({
   );
 }
 
-export function ReadingResult({
+function WaitingStatus({
+  context,
+  elapsedMs,
+  onRestart,
+  onRetry,
+}: Readonly<{
+  context?: string;
+  elapsedMs: number;
+  onRestart?: () => void;
+  onRetry: () => void;
+}>) {
+  const canLeaveForHistory = elapsedMs >= HISTORY_ESCAPE_MS;
+  const canRestart = elapsedMs >= RESTART_ESCAPE_MS;
+  const pollingEnded = elapsedMs >= POLLING_CAP_MS;
+  const title = pollingEnded
+    ? "自动检查已暂停"
+    : canRestart
+      ? "这次排盘比平时久"
+      : canLeaveForHistory
+        ? "仍在认真排盘"
+        : "正在同步出盘";
+  const description = pollingEnded
+    ? "服务器上的任务仍然保留；可以手动检查当前任务，或稍后从推演历史查看。"
+    : canRestart
+      ? "可能服务繁忙；原资料不会丢，可以换一个新任务重新发起，当前任务也仍会保留。"
+      : canLeaveForHistory
+        ? "自动检查仍在继续。你可以离开，完成后从推演历史查看。"
+        : "正在准备定位、时间层与盘面事实；完成后直接进入结果。";
+
+  return (
+    <Status
+      actions={canLeaveForHistory ? (
+        <>
+          {canRestart && onRestart ? (
+            <button type="button" onClick={onRestart}>
+              重试（保留原资料）
+            </button>
+          ) : null}
+          {pollingEnded ? (
+            <button data-variant="secondary" type="button" onClick={onRetry}>
+              重新检查状态
+            </button>
+          ) : null}
+          <Link data-variant="secondary" href="/account/history">
+            稍后查看
+          </Link>
+        </>
+      ) : null}
+      description={context ? `${description} ${context}` : description}
+      state="loading"
+      title={title}
+    />
+  );
+}
+
+export type ReadingResultProps = Readonly<{
+  baziDeepFulfilled?: boolean;
+  headingLevel?: 1 | 2;
+  onPollError?: (error: unknown) => void;
+  onRestart?: () => void;
+  onSummary?: (summary: ReadingVersionSummary) => void;
+  readingId: string;
+  startedAt?: number;
+}>;
+
+export function ReadingResult(props: ReadingResultProps) {
+  const instanceKey = `${props.readingId}:${props.startedAt ?? "fresh"}`;
+  return <ReadingResultForVersion key={instanceKey} {...props} />;
+}
+
+function ReadingResultForVersion({
   readingId,
   baziDeepFulfilled = false,
-}: Readonly<{
-  readingId: string;
-  baziDeepFulfilled?: boolean;
-}>) {
+  headingLevel = 1,
+  onPollError,
+  onRestart,
+  onSummary,
+  startedAt,
+}: ReadingResultProps) {
+  const ResultHeading = headingLevel === 2 ? "h2" : "h1";
   const [loading, setLoading] = useState(true);
   const [summary, setSummary] = useState<ReadingVersionSummary | null>(null);
   const [result, setResult] = useState<ReadingResultResponse | null>(null);
   const [error, setError] = useState<unknown>(null);
   const [retryKey, setRetryKey] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [timerStartedAt, setTimerStartedAt] = useState(
+    () => (validStartedAt(startedAt) ? startedAt : Date.now()),
+  );
+  const [elapsedMs, setElapsedMs] = useState(0);
+  const timerStartedAtRef = useRef(timerStartedAt);
+  const supplementalWindowStartedAtRef = useRef<number | null>(null);
+  const automaticPollControllerRef = useRef<AbortController | null>(null);
+  const automaticPollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onPollErrorRef = useRef(onPollError);
+  const onSummaryRef = useRef(onSummary);
+
+  useEffect(() => {
+    onPollErrorRef.current = onPollError;
+    onSummaryRef.current = onSummary;
+  }, [onPollError, onSummary]);
+
+  useEffect(() => {
+    const updateElapsed = () => setElapsedMs(elapsedSince(timerStartedAt));
+    const stopAutomaticPolling = () => {
+      const activeTimer = automaticPollTimerRef.current;
+      if (activeTimer !== null) {
+        clearTimeout(activeTimer);
+        automaticPollTimerRef.current = null;
+      }
+      const activeController = automaticPollControllerRef.current;
+      automaticPollControllerRef.current = null;
+      activeController?.abort();
+      updateElapsed();
+    };
+    const currentElapsed = elapsedSince(timerStartedAt);
+    if (currentElapsed >= POLLING_CAP_MS) {
+      stopAutomaticPolling();
+    }
+    const boundaryTimers = [HISTORY_ESCAPE_MS, RESTART_ESCAPE_MS, POLLING_CAP_MS]
+      .filter((boundary) => boundary > currentElapsed)
+      .map((boundary) => window.setTimeout(
+        boundary === POLLING_CAP_MS ? stopAutomaticPolling : updateElapsed,
+        boundary - currentElapsed,
+      ));
+    const elapsedTimer = window.setInterval(updateElapsed, 1000);
+    if (currentElapsed < POLLING_CAP_MS) {
+      updateElapsed();
+    }
+
+    return () => {
+      for (const timer of boundaryTimers) window.clearTimeout(timer);
+      window.clearInterval(elapsedTimer);
+    };
+  }, [timerStartedAt]);
 
   useEffect(() => {
     let cancelled = false;
     let pollTimer: ReturnType<typeof setTimeout> | null = null;
+    const pollController = new AbortController();
+    const elapsed = elapsedSince(timerStartedAtRef.current);
+    const automaticRun = elapsed < POLLING_CAP_MS;
+    const manualAtCap = !automaticRun && retryKey > 0;
 
-    function schedule(delayMs: number) {
-      if (cancelled) return;
-      pollTimer = setTimeout(run, delayMs);
+    if (automaticRun) {
+      automaticPollControllerRef.current = pollController;
     }
 
-    async function run() {
-      if (cancelled) return;
+    function setRunTimer(callback: () => void, delayMs: number) {
+      const nextTimer = setTimeout(() => {
+        if (pollTimer === nextTimer) {
+          pollTimer = null;
+        }
+        if (automaticPollTimerRef.current === nextTimer) {
+          automaticPollTimerRef.current = null;
+        }
+        callback();
+      }, delayMs);
+      pollTimer = nextTimer;
+      if (automaticRun) {
+        automaticPollTimerRef.current = nextTimer;
+      }
+    }
+
+    function schedule(delayMs: number) {
+      if (cancelled || manualAtCap || pollController.signal.aborted) return;
+      const remaining = POLLING_CAP_MS - elapsedSince(timerStartedAtRef.current);
+      if (remaining <= 0) return;
+      setRunTimer(() => void run(false), Math.min(delayMs, remaining));
+    }
+
+    async function run(manualAtCap: boolean) {
+      if (
+        cancelled
+        || pollController.signal.aborted
+        || (!manualAtCap && elapsedSince(timerStartedAtRef.current) >= POLLING_CAP_MS)
+      ) {
+        return;
+      }
       try {
-        const response = await pollReading(readingId);
-        if (cancelled) return;
+        const response = await pollReading(readingId, pollController.signal);
+        if (cancelled || pollController.signal.aborted) return;
+        const authoritativeStartedAt = serverStartedAt(response.created_at);
+        const applyAuthoritativeStartedAt = () => {
+          if (
+            supplementalWindowStartedAtRef.current === null
+            && authoritativeStartedAt !== null
+            && authoritativeStartedAt !== timerStartedAtRef.current
+          ) {
+            timerStartedAtRef.current = authoritativeStartedAt;
+            setTimerStartedAt(authoritativeStartedAt);
+          }
+        };
         setSummary(response);
         setError(null);
         setLoading(false);
+        onSummaryRef.current?.(response);
 
         if (RESULT_READY_STATUSES.has(response.status) || response.result_available) {
-          const nextResult = await getReadingResult(readingId);
-          if (cancelled) return;
+          const nextResult = await getReadingResult(readingId, pollController.signal);
+          if (cancelled || pollController.signal.aborted) return;
           setResult(nextResult);
           if (!shouldKeepPolling({
             status: nextResult.status,
@@ -259,9 +457,11 @@ export function ReadingResult({
           })) {
             if (nextResult.status === "accepted" && response.status !== "accepted") {
               try {
-                const finalSummary = await pollReading(readingId);
-                if (cancelled) return;
+                const finalSummary = await pollReading(readingId, pollController.signal);
+                if (cancelled || pollController.signal.aborted) return;
                 setSummary(finalSummary);
+                onSummaryRef.current?.(finalSummary);
+                applyAuthoritativeStartedAt();
                 if (shouldKeepPolling(finalSummary)) {
                   schedule(
                     finalSummary.poll_after_seconds != null
@@ -270,16 +470,20 @@ export function ReadingResult({
                   );
                 }
               } catch {
-                if (cancelled) return;
+                if (cancelled || pollController.signal.aborted) return;
+                applyAuthoritativeStartedAt();
                 schedule(
                   response.poll_after_seconds != null
                     ? response.poll_after_seconds * 1000
-                    : DEFAULT_POLL_MS,
+                  : DEFAULT_POLL_MS,
                 );
               }
+            } else {
+              applyAuthoritativeStartedAt();
             }
             return;
           }
+          applyAuthoritativeStartedAt();
           schedule(
             (nextResult.poll_after_seconds ?? response.poll_after_seconds) != null
               ? (nextResult.poll_after_seconds ?? response.poll_after_seconds ?? 0) * 1000
@@ -288,6 +492,7 @@ export function ReadingResult({
           return;
         }
 
+        applyAuthoritativeStartedAt();
         if (!shouldKeepPolling(response)) {
           return;
         }
@@ -296,22 +501,29 @@ export function ReadingResult({
           ? response.poll_after_seconds * 1000
           : DEFAULT_POLL_MS);
       } catch (err) {
-        if (cancelled) return;
+        if (cancelled || pollController.signal.aborted) return;
         setLoading(false);
         setError(err);
+        onPollErrorRef.current?.(err);
       }
     }
 
-    run();
+    if (automaticRun || manualAtCap) {
+      // Let a development StrictMode probe clean up before it creates a request.
+      setRunTimer(() => void run(manualAtCap), 0);
+    }
 
     return () => {
       cancelled = true;
+      if (automaticPollControllerRef.current === pollController) {
+        automaticPollControllerRef.current = null;
+      }
+      pollController.abort();
       if (pollTimer) {
         clearTimeout(pollTimer);
-      }
-      if (timerRef.current) {
-        clearTimeout(timerRef.current);
-        timerRef.current = null;
+        if (automaticPollTimerRef.current === pollTimer) {
+          automaticPollTimerRef.current = null;
+        }
       }
     };
   }, [readingId, retryKey]);
@@ -325,6 +537,11 @@ export function ReadingResult({
   }
 
   function handleInputSubmitted() {
+    const nextStartedAt = Date.now();
+    supplementalWindowStartedAtRef.current = nextStartedAt;
+    timerStartedAtRef.current = nextStartedAt;
+    setTimerStartedAt(nextStartedAt);
+    setElapsedMs(0);
     setLoading(true);
     setError(null);
     setSummary(null);
@@ -360,10 +577,10 @@ export function ReadingResult({
   ) {
     return (
       <article className={surface.readingBody}>
-        <Status
-          description="正在准备定位、时间层与盘面事实；完成后直接进入结果。"
-          state="loading"
-          title="正在同步出盘"
+        <WaitingStatus
+          elapsedMs={elapsedMs}
+          onRestart={onRestart}
+          onRetry={handleRetry}
         />
       </article>
     );
@@ -657,7 +874,13 @@ export function ReadingResult({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -691,7 +914,7 @@ export function ReadingResult({
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
-              <h1>{pageTitle}</h1>
+              <ResultHeading>{pageTitle}</ResultHeading>
               <p>
                 {pageIntro} 目标日期 {formatHorizon(summary.horizon)}。
               </p>
@@ -811,7 +1034,13 @@ export function ReadingResult({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -840,7 +1069,7 @@ export function ReadingResult({
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
-              <h1>{pageTitle}</h1>
+              <ResultHeading>{pageTitle}</ResultHeading>
               <p>
                 {pageIntro} 目标日期 {formatHorizon(summary.horizon)}。
               </p>
@@ -941,7 +1170,13 @@ export function ReadingResult({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -965,7 +1200,7 @@ export function ReadingResult({
         <div className={surface.readingLayout}>
           <article className={surface.readingBody} aria-label="解读正文">
             <header className={surface.readingHeader}>
-              <h1>{natalTitle}</h1>
+              <ResultHeading>{natalTitle}</ResultHeading>
               <p>{natalIntro}</p>
             </header>
 
@@ -1046,7 +1281,13 @@ export function ReadingResult({
               </section>
             ) : null}
           </article>
-          <ArchiveRail readingId={readingId} summary={summary} result={result} />
+          <ArchiveRail
+            elapsedMs={elapsedMs}
+            onRetry={handleRetry}
+            readingId={readingId}
+            summary={summary}
+            result={result}
+          />
         </div>
       );
     }
@@ -1156,7 +1397,13 @@ export function ReadingResult({
             </section>
           ) : null}
         </article>
-        <ArchiveRail readingId={readingId} summary={summary} result={result} />
+        <ArchiveRail
+          elapsedMs={elapsedMs}
+          onRetry={handleRetry}
+          readingId={readingId}
+          summary={summary}
+          result={result}
+        />
       </div>
     );
   }
@@ -1193,6 +1440,21 @@ export function ReadingResult({
   }
 
   const meta = statusMeta(summary.status);
+  if (shouldKeepPolling(summary)) {
+    return (
+      <div className={surface.readingLayout}>
+        <article className={surface.readingBody}>
+          <WaitingStatus
+            context={`${meta.text} 目标日期：${formatHorizon(summary.horizon)}`}
+            elapsedMs={elapsedMs}
+            onRestart={onRestart}
+            onRetry={handleRetry}
+          />
+        </article>
+        <ArchiveRail readingId={readingId} summary={summary} result={null} />
+      </div>
+    );
+  }
   return (
     <div className={surface.readingLayout}>
       <article className={surface.readingBody}>

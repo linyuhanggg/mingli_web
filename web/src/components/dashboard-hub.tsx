@@ -271,7 +271,7 @@ export function DashboardHub() {
                 state="empty"
                 title="先建立第一份命理档案"
                 description="八字概览与阶段节奏都需要已确认的档案版本；不想建档时，也可以直接就一件事起卦。"
-                actionHref="/app/profile/new"
+                actionHref="/account/profiles/new"
                 actionLabel="建立第一份档案"
               />
               <Link className={styles.textAction} href="/app/ask/liuyao">

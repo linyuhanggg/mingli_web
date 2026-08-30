@@ -56,6 +56,15 @@ import {
   type ProfileNameConflict,
 } from "@/lib/profile-conflict";
 import {
+  clearRecoverableReading,
+  inlineReadingRestoreHref,
+  loadRecoverableReading,
+  readInlineReadingId,
+  resolveReadingStartedAt,
+  saveRecoverableReading,
+  type RecoverableReading,
+} from "@/lib/reading-recovery";
+import {
   consumePendingStartTask,
   isPendingStartStorageFailure,
   loadPendingStartTask,
@@ -339,8 +348,11 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const requestedProfileVersionId = searchParams.get("profile") ?? "";
   const restoredBaziReadingId =
     product.id === "bazi" ? readBaziPreviewReadingId(searchParams) : null;
+  const restoredInlineReadingId = readInlineReadingId(product.id, searchParams);
   const shouldLoadProfiles = usesSavedProfiles(product);
-  const [stage, setStage] = useState<TaskStage>(restoredBaziReadingId ? "workbench" : "input");
+  const [stage, setStage] = useState<TaskStage>(
+    restoredBaziReadingId || restoredInlineReadingId ? "workbench" : "input",
+  );
   const [values, setValues] = useState<TaskFormValues | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [submitErrorState, setSubmitErrorState] = useState<"unavailable" | "error" | "unauthorized">("unavailable");
@@ -369,8 +381,27 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       : restoredBaziRecovery?.readingId === baziPreviewReadingId
         ? restoredBaziRecovery
         : null;
-  const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(null);
-  const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(null);
+  const [inlineRecovery, setInlineRecovery] = useState<RecoverableReading | null>(null);
+  const [inlineRestarting, setInlineRestarting] = useState(false);
+  const [ziweiPreviewReadingId, setZiweiPreviewReadingId] = useState<string | null>(
+    product.id === "ziwei" ? restoredInlineReadingId : null,
+  );
+  const [liuyaoPreviewReadingId, setLiuyaoPreviewReadingId] = useState<string | null>(
+    product.id === "liuyao" ? restoredInlineReadingId : null,
+  );
+  const activeInlineReadingId = product.id === "ziwei"
+    ? ziweiPreviewReadingId
+    : product.id === "liuyao"
+      ? liuyaoPreviewReadingId
+      : null;
+  const restoredInlineRecovery = browserReady && activeInlineReadingId
+    ? loadRecoverableReading(product.id, activeInlineReadingId)
+    : null;
+  const activeInlineRecovery =
+    inlineRecovery?.productId === product.id
+      && inlineRecovery.readingVersionId === activeInlineReadingId
+      ? inlineRecovery
+      : restoredInlineRecovery;
   const [savedProfiles, setSavedProfiles] = useState<ProfileSummary[]>([]);
   const [savedProfilesLoading, setSavedProfilesLoading] = useState(
     shouldLoadProfiles,
@@ -402,6 +433,26 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     router.replace(baziPreviewRestoreHref(pathname, searchParams, readingId, profileVersionId));
   }
 
+  function writeInlineReadingRoute(readingId: string | null) {
+    if (typeof router.replace !== "function") return;
+    router.replace(inlineReadingRestoreHref(pathname, searchParams, readingId));
+  }
+
+  function returnToInlineInput() {
+    clearRecoverableReading(product.id);
+    profileVersionRef.current = null;
+    intentKeyRef.current = null;
+    setInlineRecovery(null);
+    setInlineRestarting(false);
+    setZiweiPreviewReadingId(null);
+    setLiuyaoPreviewReadingId(null);
+    setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    setStage("input");
+    writeInlineReadingRoute(null);
+  }
+
   function returnToBaziInput() {
     clearBaziPreviewRecoveryState(baziPreviewReadingId);
     profileVersionRef.current = null;
@@ -420,6 +471,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       profileVersionRef.current = requestedProfileVersionId;
     }
   }, [restoredBaziReadingId, requestedProfileVersionId]);
+
+  useEffect(() => {
+    const profileVersionId = activeInlineRecovery?.submission.profileVersionId;
+    if (profileVersionId) {
+      profileVersionRef.current = profileVersionId;
+    }
+  }, [activeInlineRecovery?.submission.profileVersionId]);
 
   useEffect(() => {
     if (!shouldLoadProfiles) return;
@@ -702,8 +760,19 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           setStage("workbench");
           writeBaziPreviewRoute(response.reading_version_id, profileVersionId);
         } else if (product.id === "ziwei") {
+          const recovery = saveRecoverableReading(
+            "ziwei",
+            response.reading_version_id,
+            {
+              profileVersionId,
+              startedAt: resolveReadingStartedAt(response.created_at),
+              values: nextValues,
+            },
+          );
+          setInlineRecovery(recovery);
           setZiweiPreviewReadingId(response.reading_version_id);
           setStage("workbench");
+          writeInlineReadingRoute(response.reading_version_id);
         } else {
           router.push(`/app/readings/${response.reading_version_id}`);
         }
@@ -855,8 +924,18 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         const response = await startAndConsumeContinuation(
           () => startLiuyaoReading(payload, intent.key),
         );
+        const recovery = saveRecoverableReading(
+          "liuyao",
+          response.reading_version_id,
+          {
+            startedAt: resolveReadingStartedAt(response.created_at),
+            values: nextValues,
+          },
+        );
+        setInlineRecovery(recovery);
         setLiuyaoPreviewReadingId(response.reading_version_id);
         setStage("workbench");
+        writeInlineReadingRoute(response.reading_version_id);
         return;
       }
 
@@ -1022,6 +1101,26 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     }
   }
 
+  async function restartInlineReading() {
+    if (!activeInlineRecovery || busy) return;
+    const restartValues = {
+      ...(values ?? {}),
+      ...activeInlineRecovery.submission.values,
+    } as TaskFormValues;
+    const profileVersionId = activeInlineRecovery.submission.profileVersionId;
+    if (profileVersionId) {
+      profileVersionRef.current = profileVersionId;
+      setSelectedProfileVersionId(profileVersionId);
+    }
+    intentKeyRef.current = null;
+    setInlineRestarting(true);
+    try {
+      await startRuntimeReading(restartValues);
+    } finally {
+      setInlineRestarting(false);
+    }
+  }
+
   // 提交前摘要常驻在表单里（ProductInputForm 的 SubmitSummary），
   // 因此这里不再插入一个独立的「输入确认」页，直接进入生成。
   function handleConfirm(nextValues: TaskFormValues) {
@@ -1091,6 +1190,24 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     search ? `?${search}` : "",
     loginIntentKey ?? resumeKey ?? undefined,
   );
+  const inlineRestartFailure = submitError ? (
+    <Status
+      actions={(
+        <>
+          {submitErrorAction === "login" ? (
+            <a href={loginHref}>登录后继续</a>
+          ) : submitErrorAction === "retry" ? (
+            <button onClick={() => void restartInlineReading()} type="button">
+              再次重试（保留原资料）
+            </button>
+          ) : null}
+        </>
+      )}
+      description="原任务仍保留；可按当前提示继续，或返回录入修改资料。"
+      state={submitErrorState}
+      title={submitError}
+    />
+  ) : null;
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
@@ -1187,12 +1304,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           actions={(
             <button
               type="button"
-              onClick={() => {
-                setSubmitError(null);
-                setSubmitErrorAction(null);
-                setLoginIntentKey(undefined);
-                setStage("input");
-              }}
+              onClick={returnToInlineInput}
             >
               返回录入
             </button>
@@ -1208,15 +1320,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             actions={(
               <button
                 type="button"
-                onClick={() => {
-                  profileVersionRef.current = null;
-                  intentKeyRef.current = null;
-                  setLiuyaoPreviewReadingId(null);
-                  setSubmitError(null);
-                  setSubmitErrorAction(null);
-                  setLoginIntentKey(undefined);
-                  setStage("input");
-                }}
+                onClick={returnToInlineInput}
               >
                 返回录入
               </button>
@@ -1225,7 +1329,22 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             state="success"
             title="六爻盘面"
           />
-          <ReadingResult readingId={liuyaoPreviewReadingId} />
+          {inlineRestarting ? (
+            <Status
+              description="旧任务的自动检查已停止，正在用原资料创建新的任务句柄。"
+              state="loading"
+              title="正在重新发起"
+            />
+          ) : inlineRestartFailure ? (
+            inlineRestartFailure
+          ) : (
+            <ReadingResult
+              headingLevel={2}
+              readingId={liuyaoPreviewReadingId}
+              onRestart={activeInlineRecovery ? () => void restartInlineReading() : undefined}
+              startedAt={activeInlineRecovery?.startedAt}
+            />
+          )}
         </>
       ) : null}
       {stage === "workbench" && product.id === "bazi" && !baziPreviewReadingId ? (
@@ -1284,12 +1403,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           actions={
             <button
               type="button"
-              onClick={() => {
-                setSubmitError(null);
-                setSubmitErrorAction(null);
-                setLoginIntentKey(undefined);
-                setStage("input");
-              }}
+              onClick={returnToInlineInput}
             >
               返回录入
             </button>
@@ -1305,15 +1419,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             actions={
               <button
                 type="button"
-                onClick={() => {
-                  profileVersionRef.current = null;
-                  intentKeyRef.current = null;
-                  setZiweiPreviewReadingId(null);
-                  setSubmitError(null);
-                  setSubmitErrorAction(null);
-                  setLoginIntentKey(undefined);
-                  setStage("input");
-                }}
+                onClick={returnToInlineInput}
               >
                 返回录入
               </button>
@@ -1322,7 +1428,21 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             state="empty"
             title="紫微盘面"
           />
-          <ReadingResult readingId={ziweiPreviewReadingId} />
+          {inlineRestarting ? (
+            <Status
+              description="旧任务的自动检查已停止，正在用原资料创建新的任务句柄。"
+              state="loading"
+              title="正在重新发起"
+            />
+          ) : inlineRestartFailure ? (
+            inlineRestartFailure
+          ) : (
+            <ReadingResult
+              readingId={ziweiPreviewReadingId}
+              onRestart={activeInlineRecovery ? () => void restartInlineReading() : undefined}
+              startedAt={activeInlineRecovery?.startedAt}
+            />
+          )}
         </>
       ) : null}
     </div>

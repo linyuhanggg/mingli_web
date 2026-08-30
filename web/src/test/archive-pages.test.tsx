@@ -197,7 +197,7 @@ describe("ProfileArchive", () => {
     );
     expect(
       screen.getByRole("link", { name: "开始建立档案" }),
-    ).toHaveAttribute("href", "/app/profile/new");
+    ).toHaveAttribute("href", "/account/profiles/new");
     expect(screen.queryByRole("link", { name: "发起今日解读" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "发起近七日解读" })).not.toBeInTheDocument();
     expect(
