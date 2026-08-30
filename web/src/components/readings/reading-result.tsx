@@ -415,14 +415,16 @@ function ReadingResultForVersion({
         const response = await pollReading(readingId, pollController.signal);
         if (cancelled || pollController.signal.aborted) return;
         const authoritativeStartedAt = serverStartedAt(response.created_at);
-        if (
-          supplementalWindowStartedAtRef.current === null
-          && authoritativeStartedAt !== null
-          && authoritativeStartedAt !== timerStartedAtRef.current
-        ) {
-          timerStartedAtRef.current = authoritativeStartedAt;
-          setTimerStartedAt(authoritativeStartedAt);
-        }
+        const applyAuthoritativeStartedAt = () => {
+          if (
+            supplementalWindowStartedAtRef.current === null
+            && authoritativeStartedAt !== null
+            && authoritativeStartedAt !== timerStartedAtRef.current
+          ) {
+            timerStartedAtRef.current = authoritativeStartedAt;
+            setTimerStartedAt(authoritativeStartedAt);
+          }
+        };
         setSummary(response);
         setError(null);
         setLoading(false);
@@ -442,6 +444,7 @@ function ReadingResultForVersion({
                 if (cancelled || pollController.signal.aborted) return;
                 setSummary(finalSummary);
                 onSummaryRef.current?.(finalSummary);
+                applyAuthoritativeStartedAt();
                 if (shouldKeepPolling(finalSummary)) {
                   schedule(
                     finalSummary.poll_after_seconds != null
@@ -451,15 +454,19 @@ function ReadingResultForVersion({
                 }
               } catch {
                 if (cancelled || pollController.signal.aborted) return;
+                applyAuthoritativeStartedAt();
                 schedule(
                   response.poll_after_seconds != null
                     ? response.poll_after_seconds * 1000
-                    : DEFAULT_POLL_MS,
+                  : DEFAULT_POLL_MS,
                 );
               }
+            } else {
+              applyAuthoritativeStartedAt();
             }
             return;
           }
+          applyAuthoritativeStartedAt();
           schedule(
             (nextResult.poll_after_seconds ?? response.poll_after_seconds) != null
               ? (nextResult.poll_after_seconds ?? response.poll_after_seconds ?? 0) * 1000
@@ -468,6 +475,7 @@ function ReadingResultForVersion({
           return;
         }
 
+        applyAuthoritativeStartedAt();
         if (!shouldKeepPolling(response)) {
           return;
         }
