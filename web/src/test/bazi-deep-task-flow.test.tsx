@@ -426,6 +426,48 @@ describe("Bazi deep task state contract", () => {
       .toHaveLength(1);
   });
 
+  it("keeps the ready free chart visible when the deep reading fails", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading
+      .mockResolvedValueOnce(previewSummary)
+      .mockImplementation(() => new Promise(() => undefined));
+    mockStartBaziDeepReading.mockResolvedValue({
+      ...deepSummary,
+      status: "input_ready",
+      delivery_state: "payment_required",
+    });
+    mockCreateBaziDeepCheckout.mockResolvedValue(checkoutPending);
+    mockGetBaziDeepCheckout.mockResolvedValue(checkoutConfirmed);
+    mockBindReadingFulfillment.mockResolvedValue({ status: "running" });
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    const preview = await screen.findByTestId("reading-result-preview-1");
+    await userEvent.click(screen.getByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("已进入深读队列")).toBeVisible();
+    await waitFor(() => expect(readingSummaryCallbacks.has("deep-1")).toBe(true));
+
+    act(() => {
+      readingSummaryCallbacks.get("deep-1")?.({
+        ...deepSummary,
+        delivery_state: "failed",
+      });
+    });
+
+    expect(await screen.findByText("任务暂未完成")).toBeVisible();
+    expect(screen.getByText("免费盘面已就绪")).toBeVisible();
+    expect(screen.getByTestId("reading-result-preview-1")).toBe(preview);
+    expect(preview).toHaveAttribute("data-density", "chart-first");
+    expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
+  });
+
   it("keeps preview loading and continues polling while input_ready", async () => {
     vi.useFakeTimers();
     mockPollReading.mockResolvedValue({

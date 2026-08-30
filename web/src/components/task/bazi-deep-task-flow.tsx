@@ -563,7 +563,8 @@ export function BaziDeepTaskFlow({
     || accessState === "succeeded"
     || accessState === "failed";
   const showFreeResult =
-    accessState === "preview_loading"
+    chartReady
+    || accessState === "preview_loading"
     || accessState === "free"
     || accessState === "unauthenticated"
     || accessState === "unpaid"
