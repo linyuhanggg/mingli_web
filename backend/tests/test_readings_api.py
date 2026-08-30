@@ -2701,7 +2701,7 @@ async def test_confirm_and_preview_exposed_claim_keeps_terminal_failure_replayab
         ) == 1
 
 
-async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
+async def test_postgresql_late_identical_preview_replay_keeps_failure_stable(
     postgres_api_database: Any,
     test_settings: Any,
     monkeypatch: pytest.MonkeyPatch,
@@ -2710,6 +2710,9 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
     profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
     runtime_started = asyncio.Event()
     release_runtime = asyncio.Event()
+    runtime_returned = asyncio.Event()
+    settlement_commit_started = asyncio.Event()
+    release_settlement_commit = asyncio.Event()
     replay_intent_started = asyncio.Event()
 
     class BlockingUnsupportedChartRuntime:
@@ -2723,6 +2726,7 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
             self.calls += 1
             runtime_started.set()
             await release_runtime.wait()
+            runtime_returned.set()
             return Stopped(
                 reason="unsupported",
                 public_copy="当前排盘能力暂不可用。",
@@ -2739,10 +2743,8 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
         profiles_api._serialize_draft_preview
     ] = bypass_process_local_lock
     original_hold_intent = ReadingService._hold_atomic_profile_preview_replay_intent
-    original_check_intent = (
-        ReadingService._atomic_profile_preview_replay_intent_is_held
-    )
-    checked_intents: list[bool] = []
+    original_commit = AsyncSession.commit
+    settlement_commit_paused = False
 
     async def observe_replay_intent(
         service: ReadingService,
@@ -2751,13 +2753,13 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
         replay_intent_started.set()
         await original_hold_intent(service, idempotency)
 
-    async def observe_replay_intent_check(
-        service: ReadingService,
-        version_id: UUID,
-    ) -> bool:
-        held = await original_check_intent(service, version_id)
-        checked_intents.append(held)
-        return held
+    async def pause_settlement_commit(session: AsyncSession) -> None:
+        nonlocal settlement_commit_paused
+        if runtime_returned.is_set() and not settlement_commit_paused:
+            settlement_commit_paused = True
+            settlement_commit_started.set()
+            await release_settlement_commit.wait()
+        await original_commit(session)
 
     monkeypatch.setattr(
         ReadingService,
@@ -2765,9 +2767,9 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
         observe_replay_intent,
     )
     monkeypatch.setattr(
-        ReadingService,
-        "_atomic_profile_preview_replay_intent_is_held",
-        observe_replay_intent_check,
+        AsyncSession,
+        "commit",
+        pause_settlement_commit,
     )
     payload = confirm_and_preview_payload()
 
@@ -2799,6 +2801,8 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
                 winner_client.post(endpoint, headers=headers, json=payload)
             )
             await asyncio.wait_for(runtime_started.wait(), timeout=5)
+            release_runtime.set()
+            await asyncio.wait_for(settlement_commit_started.wait(), timeout=5)
             replay_task = asyncio.create_task(
                 replay_client.post(endpoint, headers=headers, json=payload)
             )
@@ -2806,57 +2810,62 @@ async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
                 await asyncio.wait_for(replay_intent_started.wait(), timeout=5)
                 await asyncio.sleep(0.1)
                 assert not replay_task.done()
-                release_runtime.set()
+                release_settlement_commit.set()
                 failed = await asyncio.wait_for(winner_task, timeout=10)
                 replay = await asyncio.wait_for(replay_task, timeout=10)
             finally:
                 release_runtime.set()
+                release_settlement_commit.set()
             stable_replay = await replay_client.post(
                 endpoint,
                 headers=headers,
                 json=payload,
             )
             assert runtime.calls == 1
-            unexposed_headers = {
+            different_key_headers = {
                 **headers,
-                "Idempotency-Key": "postgres-unexposed-terminal-preview-v1",
+                "Idempotency-Key": "postgres-different-terminal-preview-v1",
             }
-            unexposed_draft = await winner_client.post(
-                "/api/v1/profiles/drafts",
-                headers=unexposed_headers,
-                json={"label": "家人"},
+            different_key_failed = await winner_client.post(
+                endpoint,
+                headers=different_key_headers,
+                json=payload,
             )
-            assert unexposed_draft.status_code == 201, unexposed_draft.text
-            unexposed_failed = await winner_client.post(
-                "/api/v1/profiles/drafts/"
-                f"{unexposed_draft.json()['draft_id']}/readings/preview",
-                headers=unexposed_headers,
+            different_key_replay = await replay_client.post(
+                endpoint,
+                headers=different_key_headers,
                 json=payload,
             )
 
     assert failed.status_code == 503, failed.text
     assert failed.json()["code"] == "chart_runtime_unsupported"
-    assert checked_intents == [True, False]
+    assert settlement_commit_paused is True
     assert replay.status_code == 200, replay.text
     assert replay.json()["status"] == "terminal_stopped"
     assert replay.json()["poll_required"] is False
     assert stable_replay.status_code == 200, stable_replay.text
     assert stable_replay.json()["reading_version_id"] == replay.json()["reading_version_id"]
     assert stable_replay.json()["status"] == "terminal_stopped"
-    assert unexposed_failed.status_code == 503, unexposed_failed.text
-    assert unexposed_failed.json()["code"] == "chart_runtime_unsupported"
+    assert different_key_failed.status_code == 503, different_key_failed.text
+    assert different_key_failed.json()["code"] == "chart_runtime_unsupported"
+    assert different_key_replay.status_code == 200, different_key_replay.text
+    assert different_key_replay.json()["status"] == "terminal_stopped"
+    assert (
+        different_key_replay.json()["reading_version_id"]
+        != replay.json()["reading_version_id"]
+    )
     assert runtime.calls == 2
     async with postgres_api_database.sessions() as session:
-        job = await session.scalar(select(ReadingJobRecord))
-        assert job is not None
-        assert job.status == "stopped"
+        jobs = list(await session.scalars(select(ReadingJobRecord)))
+        assert len(jobs) == 2
+        assert all(job.status == "stopped" for job in jobs)
         assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
-        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
-        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
-        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 2
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 2
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 2
         assert await session.scalar(
             select(func.count()).select_from(ReadingIdempotencyKey)
-        ) == 1
+        ) == 2
 
 
 async def test_confirm_and_preview_preserves_need_input_and_rolls_back(

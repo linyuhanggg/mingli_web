@@ -14,7 +14,7 @@ from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import func, select, text, update
+from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
@@ -389,7 +389,6 @@ class ReadingService:
             "utf-8"
         )
         self._atomic_profile_preview_claim: AtomicProfilePreviewClaim | None = None
-        self._atomic_profile_preview_winner_fence_pid: int | None = None
 
     async def _require_paid_action(self, owner: OwnerProtocol, *, action: str) -> None:
         try:
@@ -728,14 +727,7 @@ class ReadingService:
                     )
                 )
             )
-            fence_pid = await connection.scalar(select(func.pg_backend_pid()))
-            if not isinstance(fence_pid, int):
-                raise RuntimeError("PostgreSQL replay fence has no backend PID")
-            self._atomic_profile_preview_winner_fence_pid = fence_pid
-            try:
-                yield
-            finally:
-                self._atomic_profile_preview_winner_fence_pid = None
+            yield
 
     async def _hold_atomic_profile_preview_replay_intent(
         self,
@@ -752,41 +744,6 @@ class ReadingService:
                 )
             )
         )
-
-    async def _atomic_profile_preview_replay_intent_is_held(
-        self,
-        _version_id: UUID,
-    ) -> bool:
-        """Return whether another PostgreSQL transaction is observing this claim."""
-
-        if self.session.get_bind().dialect.name != "postgresql":
-            return False
-        fence_pid = self._atomic_profile_preview_winner_fence_pid
-        if fence_pid is None:
-            return False
-        waiting = await self.session.scalar(
-            text(
-                """
-                SELECT EXISTS (
-                    SELECT 1
-                    FROM pg_locks AS holder
-                    JOIN pg_locks AS waiter
-                      ON waiter.locktype = holder.locktype
-                     AND waiter.database IS NOT DISTINCT FROM holder.database
-                     AND waiter.classid IS NOT DISTINCT FROM holder.classid
-                     AND waiter.objid IS NOT DISTINCT FROM holder.objid
-                     AND waiter.objsubid IS NOT DISTINCT FROM holder.objsubid
-                    WHERE holder.pid = :holder_pid
-                      AND holder.locktype = 'advisory'
-                      AND holder.granted
-                      AND NOT waiter.granted
-                      AND waiter.pid <> holder.pid
-                )
-                """
-            ),
-            {"holder_pid": fence_pid},
-        )
-        return waiting is True
 
     async def _stabilize_atomic_profile_preview_claim_for_read(
         self,
@@ -3340,7 +3297,7 @@ class ReadingService:
         *,
         stopped: Stopped,
     ) -> None:
-        """Keep an exposed failure replayable; discard a never-observed claim."""
+        """Keep PostgreSQL failures replayable across the winner-fence handoff."""
 
         try:
             _root, version, job = await self._load_atomic_profile_preview_claim(
@@ -3367,13 +3324,17 @@ class ReadingService:
         if (
             job.lease_generation
             < _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION
-            and not await self._atomic_profile_preview_replay_intent_is_held(
-                claim.reading_version_id
-            )
+            and self.session.get_bind().dialect.name != "postgresql"
         ):
             await self.repository.delete_start_claim(claim.reading_version_id)
             await self.session.commit()
             return
+        # A pg_locks waiter check cannot close the gate: an identical replay can
+        # join the advisory-lock queue after the check but before this transaction
+        # commits. Retaining the terminal row is the durable handoff that prevents
+        # that late replay (and later retries with the same key) from sending the
+        # tokenless Prepare again. Other dialects remain process-serialized and
+        # preserve the existing unexposed-failure cleanup above.
         self._rearm_atomic_profile_preview_claim(
             version,
             job,
