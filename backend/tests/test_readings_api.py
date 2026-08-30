@@ -1,5 +1,8 @@
 import asyncio
 import hashlib
+import importlib
+import os
+from collections.abc import AsyncIterator
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from uuid import UUID, uuid4
@@ -38,8 +41,12 @@ from app.readings.status import ReadingStatus
 from app.security.envelope import EnvelopeCipher
 from httpx import ASGITransport, AsyncClient
 from pydantic import ValidationError
-from sqlalchemy import func, select
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import func, select, text
+from sqlalchemy.ext.asyncio import (
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from worker.readings import build_reading_worker
 
 # isort: split
@@ -51,6 +58,52 @@ from test_profiles_api import (
 )
 
 ACCEPTED_COPY = "本命格局以稳定积累为主线。\n\n本解读仅供传统文化参考，不构成现实决策保证。"
+
+
+class PostgresApiDatabaseHarness:
+    def __init__(self, engine: Any) -> None:
+        self.engine = engine
+        self.sessions = async_sessionmaker(engine, expire_on_commit=False)
+
+    async def dispose(self) -> None:
+        await self.engine.dispose()
+
+
+@pytest.fixture
+async def postgres_api_database() -> AsyncIterator[Any]:
+    url = os.environ.get("MINGLI_TEST_POSTGRES_URL")
+    if not url:
+        pytest.skip("MINGLI_TEST_POSTGRES_URL is required for PostgreSQL concurrency tests")
+    identity_models = importlib.import_module("app.identity.models")
+    importlib.import_module("app.profiles.models")
+    importlib.import_module("app.readings.models")
+    importlib.import_module("app.admin.models")
+    importlib.import_module("app.support.models")
+    importlib.import_module("app.entitlements.models")
+    importlib.import_module("app.commerce.models")
+    importlib.import_module("app.referrals.models")
+    importlib.import_module("app.content.models")
+    importlib.import_module("app.privacy.models")
+    importlib.import_module("app.media.models")
+    schema = f"mingli_api_test_{uuid4().hex}"
+    admin_engine = create_async_engine(url, pool_pre_ping=True)
+    async with admin_engine.begin() as connection:
+        await connection.execute(text(f'CREATE SCHEMA "{schema}"'))
+    engine = create_async_engine(
+        url,
+        pool_pre_ping=True,
+        connect_args={"server_settings": {"search_path": schema}},
+    )
+    database = PostgresApiDatabaseHarness(engine)
+    try:
+        async with engine.begin() as connection:
+            await connection.run_sync(identity_models.Base.metadata.create_all)
+        yield database
+    finally:
+        await database.dispose()
+        async with admin_engine.begin() as connection:
+            await connection.execute(text(f'DROP SCHEMA "{schema}" CASCADE'))
+        await admin_engine.dispose()
 
 
 class UnsupportedChartRuntime:
@@ -2639,6 +2692,164 @@ async def test_confirm_and_preview_exposed_claim_keeps_terminal_failure_replayab
         assert job.lease_owner is None
         assert job.lease_token is None
         assert job.lease_expires_at is None
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+
+
+async def test_postgresql_blocked_identical_preview_replay_keeps_failure_stable(
+    postgres_api_database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    runtime_started = asyncio.Event()
+    release_runtime = asyncio.Event()
+    replay_intent_started = asyncio.Event()
+
+    class BlockingUnsupportedChartRuntime:
+        adapter_kind = "fake"
+
+        def __init__(self) -> None:
+            self.calls = 0
+
+        async def execute(self, command: Any) -> Stopped:
+            del command
+            self.calls += 1
+            runtime_started.set()
+            await release_runtime.wait()
+            return Stopped(
+                reason="unsupported",
+                public_copy="当前排盘能力暂不可用。",
+            )
+
+    runtime = BlockingUnsupportedChartRuntime()
+    application = main.create_app(settings=test_settings, database=postgres_api_database)
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    original_hold_intent = ReadingService._hold_atomic_profile_preview_replay_intent
+    original_check_intent = (
+        ReadingService._atomic_profile_preview_replay_intent_is_held
+    )
+    checked_intents: list[bool] = []
+
+    async def observe_replay_intent(
+        service: ReadingService,
+        idempotency: Any,
+    ) -> None:
+        replay_intent_started.set()
+        await original_hold_intent(service, idempotency)
+
+    async def observe_replay_intent_check(
+        service: ReadingService,
+        version_id: UUID,
+    ) -> bool:
+        held = await original_check_intent(service, version_id)
+        checked_intents.append(held)
+        return held
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_hold_atomic_profile_preview_replay_intent",
+        observe_replay_intent,
+    )
+    monkeypatch.setattr(
+        ReadingService,
+        "_atomic_profile_preview_replay_intent_is_held",
+        observe_replay_intent_check,
+    )
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as winner_client:
+        guest_headers = await create_guest(winner_client)
+        logged_in = await login_current_guest(winner_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "postgres-blocked-terminal-preview-v1",
+        }
+        draft = await winner_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(postgres_api_database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=winner_client.cookies,
+        ) as replay_client:
+            winner_task = asyncio.create_task(
+                winner_client.post(endpoint, headers=headers, json=payload)
+            )
+            await asyncio.wait_for(runtime_started.wait(), timeout=5)
+            replay_task = asyncio.create_task(
+                replay_client.post(endpoint, headers=headers, json=payload)
+            )
+            try:
+                await asyncio.wait_for(replay_intent_started.wait(), timeout=5)
+                await asyncio.sleep(0.1)
+                assert not replay_task.done()
+                release_runtime.set()
+                failed = await asyncio.wait_for(winner_task, timeout=10)
+                replay = await asyncio.wait_for(replay_task, timeout=10)
+            finally:
+                release_runtime.set()
+            stable_replay = await replay_client.post(
+                endpoint,
+                headers=headers,
+                json=payload,
+            )
+            assert runtime.calls == 1
+            unexposed_headers = {
+                **headers,
+                "Idempotency-Key": "postgres-unexposed-terminal-preview-v1",
+            }
+            unexposed_draft = await winner_client.post(
+                "/api/v1/profiles/drafts",
+                headers=unexposed_headers,
+                json={"label": "家人"},
+            )
+            assert unexposed_draft.status_code == 201, unexposed_draft.text
+            unexposed_failed = await winner_client.post(
+                "/api/v1/profiles/drafts/"
+                f"{unexposed_draft.json()['draft_id']}/readings/preview",
+                headers=unexposed_headers,
+                json=payload,
+            )
+
+    assert failed.status_code == 503, failed.text
+    assert failed.json()["code"] == "chart_runtime_unsupported"
+    assert checked_intents == [True, False]
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "terminal_stopped"
+    assert replay.json()["poll_required"] is False
+    assert stable_replay.status_code == 200, stable_replay.text
+    assert stable_replay.json()["reading_version_id"] == replay.json()["reading_version_id"]
+    assert stable_replay.json()["status"] == "terminal_stopped"
+    assert unexposed_failed.status_code == 503, unexposed_failed.text
+    assert unexposed_failed.json()["code"] == "chart_runtime_unsupported"
+    assert runtime.calls == 2
+    async with postgres_api_database.sessions() as session:
+        job = await session.scalar(select(ReadingJobRecord))
+        assert job is not None
+        assert job.status == "stopped"
         assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1

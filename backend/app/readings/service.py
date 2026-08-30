@@ -5,7 +5,8 @@ import hashlib
 import hmac
 import json
 import logging
-from collections.abc import Mapping, Sequence
+from collections.abc import AsyncIterator, Mapping, Sequence
+from contextlib import asynccontextmanager
 from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
@@ -13,9 +14,9 @@ from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import select, update
+from sqlalchemy import func, select, text, update
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
 
 from app.adapters.runtime import (
     RUNTIME_TURN_AUDIT_NAME,
@@ -132,6 +133,7 @@ _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS = "claim_pending"
 _ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS = 10.0
 _ATOMIC_PROFILE_PREVIEW_CLAIM_UNEXPOSED_GENERATION = 1
 _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION = 2
+_ATOMIC_PROFILE_PREVIEW_REPLAY_LOCK_SALT = 0x21_5052_4556_4945
 _POST_WRITE_RUNTIME_TRANSPORT_FAULTS = frozenset(
     {
         "invalid-result",
@@ -387,6 +389,7 @@ class ReadingService:
             "utf-8"
         )
         self._atomic_profile_preview_claim: AtomicProfilePreviewClaim | None = None
+        self._atomic_profile_preview_winner_fence_pid: int | None = None
 
     async def _require_paid_action(self, owner: OwnerProtocol, *, action: str) -> None:
         try:
@@ -694,6 +697,97 @@ class ReadingService:
         await self.session.commit()
         return True
 
+    @staticmethod
+    def _atomic_profile_preview_replay_lock_id(key_hash: str) -> int:
+        """Map one idempotency digest into PostgreSQL's signed bigint keyspace."""
+
+        digest_prefix = int(key_hash[:16], 16)
+        return (digest_prefix ^ _ATOMIC_PROFILE_PREVIEW_REPLAY_LOCK_SALT) & (
+            (1 << 63) - 1
+        )
+
+    @asynccontextmanager
+    async def _hold_atomic_profile_preview_winner_fence(
+        self,
+        key_hash: str,
+    ) -> AsyncIterator[None]:
+        """Keep PostgreSQL replays behind one winner through rollback settlement."""
+
+        if self.session.get_bind().dialect.name != "postgresql":
+            yield
+            return
+        bind = self.session.bind
+        if bind is None:
+            raise RuntimeError("PostgreSQL Reading session is not bound")
+        engine = bind if isinstance(bind, AsyncEngine) else bind.engine
+        async with engine.connect() as connection, connection.begin():
+            await connection.scalar(
+                select(
+                    func.pg_advisory_xact_lock(
+                        self._atomic_profile_preview_replay_lock_id(key_hash)
+                    )
+                )
+            )
+            fence_pid = await connection.scalar(select(func.pg_backend_pid()))
+            if not isinstance(fence_pid, int):
+                raise RuntimeError("PostgreSQL replay fence has no backend PID")
+            self._atomic_profile_preview_winner_fence_pid = fence_pid
+            try:
+                yield
+            finally:
+                self._atomic_profile_preview_winner_fence_pid = None
+
+    async def _hold_atomic_profile_preview_replay_intent(
+        self,
+        idempotency: IdempotencyContext,
+    ) -> None:
+        """Wait behind a PostgreSQL winner before reading its idempotency record."""
+
+        if self.session.get_bind().dialect.name != "postgresql":
+            return
+        await self.session.scalar(
+            select(
+                func.pg_advisory_xact_lock(
+                    self._atomic_profile_preview_replay_lock_id(idempotency.key_hash)
+                )
+            )
+        )
+
+    async def _atomic_profile_preview_replay_intent_is_held(
+        self,
+        _version_id: UUID,
+    ) -> bool:
+        """Return whether another PostgreSQL transaction is observing this claim."""
+
+        if self.session.get_bind().dialect.name != "postgresql":
+            return False
+        fence_pid = self._atomic_profile_preview_winner_fence_pid
+        if fence_pid is None:
+            return False
+        waiting = await self.session.scalar(
+            text(
+                """
+                SELECT EXISTS (
+                    SELECT 1
+                    FROM pg_locks AS holder
+                    JOIN pg_locks AS waiter
+                      ON waiter.locktype = holder.locktype
+                     AND waiter.database IS NOT DISTINCT FROM holder.database
+                     AND waiter.classid IS NOT DISTINCT FROM holder.classid
+                     AND waiter.objid IS NOT DISTINCT FROM holder.objid
+                     AND waiter.objsubid IS NOT DISTINCT FROM holder.objsubid
+                    WHERE holder.pid = :holder_pid
+                      AND holder.locktype = 'advisory'
+                      AND holder.granted
+                      AND NOT waiter.granted
+                      AND waiter.pid <> holder.pid
+                )
+                """
+            ),
+            {"holder_pid": fence_pid},
+        )
+        return waiting is True
+
     async def _stabilize_atomic_profile_preview_claim_for_read(
         self,
         version_id: UUID,
@@ -921,6 +1015,20 @@ class ReadingService:
             target_month=target_month,
             target_date=target_date,
         )
+        if owns_claim and rollback_on_failure:
+            assert claim is not None
+            async with self._hold_atomic_profile_preview_winner_fence(
+                claim.context.key_hash
+            ):
+                return await self._persist_start(
+                    owner,
+                    prepare,
+                    capability_id="bazi",
+                    profile_version_id=profile_version_id,
+                    idempotency=idempotency,
+                    direct_chart=True,
+                    rollback_on_failure=rollback_on_failure,
+                )
         return await self._persist_start(
             owner,
             prepare,
@@ -3259,6 +3367,9 @@ class ReadingService:
         if (
             job.lease_generation
             < _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION
+            and not await self._atomic_profile_preview_replay_intent_is_held(
+                claim.reading_version_id
+            )
         ):
             await self.repository.delete_start_claim(claim.reading_version_id)
             await self.session.commit()
@@ -3924,6 +4035,8 @@ class ReadingService:
         user_id: UUID | None,
         guest_id: UUID | None,
     ) -> ReadingStartResponse | None:
+        if idempotency.action == "confirm_profile_preview":
+            await self._hold_atomic_profile_preview_replay_intent(idempotency)
         record = await self.repository.find_idempotency(
             idempotency.key_hash,
             owner_user_id=user_id,
