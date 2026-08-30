@@ -128,6 +128,7 @@ _POLL_STOP_STATUSES = frozenset(
         ReadingStatus.WAITING_INPUT,
     }
 )
+_ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS = "claim_pending"
 _logger = logging.getLogger("mingli.chart_fast_path")
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
@@ -474,7 +475,10 @@ class ReadingService:
             prepare_command=prepare,
         )
         await self.session.refresh(version)
-        job = await self._create_job(version.id, status="queued")
+        await self._create_job(
+            version.id,
+            status=_ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
+        )
         replayed = await self._save_idempotency_or_replay(
             idempotency,
             owner_user_id=user_id,
@@ -483,18 +487,43 @@ class ReadingService:
         )
         if replayed is not None:
             return replayed
-        # A tokenless Runtime call has an unknowable outcome if its transport
-        # fails. Persist that conservative checkpoint before the Profile
-        # transaction or Runtime I/O starts. The winner temporarily rearms this
-        # claim in its transaction; a rollback therefore reveals a durable
-        # quarantine instead of the provisional input_ready state.
-        await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
+        # Keep the durable claim distinguishable from both executable work and
+        # an actual Runtime failure. Same-key requests may replay this bounded
+        # input_ready state while the winner confirms the Profile or calls
+        # Runtime, but workers cannot claim the placeholder Job.
         await self.session.commit()
         self._atomic_profile_preview_claim = AtomicProfilePreviewClaim(
             context=idempotency,
             reading_version_id=version.id,
         )
         return None
+
+    async def discard_confirm_profile_preview_claim(
+        self,
+        idempotency: IdempotencyContext,
+    ) -> bool:
+        """Delete this request's untouched claim after losing Profile confirmation."""
+
+        claim = self._atomic_profile_preview_claim
+        if claim is None or claim.context != idempotency:
+            return False
+        try:
+            root, version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+        except LookupError:
+            self._atomic_profile_preview_claim = None
+            return False
+        if (
+            root.profile_version_id is not None
+            or version.status != ReadingStatus.INPUT_READY.value
+            or job.status != _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
+        ):
+            return False
+        await self.repository.delete_start_claim(claim.reading_version_id)
+        await self.session.commit()
+        self._atomic_profile_preview_claim = None
+        return True
 
     @staticmethod
     def _compile_profile_preview_prepare(

@@ -1570,9 +1570,12 @@ async def test_confirm_and_preview_claims_unknown_before_cross_process_runtime(
     assert first.status_code == 503, first.text
     assert first.json()["code"] == expected_code
     assert second.status_code == 200, second.text
-    assert second.json()["status"] == "runtime_unknown"
+    assert second.json()["status"] == "input_ready"
+    assert second.json()["result_available"] is False
+    assert second.json()["poll_required"] is True
     assert replay.status_code == 200, replay.text
-    assert replay.json() == second.json()
+    assert replay.json()["status"] == "runtime_unknown"
+    assert replay.json()["reading_version_id"] == second.json()["reading_version_id"]
     assert runtime.calls == 1
     assert listed_after_failure.json() == {"profiles": []}
     async with database.sessions() as session:
@@ -1823,11 +1826,41 @@ async def test_confirm_and_preview_replays_cross_process_overwrite_race(
         )
         await claim_committed.wait()
         second = await atomic_client.post(endpoint, headers=headers, json=payload)
+        async with database.sessions() as session:
+            provisional_root = await session.scalar(select(ReadingRoot))
+            assert provisional_root is not None
+            assert provisional_root.profile_version_id is None
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingRoot)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingVersion)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingJobRecord)
+            ) == 1
+            assert await session.scalar(
+                select(func.count()).select_from(ReadingIdempotencyKey)
+            ) == 1
+            assert list(await session.scalars(select(ReadingVersion.status))) == [
+                "input_ready"
+            ]
+            assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+                "claim_pending"
+            ]
         release_winner.set()
         first = await winner
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
 
     assert sorted((first.status_code, second.status_code)) == [200, 201]
+    assert second.json()["status"] == "input_ready"
+    assert second.json()["result_available"] is False
+    assert second.json()["poll_required"] is True
     assert first.json()["reading_version_id"] == second.json()["reading_version_id"]
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "prepared"
+    assert replay.json()["result_available"] is True
+    assert replay.json()["reading_version_id"] == first.json()["reading_version_id"]
     assert runtime.calls == 1
     async with database.sessions() as session:
         profiles = list(await session.scalars(select(SubjectProfile)))
@@ -1836,6 +1869,96 @@ async def test_confirm_and_preview_replays_cross_process_overwrite_race(
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_cleans_claim_when_confirmation_loses_race(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+    claim_committed = asyncio.Event()
+    release_loser = asyncio.Event()
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed.set()
+            await release_loser.wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+        combined_headers = {
+            **csrf_headers,
+            "Idempotency-Key": "losing-confirm-race-preview-v1",
+        }
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            loser_request = asyncio.create_task(
+                first_client.post(endpoint, headers=combined_headers, json=payload)
+            )
+            await claim_committed.wait()
+            winner = await second_client.post(
+                f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/confirm",
+                headers=csrf_headers,
+                json=payload["profile"],
+            )
+            release_loser.set()
+            loser = await loser_request
+            retry = await second_client.post(
+                endpoint,
+                headers=combined_headers,
+                json=payload,
+            )
+
+    assert winner.status_code == 201, winner.text
+    assert loser.status_code == 409, loser.text
+    assert loser.json()["title"] == "Profile Draft is already confirmed"
+    assert retry.status_code == 409, retry.text
+    assert retry.json()["title"] == "Profile Draft is already confirmed"
+    assert runtime.calls == 0
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 0
 
 
 async def test_confirm_and_preview_timing_includes_final_commit(
