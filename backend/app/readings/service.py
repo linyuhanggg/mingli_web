@@ -520,40 +520,60 @@ class ReadingService:
         """CAS one abandoned direct-start lease into a durable unknown result."""
 
         now = datetime.now(UTC)
+        candidate = (
+            await self.session.execute(
+                select(
+                    ReadingJobRecord.id,
+                    ReadingJobRecord.status,
+                    ReadingJobRecord.lease_token,
+                    ReadingJobRecord.lease_expires_at,
+                )
+                .where(ReadingJobRecord.reading_version_id == version_id)
+                .order_by(
+                    ReadingJobRecord.created_at.desc(),
+                    ReadingJobRecord.id.desc(),
+                )
+                .limit(1)
+            )
+        ).first()
+        if (
+            candidate is None
+            or candidate.status != _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
+            or candidate.lease_token is None
+            or candidate.lease_expires_at is None
+            or not _datetime_lte(candidate.lease_expires_at, now)
+        ):
+            return False
+
+        # Match load_start_claim(): lock the ReadingVersion before its Job so
+        # expiry recovery cannot deadlock a late direct-start winner on
+        # PostgreSQL. Re-check every CAS predicate after both locks are held.
+        version = await self.session.scalar(
+            select(ReadingVersion)
+            .where(ReadingVersion.id == version_id)
+            .with_for_update()
+        )
+        if (
+            version is None
+            or version.status != ReadingStatus.INPUT_READY.value
+        ):
+            await self.session.rollback()
+            return False
         job = await self.session.scalar(
             select(ReadingJobRecord)
             .where(ReadingJobRecord.reading_version_id == version_id)
             .order_by(ReadingJobRecord.created_at.desc(), ReadingJobRecord.id.desc())
             .limit(1)
+            .with_for_update()
         )
         if (
             job is None
             or job.status != _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
-            or job.lease_token is None
+            or job.id != candidate.id
+            or job.lease_token != candidate.lease_token
             or job.lease_expires_at is None
             or not _datetime_lte(job.lease_expires_at, now)
         ):
-            return False
-        job_result = await self.session.execute(
-            update(ReadingJobRecord)
-            .where(
-                ReadingJobRecord.id == job.id,
-                ReadingJobRecord.status
-                == _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
-                ReadingJobRecord.lease_token == job.lease_token,
-                ReadingJobRecord.lease_expires_at.is_not(None),
-                ReadingJobRecord.lease_expires_at <= now,
-            )
-            .values(
-                status="runtime_unknown",
-                lease_owner=None,
-                lease_token=None,
-                lease_expires_at=None,
-            )
-            .returning(ReadingJobRecord.id)
-            .execution_options(synchronize_session=False)
-        )
-        if job_result.scalar_one_or_none() is None:
             await self.session.rollback()
             return False
         version_result = await self.session.execute(
@@ -567,6 +587,28 @@ class ReadingService:
             .execution_options(synchronize_session=False)
         )
         if version_result.scalar_one_or_none() is None:
+            await self.session.rollback()
+            return False
+        job_result = await self.session.execute(
+            update(ReadingJobRecord)
+            .where(
+                ReadingJobRecord.id == job.id,
+                ReadingJobRecord.status
+                == _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
+                ReadingJobRecord.lease_token == candidate.lease_token,
+                ReadingJobRecord.lease_expires_at.is_not(None),
+                ReadingJobRecord.lease_expires_at <= now,
+            )
+            .values(
+                status="runtime_unknown",
+                lease_owner=None,
+                lease_token=None,
+                lease_expires_at=None,
+            )
+            .returning(ReadingJobRecord.id)
+            .execution_options(synchronize_session=False)
+        )
+        if job_result.scalar_one_or_none() is None:
             await self.session.rollback()
             return False
         await self.session.commit()

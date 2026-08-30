@@ -376,6 +376,7 @@ async def confirm_profile_draft_and_start_preview_reading(
             title="Minor guardian confirmation is required",
         ) from error
     except ProfileNameConflictError as error:
+        await reading_service.discard_confirm_profile_preview_claim(idempotency)
         raise ApiProblem(
             status=409,
             title="Profile name already exists",

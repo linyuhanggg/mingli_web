@@ -1761,7 +1761,9 @@ async def test_confirm_and_preview_expired_claim_beats_late_winner(
     payload = confirm_and_preview_payload()
     claim_committed = asyncio.Event()
     release_late_winner = asyncio.Event()
+    recovery_lock_orders: list[tuple[type[Any], ...]] = []
     original_claim = ReadingService._claim_atomic_profile_preview
+    original_recover = ReadingService._recover_expired_atomic_profile_preview_claim
 
     async def pause_after_durable_claim(
         service: ReadingService,
@@ -1778,6 +1780,35 @@ async def test_confirm_and_preview_expired_claim_beats_late_winner(
         ReadingService,
         "_claim_atomic_profile_preview",
         pause_after_durable_claim,
+    )
+
+    async def record_recovery_lock_order(
+        service: ReadingService,
+        version_id: UUID,
+    ) -> bool:
+        locked_entities: list[type[Any]] = []
+        original_scalar = service.session.scalar
+
+        async def recording_scalar(statement: Any, *args: Any, **kwargs: Any) -> Any:
+            if getattr(statement, "_for_update_arg", None) is not None:
+                entity = statement.column_descriptions[0].get("entity")
+                if entity in (ReadingVersion, ReadingJobRecord):
+                    locked_entities.append(entity)
+            return await original_scalar(statement, *args, **kwargs)
+
+        service.session.scalar = recording_scalar  # type: ignore[method-assign]
+        try:
+            recovered = await original_recover(service, version_id)
+        finally:
+            service.session.scalar = original_scalar  # type: ignore[method-assign]
+        if recovered:
+            recovery_lock_orders.append(tuple(locked_entities))
+        return recovered
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_recover_expired_atomic_profile_preview_claim",
+        record_recovery_lock_order,
     )
 
     async with AsyncClient(
@@ -1840,6 +1871,7 @@ async def test_confirm_and_preview_expired_claim_beats_late_winner(
     assert stable.json()["reading_version_id"] == reading_version_id
     assert stable.json()["status"] == "runtime_unknown"
     assert runtime.calls == 0
+    assert recovery_lock_orders == [(ReadingVersion, ReadingJobRecord)]
     async with database.sessions() as session:
         assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
@@ -2373,6 +2405,147 @@ async def test_confirm_and_preview_cleans_claim_when_confirmation_loses_race(
             assert await session.scalar(
                 select(func.count()).select_from(ReadingIdempotencyKey)
             ) == 0
+
+
+async def test_confirm_and_preview_cleans_claim_after_late_name_conflict(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    claim_committed: dict[UUID, asyncio.Event] = {}
+    release_claim: dict[UUID, asyncio.Event] = {}
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        result = await original_claim(service, *args, **kwargs)
+        draft_id = kwargs["draft_id"]
+        if result is None and service._atomic_profile_preview_claim is not None:
+            claim_committed[draft_id].set()
+            await release_claim[draft_id].wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        first_draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        second_draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert first_draft.status_code == 201, first_draft.text
+        assert second_draft.status_code == 201, second_draft.text
+        await seed_runtime_release(database, test_settings)
+        first_draft_id = UUID(first_draft.json()["draft_id"])
+        second_draft_id = UUID(second_draft.json()["draft_id"])
+        claim_committed = {
+            first_draft_id: asyncio.Event(),
+            second_draft_id: asyncio.Event(),
+        }
+        release_claim = {
+            first_draft_id: asyncio.Event(),
+            second_draft_id: asyncio.Event(),
+        }
+
+        async with (
+            AsyncClient(
+                transport=ASGITransport(app=application),
+                base_url="https://testserver",
+                cookies=first_client.cookies,
+            ) as second_client,
+            AsyncClient(
+                transport=ASGITransport(app=application),
+                base_url="https://testserver",
+                cookies=first_client.cookies,
+            ) as confirm_client,
+        ):
+            first_headers = {
+                **csrf_headers,
+                "Idempotency-Key": "late-name-conflict-first-v1",
+            }
+            second_headers = {
+                **csrf_headers,
+                "Idempotency-Key": "late-name-conflict-second-v1",
+            }
+            first_endpoint = (
+                f"/api/v1/profiles/drafts/{first_draft_id}/readings/preview"
+            )
+            second_endpoint = (
+                f"/api/v1/profiles/drafts/{second_draft_id}/readings/preview"
+            )
+            first_request = asyncio.create_task(
+                first_client.post(first_endpoint, headers=first_headers, json=payload)
+            )
+            await claim_committed[first_draft_id].wait()
+            second_request = asyncio.create_task(
+                second_client.post(second_endpoint, headers=second_headers, json=payload)
+            )
+            await claim_committed[second_draft_id].wait()
+
+            confirmed = await confirm_client.post(
+                f"/api/v1/profiles/drafts/{first_draft_id}/confirm",
+                headers=csrf_headers,
+                json=payload["profile"],
+            )
+            assert confirmed.status_code == 201, confirmed.text
+
+            release_claim[first_draft_id].set()
+            already_confirmed = await first_request
+            release_claim[second_draft_id].set()
+            name_conflict = await second_request
+            replay = await confirm_client.post(
+                second_endpoint,
+                headers=second_headers,
+                json=payload,
+            )
+
+    assert already_confirmed.status_code == 409, already_confirmed.text
+    assert already_confirmed.json()["title"] == "Profile Draft is already confirmed"
+    assert name_conflict.status_code == 409, name_conflict.text
+    assert name_conflict.json()["code"] == "profile_name_conflict"
+    assert replay.status_code == 409, replay.text
+    assert replay.json()["code"] == "profile_name_conflict"
+    assert runtime.calls == 0
+    async with database.sessions() as session:
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 2
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 0
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 0
 
 
 async def test_confirm_and_preview_timing_includes_final_commit(
