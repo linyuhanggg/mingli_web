@@ -474,7 +474,7 @@ class ReadingService:
             prepare_command=prepare,
         )
         await self.session.refresh(version)
-        await self._create_job(version.id, status="queued")
+        job = await self._create_job(version.id, status="queued")
         replayed = await self._save_idempotency_or_replay(
             idempotency,
             owner_user_id=user_id,
@@ -483,6 +483,12 @@ class ReadingService:
         )
         if replayed is not None:
             return replayed
+        # A tokenless Runtime call has an unknowable outcome if its transport
+        # fails. Persist that conservative checkpoint before the Profile
+        # transaction or Runtime I/O starts. The winner temporarily rearms this
+        # claim in its transaction; a rollback therefore reveals a durable
+        # quarantine instead of the provisional input_ready state.
+        await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
         await self.session.commit()
         self._atomic_profile_preview_claim = AtomicProfilePreviewClaim(
             context=idempotency,
@@ -2710,6 +2716,11 @@ class ReadingService:
                 claim.reading_version_id,
                 profile_version_id,
             )
+            self._rearm_atomic_profile_preview_claim(
+                version,
+                job,
+                initial_job_status=initial_job_status,
+            )
             version = await self.repository.replace_start_claim_prepare(
                 version.id,
                 prepare,
@@ -2851,12 +2862,17 @@ class ReadingService:
 
         claim = self._atomic_profile_preview_claim
         if claim is not None and claim.context == idempotency:
+            _root, version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+            self._rearm_atomic_profile_preview_claim(
+                version,
+                job,
+                initial_job_status=initial_job_status,
+            )
             await self.repository.replace_start_claim_prepare(
                 claim.reading_version_id,
                 prepare,
-            )
-            _root, _version, job = await self.repository.load_start_claim(
-                claim.reading_version_id
             )
             await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
             await self.session.commit()
@@ -2909,12 +2925,17 @@ class ReadingService:
 
         claim = self._atomic_profile_preview_claim
         if claim is not None and claim.context == idempotency:
+            _root, version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+            self._rearm_atomic_profile_preview_claim(
+                version,
+                job,
+                initial_job_status=initial_job_status,
+            )
             await self.repository.replace_start_claim_prepare(
                 claim.reading_version_id,
                 prepare,
-            )
-            _root, _version, job = await self.repository.load_start_claim(
-                claim.reading_version_id
             )
             await self.repository.record_prepared(
                 str(job.id),
@@ -2975,12 +2996,17 @@ class ReadingService:
 
         claim = self._atomic_profile_preview_claim
         if claim is not None and claim.context == idempotency:
+            _root, version, job = await self.repository.load_start_claim(
+                claim.reading_version_id
+            )
+            self._rearm_atomic_profile_preview_claim(
+                version,
+                job,
+                initial_job_status=initial_job_status,
+            )
             await self.repository.replace_start_claim_prepare(
                 claim.reading_version_id,
                 prepare,
-            )
-            _root, _version, job = await self.repository.load_start_claim(
-                claim.reading_version_id
             )
             await self.repository.record_waiting_input(
                 str(job.id),
@@ -3023,6 +3049,18 @@ class ReadingService:
             datetime.now(UTC),
         )
         await self.session.commit()
+
+    @staticmethod
+    def _rearm_atomic_profile_preview_claim(
+        version: ReadingVersion,
+        job: ReadingJobRecord,
+        *,
+        initial_job_status: str,
+    ) -> None:
+        """Make one durable quarantine executable inside the winner transaction."""
+
+        version.status = ReadingStatus.INPUT_READY.value
+        job.status = initial_job_status
 
     async def _run_chart_fast_path(
         self,

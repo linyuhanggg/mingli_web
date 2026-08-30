@@ -1569,18 +1569,28 @@ async def test_confirm_and_preview_claims_unknown_before_cross_process_runtime(
 
     assert first.status_code == 503, first.text
     assert first.json()["code"] == expected_code
-    assert second.status_code in {200, 503}, second.text
+    assert second.status_code == 200, second.text
+    assert second.json()["status"] == "runtime_unknown"
     assert replay.status_code == 200, replay.text
-    assert replay.json()["status"] == "runtime_unknown"
+    assert replay.json() == second.json()
     assert runtime.calls == 1
     assert listed_after_failure.json() == {"profiles": []}
     async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
         assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
         assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
 
 
 async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
