@@ -2578,12 +2578,31 @@ class ReadingService:
         runtime_ms = 0.0
         persistence_ms = 0.0
         if direct_chart:
-            runtime_ms, persistence_ms = await self._run_chart_fast_path(
-                job,
-                version,
-                product_id=version.product_id or root.product_id or root.capability_id,
-                commit_failures=not rollback_on_failure,
-            )
+            try:
+                runtime_ms, persistence_ms = await self._run_chart_fast_path(
+                    job,
+                    version,
+                    product_id=version.product_id or root.product_id or root.capability_id,
+                    commit_failures=not rollback_on_failure,
+                )
+            except ChartFastPathUnavailableError as error:
+                if (
+                    rollback_on_failure
+                    and prepare.state_token is None
+                    and error.code in {"chart_runtime_timeout", "chart_runtime_transport"}
+                ):
+                    await self.session.rollback()
+                    await self._persist_runtime_unknown_quarantine(
+                        owner,
+                        prepare,
+                        capability_id=capability_id,
+                        product_id=product_id,
+                        runtime_capability_ids=resolved_runtime_capability_ids,
+                        relationship_type=relationship_type,
+                        idempotency=idempotency,
+                        initial_job_status=initial_job_status,
+                    )
+                raise
         summary = await self._summary(root, version)
         if direct_chart:
             summary.fast_path_timing = ChartFastPathTiming(
@@ -2607,6 +2626,50 @@ class ReadingService:
                 },
             )
         return summary, True
+
+    async def _persist_runtime_unknown_quarantine(
+        self,
+        owner: OwnerProtocol,
+        prepare: Prepare,
+        *,
+        capability_id: str,
+        product_id: str | None,
+        runtime_capability_ids: tuple[str, ...],
+        relationship_type: str | None,
+        idempotency: IdempotencyContext | None,
+        initial_job_status: str,
+    ) -> None:
+        """Persist an uncertain tokenless call without confirming its Profile draft."""
+
+        user_id, guest_id = owner_ids(owner)
+        release = await self._runtime_release()
+        root = await self.repository.create_root(
+            capability_id=capability_id,
+            product_id=product_id,
+            runtime_capability_ids=runtime_capability_ids,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+            relationship_type=relationship_type,
+        )
+        version = await self.repository.create_version(
+            reading_root_id=root.id,
+            runtime_release_id=release.id,
+            prepare_command=prepare,
+            relationship_type=relationship_type,
+        )
+        await self.session.refresh(version)
+        job = await self._create_job(version.id, status=initial_job_status)
+        if idempotency is not None:
+            replayed = await self._save_idempotency_or_replay(
+                idempotency,
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+                reading_version_id=version.id,
+            )
+            if replayed is not None:
+                return
+        await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
+        await self.session.commit()
 
     async def _run_chart_fast_path(
         self,

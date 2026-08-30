@@ -8,6 +8,7 @@ import pytest
 from app.adapters.runtime import FakeMingliRuntimeAdapter
 from app.identity.models import GuestSession
 from app.profiles.models import ProfileVersion, SubjectProfile
+from app.readings.errors import RuntimeTransportError
 from app.readings.models import (
     FactBrief,
     GenerationAttempt,
@@ -87,6 +88,20 @@ class NeedInputChartRuntime:
                 ]
             },
         )
+
+
+class TransportUnknownChartRuntime:
+    """Tokenless transport fault that may have created a Runtime Root."""
+
+    adapter_kind = "test-transport-unknown"
+
+    def __init__(self) -> None:
+        self.calls = 0
+
+    async def execute(self, command: Any) -> None:
+        del command
+        self.calls += 1
+        raise RuntimeTransportError("runtime_pipe_unavailable")
 
 
 class RenderableChartRuntime:
@@ -1344,6 +1359,64 @@ async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_persists_transport_unknown_without_saving_profile(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = TransportUnknownChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "transport-unknown-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+        first = await atomic_client.post(endpoint, headers=headers, json=payload)
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == "chart_runtime_transport"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "runtime_unknown"
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == [
+            "runtime_unknown"
+        ]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == [
+            "runtime_unknown"
+        ]
 
 
 async def test_confirm_and_preview_preserves_need_input_and_rolls_back(
