@@ -118,7 +118,11 @@ class RenderableChartRuntime:
 class UnrenderableChartRuntime:
     adapter_kind = "test-unrenderable"
 
+    def __init__(self) -> None:
+        self.calls = 0
+
     async def execute(self, command: Any) -> Prepared:
+        self.calls += 1
         subject_ref = next(iter(command.facts))
         payload = brief_payload(
             subject_ref,
@@ -1299,23 +1303,6 @@ async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
                 await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 0
             )
 
-        application.state.chart_runtime = UnrenderableChartRuntime()
-        unrenderable = await atomic_client.post(
-            f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
-            headers=headers,
-            json=payload,
-        )
-        assert unrenderable.status_code == 503, unrenderable.text
-        assert unrenderable.json()["code"] == "chart_view_model_projection_failed"
-        async with database.sessions() as session:
-            assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
-            assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
-            assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 0
-            assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 0
-            assert (
-                await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 0
-            )
-
         application.state.chart_runtime = RenderableChartRuntime()
         succeeded = await atomic_client.post(
             f"/api/v1/profiles/drafts/{draft_id}/readings/preview",
@@ -1359,6 +1346,69 @@ async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
         assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+
+
+async def test_confirm_and_preview_persists_unrenderable_prepared_checkpoint_without_saving_profile(
+    database: Any,
+    test_settings: Any,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    runtime = UnrenderableChartRuntime()
+    application = main.create_app(settings=test_settings, database=database)
+    application.state.chart_runtime = runtime
+    payload = confirm_and_preview_payload()
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as atomic_client:
+        guest_headers = await create_guest(atomic_client)
+        logged_in = await login_current_guest(atomic_client, guest_headers)
+        headers = {
+            "X-CSRF-Token": logged_in["csrf_token"],
+            "Idempotency-Key": "unrenderable-profile-preview-v1",
+        }
+        draft = await atomic_client.post(
+            "/api/v1/profiles/drafts",
+            headers=headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        draft_id = draft.json()["draft_id"]
+        await seed_runtime_release(database, test_settings)
+        endpoint = f"/api/v1/profiles/drafts/{draft_id}/readings/preview"
+
+        first = await atomic_client.post(endpoint, headers=headers, json=payload)
+        replay = await atomic_client.post(endpoint, headers=headers, json=payload)
+        listed_after_failure = await atomic_client.get("/api/v1/profiles")
+
+    assert first.status_code == 503, first.text
+    assert first.json()["code"] == "chart_view_model_projection_failed"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["status"] == "prepared"
+    assert replay.json()["result_available"] is False
+    assert replay.json()["poll_required"] is False
+    assert replay.json()["profile_version_id"] is None
+    assert runtime.calls == 1
+    assert listed_after_failure.json() == {"profiles": []}
+    async with database.sessions() as session:
+        version = await session.scalar(select(ReadingVersion))
+        assert version is not None
+        assert version.state_token_ciphertext is not None
+        assert version.state_token_fingerprint is not None
+        assert version.prepare_has_state_token is False
+        root = await session.scalar(select(ReadingRoot))
+        assert root is not None
+        assert root.profile_version_id is None
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 0
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
+        assert await session.scalar(select(func.count()).select_from(FactBrief)) == 1
+        assert list(await session.scalars(select(ReadingVersion.status))) == ["prepared"]
+        assert list(await session.scalars(select(ReadingJobRecord.status))) == ["complete"]
 
 
 async def test_confirm_and_preview_persists_transport_unknown_without_saving_profile(

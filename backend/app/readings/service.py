@@ -198,10 +198,17 @@ class RuntimeReleaseUnavailableError(ReadingServiceError):
 class ChartFastPathUnavailableError(ReadingServiceError):
     """The deterministic chart Runtime did not finish within its short budget."""
 
-    def __init__(self, detail: str, *, code: str | None = None) -> None:
+    def __init__(
+        self,
+        detail: str,
+        *,
+        code: str | None = None,
+        prepared_checkpoint: Prepared | None = None,
+    ) -> None:
         super().__init__(detail)
         self.detail = detail
         self.code = code or detail
+        self.prepared_checkpoint = prepared_checkpoint
 
 
 class InvalidReadingInputError(ReadingServiceError):
@@ -2602,6 +2609,23 @@ class ReadingService:
                         idempotency=idempotency,
                         initial_job_status=initial_job_status,
                     )
+                elif (
+                    rollback_on_failure
+                    and prepare.state_token is None
+                    and error.prepared_checkpoint is not None
+                ):
+                    await self.session.rollback()
+                    await self._persist_prepared_checkpoint_quarantine(
+                        owner,
+                        prepare,
+                        error.prepared_checkpoint,
+                        capability_id=capability_id,
+                        product_id=product_id,
+                        runtime_capability_ids=resolved_runtime_capability_ids,
+                        relationship_type=relationship_type,
+                        idempotency=idempotency,
+                        initial_job_status=initial_job_status,
+                    )
                 raise
         summary = await self._summary(root, version)
         if direct_chart:
@@ -2669,6 +2693,53 @@ class ReadingService:
             if replayed is not None:
                 return
         await self.repository.mark_runtime_unknown(str(job.id), datetime.now(UTC))
+        await self.session.commit()
+
+    async def _persist_prepared_checkpoint_quarantine(
+        self,
+        owner: OwnerProtocol,
+        prepare: Prepare,
+        prepared: Prepared,
+        *,
+        capability_id: str,
+        product_id: str | None,
+        runtime_capability_ids: tuple[str, ...],
+        relationship_type: str | None,
+        idempotency: IdempotencyContext | None,
+        initial_job_status: str,
+    ) -> None:
+        """Persist a received Runtime checkpoint without confirming its Profile draft."""
+
+        user_id, guest_id = owner_ids(owner)
+        release = await self._runtime_release()
+        root = await self.repository.create_root(
+            capability_id=capability_id,
+            product_id=product_id,
+            runtime_capability_ids=runtime_capability_ids,
+            owner_user_id=user_id,
+            owner_guest_session_id=guest_id,
+            relationship_type=relationship_type,
+        )
+        version = await self.repository.create_version(
+            reading_root_id=root.id,
+            runtime_release_id=release.id,
+            prepare_command=prepare,
+            relationship_type=relationship_type,
+        )
+        await self.session.refresh(version)
+        job = await self._create_job(version.id, status=initial_job_status)
+        if idempotency is not None:
+            replayed = await self._save_idempotency_or_replay(
+                idempotency,
+                owner_user_id=user_id,
+                owner_guest_session_id=guest_id,
+                reading_version_id=version.id,
+            )
+            if replayed is not None:
+                return
+        await self.repository.record_prepared(str(job.id), prepared, datetime.now(UTC))
+        job.status = "complete"
+        await self.session.flush()
         await self.session.commit()
 
     async def _run_chart_fast_path(
@@ -2757,6 +2828,7 @@ class ReadingService:
                 raise ChartFastPathUnavailableError(
                     "chart_view_model_projection_failed",
                     code="chart_view_model_projection_failed",
+                    prepared_checkpoint=result,
                 ) from error
             if view_model is None and getattr(self.chart_runtime, "adapter_kind", None) != "fake":
                 if commit_failures:
@@ -2764,6 +2836,7 @@ class ReadingService:
                 raise ChartFastPathUnavailableError(
                     "chart_view_model_projection_failed",
                     code="chart_view_model_projection_failed",
+                    prepared_checkpoint=result,
                 )
             job.status = "complete"
             await self.session.flush()
