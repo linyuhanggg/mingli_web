@@ -13,7 +13,7 @@ from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
 
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -129,6 +129,9 @@ _POLL_STOP_STATUSES = frozenset(
     }
 )
 _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS = "claim_pending"
+_ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS = 10.0
+_ATOMIC_PROFILE_PREVIEW_CLAIM_UNEXPOSED_GENERATION = 1
+_ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION = 2
 _logger = logging.getLogger("mingli.chart_fast_path")
 DEFAULT_QUERIES = {
     "profile_preview": "请预览我的本命格局。",
@@ -207,12 +210,14 @@ class ChartFastPathUnavailableError(ReadingServiceError):
         code: str | None = None,
         prepared_checkpoint: Prepared | None = None,
         waiting_input_checkpoint: Stopped | None = None,
+        terminal_stopped_checkpoint: Stopped | None = None,
     ) -> None:
         super().__init__(detail)
         self.detail = detail
         self.code = code or detail
         self.prepared_checkpoint = prepared_checkpoint
         self.waiting_input_checkpoint = waiting_input_checkpoint
+        self.terminal_stopped_checkpoint = terminal_stopped_checkpoint
 
 
 class InvalidReadingInputError(ReadingServiceError):
@@ -270,6 +275,7 @@ class IdempotencyContext:
 class AtomicProfilePreviewClaim:
     context: IdempotencyContext
     reading_version_id: UUID
+    lease_token: str
 
 
 @dataclass(frozen=True, slots=True)
@@ -475,10 +481,18 @@ class ReadingService:
             prepare_command=prepare,
         )
         await self.session.refresh(version)
-        await self._create_job(
+        job = await self._create_job(
             version.id,
             status=_ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
         )
+        lease_token = uuid4().hex
+        job.lease_generation = _ATOMIC_PROFILE_PREVIEW_CLAIM_UNEXPOSED_GENERATION
+        job.lease_owner = "profile-preview-direct"
+        job.lease_token = lease_token
+        job.lease_expires_at = datetime.now(UTC) + timedelta(
+            seconds=_ATOMIC_PROFILE_PREVIEW_CLAIM_LEASE_SECONDS
+        )
+        await self.session.flush()
         replayed = await self._save_idempotency_or_replay(
             idempotency,
             owner_user_id=user_id,
@@ -495,8 +509,116 @@ class ReadingService:
         self._atomic_profile_preview_claim = AtomicProfilePreviewClaim(
             context=idempotency,
             reading_version_id=version.id,
+            lease_token=lease_token,
         )
         return None
+
+    async def _recover_expired_atomic_profile_preview_claim(
+        self,
+        version_id: UUID,
+    ) -> bool:
+        """CAS one abandoned direct-start lease into a durable unknown result."""
+
+        now = datetime.now(UTC)
+        job = await self.session.scalar(
+            select(ReadingJobRecord)
+            .where(ReadingJobRecord.reading_version_id == version_id)
+            .order_by(ReadingJobRecord.created_at.desc(), ReadingJobRecord.id.desc())
+            .limit(1)
+        )
+        if (
+            job is None
+            or job.status != _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
+            or job.lease_token is None
+            or job.lease_expires_at is None
+            or not _datetime_lte(job.lease_expires_at, now)
+        ):
+            return False
+        job_result = await self.session.execute(
+            update(ReadingJobRecord)
+            .where(
+                ReadingJobRecord.id == job.id,
+                ReadingJobRecord.status
+                == _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
+                ReadingJobRecord.lease_token == job.lease_token,
+                ReadingJobRecord.lease_expires_at.is_not(None),
+                ReadingJobRecord.lease_expires_at <= now,
+            )
+            .values(
+                status="runtime_unknown",
+                lease_owner=None,
+                lease_token=None,
+                lease_expires_at=None,
+            )
+            .returning(ReadingJobRecord.id)
+            .execution_options(synchronize_session=False)
+        )
+        if job_result.scalar_one_or_none() is None:
+            await self.session.rollback()
+            return False
+        version_result = await self.session.execute(
+            update(ReadingVersion)
+            .where(
+                ReadingVersion.id == version_id,
+                ReadingVersion.status == ReadingStatus.INPUT_READY.value,
+            )
+            .values(status=ReadingStatus.RUNTIME_UNKNOWN.value)
+            .returning(ReadingVersion.id)
+            .execution_options(synchronize_session=False)
+        )
+        if version_result.scalar_one_or_none() is None:
+            await self.session.rollback()
+            return False
+        await self.session.commit()
+        return True
+
+    async def _mark_atomic_profile_preview_claim_exposed(
+        self,
+        version_id: UUID,
+    ) -> bool:
+        """Durably record that a provisional Reading was returned to a reader."""
+
+        now = datetime.now(UTC)
+        result = await self.session.execute(
+            update(ReadingJobRecord)
+            .where(
+                ReadingJobRecord.reading_version_id == version_id,
+                ReadingJobRecord.status
+                == _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS,
+                ReadingJobRecord.lease_generation
+                < _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION,
+                ReadingJobRecord.lease_expires_at.is_not(None),
+                ReadingJobRecord.lease_expires_at > now,
+            )
+            .values(
+                lease_generation=_ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION
+            )
+            .returning(ReadingJobRecord.id)
+            .execution_options(synchronize_session=False)
+        )
+        if result.scalar_one_or_none() is None:
+            return False
+        await self.session.commit()
+        return True
+
+    async def _stabilize_atomic_profile_preview_claim_for_read(
+        self,
+        version_id: UUID,
+    ) -> None:
+        if await self._recover_expired_atomic_profile_preview_claim(version_id):
+            return
+        if await self._mark_atomic_profile_preview_claim_exposed(version_id):
+            return
+        await self._recover_expired_atomic_profile_preview_claim(version_id)
+
+    async def _load_atomic_profile_preview_claim(
+        self,
+        version_id: UUID,
+    ) -> tuple[Any, ReadingVersion, ReadingJobRecord]:
+        root, version, job = await self.repository.load_start_claim(version_id)
+        await self.session.refresh(version)
+        await self.session.refresh(job)
+        return root, version, job
 
     async def discard_confirm_profile_preview_claim(
         self,
@@ -508,7 +630,7 @@ class ReadingService:
         if claim is None or claim.context != idempotency:
             return False
         try:
-            root, version, job = await self.repository.load_start_claim(
+            root, version, job = await self._load_atomic_profile_preview_claim(
                 claim.reading_version_id
             )
         except LookupError:
@@ -518,7 +640,28 @@ class ReadingService:
             root.profile_version_id is not None
             or version.status != ReadingStatus.INPUT_READY.value
             or job.status != _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
+            or job.lease_token != claim.lease_token
         ):
+            return False
+        if (
+            job.lease_generation
+            >= _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION
+        ):
+            self._rearm_atomic_profile_preview_claim(
+                version,
+                job,
+                initial_job_status="queued",
+            )
+            await self.repository.record_terminal_stopped(
+                str(job.id),
+                Stopped(
+                    reason="error",
+                    public_copy="档案确认未完成，本次排盘已终止。",
+                ),
+                datetime.now(UTC),
+            )
+            await self.session.commit()
+            self._atomic_profile_preview_claim = None
             return False
         await self.repository.delete_start_claim(claim.reading_version_id)
         await self.session.commit()
@@ -2317,6 +2460,7 @@ class ReadingService:
         owner: OwnerProtocol,
         version_id: UUID,
     ) -> ReadingStartResponse:
+        await self._stabilize_atomic_profile_preview_claim_for_read(version_id)
         root, version = await self._load_owned_version(
             owner,
             version_id,
@@ -2452,6 +2596,7 @@ class ReadingService:
         owner: OwnerProtocol,
         version_id: UUID,
     ) -> ReadingResultResponse:
+        await self._stabilize_atomic_profile_preview_claim_for_read(version_id)
         root, version = await self._load_owned_version(
             owner,
             version_id,
@@ -2741,6 +2886,22 @@ class ReadingService:
         if owns_atomic_claim:
             assert claim is not None
             assert profile_version_id is not None
+            _claim_root, claim_version, claim_job = (
+                await self._load_atomic_profile_preview_claim(claim.reading_version_id)
+            )
+            if not self._atomic_profile_preview_claim_is_active(
+                claim,
+                claim_version,
+                claim_job,
+            ):
+                await self.session.rollback()
+                await self._recover_expired_atomic_profile_preview_claim(
+                    claim.reading_version_id
+                )
+                raise ChartFastPathUnavailableError(
+                    "chart_runtime_owner_lost",
+                    code="chart_runtime_transport",
+                )
             root, version, job = await self.repository.attach_start_claim_profile(
                 claim.reading_version_id,
                 profile_version_id,
@@ -2846,10 +3007,18 @@ class ReadingService:
                     )
                 elif owns_atomic_claim:
                     assert claim is not None
-                    claim_version_id = claim.reading_version_id
                     await self.session.rollback()
-                    await self.repository.delete_start_claim(claim_version_id)
-                    await self.session.commit()
+                    await self._settle_failed_atomic_profile_preview_claim(
+                        claim,
+                        prepare,
+                        stopped=(
+                            error.terminal_stopped_checkpoint
+                            or Stopped(
+                                reason="error",
+                                public_copy="排盘未完成，本次结果已终止。",
+                            )
+                        ),
+                    )
                 raise
         summary = await self._summary(root, version)
         if direct_chart:
@@ -2875,6 +3044,74 @@ class ReadingService:
             )
         return summary, True
 
+    @staticmethod
+    def _atomic_profile_preview_claim_is_active(
+        claim: AtomicProfilePreviewClaim,
+        version: ReadingVersion,
+        job: ReadingJobRecord,
+    ) -> bool:
+        return (
+            version.status == ReadingStatus.INPUT_READY.value
+            and job.status == _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
+            and job.lease_token == claim.lease_token
+            and job.lease_expires_at is not None
+            and not _datetime_lte(job.lease_expires_at, datetime.now(UTC))
+        )
+
+    async def _settle_failed_atomic_profile_preview_claim(
+        self,
+        claim: AtomicProfilePreviewClaim,
+        prepare: Prepare,
+        *,
+        stopped: Stopped,
+    ) -> None:
+        """Keep an exposed failure replayable; discard a never-observed claim."""
+
+        try:
+            _root, version, job = await self._load_atomic_profile_preview_claim(
+                claim.reading_version_id
+            )
+        except LookupError:
+            return
+        if (
+            version.status != ReadingStatus.INPUT_READY.value
+            or job.status != _ATOMIC_PROFILE_PREVIEW_CLAIM_JOB_STATUS
+            or job.lease_token != claim.lease_token
+        ):
+            await self.session.rollback()
+            return
+        if job.lease_expires_at is None or _datetime_lte(
+            job.lease_expires_at,
+            datetime.now(UTC),
+        ):
+            await self.session.rollback()
+            await self._recover_expired_atomic_profile_preview_claim(
+                claim.reading_version_id
+            )
+            return
+        if (
+            job.lease_generation
+            < _ATOMIC_PROFILE_PREVIEW_CLAIM_EXPOSED_GENERATION
+        ):
+            await self.repository.delete_start_claim(claim.reading_version_id)
+            await self.session.commit()
+            return
+        self._rearm_atomic_profile_preview_claim(
+            version,
+            job,
+            initial_job_status="queued",
+        )
+        await self.repository.replace_start_claim_prepare(
+            claim.reading_version_id,
+            prepare,
+        )
+        await self.repository.record_terminal_stopped(
+            str(job.id),
+            stopped,
+            datetime.now(UTC),
+        )
+        await self.session.commit()
+
     async def _persist_runtime_unknown_quarantine(
         self,
         owner: OwnerProtocol,
@@ -2891,9 +3128,19 @@ class ReadingService:
 
         claim = self._atomic_profile_preview_claim
         if claim is not None and claim.context == idempotency:
-            _root, version, job = await self.repository.load_start_claim(
+            _root, version, job = await self._load_atomic_profile_preview_claim(
                 claim.reading_version_id
             )
+            if not self._atomic_profile_preview_claim_is_active(
+                claim,
+                version,
+                job,
+            ):
+                await self.session.rollback()
+                await self._recover_expired_atomic_profile_preview_claim(
+                    claim.reading_version_id
+                )
+                return
             self._rearm_atomic_profile_preview_claim(
                 version,
                 job,
@@ -2954,9 +3201,19 @@ class ReadingService:
 
         claim = self._atomic_profile_preview_claim
         if claim is not None and claim.context == idempotency:
-            _root, version, job = await self.repository.load_start_claim(
+            _root, version, job = await self._load_atomic_profile_preview_claim(
                 claim.reading_version_id
             )
+            if not self._atomic_profile_preview_claim_is_active(
+                claim,
+                version,
+                job,
+            ):
+                await self.session.rollback()
+                await self._recover_expired_atomic_profile_preview_claim(
+                    claim.reading_version_id
+                )
+                return
             self._rearm_atomic_profile_preview_claim(
                 version,
                 job,
@@ -3025,9 +3282,19 @@ class ReadingService:
 
         claim = self._atomic_profile_preview_claim
         if claim is not None and claim.context == idempotency:
-            _root, version, job = await self.repository.load_start_claim(
+            _root, version, job = await self._load_atomic_profile_preview_claim(
                 claim.reading_version_id
             )
+            if not self._atomic_profile_preview_claim_is_active(
+                claim,
+                version,
+                job,
+            ):
+                await self.session.rollback()
+                await self._recover_expired_atomic_profile_preview_claim(
+                    claim.reading_version_id
+                )
+                return
             self._rearm_atomic_profile_preview_claim(
                 version,
                 job,
@@ -3090,6 +3357,9 @@ class ReadingService:
 
         version.status = ReadingStatus.INPUT_READY.value
         job.status = initial_job_status
+        job.lease_owner = None
+        job.lease_token = None
+        job.lease_expires_at = None
 
     async def _run_chart_fast_path(
         self,
@@ -3206,6 +3476,7 @@ class ReadingService:
             raise ChartFastPathUnavailableError(
                 result.public_copy or code,
                 code=code,
+                terminal_stopped_checkpoint=result,
             )
         else:
             await self._remember_chart_runtime_audit(
@@ -3470,6 +3741,9 @@ class ReadingService:
             raise IdempotencyConflictError(
                 "Idempotency-Key belongs to a different action or payload"
             )
+        await self._stabilize_atomic_profile_preview_claim_for_read(
+            record.reading_version_id
+        )
         try:
             root, version = await self.repository.load_owned_version(
                 record.reading_version_id,
@@ -3738,6 +4012,14 @@ def _canonical_json(payload: Mapping[str, object]) -> str:
         separators=(",", ":"),
         sort_keys=True,
     )
+
+
+def _datetime_lte(value: datetime, other: datetime) -> bool:
+    if value.tzinfo is None:
+        value = value.replace(tzinfo=UTC)
+    if other.tzinfo is None:
+        other = other.replace(tzinfo=UTC)
+    return value <= other
 
 
 def _profile_product_matches(requested: str, persisted: str) -> bool:
