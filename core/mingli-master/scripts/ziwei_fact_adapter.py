@@ -23,7 +23,6 @@ from reading_engine.contracts import FactRef
 from reading_engine.engine_adapter import (
     EngineAdapterBase,
     EngineAdapterError,
-    EngineAdapterResult,
 )
 
 
@@ -440,7 +439,7 @@ def natal_fact_digest(chart_facts: dict[str, Any]) -> str:
     return hashlib.sha256(encoded).hexdigest()
 
 
-def build_target_fact_snapshot(
+def _build_target_fact_snapshot_payload(
     chart_facts: dict[str, Any], target_date: str
 ) -> dict[str, Any]:
     """Calculate one exact Da-Xian/Liu-Nian/Liu-Yue snapshot."""
@@ -573,24 +572,21 @@ def _layer_segments(
     return segments
 
 
-def build_horizon_fact_extensions(
-    chart_facts: dict[str, Any],
-    *,
-    horizon: dict[str, Any],
-) -> dict[str, Any]:
-    """Calculate requested Ziwei Da-Xian/Liu-Nian/Liu-Yue layers with iztro."""
+@dataclass(frozen=True)
+class _ZiweiHorizonPlan:
+    kind: str
+    requested_months: tuple[tuple[int, int], ...]
+    range_start: date
+    range_end: date
+    requested_target_date: str
 
-    if chart_facts.get("fact_layer_status") != "calculated_ziwei_chart_from_birth_datetime":
-        raise ValueError("Ziwei horizon extension requires a calculated birth chart")
-    raw = ((chart_facts.get("input") or {}).get("raw_user_input") or {})
-    required = ("civil_datetime", "timezone", "location", "gender")
-    if any(not raw.get(field) for field in required):
-        raise ValueError("Ziwei horizon extension requires original birth inputs")
-    local = _local_datetime(str(raw["civil_datetime"]), str(raw["timezone"]))
-    _, gender_zh = _normalize_gender(str(raw["gender"]))
-    zi_hour_policy = str(raw.get("zi_hour_policy") or "midnight")
+
+def _horizon_plan(horizon: dict[str, Any]) -> _ZiweiHorizonPlan:
+    if type(horizon) is not dict:
+        raise ValueError("Ziwei horizon must be a JSON object")
     kind = str(horizon.get("kind") or "")
     requested_months: list[tuple[int, int]] = []
+    requested_target_date = ""
     if kind == "month":
         start = str(horizon.get("start") or "")
         end = str(horizon.get("end") or start)
@@ -622,11 +618,46 @@ def build_horizon_fact_extensions(
         except ValueError as exc:
             raise ValueError("Ziwei year horizon must use YYYY") from exc
         if not 1800 <= start_year <= end_year <= 2199:
-            raise ValueError("Ziwei year horizon must be an inclusive 1800-2199 range")
+            raise ValueError(
+                "Ziwei year horizon must be an inclusive 1800-2199 range"
+            )
         range_start = date(start_year, 1, 1)
         range_end = date(end_year + 1, 1, 1)
     else:
-        raise ValueError("Ziwei extension supports explicit year or month horizons")
+        raise ValueError(
+            "Ziwei extension supports explicit year or month horizons"
+        )
+    return _ZiweiHorizonPlan(
+        kind=kind,
+        requested_months=tuple(requested_months),
+        range_start=range_start,
+        range_end=range_end,
+        requested_target_date=requested_target_date,
+    )
+
+
+def _build_horizon_fact_extensions_payload(
+    chart_facts: dict[str, Any],
+    *,
+    horizon: dict[str, Any],
+) -> dict[str, Any]:
+    """Calculate requested Ziwei Da-Xian/Liu-Nian/Liu-Yue layers with iztro."""
+
+    if chart_facts.get("fact_layer_status") != "calculated_ziwei_chart_from_birth_datetime":
+        raise ValueError("Ziwei horizon extension requires a calculated birth chart")
+    raw = ((chart_facts.get("input") or {}).get("raw_user_input") or {})
+    required = ("civil_datetime", "timezone", "location", "gender")
+    if any(not raw.get(field) for field in required):
+        raise ValueError("Ziwei horizon extension requires original birth inputs")
+    local = _local_datetime(str(raw["civil_datetime"]), str(raw["timezone"]))
+    _, gender_zh = _normalize_gender(str(raw["gender"]))
+    zi_hour_policy = str(raw.get("zi_hour_policy") or "midnight")
+    plan = _horizon_plan(horizon)
+    kind = plan.kind
+    requested_months = list(plan.requested_months)
+    range_start = plan.range_start
+    range_end = plan.range_end
+    requested_target_date = plan.requested_target_date
 
     targets = _date_sequence(range_start, range_end)
     chart = _run_iztro(
@@ -1407,9 +1438,60 @@ class ZiweiNormalizedEngineRequest:
     time_basis_policy: str = "civil"
 
 
+def _chart_time_basis_policy(chart_facts: dict[str, Any]) -> str:
+    calendar = (
+        chart_facts.get("calendar_normalization")
+        if type(chart_facts) is dict
+        else None
+    )
+    time_basis = calendar.get("time_basis") if type(calendar) is dict else None
+    policy = time_basis.get("policy") if type(time_basis) is dict else None
+    if type(policy) is not str or policy not in calendar_core.TIME_BASIS_POLICIES:
+        raise ValueError("Ziwei Canonical Facts require a supported time basis")
+    return policy
+
+
+@dataclass(frozen=True)
+class ZiweiTemporalEngineRequest:
+    """Owned request for an iztro target snapshot or horizon extension."""
+
+    chart_facts: dict[str, Any]
+    time_basis_policy: str
+    horizon: dict[str, Any] | None = None
+    target_date: str | None = None
+
+    @classmethod
+    def for_horizon(
+        cls,
+        chart_facts: dict[str, Any],
+        horizon: dict[str, Any],
+    ) -> "ZiweiTemporalEngineRequest":
+        return cls(
+            chart_facts=chart_facts,
+            time_basis_policy=_chart_time_basis_policy(chart_facts),
+            horizon=horizon,
+        )
+
+    @classmethod
+    def for_target(
+        cls,
+        chart_facts: dict[str, Any],
+        target_date: str,
+    ) -> "ZiweiTemporalEngineRequest":
+        return cls(
+            chart_facts=chart_facts,
+            time_basis_policy=_chart_time_basis_policy(chart_facts),
+            target_date=target_date,
+        )
+
+
 @dataclass(frozen=True)
 class _ZiweiPrivateEngineRequest:
-    normalized: ZiweiNormalizedEngineRequest
+    operation: str
+    normalized: ZiweiNormalizedEngineRequest | ZiweiTemporalEngineRequest
+    natal_facts: ZiweiCanonicalFacts | None = None
+    horizon: dict[str, Any] | None = None
+    target_date: str | None = None
 
 
 @dataclass(frozen=True)
@@ -1419,7 +1501,7 @@ class _ZiweiPrivateEngineOutput:
 
 class ZiweiEngineAdapter(
     EngineAdapterBase[
-        ZiweiNormalizedEngineRequest,
+        ZiweiNormalizedEngineRequest | ZiweiTemporalEngineRequest,
         _ZiweiPrivateEngineRequest,
         _ZiweiPrivateEngineOutput,
         ZiweiCanonicalFacts,
@@ -1431,13 +1513,71 @@ class ZiweiEngineAdapter(
 
     def _build_engine_request(
         self,
-        request: ZiweiNormalizedEngineRequest,
+        request: ZiweiNormalizedEngineRequest | ZiweiTemporalEngineRequest,
     ) -> _ZiweiPrivateEngineRequest:
-        if not isinstance(request, ZiweiNormalizedEngineRequest):
+        if isinstance(request, ZiweiNormalizedEngineRequest):
+            self._validate_calendar_request(request)
+            _normalize_gender(request.gender)
+            return _ZiweiPrivateEngineRequest(
+                operation="natal",
+                normalized=request,
+            )
+        if not isinstance(request, ZiweiTemporalEngineRequest):
             raise ValueError("unsupported Ziwei normalized engine request")
-        self._validate_calendar_request(request)
-        _normalize_gender(request.gender)
-        return _ZiweiPrivateEngineRequest(normalized=request)
+        if request.time_basis_policy not in calendar_core.TIME_BASIS_POLICIES:
+            raise ValueError(
+                f"unsupported time-basis policy: {request.time_basis_policy!r}"
+            )
+        if _chart_time_basis_policy(request.chart_facts) != request.time_basis_policy:
+            raise ValueError("Ziwei temporal request time basis mismatch")
+        provenance = self._request_provenance(request)
+        natal_facts = ZiweiFactContract().bind_canonical_facts(
+            request.chart_facts,
+            provenance,
+        )
+        if natal_facts.to_payload().get("schema_version") != "mingli-ziwei-fact-v1":
+            raise ValueError("Ziwei temporal request requires natal Canonical Facts")
+        if (request.horizon is None) == (request.target_date is None):
+            raise ValueError(
+                "Ziwei temporal request requires exactly one target or horizon"
+            )
+        if request.horizon is not None:
+            if type(request.horizon) is not dict or not set(request.horizon) <= {
+                "kind",
+                "start",
+                "end",
+                "target_date",
+            }:
+                raise ValueError("Ziwei horizon contains unsupported fields")
+            horizon = json.loads(
+                json.dumps(
+                    request.horizon,
+                    ensure_ascii=False,
+                    allow_nan=False,
+                    separators=(",", ":"),
+                )
+            )
+            _horizon_plan(horizon)
+            return _ZiweiPrivateEngineRequest(
+                operation="horizon",
+                normalized=request,
+                natal_facts=natal_facts,
+                horizon=horizon,
+            )
+        if type(request.target_date) is not str:
+            raise ValueError("Ziwei target date must use YYYY-MM-DD")
+        try:
+            target = date.fromisoformat(request.target_date)
+        except ValueError as exc:
+            raise ValueError("Ziwei target date must use YYYY-MM-DD") from exc
+        if not 1800 <= target.year <= 2199:
+            raise ValueError("Ziwei target date must be within 1800-2199")
+        return _ZiweiPrivateEngineRequest(
+            operation="target",
+            normalized=request,
+            natal_facts=natal_facts,
+            target_date=target.isoformat(),
+        )
 
     @staticmethod
     def _validate_calendar_request(request: ZiweiNormalizedEngineRequest) -> None:
@@ -1496,18 +1636,39 @@ class ZiweiEngineAdapter(
     ) -> _ZiweiPrivateEngineOutput:
         normalized = request.normalized
         try:
-            payload = _build_from_birth_payload(
-                normalized.civil_datetime,
-                timezone_name=normalized.timezone_name,
-                location=normalized.location,
-                gender=normalized.gender,
-                longitude=normalized.longitude,
-                latitude=normalized.latitude,
-                coordinate_source=normalized.coordinate_source,
-                coordinate_accuracy_meters=normalized.coordinate_accuracy_meters,
-                zi_hour_policy=normalized.zi_hour_policy,
-                time_basis_policy=normalized.time_basis_policy,
-            )
+            if request.operation == "natal":
+                if not isinstance(normalized, ZiweiNormalizedEngineRequest):
+                    raise RuntimeError("Ziwei natal engine request is malformed")
+                payload = _build_from_birth_payload(
+                    normalized.civil_datetime,
+                    timezone_name=normalized.timezone_name,
+                    location=normalized.location,
+                    gender=normalized.gender,
+                    longitude=normalized.longitude,
+                    latitude=normalized.latitude,
+                    coordinate_source=normalized.coordinate_source,
+                    coordinate_accuracy_meters=normalized.coordinate_accuracy_meters,
+                    zi_hour_policy=normalized.zi_hour_policy,
+                    time_basis_policy=normalized.time_basis_policy,
+                )
+            elif request.operation == "horizon":
+                if request.natal_facts is None or request.horizon is None:
+                    raise RuntimeError("Ziwei horizon engine request is malformed")
+                payload = _build_horizon_fact_extensions_payload(
+                    request.natal_facts.to_payload(),
+                    horizon=request.horizon,
+                )
+            elif request.operation == "target":
+                if request.natal_facts is None or request.target_date is None:
+                    raise RuntimeError("Ziwei target engine request is malformed")
+                payload = _build_target_fact_snapshot_payload(
+                    request.natal_facts.to_payload(),
+                    request.target_date,
+                )
+            else:
+                raise RuntimeError(
+                    f"unsupported Ziwei engine operation: {request.operation!r}"
+                )
         except json.JSONDecodeError as exc:
             raise EngineAdapterError(
                 self.art_id,
@@ -1517,7 +1678,7 @@ class ZiweiEngineAdapter(
 
     def _project_engine_output(
         self,
-        request: ZiweiNormalizedEngineRequest,
+        request: ZiweiNormalizedEngineRequest | ZiweiTemporalEngineRequest,
         output: _ZiweiPrivateEngineOutput,
         provenance: EngineProvenance,
     ) -> ZiweiCanonicalFacts:
@@ -1529,7 +1690,13 @@ class ZiweiEngineAdapter(
 
     def _provenance(
         self,
-        request: ZiweiNormalizedEngineRequest,
+        request: ZiweiNormalizedEngineRequest | ZiweiTemporalEngineRequest,
+    ) -> EngineProvenance:
+        return self._request_provenance(request)
+
+    @staticmethod
+    def _request_provenance(
+        request: ZiweiNormalizedEngineRequest | ZiweiTemporalEngineRequest,
     ) -> EngineProvenance:
         return EngineProvenance(
             engine_id="iztro",
@@ -1538,19 +1705,30 @@ class ZiweiEngineAdapter(
             time_basis=request.time_basis_policy,
         )
 
-    def bind_canonical_facts(
-        self,
-        request: ZiweiNormalizedEngineRequest,
-        payload: dict[str, Any],
-    ) -> EngineAdapterResult[ZiweiCanonicalFacts]:
-        """Bind a previously projected payload without retaining raw output."""
 
-        provenance = self._provenance(request)
-        facts = ZiweiFactContract().bind_canonical_facts(payload, provenance)
-        return EngineAdapterResult(
-            canonical_facts=facts,
-            provenance=provenance,
-        )
+def build_target_fact_snapshot(
+    chart_facts: dict[str, Any],
+    target_date: str,
+) -> dict[str, Any]:
+    """Compatibility facade for a typed exact Ziwei target snapshot."""
+
+    result = ZiweiEngineAdapter().adapt(
+        ZiweiTemporalEngineRequest.for_target(chart_facts, target_date)
+    )
+    return result.canonical_facts.to_payload()
+
+
+def build_horizon_fact_extensions(
+    chart_facts: dict[str, Any],
+    *,
+    horizon: dict[str, Any],
+) -> dict[str, Any]:
+    """Compatibility facade for typed Ziwei temporal fact extensions."""
+
+    result = ZiweiEngineAdapter().adapt(
+        ZiweiTemporalEngineRequest.for_horizon(chart_facts, horizon)
+    )
+    return result.canonical_facts.to_payload()
 
 
 def build_from_birth(
