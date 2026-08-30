@@ -16,6 +16,7 @@ const mockConfirmProfileDraft = vi.hoisted(() => vi.fn());
 const mockListProfiles = vi.hoisted(() => vi.fn());
 const mockSearch = vi.hoisted(() => ({ value: new URLSearchParams() }));
 const mockSessionStatus = vi.hoisted(() => ({ value: "signedOut" as "checking" | "signedOut" | "signedIn" }));
+const readingSummaryCallbacks = vi.hoisted(() => new Map<string, (summary: unknown) => void>());
 
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
@@ -54,6 +55,13 @@ vi.mock("@/components/readings/reading-result", () => ({
     onPollError?: (error: unknown) => void;
     onSummary?: (summary: typeof previewSummary) => void;
   }) => {
+    useEffect(() => {
+      if (onSummary) readingSummaryCallbacks.set(readingId, onSummary as (summary: unknown) => void);
+      return () => {
+        readingSummaryCallbacks.delete(readingId);
+      };
+    }, [onSummary, readingId]);
+
     useEffect(() => {
       let active = true;
       let timer: ReturnType<typeof setTimeout> | null = null;
@@ -163,6 +171,7 @@ const checkoutConfirmed = {
 
 beforeEach(() => {
   window.sessionStorage.clear();
+  readingSummaryCallbacks.clear();
   mockSessionStatus.value = "signedOut";
   mockSearch.value = new URLSearchParams();
   mockPollReading.mockReset();
@@ -392,6 +401,33 @@ describe("Bazi deep task state contract", () => {
     expect(screen.getByTestId("reading-result-preview-1"))
       .toHaveAttribute("data-bazi-deep-fulfilled", "true");
     expect(screen.getByTestId("reading-result-deep-1")).toBeVisible();
+  });
+
+  it("does not let a late preview summary roll checkout progress back to unpaid", async () => {
+    mockSessionStatus.value = "signedIn";
+    mockPollReading.mockResolvedValue(previewSummary);
+    mockStartBaziDeepReading.mockReturnValue(new Promise(() => undefined));
+
+    render(
+      <BaziDeepTaskFlow
+        onBack={vi.fn()}
+        previewReadingId="preview-1"
+        profileVersionId="profile-1"
+        query="事业主线"
+      />,
+    );
+
+    expect(await screen.findByText("尚未确认付费")).toBeVisible();
+    await userEvent.click(screen.getByRole("button", { name: "开始安全结账" }));
+    expect(await screen.findByText("正在准备履约")).toBeVisible();
+
+    act(() => {
+      readingSummaryCallbacks.get("preview-1")?.(previewSummary);
+    });
+
+    expect(screen.getByText("正在准备履约")).toBeVisible();
+    expect(screen.queryByText("尚未确认付费")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "开始安全结账" })).not.toBeInTheDocument();
   });
 
   it("fails closed when payment or fulfillment is rejected", async () => {

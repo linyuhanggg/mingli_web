@@ -1190,6 +1190,24 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     search ? `?${search}` : "",
     loginIntentKey ?? resumeKey ?? undefined,
   );
+  const inlineRestartFailure = submitError ? (
+    <Status
+      actions={(
+        <>
+          {submitErrorAction === "login" ? (
+            <a href={loginHref}>登录后继续</a>
+          ) : submitErrorAction === "retry" ? (
+            <button onClick={() => void restartInlineReading()} type="button">
+              再次重试（保留原资料）
+            </button>
+          ) : null}
+        </>
+      )}
+      description="原任务仍保留；可按当前提示继续，或返回录入修改资料。"
+      state={submitErrorState}
+      title={submitError}
+    />
+  ) : null;
 
   return (
     <div className={styles.experience} data-product={product.id} data-stage={stage}>
@@ -1317,6 +1335,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               state="loading"
               title="正在重新发起"
             />
+          ) : inlineRestartFailure ? (
+            inlineRestartFailure
           ) : (
             <ReadingResult
               readingId={liuyaoPreviewReadingId}
@@ -1413,6 +1433,8 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               state="loading"
               title="正在重新发起"
             />
+          ) : inlineRestartFailure ? (
+            inlineRestartFailure
           ) : (
             <ReadingResult
               readingId={ziweiPreviewReadingId}

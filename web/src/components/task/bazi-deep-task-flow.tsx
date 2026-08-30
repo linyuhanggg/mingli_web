@@ -273,6 +273,7 @@ export function BaziDeepTaskFlow({
   const checkoutStartKeyRef = useRef<string | null>(null);
   const fulfillmentKeyRef = useRef<string | null>(null);
   const bindingPaymentKeyRef = useRef<string | null>(null);
+  const previewCallbacksEnabledRef = useRef(true);
   const mountedRef = useRef(true);
 
   useEffect(() => {
@@ -281,6 +282,10 @@ export function BaziDeepTaskFlow({
       mountedRef.current = false;
     };
   }, []);
+
+  useEffect(() => {
+    previewCallbacksEnabledRef.current = true;
+  }, [previewReadingId]);
 
   useEffect(() => {
     const href = baziPreviewRestoreHref(
@@ -301,6 +306,7 @@ export function BaziDeepTaskFlow({
   }, [onBack, pathname, searchParams, writeHref]);
 
   const handlePreviewSummary = useCallback((summary: ReadingVersionSummary) => {
+    if (!previewCallbacksEnabledRef.current) return;
     setError(null);
     setErrorStatus(null);
     setState(stateForReadingStatus(summary.status, "preview", previewPollHints(summary)));
@@ -323,6 +329,11 @@ export function BaziDeepTaskFlow({
     setErrorStatus(errorHttpStatus(reason));
     setError(readableError(reason));
   }, []);
+
+  const handlePreviewPollError = useCallback((reason: unknown) => {
+    if (!previewCallbacksEnabledRef.current) return;
+    handleReadingPollError(reason);
+  }, [handleReadingPollError]);
 
   const accountState = session?.state.status;
   const accessState = (
@@ -366,6 +377,7 @@ export function BaziDeepTaskFlow({
 
   async function beginCheckout() {
     if (accessState !== "unpaid" || session?.state.status !== "signedIn") return;
+    previewCallbacksEnabledRef.current = false;
     if (!profileVersionId) {
       setState("checkout_failed");
       setError("当前资料版本尚未确认，不能创建深读结账。");
@@ -617,7 +629,7 @@ export function BaziDeepTaskFlow({
             <ReadingResult
               baziDeepFulfilled={accessState === "succeeded"}
               key={`preview-${previewReadingId}-${previewRetryKey}`}
-              onPollError={handleReadingPollError}
+              onPollError={handlePreviewPollError}
               onSummary={handlePreviewSummary}
               readingId={previewReadingId}
             />

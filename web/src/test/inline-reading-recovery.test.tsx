@@ -4,10 +4,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { ProductTaskExperience } from "@/components/task/product-task-experience";
 import type { TaskFormValues } from "@/components/task/product-input-form";
+import { ApiError } from "@/lib/api";
 import {
   loadRecoverableReading,
   saveRecoverableReading,
 } from "@/lib/reading-recovery";
+import { CHART_RUNTIME_FAULT } from "@/lib/start-reading-error";
 import { getProductDefinition } from "@/products/catalog";
 
 const navigation = vi.hoisted(() => ({
@@ -248,5 +250,48 @@ describe("Ziwei and Liuyao inline reading recovery", () => {
     expect(loadRecoverableReading("liuyao", "old-liuyao")).toBeNull();
     expect(navigation.replace).toHaveBeenLastCalledWith("/liuyao");
     expect(ownerEvents).toContain("unmount:old-liuyao");
+  });
+
+  it.each([
+    { productId: "ziwei" as const, readingId: "old-ziwei" },
+    { productId: "liuyao" as const, readingId: "old-liuyao" },
+  ])("keeps a failed $productId restart visible and actionable in the workbench", async ({
+    productId,
+    readingId,
+  }) => {
+    navigation.pathname = `/${productId}`;
+    navigation.search = `reading=${readingId}`;
+    saveRecoverableReading(productId, readingId, {
+      ...(productId === "ziwei" ? { profileVersionId: PROFILE_VERSION_ID } : {}),
+      startedAt: STARTED_AT,
+      values: taskValues,
+    });
+    const start = productId === "ziwei" ? api.startZiweiReading : api.startLiuyaoReading;
+    start.mockRejectedValueOnce(
+      new ApiError("internal runtime transport", 503, undefined, "chart_runtime_transport"),
+    );
+
+    render(<ProductTaskExperience product={getProductDefinition(productId)} />);
+
+    expect(await screen.findByText(readingId)).toBeVisible();
+    fireEvent.click(screen.getByRole("button", { name: "重试（保留原资料）" }));
+
+    expect(await screen.findByText(CHART_RUNTIME_FAULT)).toBeVisible();
+    expect(screen.queryByText("internal runtime transport")).not.toBeInTheDocument();
+    expect(screen.queryByText(readingId)).not.toBeInTheDocument();
+    const retry = screen.getByRole("button", { name: "再次重试（保留原资料）" });
+    expect(retry).toBeVisible();
+    expect(screen.getByRole("button", { name: "返回录入" })).toBeVisible();
+
+    start.mockResolvedValueOnce({
+      reading_version_id: `next-${productId}`,
+      created_at: "2026-08-29T12:02:00Z",
+    });
+    fireEvent.click(retry);
+
+    expect(await screen.findByText(`next-${productId}`)).toBeVisible();
+    expect(navigation.replace).toHaveBeenLastCalledWith(
+      `/${productId}?reading=next-${productId}`,
+    );
   });
 });
