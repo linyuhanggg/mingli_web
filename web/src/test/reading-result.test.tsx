@@ -220,6 +220,16 @@ const meihuaCapabilityB = {
   user_decision_pending: true,
 };
 
+const liuyaoCapabilityA = {
+  capability_id: "liuyao",
+  label: "六爻",
+  tier: "A" as const,
+  source_system: "divination",
+  runtime_active_rule_count: 6,
+  judgment_rule_count: 4,
+  source_status: "available" as const,
+};
+
 function factPanel() {
   return {
     question: "近七日最值得关注什么？",
@@ -1347,7 +1357,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     expect(resultCount).toBe(2);
   });
 
-  it("renders the returned Liuyao plate as six accessible lines with moving and shi-ying labels", async () => {
+  it("renders the typed Liuyao ViewModel as six accessible lines with moving and shi-ying labels", async () => {
     const liuyaoFacts = [
       {
         ref: "fact:cast/calculated/liuyao/primary_hexagram",
@@ -1468,6 +1478,55 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
       if (path.endsWith("/result")) {
         return jsonResponse(
           readingResult({
+            capability: liuyaoCapabilityA,
+            view_model: {
+              schema_version: "liuyao-chart/v1",
+              subject_ref: "liuyao:public-cast",
+              question: "这次岗位面试能否进入下一轮？",
+              primary_hexagram: {
+                name: "水山蹇",
+                upper_trigram: "坎",
+                lower_trigram: "艮",
+              },
+              changed_hexagram: {
+                name: "水风井",
+                upper_trigram: "坎",
+                lower_trigram: "巽",
+              },
+              lines: [
+                { position: 1, value: 8, moving: false },
+                { position: 2, value: 9, moving: true },
+                { position: 3, value: 7, moving: false },
+                { position: 4, value: 8, moving: false },
+                { position: 5, value: 7, moving: false },
+                { position: 6, value: 8, moving: false },
+              ],
+              core_facts: {
+                calendar: null,
+                casting: null,
+                casting_method: "supplied_complete_cast",
+                changed_najia: null,
+                changed_plate_lines: null,
+                changed_six_relatives: null,
+                hidden_lines: null,
+                interpretation_status: "facts_only",
+                line_facts: liuyaoFacts[4].value,
+                lines: liuyaoFacts[4].value,
+                month_day_strength: null,
+                moving_lines: [2],
+                najia: null,
+                relation_facts: null,
+                returning_relations: null,
+                requested_useful_spirit_candidates: null,
+                shi_ying: { shi: 4, ying: 1 },
+                shi_ying_moving_relations: null,
+                six_relatives: null,
+                six_spirit_profile: null,
+                six_spirits: null,
+                useful_spirit_candidates: null,
+                useful_spirit_selection: null,
+              },
+            },
             fact_panel: {
               ...factPanel(),
               question: "这次岗位面试能否进入下一轮？",
@@ -1501,7 +1560,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const plate = await screen.findByRole("region", { name: "六爻卦象" });
+    const plate = await screen.findByRole("region", { name: "六爻排盘工作台" });
     expect(within(plate).getByText("水山蹇")).toBeVisible();
     expect(within(plate).getByText("水风井")).toBeVisible();
     const lines = within(plate).getAllByRole("listitem");
@@ -1511,14 +1570,10 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
     expect(within(lines[4]).getByText("动爻")).toBeVisible();
     expect(within(lines[2]).getByText("世")).toBeVisible();
     expect(within(lines[5]).getByText("应")).toBeVisible();
-    expect(within(plate).getByText(/1 条依据与卦象事实相连/)).toBeVisible();
-    expect(within(plate).getByRole("link", { name: "查看依据" })).toHaveAttribute(
-      "href",
-      "#reading-evidence-title",
-    );
+    expect(screen.getByText("卜筮正宗")).toBeVisible();
   });
 
-  it("keeps a dedicated Liuyao surface but refuses to invent a plate from unknown facts", async () => {
+  it("fails closed when Liuyao returns facts without a typed ViewModel", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path.endsWith("/result")) {
@@ -1552,13 +1607,11 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const plate = await screen.findByRole("region", { name: "六爻卦象" });
-    expect(within(plate).getByText(/服务端未返回可解析的公开卦象结构/)).toBeVisible();
-    expect(within(plate).getByText(/不会自行补算/)).toBeVisible();
-    expect(within(plate).getAllByRole("listitem")).toHaveLength(6);
+    expect(await screen.findByRole("status", { name: "还没有可展示的盘面" })).toBeVisible();
+    expect(screen.queryByRole("region", { name: "六爻排盘工作台" })).not.toBeInTheDocument();
   });
 
-  it("warns when the server names a hexagram but returns an incomplete line set", async () => {
+  it("does not project an incomplete legacy Liuyao line set", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       const path = String(url);
       if (path.endsWith("/result")) {
@@ -1602,10 +1655,8 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    const plate = await screen.findByRole("region", { name: "六爻卦象" });
-    expect(within(plate).getByText("水山蹇")).toBeVisible();
-    expect(within(plate).getByText(/仅返回 2\/6 个可解析爻位/)).toBeVisible();
-    expect(within(plate).getAllByRole("listitem")).toHaveLength(6);
+    expect(await screen.findByRole("status", { name: "还没有可展示的盘面" })).toBeVisible();
+    expect(screen.queryByText("水山蹇")).not.toBeInTheDocument();
   });
 });
 

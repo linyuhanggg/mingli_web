@@ -1410,8 +1410,8 @@ export function ProductInputForm({
                   <option value="time">按时间起卦</option>
                   <option value="supplied_number">按数字起卦</option>
                   <option value="sound_count">按声数起卦</option>
-                  <option value="observation">按观察起卦</option>
-                  <option value="supplied_hexagram">提供完整卦象</option>
+                  <option value="observation">观物起卦</option>
+                  <option value="supplied_hexagram">已知卦象起卦</option>
                 </select>
               </Field>
               {meihuaCastingMethod === "supplied_number" ? (
@@ -1455,7 +1455,7 @@ export function ProductInputForm({
                       </select>
                     </Field>
                   ) : null}
-                  <Field htmlFor="meihua-source" label={meihuaCastingMethod === "observation" ? "观察来源" : "卦象资料来源"} error={errors.meihuaSource?.message}>
+                  <Field htmlFor="meihua-source" label={meihuaCastingMethod === "observation" ? "观物来源" : "卦象资料来源"} error={errors.meihuaSource?.message}>
                     <input id="meihua-source" {...register("meihuaSource")} placeholder="例如：用户现场记录" />
                   </Field>
                 </>

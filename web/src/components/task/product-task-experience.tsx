@@ -273,41 +273,100 @@ function TaskProgress({ product, stage }: { product: ProductDefinition; stage: T
 }
 
 function InputTrustRail({ product }: { product: ProductDefinition }) {
+  const s3Art =
+    product.id === "liuyao" || product.id === "meihua" || product.id === "daliuren";
+  const previewTitle =
+    product.id === "liuyao"
+      ? "六爻自上而下核对"
+      : product.id === "meihua"
+        ? "本卦、互卦、变卦依次展开"
+        : product.id === "daliuren"
+          ? "天地盘与四课三传分区呈现"
+          : "提交后填入你的盘";
+  const previewCopy = s3Art
+    ? "这里只预告结果结构；真实盘面只使用提交后返回的版本化 ViewModel。"
+    : "以下干支只作示意骨架；真实盘面只使用提交后返回的版本化 ViewModel。";
+
   return (
     <aside className={styles.inputTrustRail} aria-label={`提交后的${product.name}盘面预览`}>
       <section className={styles.platePreview} aria-labelledby="task-plate-preview-title">
         <div className={styles.trustRailHeader}>
           <span>盘面骨架</span>
-          <h2 id="task-plate-preview-title">提交后填入你的盘</h2>
-          <p>以下干支只作示意骨架；真实盘面只使用提交后返回的版本化 ViewModel。</p>
+          <h2 id="task-plate-preview-title">{previewTitle}</h2>
+          <p>{previewCopy}</p>
         </div>
-        <dl className={styles.plateSkeleton} aria-label="示意骨架，不是真实盘面">
-          <div>
-            <dt>年柱</dt>
-            <dd>甲子</dd>
+        {product.id === "liuyao" ? (
+          <ol className={styles.liuyaoSkeleton} aria-label="六爻结果结构示意">
+            {[6, 5, 4, 3, 2, 1].map((line) => (
+              <li key={line}>
+                <span>{line === 6 ? "上爻" : line === 1 ? "初爻" : `${line}爻`}</span>
+                <i aria-hidden="true" />
+                <small>等待服务端爻值</small>
+              </li>
+            ))}
+          </ol>
+        ) : product.id === "meihua" ? (
+          <ol className={styles.meihuaSkeleton} aria-label="梅花本互变结果结构示意">
+            {["本卦", "互卦", "变卦"].map((label) => (
+              <li key={label}>
+                <strong>{label}</strong>
+                <span>等待服务端卦象</span>
+              </li>
+            ))}
+          </ol>
+        ) : product.id === "daliuren" ? (
+          <div className={styles.daliurenSkeleton} aria-label="大六壬课传结果结构示意">
+            <ol aria-label="四课">
+              {["一课", "二课", "三课", "四课"].map((label) => (
+                <li key={label}>{label}</li>
+              ))}
+            </ol>
+            <ol aria-label="三传">
+              {["初传", "中传", "末传"].map((label) => (
+                <li key={label}>{label}</li>
+              ))}
+            </ol>
           </div>
-          <div>
-            <dt>月柱</dt>
-            <dd>乙丑</dd>
-          </div>
-          <div>
-            <dt>日柱</dt>
-            <dd>丙寅</dd>
-          </div>
-          <div>
-            <dt>时柱</dt>
-            <dd>丁卯</dd>
-          </div>
-        </dl>
-        <p className={styles.skeletonNote}>示意骨架：未知数据保持空态，不用默认干支冒充结果。</p>
+        ) : (
+          <dl className={styles.plateSkeleton} aria-label="示意骨架，不是真实盘面">
+            <div>
+              <dt>年柱</dt>
+              <dd>甲子</dd>
+            </div>
+            <div>
+              <dt>月柱</dt>
+              <dd>乙丑</dd>
+            </div>
+            <div>
+              <dt>日柱</dt>
+              <dd>丙寅</dd>
+            </div>
+            <div>
+              <dt>时柱</dt>
+              <dd>丁卯</dd>
+            </div>
+          </dl>
+        )}
+        <p className={styles.skeletonNote}>
+          {s3Art
+            ? "结构预览：未知事实保持空态，不用示例卦、爻或课传冒充结果。"
+            : "示意骨架：未知数据保持空态，不用默认干支冒充结果。"}
+        </p>
       </section>
-      <figure className={styles.citationSample}>
-        <figcaption>已核对引文样张</figcaption>
-        <blockquote>
-          <p>「天道有寒暖，发育万物，人道得之，不可过也。」</p>
-        </blockquote>
-        <cite>《滴天髓》通神论 · verified_exact</cite>
-      </figure>
+      {s3Art ? (
+        <section className={styles.sourceBoundary} aria-labelledby="task-source-boundary-title">
+          <h2 id="task-source-boundary-title">事实与依据同盘回看</h2>
+          <p>有精确依据时才显示原文与定位；没有证据的字段保持缺口，不展示内部数据或推测。</p>
+        </section>
+      ) : (
+        <figure className={styles.citationSample}>
+          <figcaption>已核对引文样张</figcaption>
+          <blockquote>
+            <p>「天道有寒暖，发育万物，人道得之，不可过也。」</p>
+          </blockquote>
+          <cite>《滴天髓》通神论 · verified_exact</cite>
+        </figure>
+      )}
       <section className={styles.trustSteps} aria-labelledby="task-trust-steps-title">
         <h2 id="task-trust-steps-title">三步看懂结果</h2>
         <ol>

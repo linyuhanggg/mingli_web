@@ -230,7 +230,7 @@ describe("liuyao result six states", () => {
     expect(panel).toHaveAttribute("data-state", "unavailable");
   });
 
-  it("keeps an accepted_copy result page instead of empty or unavailable", async () => {
+  it("does not treat accepted copy as a Liuyao plate without a typed ViewModel", async () => {
     const fetchMock = vi.fn<typeof fetch>(async (url) => {
       if (String(url).endsWith("/result")) {
         return jsonResponse(acceptedResult("liuyao", "六爻"));
@@ -241,8 +241,8 @@ describe("liuyao result six states", () => {
 
     render(<ReadingResult readingId={VERSION_ID} />);
 
-    expect(await screen.findByRole("region", { name: "判断" })).toHaveTextContent(ACCEPTED_COPY);
-    expect(screen.queryByRole("status", { name: "还没有可展示的盘面" })).not.toBeInTheDocument();
+    expect(await screen.findByRole("status", { name: "还没有可展示的盘面" })).toBeVisible();
+    expect(screen.queryByRole("region", { name: "判断" })).not.toBeInTheDocument();
     expect(
       screen.queryByRole("status", { name: "结果服务暂时不可用，不会展示未确认内容" }),
     ).not.toBeInTheDocument();
