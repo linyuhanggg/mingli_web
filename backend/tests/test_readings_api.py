@@ -2784,6 +2784,130 @@ async def test_confirm_and_preview_replays_cross_process_overwrite_race(
         assert await session.scalar(select(func.count()).select_from(ReadingIdempotencyKey)) == 1
 
 
+async def test_confirm_and_preview_discards_different_key_overwrite_loser_claim(
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    main = __import__("app.main", fromlist=["create_app"])
+    profiles_api = __import__("app.api.profiles", fromlist=["_serialize_draft_preview"])
+    application = main.create_app(settings=test_settings, database=database)
+    runtime = RenderableChartRuntime()
+    application.state.chart_runtime = runtime
+
+    async def bypass_process_local_lock() -> None:
+        return None
+
+    application.dependency_overrides[
+        profiles_api._serialize_draft_preview
+    ] = bypass_process_local_lock
+    payload = confirm_and_preview_payload()
+    payload["profile"]["on_name_conflict"] = "overwrite"
+    claim_committed = [asyncio.Event(), asyncio.Event()]
+    release_claim = [asyncio.Event(), asyncio.Event()]
+    claim_index = 0
+    original_claim = ReadingService._claim_atomic_profile_preview
+
+    async def pause_after_each_durable_claim(
+        service: ReadingService,
+        *args: Any,
+        **kwargs: Any,
+    ) -> Any:
+        nonlocal claim_index
+        result = await original_claim(service, *args, **kwargs)
+        if result is None and service._atomic_profile_preview_claim is not None:
+            index = claim_index
+            claim_index += 1
+            claim_committed[index].set()
+            await release_claim[index].wait()
+        return result
+
+    monkeypatch.setattr(
+        ReadingService,
+        "_claim_atomic_profile_preview",
+        pause_after_each_durable_claim,
+    )
+
+    async with AsyncClient(
+        transport=ASGITransport(app=application),
+        base_url="https://testserver",
+    ) as first_client:
+        guest_headers = await create_guest(first_client)
+        logged_in = await login_current_guest(first_client, guest_headers)
+        csrf_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+        existing = await create_confirmed_profile(first_client, csrf_headers)
+        draft = await first_client.post(
+            "/api/v1/profiles/drafts",
+            headers=csrf_headers,
+            json={"label": "本人"},
+        )
+        assert draft.status_code == 201, draft.text
+        await seed_runtime_release(database, test_settings)
+        endpoint = (
+            f"/api/v1/profiles/drafts/{draft.json()['draft_id']}/readings/preview"
+        )
+        winner_headers = {
+            **csrf_headers,
+            "Idempotency-Key": "different-key-overwrite-winner-v1",
+        }
+        loser_headers = {
+            **csrf_headers,
+            "Idempotency-Key": "different-key-overwrite-loser-v1",
+        }
+
+        async with AsyncClient(
+            transport=ASGITransport(app=application),
+            base_url="https://testserver",
+            cookies=first_client.cookies,
+        ) as second_client:
+            winner_request = asyncio.create_task(
+                first_client.post(endpoint, headers=winner_headers, json=payload)
+            )
+            await claim_committed[0].wait()
+            loser_request = asyncio.create_task(
+                second_client.post(endpoint, headers=loser_headers, json=payload)
+            )
+            await claim_committed[1].wait()
+
+            release_claim[0].set()
+            winner = await winner_request
+            release_claim[1].set()
+            loser = await loser_request
+            replay = await second_client.post(
+                endpoint,
+                headers=winner_headers,
+                json=payload,
+            )
+            conflicting_payload = confirm_and_preview_payload()
+            conflicting_payload["profile"]["on_name_conflict"] = "overwrite"
+            conflicting_payload["reading"]["dimension_ids"] = ["overview"]
+            conflict = await second_client.post(
+                endpoint,
+                headers=winner_headers,
+                json=conflicting_payload,
+            )
+
+    assert winner.status_code == 201, winner.text
+    assert loser.status_code == 404, loser.text
+    assert loser.json()["code"] == "profile_not_found"
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["reading_version_id"] == winner.json()["reading_version_id"]
+    assert replay.json()["status"] == "prepared"
+    assert conflict.status_code == 409, conflict.text
+    assert conflict.json()["title"] == "Idempotency-Key conflict"
+    assert runtime.calls == 1
+    async with database.sessions() as session:
+        profiles = list(await session.scalars(select(SubjectProfile)))
+        assert [str(profile.id) for profile in profiles] == [existing["profile_id"]]
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingJobRecord)) == 1
+        assert await session.scalar(
+            select(func.count()).select_from(ReadingIdempotencyKey)
+        ) == 1
+
+
 @pytest.mark.parametrize("expose_claim", [False, True], ids=["unexposed", "exposed"])
 async def test_confirm_and_preview_cleans_claim_when_confirmation_loses_race(
     database: Any,
