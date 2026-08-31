@@ -129,6 +129,12 @@ function readPendingStartFormState(values: unknown): PendingStartFormState | nul
   };
 }
 
+function profileInputFingerprint(body: ProfileConfirmRequest): string {
+  const { on_name_conflict: conflictAction, ...profileInput } = body;
+  void conflictAction;
+  return JSON.stringify(profileInput);
+}
+
 const BAZI_PREVIEW_RECOVERY_PREFIX = "mingli.bazi-preview-recovery:";
 
 export type BaziPreviewRecoveryState = {
@@ -481,6 +487,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [selectedProfileVersionId, setSelectedProfileVersionId] = useState("");
   const [savedProfilesAttempt, setSavedProfilesAttempt] = useState(0);
   const profileVersionRef = useRef<string | null>(null);
+  const confirmedProfileInputRef = useRef<string | null>(null);
   const profileSelectionContextRef = useRef<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
   const pendingProfileRef = useRef<{
@@ -545,6 +552,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   function returnToInlineInput() {
     clearRecoverableReading(product.id);
     profileVersionRef.current = null;
+    confirmedProfileInputRef.current = null;
     intentKeyRef.current = null;
     setInlineRecovery(null);
     setInlineRestarting(false);
@@ -560,6 +568,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   function returnToBaziInput() {
     clearBaziPreviewRecoveryState(baziPreviewReadingId);
     profileVersionRef.current = null;
+    confirmedProfileInputRef.current = null;
     setBaziPreviewRecovery(null);
     intentKeyRef.current = null;
     setBaziPreviewReadingId(null);
@@ -814,7 +823,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         return;
       }
       if (product.group === "natal") {
-        let profileVersionId = selectedProfileVersionId || profileVersionRef.current;
+        let profileVersionId = selectedProfileVersionId;
         if (!profileVersionId) {
           const body: ProfileConfirmRequest = {
             birth_datetime: localDateTimeWithOffset(
@@ -833,11 +842,25 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
             on_name_conflict: "reject",
           };
-          const profile = await confirmTaskProfile(nextValues, body, chartAttemptIsActive);
-          if (!profile) return;
-          profileVersionRef.current = profile.profile_version_id;
-          if (!chartAttemptIsActive()) return;
-          profileVersionId = profile.profile_version_id;
+          const profileInput = profileInputFingerprint(body);
+          if (
+            profileVersionRef.current
+            && confirmedProfileInputRef.current === profileInput
+          ) {
+            profileVersionId = profileVersionRef.current;
+          } else {
+            if (profileVersionRef.current) {
+              profileVersionRef.current = null;
+              confirmedProfileInputRef.current = null;
+              intentKeyRef.current = null;
+            }
+            const profile = await confirmTaskProfile(nextValues, body, chartAttemptIsActive);
+            if (!profile) return;
+            profileVersionRef.current = profile.profile_version_id;
+            confirmedProfileInputRef.current = profileInput;
+            if (!chartAttemptIsActive()) return;
+            profileVersionId = profile.profile_version_id;
+          }
         }
         profileVersionRef.current = profileVersionId;
 
@@ -1318,6 +1341,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       setNameConflict(null);
       setCreatedProfile(profile);
       profileVersionRef.current = profile.profile_version_id;
+      confirmedProfileInputRef.current = profileInputFingerprint(pending.body);
       setSelectedProfileVersionId(profile.profile_version_id);
       await startRuntimeReading(pending.nextValues);
     } catch (reason) {
@@ -1412,6 +1436,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               onProfileVersionChange={(profileVersionId) => {
                 setSelectedProfileVersionId(profileVersionId);
                 profileVersionRef.current = profileVersionId || null;
+                confirmedProfileInputRef.current = null;
                 intentKeyRef.current = null;
               }}
               product={product}
@@ -1447,6 +1472,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           product={product}
           onBack={() => {
             profileVersionRef.current = null;
+            confirmedProfileInputRef.current = null;
             intentKeyRef.current = null;
             setBaziPreviewReadingId(null);
             setZiweiPreviewReadingId(null);

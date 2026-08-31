@@ -16,6 +16,7 @@ const taskMocks = vi.hoisted(() => ({
   routerPush: vi.fn(),
   startHecanReading: vi.fn(),
   startPreviewReading: vi.fn(),
+  startZiweiReading: vi.fn(),
 }));
 
 vi.mock("next/navigation", async (importOriginal) => ({
@@ -38,6 +39,7 @@ vi.mock("@/lib/api", async (importOriginal) => ({
   listProfiles: taskMocks.listProfiles,
   startHecanReading: taskMocks.startHecanReading,
   startPreviewReading: taskMocks.startPreviewReading,
+  startZiweiReading: taskMocks.startZiweiReading,
 }));
 
 const confirmedProfile = {
@@ -46,6 +48,13 @@ const confirmedProfile = {
   subject_ref: "profile-version:bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
   version: 1,
   created_at: "2026-08-27T00:00:00Z",
+};
+
+const reconfirmedProfile = {
+  ...confirmedProfile,
+  profile_version_id: "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  subject_ref: "profile-version:cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+  version: 2,
 };
 
 beforeEach(() => {
@@ -58,6 +67,7 @@ beforeEach(() => {
   taskMocks.routerPush.mockReset();
   taskMocks.startHecanReading.mockReset();
   taskMocks.startPreviewReading.mockReset();
+  taskMocks.startZiweiReading.mockReset();
 });
 
 afterEach(() => {
@@ -81,6 +91,14 @@ async function fillNatalTask(user: ReturnType<typeof userEvent.setup>) {
   await user.selectOptions(screen.getByLabelText("出生城市"), "常州市");
   await user.selectOptions(screen.getByLabelText("出生区县"), "金坛区");
   await user.click(screen.getByRole("radio", { name: "男" }));
+}
+
+async function flushChartStart() {
+  await act(async () => {
+    for (let index = 0; index < 8; index += 1) {
+      await Promise.resolve();
+    }
+  });
 }
 
 describe("ProductTaskPage input shell", () => {
@@ -174,6 +192,90 @@ describe("ProductTaskPage input shell", () => {
 });
 
 describe("ProductTaskExperience retained profile drafts", () => {
+  const profileRetryCases = [
+    { productId: "bazi", exit: "return", editedField: "gender" },
+    { productId: "bazi", exit: "timeout", editedField: "birth-date" },
+    { productId: "ziwei", exit: "return", editedField: "birth-time" },
+    { productId: "ziwei", exit: "timeout", editedField: "location" },
+  ] as const;
+
+  function editProfileField(field: typeof profileRetryCases[number]["editedField"]) {
+    if (field === "gender") {
+      fireEvent.click(screen.getByRole("radio", { name: "女" }));
+      return;
+    }
+    if (field === "birth-date") {
+      fireEvent.change(screen.getByLabelText("出生日期"), { target: { value: "07" } });
+      return;
+    }
+    if (field === "birth-time") {
+      fireEvent.change(screen.getByLabelText("出生分钟"), { target: { value: "45" } });
+      return;
+    }
+    fireEvent.change(screen.getByLabelText("出生区县"), { target: { value: "武进区" } });
+  }
+
+  it.each(profileRetryCases.flatMap((testCase) => [
+    { ...testCase, edited: false },
+    { ...testCase, edited: true },
+  ]))(
+    "$productId reuses only matching profile input after $exit (edited=$edited)",
+    async ({ productId, exit, edited, editedField }) => {
+      const startMock = productId === "bazi"
+        ? taskMocks.startPreviewReading
+        : taskMocks.startZiweiReading;
+      taskMocks.confirmProfileDraft
+        .mockResolvedValueOnce(confirmedProfile)
+        .mockResolvedValueOnce(reconfirmedProfile);
+      startMock
+        .mockReturnValueOnce(new Promise(() => undefined))
+        .mockReturnValueOnce(new Promise(() => undefined));
+      const user = userEvent.setup();
+      render(<ProductTaskPage productId={productId} />);
+      await fillNatalTask(user);
+
+      vi.useFakeTimers();
+      fireEvent.click(document.getElementById(`${productId}-submit`) as HTMLButtonElement);
+      await flushChartStart();
+
+      expect(taskMocks.confirmProfileDraft).toHaveBeenCalledTimes(1);
+      expect(startMock).toHaveBeenCalledTimes(1);
+      const firstConfirmBody = taskMocks.confirmProfileDraft.mock.calls[0]?.[1];
+      const firstKey = startMock.mock.calls[0]?.[1];
+
+      if (exit === "return") {
+        act(() => vi.advanceTimersByTime(15_000));
+        fireEvent.click(screen.getByRole("button", { name: "返回录入" }));
+      } else {
+        act(() => vi.advanceTimersByTime(60_000));
+      }
+
+      if (edited) {
+        editProfileField(editedField);
+        fireEvent.click(document.getElementById(`${productId}-submit`) as HTMLButtonElement);
+      } else if (exit === "timeout") {
+        fireEvent.click(screen.getByRole("button", { name: "重试" }));
+      } else {
+        fireEvent.click(document.getElementById(`${productId}-submit`) as HTMLButtonElement);
+      }
+      await flushChartStart();
+
+      expect(taskMocks.confirmProfileDraft).toHaveBeenCalledTimes(edited ? 2 : 1);
+      expect(startMock).toHaveBeenCalledTimes(2);
+      expect(startMock.mock.calls[1]?.[0]).toMatchObject({
+        profile_version_id: edited
+          ? reconfirmedProfile.profile_version_id
+          : confirmedProfile.profile_version_id,
+      });
+      if (edited) {
+        expect(taskMocks.confirmProfileDraft.mock.calls[1]?.[1]).not.toEqual(firstConfirmBody);
+        expect(startMock.mock.calls[1]?.[1]).not.toBe(firstKey);
+      } else {
+        expect(startMock.mock.calls[1]?.[1]).toBe(firstKey);
+      }
+    },
+  );
+
   it("moves focus into the delayed bazi skeleton, then restores it on a safe return", async () => {
     taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
     let releaseStart!: (value: { reading_version_id: string }) => void;
