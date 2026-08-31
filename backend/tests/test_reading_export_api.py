@@ -25,7 +25,7 @@ async def test_export_http_route_creates_and_downloads_png_and_pdf(
     await seed_runtime_release(database, test_settings)
     started = await client.post(
         "/api/v1/readings/preview",
-        headers=headers,
+        headers={**headers, "Idempotency-Key": "reading-export-api"},
         json={
             "profile_version_id": confirmed["profile_version_id"],
             "dimension_ids": ["career"],

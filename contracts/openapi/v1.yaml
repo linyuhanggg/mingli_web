@@ -3502,6 +3502,7 @@ components:
           type: [integer, "null"]
           minimum: 1800
           maximum: 2199
+          description: Optional explicit civil year. When omitted for Bazi or Ziwei preview, the server selects the civil year from the confirmed Profile timezone.
         target_month:
           type: [string, "null"]
           pattern: '^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])$'
@@ -3717,6 +3718,7 @@ components:
           type: [integer, "null"]
           minimum: 1800
           maximum: 2199
+          description: Optional explicit civil year. When omitted for Bazi or Ziwei preview, the server selects the civil year from the confirmed Profile timezone.
         target_month:
           type: [string, "null"]
           pattern: '^(?:18|19|20|21)\d{2}-(?:0[1-9]|1[0-2])$'
@@ -4782,6 +4784,15 @@ components:
           additionalProperties: true
         display_text:
           type: string
+          minLength: 1
+          description: >-
+            Runtime-provided display text. When ReadingResultResponse.view_model
+            resolves to bazi-chart-v1 or ziwei-chart-v1, the service replaces this
+            field with stable user-facing text projected from named versioned
+            ViewModel fields; that presenter output is never raw JSON, schema
+            names, or engine identifiers. All other Runtime producers use the
+            fallback projection and are not covered by this humanized-text
+            guarantee.
     VerifiedExactCitation:
       type: object
       additionalProperties: false
@@ -5389,6 +5400,7 @@ components:
               const: hour
         free_year_set:
           type: array
+          description: Ordered civil years actually returned by the Runtime-backed ViewModel year layer; clients must not assume a fixed count.
           items:
             type: integer
         capability:

@@ -14,6 +14,7 @@ from app.adapters.runtime import (
     generic_runtime_stopped,
     runtime_command_digest,
 )
+from app.charts.projectors import project_runtime_view_model
 from app.identity.models import GuestSession
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.readings.errors import RuntimeTransportError
@@ -27,6 +28,7 @@ from app.readings.models import (
     ReadingVersion,
     RuntimeRelease,
 )
+from app.readings.presentation import ReadingDocumentV1
 from app.readings.request_compiler import compile_liuyao_prepare
 from app.readings.runtime_contracts import (
     TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
@@ -422,6 +424,7 @@ async def advance_to_accepted(
     *,
     version_id: str,
     subject_ref: str,
+    public_copy: str = ACCEPTED_COPY,
 ) -> None:
     readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
     cipher = EnvelopeCipher.from_settings(settings)
@@ -451,7 +454,10 @@ async def advance_to_accepted(
             )
         await repository.record_accepted(
             str(job.id),
-            Accepted(state_token=state_token or "api-test-token", public_copy=ACCEPTED_COPY),
+            Accepted(
+                state_token=state_token or "api-test-token",
+                public_copy=public_copy,
+            ),
             now,
         )
         await session.commit()
@@ -613,7 +619,13 @@ def _bazi_chart_brief(
                     "2026-08": {
                         "year": 2026,
                         "month": 8,
-                        "ganzhi_segments": [{"ganzhi": "甲申"}],
+                        "ganzhi_segments": [
+                            {
+                                "ganzhi": "甲申",
+                                "start_inclusive": "2026-08-01T00:00:00+08:00",
+                                "end_exclusive": "2026-09-01T00:00:00+08:00",
+                            }
+                        ],
                         "structural_changes": {"status": "fixture"},
                         "seasonal_tiaohou_delta": {"status": "fixture"},
                         "shensha_auxiliary": {"status": "fixture"},
@@ -646,7 +658,11 @@ def _bazi_chart_brief(
     )
 
 
-def _ziwei_chart_brief(subject_ref: str) -> ReadingBrief:
+def _ziwei_chart_brief(
+    subject_ref: str,
+    *,
+    include_month: bool = False,
+) -> ReadingBrief:
     palaces = [
         {
             "index": index,
@@ -658,19 +674,54 @@ def _ziwei_chart_brief(subject_ref: str) -> ReadingBrief:
         }
         for index in range(12)
     ]
+    facts: list[dict[str, Any]] = [
+        {
+            "ref": f"fact:{subject_ref}/calculated/ziwei/palaces",
+            "subject_ref": subject_ref,
+            "kind_id": "kind.structure",
+            "value": palaces,
+            "display_text": "十二宫盘面事实",
+        }
+    ]
+    if include_month:
+        facts.append(
+            {
+                "ref": f"fact:{subject_ref}/calculated/ziwei/monthly_layers",
+                "subject_ref": subject_ref,
+                "kind_id": "kind.fact",
+                "value": {
+                    "2032-01": {
+                        "year": 2032,
+                        "month": 1,
+                        "liu_yue": {
+                            "name": "命宫",
+                            "heavenlyStem": "甲",
+                            "earthlyBranch": "子",
+                        },
+                        "segments": [
+                            {
+                                "start_inclusive": "2032-01-01",
+                                "end_exclusive": "2032-02-01",
+                                "liu_yue": {
+                                    "name": "命宫",
+                                    "heavenlyStem": "甲",
+                                    "earthlyBranch": "子",
+                                },
+                            }
+                        ],
+                        "representative_scope": (
+                            "first exact segment; use segments for all dates"
+                        ),
+                    }
+                },
+                "display_text": "流月层已由 Runtime 计算。",
+            }
+        )
     return ReadingBrief.from_dict(
         {
             "question": "查看本命紫微盘",
             "vocabulary": [],
-            "facts": [
-                {
-                    "ref": f"fact:{subject_ref}/calculated/ziwei/palaces",
-                    "subject_ref": subject_ref,
-                    "kind_id": "kind.structure",
-                    "value": palaces,
-                    "display_text": "十二宫盘面事实",
-                }
-            ],
+            "facts": facts,
             "evidence": [],
             "findings": [],
             "claim_scopes": [],
@@ -712,7 +763,11 @@ async def replace_prepared_brief(
         if existing_brief is not None:
             await session.delete(existing_brief)
             await session.flush()
-        state_token = await repository.load_state_token(version.id)
+        state_token = (
+            None
+            if version.state_token_fingerprint is None
+            else await repository.load_state_token(version.id)
+        )
         await repository.record_prepared(
             str(job.id),
             Prepared(
@@ -720,6 +775,260 @@ async def replace_prepared_brief(
                 brief=brief,
             ),
             datetime.now(UTC),
+        )
+        await session.commit()
+
+
+async def save_fact_referencing_document(
+    database: Any,
+    settings: Any,
+    *,
+    version_id: str,
+    subject_ref: str,
+    product_id: str,
+    brief: ReadingBrief,
+    public_fact_ref: str,
+    supported_time_fact_ref: str,
+) -> None:
+    claim_texts = (
+        "MIXED-CLAIM-MUST-DROP",
+        "受支持流月事实形成的结论应保持引用闭包。",
+        "公开结果必须保持事实引用闭包。",
+        "公开边界可独立支撑这条结论。",
+        "这条公开说明没有事实依赖。",
+    )
+    public_copy_suffix = "本解读仅供传统文化参考，不构成现实决策保证。"
+    await advance_to_accepted(
+        database,
+        settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        public_copy="\n\n".join((*claim_texts, public_copy_suffix)),
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id=product_id)
+    assert view_model is not None
+    removed_fact_ref = (
+        f"fact:{subject_ref}/calculated/{product_id}/unknown_engine_dump"
+    )
+    cipher = EnvelopeCipher.from_settings(settings)
+    async with database.sessions() as session:
+        readings = __import__(
+            "app.readings.repository",
+            fromlist=["SqlReadingRepository"],
+        )
+        repository = readings.SqlReadingRepository(session, cipher)
+        version_uuid = UUID(version_id)
+        accepted_copy = await repository.get_accepted_copy(version_uuid)
+        assert accepted_copy is not None
+        document = ReadingDocumentV1.model_validate(
+            {
+                "document_id": f"reading-version:{version_id}",
+                "reading_version_id": version_id,
+                "accepted_copy_ref": f"accepted-copy:{accepted_copy.id}",
+                "product_version": f"{product_id}-reading/test",
+                "presentation_contract_version": f"{product_id}-presentation/test",
+                "view_model": view_model.model_dump(mode="json"),
+                "answer_summary": "MIXED-CLAIM-MUST-DROP",
+                "subject_summaries": [
+                    {"subject_ref": subject_ref, "label": "本人"}
+                ],
+                "themes": [{"theme_id": "career", "label": "事业"}],
+                "claims": [
+                    {
+                        "claim_id": "claim:mixed-must-drop",
+                        "section_id": "overview",
+                        "text": "MIXED-CLAIM-MUST-DROP",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [public_fact_ref, removed_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": ["evidence:mixed-must-drop"],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
+                    {
+                        "claim_id": "claim:time-layer",
+                        "section_id": "overview",
+                        "text": "受支持流月事实形成的结论应保持引用闭包。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [supported_time_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": ["evidence:time-layer"],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
+                    {
+                        "claim_id": "claim:fact-closure",
+                        "section_id": "overview",
+                        "text": "公开结果必须保持事实引用闭包。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [public_fact_ref, supported_time_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": [
+                            "evidence:fact-closure",
+                            "evidence:time-layer",
+                        ],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
+                    {
+                        "claim_id": "claim:limit-only",
+                        "section_id": "overview",
+                        "text": "公开边界可独立支撑这条结论。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [],
+                        "finding_refs": [],
+                        "evidence_refs": [],
+                        "limit_refs": ["limit:traditional"],
+                        "verification": {"enabled": True},
+                    },
+                    {
+                        "claim_id": "claim:empty-dependency",
+                        "section_id": "overview",
+                        "text": "这条公开说明没有事实依赖。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [],
+                        "finding_refs": [],
+                        "evidence_refs": [],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
+                ],
+                "evidence": [
+                    {
+                        "evidence_ref": "evidence:mixed-must-drop",
+                        "title": "MIXED-EVIDENCE-MUST-DROP",
+                        "supports_fact_refs": [
+                            public_fact_ref,
+                            removed_fact_ref,
+                        ],
+                    },
+                    {
+                        "evidence_ref": "evidence:fact-closure",
+                        "title": "测试依据",
+                        "supports_fact_refs": [
+                            public_fact_ref,
+                            supported_time_fact_ref,
+                        ],
+                    },
+                    {
+                        "evidence_ref": "evidence:time-layer",
+                        "title": "流月事实依据",
+                        "supports_fact_refs": [supported_time_fact_ref],
+                    },
+                    {
+                        "evidence_ref": "evidence:empty-dependency",
+                        "title": "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP",
+                        "supports_fact_refs": [],
+                    },
+                ],
+                "boundaries": [],
+                "actions": {
+                    "correction": {"enabled": True},
+                    "follow_up": {"enabled": False},
+                    "export": {"enabled": True},
+                    "share": {"enabled": True},
+                },
+                "versions": {
+                    "runtime_release": "mingli-runtime/test",
+                    "view_model_schema": view_model.schema_version,
+                },
+            }
+        )
+        await repository.save_reading_document(
+            version_id=version_uuid,
+            accepted_copy_id=accepted_copy.id,
+            document=document,
+        )
+        await session.commit()
+
+
+async def save_presentation_contract_breaking_document(
+    database: Any,
+    settings: Any,
+    *,
+    version_id: str,
+    subject_ref: str,
+    product_id: str,
+    brief: ReadingBrief,
+    public_fact_ref: str,
+    product_version: str,
+    presentation_contract_version: str,
+    claims: list[dict[str, object]],
+) -> None:
+    """Persist an accepted document that becomes illegal after public projection."""
+
+    await advance_to_accepted(
+        database,
+        settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        public_copy="\n\n".join(claim["text"] for claim in claims),
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id=product_id)
+    assert view_model is not None
+    cipher = EnvelopeCipher.from_settings(settings)
+    async with database.sessions() as session:
+        readings = __import__(
+            "app.readings.repository",
+            fromlist=["SqlReadingRepository"],
+        )
+        repository = readings.SqlReadingRepository(session, cipher)
+        version_uuid = UUID(version_id)
+        accepted_copy = await repository.get_accepted_copy(version_uuid)
+        assert accepted_copy is not None
+        document = ReadingDocumentV1.model_validate(
+            {
+                "document_id": f"reading-version:{version_id}",
+                "reading_version_id": version_id,
+                "accepted_copy_ref": f"accepted-copy:{accepted_copy.id}",
+                "product_version": product_version,
+                "presentation_contract_version": presentation_contract_version,
+                "view_model": view_model.model_dump(mode="json"),
+                "answer_summary": claims[0]["text"],
+                "subject_summaries": [
+                    {"subject_ref": subject_ref, "label": "本人"}
+                ],
+                "themes": [{"theme_id": "career", "label": "事业"}],
+                "claims": claims,
+                "evidence": [
+                    {
+                        "evidence_ref": "evidence:empty-dependency",
+                        "title": "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP",
+                        "supports_fact_refs": [],
+                    }
+                ],
+                "boundaries": [],
+                "actions": {
+                    "correction": {"enabled": True},
+                    "follow_up": {"enabled": False},
+                    "export": {"enabled": True},
+                    "share": {"enabled": True},
+                },
+                "versions": {
+                    "runtime_release": "mingli-runtime/test",
+                    "view_model_schema": view_model.schema_version,
+                },
+            }
+        )
+        await repository.save_reading_document(
+            version_id=version_uuid,
+            accepted_copy_id=accepted_copy.id,
+            document=document,
         )
         await session.commit()
 
@@ -732,7 +1041,12 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        "app.readings.service._profile_default_preview_year",
+        lambda _profile: 2032,
+    )
     headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, headers)
     await seed_runtime_release(database, test_settings)
@@ -745,9 +1059,19 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
             "dimension_ids": ["career"],
         },
     )
+    replayed = await client.post(
+        "/api/v1/readings/preview",
+        headers={**headers, "Idempotency-Key": "guest-preview-poll"},
+        json={
+            "profile_version_id": confirmed["profile_version_id"],
+            "dimension_ids": ["career"],
+        },
+    )
 
     assert started.status_code == 201
     body = started.json()
+    assert replayed.status_code == 200
+    assert replayed.json()["reading_version_id"] == body["reading_version_id"]
     UUID(body["reading_version_id"])
     UUID(body["reading_root_id"])
     assert body["profile_version_id"] == confirmed["profile_version_id"]
@@ -757,7 +1081,11 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
     assert body["fast_path_timing"]["execution_lane"] == "direct_runtime"
     assert body["fast_path_timing"]["queue_wait_ms"] == 0
     assert body["object_id"] == "natal"
-    assert body["horizon"]["kind_id"] == "life"
+    assert body["horizon"] == {
+        "kind_id": "year",
+        "start": "2032",
+        "end": "2032",
+    }
     assert body["prior_answer"] is None
     assert_private_headers(started)
 
@@ -785,6 +1113,10 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
         assert jobs[0].status == "complete"
         assert jobs[0].narrative_policy_version
         assert jobs[0].output_contract["contract_id"] == "preview-v1"
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
 
 
 def test_queued_prepared_reading_keeps_polling_until_job_is_complete() -> None:
@@ -1059,7 +1391,9 @@ async def test_guest_starts_each_new_single_art_reading(
     }
     assert body["status"] == ("prepared" if is_direct_chart else "input_ready")
     expected_horizon = (
-        "life"
+        "year"
+        if path == "/api/v1/readings/ziwei"
+        else "life"
         if expected_object == "natal"
         else "month"
         if path == "/api/v1/readings/daliuren"
@@ -4754,11 +5088,108 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
         assert loaded.prepare_command.transition is None
 
 
-async def test_recast_creates_a_new_root_from_an_accepted_reading(
+async def test_follow_up_projects_removed_claims_out_of_owner_and_runtime_copy(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
 ) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="follow-up-projected-copy-base",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    brief = _bazi_chart_brief(subject_ref, include_month=True)
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=brief,
+    )
+    await save_fact_referencing_document(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=f"fact:{subject_ref}/calculated/bazi/four_pillars",
+        supported_time_fact_ref=(
+            f"fact:{subject_ref}/calculated/bazi/month_layers"
+        ),
+    )
+    expected_copy = "\n\n".join(
+        (
+            "受支持流月事实形成的结论应保持引用闭包。",
+            "公开结果必须保持事实引用闭包。",
+            "公开边界可独立支撑这条结论。",
+            "这条公开说明没有事实依赖。",
+            "本解读仅供传统文化参考，不构成现实决策保证。",
+        )
+    )
+
+    followed = await client.post(
+        f"/api/v1/readings/{version_id}/follow-up",
+        headers={
+            **headers,
+            "Idempotency-Key": "follow-up-projected-copy-v1",
+        },
+        json={},
+    )
+
+    assert followed.status_code == 201, followed.text
+    body = followed.json()
+    assert body["prior_answer"] == expected_copy
+    assert "MIXED-CLAIM-MUST-DROP" not in body["prior_answer"]
+    assert "MIXED-EVIDENCE-MUST-DROP" not in body["prior_answer"]
+
+    async with database.sessions() as session:
+        follow_version = await session.scalar(
+            select(ReadingVersion).where(
+                ReadingVersion.reading_root_id == UUID(started["reading_root_id"]),
+                ReadingVersion.version == 2,
+            )
+        )
+        assert follow_version is not None
+        follow_job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == follow_version.id,
+            )
+        )
+        assert follow_job is not None
+        readings = __import__(
+            "app.readings.repository",
+            fromlist=["SqlReadingRepository"],
+        )
+        repository = readings.SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(test_settings),
+        )
+        loaded = await repository.load_job(str(follow_job.id))
+        runtime_prior_answer = loaded.prepare_command.facts[subject_ref][
+            "prior_answer"
+        ]
+
+    assert runtime_prior_answer == expected_copy
+    assert "MIXED-CLAIM-MUST-DROP" not in str(runtime_prior_answer)
+    assert "MIXED-EVIDENCE-MUST-DROP" not in str(runtime_prior_answer)
+
+
+async def test_recast_creates_a_new_root_from_an_accepted_reading(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        "app.readings.service._profile_default_preview_year",
+        lambda _profile: 2032,
+    )
     headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, headers)
     await seed_runtime_release(database, test_settings)
@@ -4792,6 +5223,11 @@ async def test_recast_creates_a_new_root_from_an_accepted_reading(
     assert body["reading_root_id"] != source["reading_root_id"]
     assert body["profile_version_id"] == confirmed["profile_version_id"]
     assert body["capability_id"] == "bazi"
+    assert body["horizon"] == {
+        "kind_id": "year",
+        "start": "2032",
+        "end": "2032",
+    }
 
     replayed = await client.post(
         f"/api/v1/readings/{source['reading_version_id']}/recast",
@@ -5538,7 +5974,7 @@ async def test_guest_can_start_each_remaining_core_product(
     assert_private_headers(started)
 
 
-async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_year(
+async def test_guest_result_exposes_all_supported_bazi_layers_without_billing_state(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -5569,28 +6005,87 @@ async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_ye
     restored = TimeLayerEntitlementV1.from_dict(entitlement)
     layers = _entitlement_by_id(entitlement)
     view_layers = body["view_model"]["time_layers"]
+    public_facts = {
+        item["ref"].rsplit("/", 1)[-1]: item["display_text"]
+        for item in body["fact_panel"]["facts"]
+    }
     month_capability = next(item for item in view_layers if item["layer_id"] == "month")
     assert entitlement["schema_version"] == TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
     assert restored.capability_id == "bazi"
-    assert entitlement["resolution"] == "unauthenticated"
+    assert entitlement["resolution"] == "granted"
     assert entitlement["free_year_set"] == [2026]
     assert layers["life"]["access"] == "readable"
     assert layers["year"]["access"] == "readable"
     assert layers["year"]["upgrade_cta"] is None
-    assert layers["month"]["access"] == "fail_closed_unknown"
-    assert layers["month"]["upgrade_cta"] == "professional_info"
+    assert layers["month"]["access"] == "readable"
+    assert layers["month"]["upgrade_cta"] is None
     assert layers["hour"]["access"] == "unavailable"
     assert layers["hour"]["upgrade_cta"] is None
     assert month_capability["available"] is True
     assert "tier" not in month_capability
     assert "access" not in month_capability
+    assert public_facts["four_pillars"] == (
+        "四柱：年柱甲戌、月柱戊辰、日柱丙戌、时柱辛卯。"
+    )
+    assert public_facts["year_layers"].startswith("流年：2026年：乙巳（区间自")
+    assert "；丙午（区间自" in public_facts["year_layers"]
+    assert public_facts["month_layers"].startswith("流月：2026-08")
+    assert body["view_model"]["core_facts"]["month_layers"] is not None
+    assert all("{" not in text for text in public_facts.values())
     assert_private_headers(result)
 
 
-async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
+async def test_fortune_result_keeps_runtime_text_outside_humanized_guarantee(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await client.post(
+        "/api/v1/readings/today",
+        headers=headers,
+        json={"profile_version_id": confirmed["profile_version_id"]},
+    )
+    assert started.status_code == 201, started.text
+    version_id = started.json()["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    fallback_payload = brief_payload(
+        subject_ref,
+        {"kind_id": "day", "start": "2026-08-31", "end": "2026-08-31"},
+    )
+    runtime_text = '{"schema_version":"fortune-result/v1","engine":"fixture"}'
+    fallback_payload["facts"][0]["display_text"] = runtime_text
+    fallback_payload["request_view"]["capability_ids"] = ["fortune"]
+    fallback_payload["request_view"]["object_id"] = "today"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=ReadingBrief.from_dict(fallback_payload),
+    )
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+
+    assert result.status_code == 200
+    body = result.json()
+    assert body["view_model"] is None
+    assert body["fact_panel"]["facts"][0]["display_text"] == runtime_text
+    assert_private_headers(result)
+
+
+async def test_user_result_and_delivery_expose_supported_layers_without_grants(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     guest_headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, guest_headers)
@@ -5613,17 +6108,49 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
     )
     assert ziwei_started.status_code == 201, ziwei_started.text
     bazi_subject = f"profile-version:{confirmed['profile_version_id']}"
+    bazi_brief = _bazi_chart_brief(
+        bazi_subject,
+        include_year=True,
+        include_month=True,
+    )
+    ziwei_brief = _ziwei_chart_brief(bazi_subject, include_month=True)
     await replace_prepared_brief(
         database,
         test_settings,
         version_id=bazi_started["reading_version_id"],
-        brief=_bazi_chart_brief(bazi_subject, include_year=True, include_month=True),
+        brief=bazi_brief,
     )
     await replace_prepared_brief(
         database,
         test_settings,
         version_id=ziwei_started.json()["reading_version_id"],
-        brief=_ziwei_chart_brief(bazi_subject),
+        brief=ziwei_brief,
+    )
+    bazi_public_ref = f"fact:{bazi_subject}/calculated/bazi/four_pillars"
+    bazi_time_ref = f"fact:{bazi_subject}/calculated/bazi/month_layers"
+    ziwei_public_ref = f"fact:{bazi_subject}/calculated/ziwei/palaces"
+    ziwei_time_ref = (
+        f"fact:{bazi_subject}/calculated/ziwei/monthly_layers"
+    )
+    await save_fact_referencing_document(
+        database,
+        test_settings,
+        version_id=bazi_started["reading_version_id"],
+        subject_ref=bazi_subject,
+        product_id="bazi",
+        brief=bazi_brief,
+        public_fact_ref=bazi_public_ref,
+        supported_time_fact_ref=bazi_time_ref,
+    )
+    await save_fact_referencing_document(
+        database,
+        test_settings,
+        version_id=ziwei_started.json()["reading_version_id"],
+        subject_ref=bazi_subject,
+        product_id="ziwei",
+        brief=ziwei_brief,
+        public_fact_ref=ziwei_public_ref,
+        supported_time_fact_ref=ziwei_time_ref,
     )
 
     bazi_result = await client.get(
@@ -5635,20 +6162,520 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
 
     assert bazi_result.status_code == 200
     assert ziwei_result.status_code == 200
-    bazi_entitlement = bazi_result.json()["time_layer_entitlement"]
-    ziwei_entitlement = ziwei_result.json()["time_layer_entitlement"]
+    bazi_payload = bazi_result.json()
+    ziwei_payload = ziwei_result.json()
+    bazi_entitlement = bazi_payload["time_layer_entitlement"]
+    ziwei_entitlement = ziwei_payload["time_layer_entitlement"]
+    ziwei_public_facts = ziwei_payload["fact_panel"]["facts"]
     TimeLayerEntitlementV1.from_dict(bazi_entitlement)
     TimeLayerEntitlementV1.from_dict(ziwei_entitlement)
     bazi_layers = _entitlement_by_id(bazi_entitlement)
     ziwei_layers = _entitlement_by_id(ziwei_entitlement)
-    assert bazi_entitlement["resolution"] == "unknown"
-    assert ziwei_entitlement["resolution"] == "unknown"
+    assert bazi_entitlement["resolution"] == "granted"
+    assert ziwei_entitlement["resolution"] == "granted"
     assert ziwei_entitlement["capability_id"] == "ziwei"
-    assert bazi_layers["month"]["access"] == "fail_closed_unknown"
+    assert bazi_layers["month"]["access"] == "readable"
+    assert bazi_layers["month"]["upgrade_cta"] is None
     assert ziwei_layers["life"]["access"] == "readable"
     assert ziwei_layers["year"]["access"] == "unavailable"
     assert ziwei_layers["year"]["upgrade_cta"] is None
-    assert ziwei_layers["month"]["access"] == "unavailable"
+    assert ziwei_layers["month"]["access"] == "readable"
+    assert ziwei_layers["month"]["upgrade_cta"] is None
+    assert ziwei_public_facts[0]["display_text"].startswith(
+        "十二宫：命宫（甲子）主星紫微；"
+    )
+    for payload, time_ref in (
+        (bazi_payload, bazi_time_ref),
+        (ziwei_payload, ziwei_time_ref),
+    ):
+        public_fact_refs = {
+            item["ref"] for item in payload["fact_panel"]["facts"]
+        }
+        document = payload["document"]
+        assert document is not None
+        assert all(
+            set(claim["fact_refs"]) <= public_fact_refs
+            for claim in document["claims"]
+        )
+        assert all(
+            set(evidence["supports_fact_refs"]) <= public_fact_refs
+            for evidence in document["evidence"]
+        )
+        assert [claim["claim_id"] for claim in document["claims"]] == [
+            "claim:time-layer",
+            "claim:fact-closure",
+            "claim:limit-only",
+            "claim:empty-dependency",
+        ]
+        assert [evidence["evidence_ref"] for evidence in document["evidence"]] == [
+            "evidence:fact-closure",
+            "evidence:time-layer",
+            "evidence:empty-dependency",
+        ]
+        assert document["answer_summary"] == (
+            "受支持流月事实形成的结论应保持引用闭包。"
+        )
+        assert "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP" in str(document)
+        assert "MIXED-CLAIM-MUST-DROP" not in str(document)
+        assert "MIXED-EVIDENCE-MUST-DROP" not in str(document)
+        assert payload["accepted_copy"] == "\n\n".join(
+            (
+                "受支持流月事实形成的结论应保持引用闭包。",
+                "公开结果必须保持事实引用闭包。",
+                "公开边界可独立支撑这条结论。",
+                "这条公开说明没有事实依赖。",
+                "本解读仅供传统文化参考，不构成现实决策保证。",
+            )
+        )
+        assert "MIXED-CLAIM-MUST-DROP" not in payload["accepted_copy"]
+        assert time_ref in public_fact_refs
+        assert time_ref in str(document)
+    assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"]
+    assert ziwei_payload["document"]["view_model"]["core_facts"]["monthly_layers"]
+
+    export_documents: list[ReadingDocumentV1] = []
+
+    def capture_export(document: ReadingDocumentV1, export_format: str) -> Any:
+        exports = importlib.import_module("app.readings.export")
+        export_documents.append(document)
+        return exports.RenderedExport(
+            format=export_format,
+            content_type="application/pdf",
+            file_name="reading.pdf",
+            payload=b"%PDF-public-projection",
+        )
+
+    monkeypatch.setattr(
+        "app.readings.export.render_reading_export",
+        capture_export,
+    )
+    version_ids = (
+        bazi_started["reading_version_id"],
+        ziwei_started.json()["reading_version_id"],
+    )
+    for version_id in version_ids:
+        exported = await client.post(
+            f"/api/v1/readings/{version_id}/export",
+            headers=user_headers,
+            json={"format": "pdf", "ttl_seconds": 300},
+        )
+        assert exported.status_code == 201, exported.text
+        shared = await client.post(
+            f"/api/v1/readings/{version_id}/share",
+            headers=user_headers,
+            json={"ttl_seconds": 300},
+        )
+        assert shared.status_code == 201, shared.text
+        bearer = await client.get(f"/api/v1/share/{shared.json()['token']}")
+        assert bearer.status_code == 200, bearer.text
+        bearer_document = bearer.json()["document"]
+        assert bearer_document["answer_summary"] == (
+            "受支持流月事实形成的结论应保持引用闭包。"
+        )
+        assert "流月事实依据" in str(bearer_document)
+        assert "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP" in str(bearer_document)
+        assert "claim:limit-only" in str(bearer_document)
+        assert "claim:empty-dependency" in str(bearer_document)
+        assert "MIXED-CLAIM-MUST-DROP" not in str(bearer_document)
+        assert "MIXED-EVIDENCE-MUST-DROP" not in str(bearer_document)
+    assert len(export_documents) == 2
+    assert all(
+        document.answer_summary == "受支持流月事实形成的结论应保持引用闭包。"
+        and "流月事实依据" in str(document)
+        and "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP" in str(document)
+        and "claim:limit-only" in str(document)
+        and "claim:empty-dependency" in str(document)
+        and "MIXED-CLAIM-MUST-DROP" not in str(document)
+        and "MIXED-EVIDENCE-MUST-DROP" not in str(document)
+        for document in export_documents
+    )
+
+
+async def test_projected_document_below_presentation_contract_fail_closes_delivery(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    guest_headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, guest_headers)
+    await seed_runtime_release(database, test_settings)
+    logged_in = await login_current_guest(client, guest_headers)
+    user_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+
+    preview = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="presentation-contract-preview-fail-closed",
+    )
+    deep = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="presentation-contract-deep-fail-closed",
+    )
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    brief = _bazi_chart_brief(subject_ref)
+    public_fact_ref = f"fact:{subject_ref}/calculated/bazi/four_pillars"
+    removed_fact_ref = f"fact:{subject_ref}/calculated/bazi/unknown_engine_dump"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=preview["reading_version_id"],
+        brief=brief,
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=deep["reading_version_id"],
+        brief=brief,
+    )
+    await save_presentation_contract_breaking_document(
+        database,
+        test_settings,
+        version_id=preview["reading_version_id"],
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=public_fact_ref,
+        product_version="bazi-reading/test",
+        presentation_contract_version="bazi-presentation/test",
+        claims=[
+            {
+                "claim_id": "claim:unsupported-only",
+                "section_id": "overview",
+                "text": "SOLE-CLAIM-MUST-DROP",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [removed_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            }
+        ],
+    )
+    await save_presentation_contract_breaking_document(
+        database,
+        test_settings,
+        version_id=deep["reading_version_id"],
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=public_fact_ref,
+        product_version="bazi-deep-reading/v1",
+        presentation_contract_version="bazi-deep-presentation/v1",
+        claims=[
+            {
+                "claim_id": "claim:keep-one",
+                "section_id": "overview",
+                "text": "深读结论一",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [public_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            },
+            {
+                "claim_id": "claim:keep-two",
+                "section_id": "overview",
+                "text": "深读结论二",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [public_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            },
+            {
+                "claim_id": "claim:drop",
+                "section_id": "overview",
+                "text": "DEEP-CLAIM-MUST-DROP",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [removed_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            },
+        ],
+    )
+
+    export_calls: list[ReadingDocumentV1] = []
+
+    def capture_export(document: ReadingDocumentV1, export_format: str) -> Any:
+        exports = importlib.import_module("app.readings.export")
+        export_calls.append(document)
+        return exports.RenderedExport(
+            format=export_format,
+            content_type="application/pdf",
+            file_name="reading.pdf",
+            payload=b"%PDF-must-not-emit",
+        )
+
+    monkeypatch.setattr(
+        "app.readings.export.render_reading_export",
+        capture_export,
+    )
+
+    for version_id in (
+        preview["reading_version_id"],
+        deep["reading_version_id"],
+    ):
+        result = await client.get(f"/api/v1/readings/{version_id}/result")
+        assert result.status_code == 200, result.text
+        body = result.json()
+        assert body["status"] == "accepted"
+        assert body["document"] is None
+        assert body["accepted_copy"] is None
+        assert "SOLE-CLAIM-MUST-DROP" not in str(body)
+        assert "DEEP-CLAIM-MUST-DROP" not in str(body)
+        assert "当前没有可公开展示的结论。" not in str(body)
+
+        exported = await client.post(
+            f"/api/v1/readings/{version_id}/export",
+            headers=user_headers,
+            json={"format": "pdf", "ttl_seconds": 300},
+        )
+        assert exported.status_code == 400, exported.text
+        assert "SOLE-CLAIM-MUST-DROP" not in exported.text
+        assert "DEEP-CLAIM-MUST-DROP" not in exported.text
+
+        shared = await client.post(
+            f"/api/v1/readings/{version_id}/share",
+            headers=user_headers,
+            json={"ttl_seconds": 300},
+        )
+        assert shared.status_code == 400, shared.text
+        assert "token" not in shared.json()
+        assert "SOLE-CLAIM-MUST-DROP" not in shared.text
+        assert "DEEP-CLAIM-MUST-DROP" not in shared.text
+
+        bearer = await client.get("/api/v1/share/not-created-for-invalid-document")
+        assert bearer.status_code == 404, bearer.text
+        assert "SOLE-CLAIM-MUST-DROP" not in bearer.text
+        assert "DEEP-CLAIM-MUST-DROP" not in bearer.text
+
+    assert export_calls == []
+
+
+async def test_bazi_deep_stale_claim_text_rebuilds_or_matches_final_facts_across_delivery(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    guest_headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, guest_headers)
+    await seed_runtime_release(database, test_settings)
+    logged_in = await login_current_guest(client, guest_headers)
+    user_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    started = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="bazi-deep-stale-claim-rebuild",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    four_pillars = f"fact:{subject_ref}/calculated/bazi/four_pillars"
+    day_master = f"fact:{subject_ref}/calculated/bazi/day_master"
+    xunkong = f"fact:{subject_ref}/calculated/bazi/xunkong"
+    brief = ReadingBrief.from_dict(
+        {
+            "question": "查看本命四柱结构",
+            "vocabulary": [],
+            "facts": [
+                {
+                    "ref": four_pillars,
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "year": "甲子",
+                        "month": "乙丑",
+                        "day": "丙寅",
+                        "hour": "丁卯",
+                    },
+                    "display_text": "四柱已由 Runtime 计算。",
+                },
+                {
+                    "ref": day_master,
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {"stem": "丙", "element": "火", "polarity": "阳"},
+                    "display_text": "日主已由 Runtime 计算。",
+                },
+                {
+                    "ref": xunkong,
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "day_pillar": "丙寅",
+                        "xun": "甲子",
+                        "branches": ["戌", "亥"],
+                        "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+                        "boundary": "只表示旬空位置事实。",
+                    },
+                    "display_text": "旬空已由 Runtime 计算。",
+                },
+            ],
+            "evidence": [],
+            "findings": [],
+            "claim_scopes": [],
+            "limits": [],
+            "prior_answer": None,
+            "request_view": {
+                "subject_refs": [subject_ref],
+                "capability_ids": ["bazi"],
+                "object_id": "natal",
+                "dimension_ids": ["overview"],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+            },
+        }
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=brief,
+    )
+    stale_claims = [
+        {
+            "claim_id": "claim:four-pillars",
+            "section_id": "overview",
+            "text": "四柱已由 Runtime 计算。",
+            "subject_ref": subject_ref,
+            "dimension_id": "career",
+            "claim_kind_id": "kind.tendency",
+            "certainty_id": "certainty.tendency",
+            "fact_refs": [four_pillars],
+            "finding_refs": [],
+            "evidence_refs": [],
+            "limit_refs": [],
+            "verification": {"enabled": True},
+        },
+        {
+            "claim_id": "claim:day-master",
+            "section_id": "overview",
+            "text": "日主已由 Runtime 计算。",
+            "subject_ref": subject_ref,
+            "dimension_id": "career",
+            "claim_kind_id": "kind.tendency",
+            "certainty_id": "certainty.tendency",
+            "fact_refs": [day_master],
+            "finding_refs": [],
+            "evidence_refs": [],
+            "limit_refs": [],
+            "verification": {"enabled": True},
+        },
+        {
+            "claim_id": "claim:xunkong",
+            "section_id": "overview",
+            "text": "旬空已由 Runtime 计算。",
+            "subject_ref": subject_ref,
+            "dimension_id": "career",
+            "claim_kind_id": "kind.tendency",
+            "certainty_id": "certainty.tendency",
+            "fact_refs": [xunkong],
+            "finding_refs": [],
+            "evidence_refs": [],
+            "limit_refs": [],
+            "verification": {"enabled": True},
+        },
+    ]
+    await save_presentation_contract_breaking_document(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=four_pillars,
+        product_version="bazi-deep-reading/v1",
+        presentation_contract_version="bazi-deep-presentation/v1",
+        claims=stale_claims,
+    )
+
+    expected_texts = (
+        "四柱：年柱甲子、月柱乙丑、日柱丙寅、时柱丁卯。",
+        "日主：丙火（阳）。",
+        "旬空：日柱丙寅 · 甲子旬 · 旬空戌/亥。",
+    )
+    stale_marker = "已由 Runtime 计算。"
+    export_documents: list[ReadingDocumentV1] = []
+
+    def capture_export(document: ReadingDocumentV1, export_format: str) -> Any:
+        exports = importlib.import_module("app.readings.export")
+        export_documents.append(document)
+        return exports.RenderedExport(
+            format=export_format,
+            content_type="application/pdf",
+            file_name="reading.pdf",
+            payload=b"%PDF-bazi-deep-rebuild",
+        )
+
+    monkeypatch.setattr(
+        "app.readings.export.render_reading_export",
+        capture_export,
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+    assert result.status_code == 200, result.text
+    body = result.json()
+    document = body["document"]
+    assert document is not None
+    claim_texts = [claim["text"] for claim in document["claims"]]
+    assert claim_texts == list(expected_texts)
+    assert document["answer_summary"] == expected_texts[0]
+    assert stale_marker not in document["answer_summary"]
+    assert stale_marker not in str(document["claims"])
+    assert body["accepted_copy"] == "\n\n".join(expected_texts)
+    assert stale_marker not in body["accepted_copy"]
+    assert document["actions"]["share"]["enabled"] is True
+    assert document["actions"]["export"]["enabled"] is True
+    public_by_ref = {
+        item["ref"]: item["display_text"] for item in body["fact_panel"]["facts"]
+    }
+    assert public_by_ref[four_pillars] == expected_texts[0]
+    assert public_by_ref[day_master] == expected_texts[1]
+    assert public_by_ref[xunkong] == expected_texts[2]
+
+    exported = await client.post(
+        f"/api/v1/readings/{version_id}/export",
+        headers=user_headers,
+        json={"format": "pdf", "ttl_seconds": 300},
+    )
+    assert exported.status_code == 201, exported.text
+    assert len(export_documents) == 1
+    assert [claim.text for claim in export_documents[0].claims] == list(expected_texts)
+    assert export_documents[0].answer_summary == expected_texts[0]
+    assert stale_marker not in str(export_documents[0])
+
+    shared = await client.post(
+        f"/api/v1/readings/{version_id}/share",
+        headers=user_headers,
+        json={"ttl_seconds": 300},
+    )
+    assert shared.status_code == 201, shared.text
+    bearer = await client.get(f"/api/v1/share/{shared.json()['token']}")
+    assert bearer.status_code == 200, bearer.text
+    bearer_document = bearer.json()["document"]
+    assert [claim["text"] for claim in bearer_document["claims"]] == list(expected_texts)
+    assert bearer_document["answer_summary"] == expected_texts[0]
+    assert stale_marker not in str(bearer_document)
 
 
 async def test_result_without_session_is_401_and_omits_entitlement(
@@ -5660,7 +6687,7 @@ async def test_result_without_session_is_401_and_omits_entitlement(
     assert "time_layer_entitlement" not in response.json()
 
 
-async def test_request_failed_result_locks_only_paid_bazi_layers(
+async def test_request_failed_result_keeps_supported_bazi_layers_readable(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -5694,10 +6721,16 @@ async def test_request_failed_result_locks_only_paid_bazi_layers(
     entitlement = result.json()["time_layer_entitlement"]
     layers = _entitlement_by_id(entitlement)
     TimeLayerEntitlementV1.from_dict(entitlement)
-    assert entitlement["resolution"] == "request_failed"
+    assert entitlement["resolution"] == "granted"
     assert layers["year"]["access"] == "readable"
-    assert layers["month"]["access"] == "fail_closed_unknown"
+    assert layers["month"]["access"] == "readable"
+    assert layers["month"]["upgrade_cta"] is None
     assert layers["hour"]["access"] == "unavailable"
+    public_refs = {
+        item["ref"].rsplit("/", 1)[-1]
+        for item in result.json()["fact_panel"]["facts"]
+    }
+    assert "month_layers" in public_refs
 
 
 async def test_liuyao_result_does_not_invent_time_layer_entitlement(

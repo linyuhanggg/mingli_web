@@ -22,6 +22,7 @@ from app.readings.models import (
 )
 from app.readings.presentation import ReadingDocumentV1
 from app.readings.repository import SqlReadingRepository
+from app.readings.service import project_owned_reading_presentation
 from app.readings.share_contracts import SharedReadingDocumentV1
 from app.security.envelope import EnvelopeCipher
 
@@ -150,7 +151,15 @@ class ReadingDeliveryService:
         document = await self.repository.load_reading_document(version_id)
         if document is None:
             raise ReadingDocumentUnavailableError("ReadingDocument is not available")
-        return document
+        brief = await self.repository.load_fact_brief(version_id)
+        projection = await project_owned_reading_presentation(
+            brief=brief,
+            view_model=document.view_model,
+            document=document,
+        )
+        if projection.document is None:
+            raise ReadingDocumentUnavailableError("ReadingDocument is not available")
+        return projection.document
 
     async def submit_claim_verification(
         self,

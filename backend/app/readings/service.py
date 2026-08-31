@@ -13,6 +13,7 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -27,15 +28,17 @@ from app.adapters.runtime import (
     append_runtime_turn_audit,
     failure_for_transport_fault,
     runtime_command_digest,
-    time_layer_entitlement_resolution_for_session,
-    time_layer_entitlement_resolution_for_transport_fault,
 )
+from app.charts.contracts import BaziChartV1, ZiweiChartV1
 from app.charts.projectors import project_runtime_view_model
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
 from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
 from app.commerce.service import CommerceError, CommerceService
 from app.config import Settings
-from app.entitlements.service import EntitlementDeniedError, EntitlementService
+from app.entitlements.service import (
+    EntitlementDeniedError,
+    EntitlementService,
+)
 from app.profiles.models import ProfileVersion
 from app.profiles.schemas import ProfileConfirmRequest
 from app.profiles.service import OwnerProtocol, ProfileService, owner_ids
@@ -62,6 +65,18 @@ from app.readings.capability_policy import (
 from app.readings.errors import RuntimeTransportError
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
+from app.readings.presentation.access_policy import ACTIVE_CONTENT_ACCESS_POLICY
+from app.readings.presentation.contracts import (
+    ClaimCard,
+    PresentationContract,
+    PresentationSection,
+    ReadingDocumentV1,
+)
+from app.readings.presentation.fact_panel import (
+    project_presented_fact_panel,
+    project_presented_view_model,
+)
+from app.readings.presentation.projector import build_reading_document
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.repository import (
     READING_HISTORY_LIMIT,
@@ -98,13 +113,13 @@ from app.readings.request_compiler import (
     compile_time_check_prepare,
     compile_wenshi_prepare,
     compile_ziwei_month_prepare,
-    compile_ziwei_prepare,
     compile_ziwei_year_prepare,
 )
 from app.readings.runtime_contracts import (
     MingliResult,
     Prepare,
     Prepared,
+    ReadingBrief,
     Stopped,
     TimeLayerEntitlementV1,
     project_time_layer_entitlement,
@@ -181,6 +196,378 @@ DEFAULT_QUERIES = {
     "selection_preview": "请比较日期范围内的择日候选事实。",
     "fengshui_preview": "请展示已确认空间观察与风水结构事实。",
 }
+
+
+def _profile_default_preview_year(
+    profile: ConfirmedProfileVersion,
+    *,
+    reference: datetime | None = None,
+) -> int:
+    """Select the default civil year in the confirmed Profile's timezone."""
+
+    instant = reference or datetime.now(UTC)
+    if instant.tzinfo is None:
+        raise ValueError("preview reference datetime must be timezone-aware")
+    return instant.astimezone(ZoneInfo(profile.timezone)).year
+
+
+def _presented_public_facts(
+    fact_panel: Mapping[str, object] | None,
+) -> dict[str, str]:
+    """Map final public fact refs to their presented display_text."""
+
+    if fact_panel is None:
+        return {}
+    facts = fact_panel.get("facts")
+    if not isinstance(facts, Sequence) or isinstance(facts, (str, bytes)):
+        return {}
+    public_facts: dict[str, str] = {}
+    for item in facts:
+        if not isinstance(item, Mapping):
+            continue
+        ref = item.get("ref")
+        display_text = item.get("display_text")
+        if isinstance(ref, str) and isinstance(display_text, str) and display_text:
+            public_facts[ref] = display_text
+    return public_facts
+
+
+def _presented_public_findings(
+    fact_panel: Mapping[str, object] | None,
+) -> dict[str, str]:
+    """Map retained finding refs to their public_text."""
+
+    if fact_panel is None:
+        return {}
+    findings = fact_panel.get("findings")
+    if not isinstance(findings, Sequence) or isinstance(findings, (str, bytes)):
+        return {}
+    public_findings: dict[str, str] = {}
+    for item in findings:
+        if not isinstance(item, Mapping):
+            continue
+        ref = item.get("ref")
+        public_text = item.get("public_text")
+        if isinstance(ref, str) and isinstance(public_text, str) and public_text:
+            public_findings[ref] = public_text
+    return public_findings
+
+
+def _presented_public_limits(document: ReadingDocumentV1) -> dict[str, str]:
+    """Map document boundary limit refs to their public texts."""
+
+    return {
+        boundary.limit_ref: boundary.text
+        for boundary in document.boundaries
+        if boundary.limit_ref and boundary.text
+    }
+
+
+def _product_id_for_presented_document(document: ReadingDocumentV1) -> str:
+    """Recover the product lane encoded in a stored document version string."""
+
+    product_version = document.product_version.strip()
+    prefix = product_version.split("/", 1)[0]
+    if prefix.endswith("-reading"):
+        return prefix[: -len("-reading")]
+    return prefix
+
+
+def _requires_extractive_claim_text(document: ReadingDocumentV1) -> bool:
+    """bazi-deep NarrativeGuard requires claim text == referenced public source."""
+
+    return _product_id_for_presented_document(document) == "bazi-deep"
+
+
+def _project_presented_claim(
+    claim: ClaimCard,
+    *,
+    public_facts: Mapping[str, str],
+    public_findings: Mapping[str, str],
+    public_limits: Mapping[str, str],
+    retained_evidence_refs: frozenset[str],
+    require_extractive_text: bool,
+) -> ClaimCard | None:
+    """Retain or rebuild a claim against the final public source closure."""
+
+    if not set(claim.fact_refs).issubset(public_facts):
+        return None
+    if not set(claim.evidence_refs).issubset(retained_evidence_refs):
+        return None
+    if not require_extractive_text:
+        return claim
+    if not set(claim.finding_refs).issubset(public_findings):
+        return None
+    if not set(claim.limit_refs).issubset(public_limits):
+        return None
+    # NarrativeGuard permits exact finding / limit / fact grounding. Match
+    # retained finding and limit sources before any fact-text rebuild so the
+    # reference closer's supporting fact_refs cannot rewrite or drop them.
+    if any(public_findings[ref] == claim.text for ref in claim.finding_refs):
+        return claim
+    if any(public_limits[ref] == claim.text for ref in claim.limit_refs):
+        return claim
+    if any(public_facts[ref] == claim.text for ref in claim.fact_refs):
+        return claim
+    if claim.finding_refs or claim.limit_refs:
+        return None
+    if not claim.fact_refs:
+        return claim
+    # Fact-grounded bazi-deep blocks are extractive: rebuild from the single
+    # referenced final display_text, or drop when the source is ambiguous.
+    if len(claim.fact_refs) != 1:
+        return None
+    return claim.model_copy(update={"text": public_facts[claim.fact_refs[0]]})
+
+
+def _presentation_contract_for_presented_document(
+    document: ReadingDocumentV1,
+    *,
+    projected_claims: tuple[ClaimCard, ...] | None = None,
+) -> PresentationContract:
+    """Rebuild the PresentationContract Guard declared by this document."""
+
+    output_contract = output_contract_for_product(
+        _product_id_for_presented_document(document),
+        tuple(
+            dict.fromkeys(
+                claim.dimension_id for claim in document.claims if claim.dimension_id
+            )
+        ),
+    )
+    source_claim_count = len(document.claims)
+    # An accepted source document was valid under its Guard. Product policy still
+    # supplies the floor when the source met it; otherwise keep the observed
+    # accepted floor so projection cannot invent a stricter contract version.
+    min_claims = (
+        min(output_contract.min_blocks, source_claim_count)
+        if source_claim_count > 0
+        else output_contract.min_blocks
+    )
+    max_claims = max(
+        output_contract.max_blocks,
+        source_claim_count,
+        min_claims,
+    )
+    allowed_kinds = tuple(
+        dict.fromkeys(
+            [
+                *(claim.claim_kind_id for claim in document.claims),
+                "kind.fact",
+                "kind.tendency",
+            ]
+        )
+    )
+    claims_for_bounds = projected_claims if projected_claims is not None else document.claims
+    max_chars = max(
+        max((len(claim.text) for claim in document.claims), default=1),
+        max((len(claim.text) for claim in claims_for_bounds), default=1),
+        output_contract.max_output_chars,
+    )
+    return PresentationContract(
+        contract_version=document.presentation_contract_version,
+        product_version=document.product_version,
+        renderer="reading-document/v1",
+        sections=(
+            PresentationSection(
+                section_id="overview",
+                title="判断",
+                min_claims=min_claims,
+                max_claims=max_claims,
+                max_chars_per_claim=max_chars,
+                allowed_claim_kind_ids=allowed_kinds,
+            ),
+        ),
+        fixed_disclosures=tuple(boundary.text for boundary in document.boundaries),
+    )
+
+
+def _project_presented_document(
+    document: ReadingDocumentV1,
+    *,
+    view_model: BaziChartV1 | ZiweiChartV1,
+    public_facts: Mapping[str, str],
+    public_findings: Mapping[str, str] | None = None,
+) -> ReadingDocumentV1 | None:
+    """Keep public document dependencies inside the presented fact closure."""
+
+    public_fact_refs = frozenset(public_facts)
+    retained_findings = (
+        dict(public_findings) if public_findings is not None else {}
+    )
+    public_limits = _presented_public_limits(document)
+    evidence = tuple(
+        item
+        for item in document.evidence
+        if set(item.supports_fact_refs).issubset(public_fact_refs)
+    )
+    retained_evidence_refs = frozenset(item.evidence_ref for item in evidence)
+    require_extractive_text = _requires_extractive_claim_text(document)
+    retained_claims: list[ClaimCard] = []
+    for claim in document.claims:
+        projected_claim = _project_presented_claim(
+            claim,
+            public_facts=public_facts,
+            public_findings=retained_findings,
+            public_limits=public_limits,
+            retained_evidence_refs=retained_evidence_refs,
+            require_extractive_text=require_extractive_text,
+        )
+        if projected_claim is not None:
+            retained_claims.append(projected_claim)
+    claims = tuple(retained_claims)
+    answer_summary = (
+        claims[0].text
+        if claims
+        else "当前没有可公开展示的结论。"
+    )
+    projected_document = document.model_copy(
+        update={
+            "view_model": view_model,
+            "answer_summary": answer_summary,
+            "claims": claims,
+            "evidence": evidence,
+        }
+    )
+    try:
+        return build_reading_document(
+            _presentation_contract_for_presented_document(
+                document,
+                projected_claims=claims,
+            ),
+            projected_document.model_dump(mode="json"),
+        )
+    except ValueError:
+        # Filtering can drop a document below its declared PresentationContract
+        # minima. Fail closed instead of shipping an illegal accepted document.
+        return None
+
+
+def _project_presented_accepted_copy(
+    accepted_copy: str | None,
+    *,
+    source_document: ReadingDocumentV1 | None,
+    presented_document: ReadingDocumentV1 | None,
+) -> str | None:
+    """Keep owner copy text inside the retained document claim closure."""
+
+    if accepted_copy is None or source_document is None:
+        return accepted_copy
+    if presented_document is None:
+        return None
+
+    source_claim_ids = tuple(claim.claim_id for claim in source_document.claims)
+    retained_claim_ids = tuple(claim.claim_id for claim in presented_document.claims)
+    if source_document.claims == presented_document.claims:
+        return accepted_copy
+    if (
+        len(set(source_claim_ids)) != len(source_claim_ids)
+        or len(set(retained_claim_ids)) != len(retained_claim_ids)
+    ):
+        return None
+    retained_claim_id_set = set(retained_claim_ids)
+    if retained_claim_ids != tuple(
+        claim_id
+        for claim_id in source_claim_ids
+        if claim_id in retained_claim_id_set
+    ):
+        return None
+    if not presented_document.claims:
+        return None
+
+    separator = "\n\n"
+    source_claim_prefix = separator.join(
+        claim.text for claim in source_document.claims
+    )
+    if accepted_copy == source_claim_prefix:
+        suffix = None
+    elif accepted_copy.startswith(f"{source_claim_prefix}{separator}"):
+        suffix = accepted_copy[len(source_claim_prefix) + len(separator) :]
+    else:
+        # The immutable copy and document are not mechanically aligned, so a
+        # partial projection cannot prove which text belongs to a removed claim.
+        return None
+
+    parts = [claim.text for claim in presented_document.claims]
+    if suffix:
+        parts.append(suffix)
+    return separator.join(parts)
+
+
+def _project_active_time_layer_access(
+    view_model: object,
+) -> TimeLayerEntitlementV1 | None:
+    return project_time_layer_entitlement(
+        view_model,
+        resolution=ACTIVE_CONTENT_ACCESS_POLICY.legacy_time_layer_resolution,
+    )
+
+
+@dataclass(frozen=True, slots=True)
+class PresentedReadingProjection:
+    fact_panel: dict[str, Any] | None
+    view_model: object
+    document: ReadingDocumentV1 | None
+    time_layer_entitlement: TimeLayerEntitlementV1 | None
+
+
+async def project_owned_reading_presentation(
+    *,
+    brief: ReadingBrief | Mapping[str, object] | None,
+    view_model: object,
+    document: ReadingDocumentV1 | None,
+) -> PresentedReadingProjection:
+    """Apply active content access and fact closure at an owned read boundary."""
+
+    entitlement_view_model = (
+        view_model
+        if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+        else document.view_model
+        if document is not None
+        and isinstance(document.view_model, (BaziChartV1, ZiweiChartV1))
+        else None
+    )
+    time_layer_entitlement = _project_active_time_layer_access(
+        entitlement_view_model
+    )
+    fact_panel = (
+        project_presented_fact_panel(
+            brief,
+            view_model=view_model,
+        )
+        if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+        else project_public_fact_panel(brief)
+    )
+    presented_view_model = (
+        project_presented_view_model(
+            view_model,
+        )
+        if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+        else view_model
+    )
+    presented_document = document
+    if document is not None and isinstance(
+        document.view_model,
+        (BaziChartV1, ZiweiChartV1),
+    ):
+        document_fact_panel = project_presented_fact_panel(
+            brief,
+            view_model=document.view_model,
+        )
+        presented_document = _project_presented_document(
+            document,
+            view_model=project_presented_view_model(
+                document.view_model,
+            ),
+            public_facts=_presented_public_facts(document_fact_panel),
+            public_findings=_presented_public_findings(document_fact_panel),
+        )
+    return PresentedReadingProjection(
+        fact_panel=fact_panel,
+        view_model=presented_view_model,
+        document=presented_document,
+        time_layer_entitlement=time_layer_entitlement,
+    )
 
 
 def _post_write_runtime_transport_fault(
@@ -329,6 +716,7 @@ class AtomicProfilePreviewClaim:
     context: IdempotencyContext
     reading_version_id: UUID
     lease_token: str
+    default_preview_year: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -493,6 +881,13 @@ class ReadingService:
                 owner,
                 profile.profile_version_id,
             )
+            default_preview_year = (
+                _profile_default_preview_year(confirmed)
+                if target_year is None
+                and target_month is None
+                and target_date is None
+                else None
+            )
             prepare = self._compile_profile_preview_prepare(
                 confirmed,
                 query=query,
@@ -500,6 +895,7 @@ class ReadingService:
                 target_year=target_year,
                 target_month=target_month,
                 target_date=target_date,
+                default_preview_year=default_preview_year,
             )
         except (IntegrityError, LookupError, ValueError):
             await savepoint.rollback()
@@ -563,6 +959,7 @@ class ReadingService:
             context=idempotency,
             reading_version_id=version.id,
             lease_token=lease_token,
+            default_preview_year=default_preview_year,
         )
         return None
 
@@ -881,13 +1278,19 @@ class ReadingService:
         target_year: int | None,
         target_month: str | None,
         target_date: date | None,
+        default_preview_year: int | None = None,
     ) -> Prepare:
         resolved_dimensions = tuple(dimension_ids)
         if target_year is None and target_month is None and target_date is None:
-            return compile_bazi_prepare(
-                action="profile_preview",
+            return compile_bazi_year_prepare(
+                action="bazi_year_preview",
                 query=query,
                 profile=profile,
+                year=(
+                    default_preview_year
+                    if default_preview_year is not None
+                    else _profile_default_preview_year(profile)
+                ),
                 dimension_ids=resolved_dimensions,
             )
         if target_year is not None:
@@ -971,6 +1374,9 @@ class ReadingService:
             target_year=target_year,
             target_month=target_month,
             target_date=target_date,
+            default_preview_year=(
+                claim.default_preview_year if owns_claim and claim is not None else None
+            ),
         )
         if owns_claim and rollback_on_failure:
             assert claim is not None
@@ -1589,30 +1995,13 @@ class ReadingService:
         if replayed is not None:
             return replayed, False
         profile = await self._owned_confirmed_profile(owner, profile_version_id)
-        if target_year is None and target_month is None:
-            prepare = compile_ziwei_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        elif target_year is not None:
-            prepare = compile_ziwei_year_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                year=target_year,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        else:
-            assert target_month is not None
-            prepare = compile_ziwei_month_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                month=target_month,
-                dimension_ids=tuple(resolved_dimensions),
-            )
+        prepare = self._compile_ziwei_preview_prepare(
+            profile,
+            query=resolved_query,
+            dimension_ids=resolved_dimensions,
+            target_year=target_year,
+            target_month=target_month,
+        )
         return await self._persist_start(
             owner,
             prepare,
@@ -1620,6 +2009,46 @@ class ReadingService:
             profile_version_id=profile_version_id,
             idempotency=idempotency,
             direct_chart=True,
+        )
+
+    @staticmethod
+    def _compile_ziwei_preview_prepare(
+        profile: ConfirmedProfileVersion,
+        *,
+        query: str,
+        dimension_ids: Sequence[str],
+        target_year: int | None,
+        target_month: str | None,
+        default_preview_year: int | None = None,
+    ) -> Prepare:
+        resolved_dimensions = tuple(dimension_ids)
+        if target_year is None and target_month is None:
+            return compile_ziwei_year_prepare(
+                action="ziwei_year_preview",
+                query=query,
+                profile=profile,
+                year=(
+                    default_preview_year
+                    if default_preview_year is not None
+                    else _profile_default_preview_year(profile)
+                ),
+                dimension_ids=resolved_dimensions,
+            )
+        if target_year is not None:
+            return compile_ziwei_year_prepare(
+                action="ziwei_year_preview",
+                query=query,
+                profile=profile,
+                year=target_year,
+                dimension_ids=resolved_dimensions,
+            )
+        assert target_month is not None
+        return compile_ziwei_month_prepare(
+            action="ziwei_month_preview",
+            query=query,
+            profile=profile,
+            month=target_month,
+            dimension_ids=resolved_dimensions,
         )
 
     async def start_qizheng(
@@ -2535,11 +2964,17 @@ class ReadingService:
             return replayed, False
         await self._require_accepted_source(owner, source_version_id)
         if action == "profile_preview":
-            prepare = compile_bazi_prepare(
-                action=action,
+            profile = await self._owned_confirmed_profile(
+                owner,
+                profile_version_id,
+            )
+            prepare = self._compile_profile_preview_prepare(
+                profile,
                 query=resolved_query,
-                profile=await self._owned_confirmed_profile(owner, profile_version_id),
                 dimension_ids=tuple(resolved_dimensions),
+                target_year=None,
+                target_month=None,
+                target_date=None,
             )
             capability_id = "bazi"
         elif action in {"today", "week"}:
@@ -2864,18 +3299,21 @@ class ReadingService:
             view_model,
             job_status=job_status,
         )
-        time_layer_entitlement = self.project_time_layer_entitlement(
-            view_model,
-            owner,
-            request_failed=status
-            in {ReadingStatus.TERMINAL_STOPPED, ReadingStatus.RUNTIME_UNKNOWN},
+        presentation = await project_owned_reading_presentation(
+            brief=brief,
+            view_model=view_model,
+            document=document,
         )
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=status,
-            accepted_copy=accepted_copy,
-            fact_panel=project_public_fact_panel(brief),
-            view_model=view_model,
+            accepted_copy=_project_presented_accepted_copy(
+                accepted_copy,
+                source_document=document,
+                presented_document=presentation.document,
+            ),
+            fact_panel=presentation.fact_panel,
+            view_model=presentation.view_model,
             capability=CapabilityProjection(
                 capability_id=capability_projection.capability_id,
                 label=capability_projection.label,
@@ -2894,12 +3332,12 @@ class ReadingService:
             input_request=(
                 None if waiting is None else _public_json(waiting.input_request)
             ),
-            document=document,
+            document=presentation.document,
             result_available=result_available,
             poll_required=poll_required,
             poll_after_seconds=poll_after_seconds,
             time_layer_entitlement=TimeLayerEntitlementResponse.from_contract(
-                time_layer_entitlement
+                presentation.time_layer_entitlement
             ),
         )
 
@@ -2947,11 +3385,34 @@ class ReadingService:
         )
         if version.status != ReadingStatus.ACCEPTED.value:
             raise ReadingNotAcceptedError("Follow-up requires an Accepted Reading")
-        accepted_copy = await self.repository.load_accepted_copy(version.id)
-        if accepted_copy is None:
+        stored_accepted_copy = await self.repository.load_accepted_copy(version.id)
+        if stored_accepted_copy is None:
             raise ReadingNotAcceptedError("Accepted Copy is missing")
         await self._check_follow_up_contract(root, version)
         prepare = await self.repository.load_prepare(version.id)
+        brief = await self.repository.load_fact_brief(version.id)
+        document = await self.repository.load_reading_document(version.id)
+        view_model = (
+            None
+            if brief is None
+            else project_runtime_view_model(
+                brief.to_dict(),
+                product_id=version.product_id or root.product_id,
+                relationship_type=version.relationship_type,
+            )
+        )
+        presentation = await project_owned_reading_presentation(
+            brief=brief,
+            view_model=view_model,
+            document=document,
+        )
+        accepted_copy = _project_presented_accepted_copy(
+            stored_accepted_copy,
+            source_document=document,
+            presented_document=presentation.document,
+        )
+        if accepted_copy is None:
+            raise ReadingNotAcceptedError("Accepted Copy is unavailable")
         facts: dict[str, object] = {}
         for subject_ref in cast(tuple[object, ...], prepare.intent["subject_refs"]):
             ref = str(subject_ref)
@@ -4068,16 +4529,14 @@ class ReadingService:
         request_failed: bool = False,
         paid_grant: bool | None = None,
     ) -> TimeLayerEntitlementV1 | None:
-        if request_failed:
-            resolution = time_layer_entitlement_resolution_for_transport_fault(
-                "request"
-            )
-        else:
-            resolution = time_layer_entitlement_resolution_for_session(
-                owner_kind=owner.kind,
-                paid_grant=paid_grant,
-            )
-        return project_time_layer_entitlement(view_model, resolution=resolution)
+        """Project the dormant v1 shape through the active content policy.
+
+        Owner, transport, and billing arguments remain accepted for internal
+        compatibility, but do not gate supported development content.
+        """
+
+        _ = owner, request_failed, paid_grant
+        return _project_active_time_layer_access(view_model)
 
     @staticmethod
     def _poll_fields(

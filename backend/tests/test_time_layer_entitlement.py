@@ -569,7 +569,7 @@ def test_transport_helpers_do_not_change_stopped_copy_or_failure_table() -> None
     assert "entitlement" not in stopped.to_dict()
 
 
-def test_service_projects_guest_401_without_locking_free_facts() -> None:
+def test_service_projects_guest_supported_layers_as_readable_in_development() -> None:
     view = _bazi_view(
         years=(2024, 2025),
         month_available=True,
@@ -582,14 +582,26 @@ def test_service_projects_guest_401_without_locking_free_facts() -> None:
 
     assert contract is not None
     layers = _by_id(contract)
-    assert contract.resolution == "unauthenticated"
+    assert contract.resolution == "granted"
     assert layers["year"].access == "readable"
-    assert layers["month"].access == "fail_closed_unknown"
+    assert layers["month"].access == "readable"
+    assert layers["month"].upgrade_cta is None
     assert layers["hour"].access == "unavailable"
     assert layers["hour"].upgrade_cta is None
 
 
-def test_service_request_failed_locks_only_paid_layers() -> None:
+@pytest.mark.parametrize(
+    ("request_failed", "paid_grant"),
+    [
+        (False, None),
+        (False, False),
+        (True, None),
+    ],
+)
+def test_service_dormant_billing_state_does_not_hide_supported_layers(
+    request_failed: bool,
+    paid_grant: bool | None,
+) -> None:
     view = _ziwei_view(
         years=(2026,),
         month_available=True,
@@ -601,18 +613,18 @@ def test_service_request_failed_locks_only_paid_layers() -> None:
     contract = ReadingService.project_time_layer_entitlement(
         view,
         owner,
-        request_failed=True,
-        paid_grant=True,
+        request_failed=request_failed,
+        paid_grant=paid_grant,
     )
 
     assert contract is not None
     layers = _by_id(contract)
-    assert contract.resolution == "request_failed"
+    assert contract.resolution == "granted"
     assert layers["life"].access == "readable"
     assert layers["year"].access == "readable"
     assert layers["major_limits"].access == "readable"
-    assert layers["month"].access == "fail_closed_unknown"
-    assert layers["month"].upgrade_cta == "professional_info"
+    assert layers["month"].access == "readable"
+    assert layers["month"].upgrade_cta is None
     assert layers["day"].access == "unavailable"
     assert layers["day"].upgrade_cta is None
 
