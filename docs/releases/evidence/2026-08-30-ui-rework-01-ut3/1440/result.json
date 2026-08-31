@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "sentinel": "SYNTHETIC-UT3-20260831",
+  "release": "ui-rework-01-ut3-synthetic-20260831",
+  "viewport": {
+    "width": 1440,
+    "height": 900,
+    "name": "1440"
+  },
+  "homePath": "/",
+  "natalPath": "/bazi",
+  "timedOut": false,
+  "homeSpot": "PASS",
+  "fillSpot": "PASS",
+  "inputIsSynthetic": true,
+  "measure": {
+    "vh": 900,
+    "scrollY": 0,
+    "chartInFirstViewport": true,
+    "pillarsInFirstViewport": true,
+    "dayMasterInFirstViewport": true,
+    "hitCount": 27
+  },
+  "checks": {
+    "F1": {
+      "id": "F1",
+      "name": "free chart readiness",
+      "elapsedMs": 1516,
+      "timedOut": false,
+      "sawQueueMs": null,
+      "fast": true,
+      "ready": true,
+      "chart": true,
+      "queue": false,
+      "verdict": "PASS"
+    },
+    "F2": {
+      "id": "F2",
+      "name": "chart-first first viewport",
+      "chartInFirstViewport": true,
+      "pillarsInFirstViewport": true,
+      "dayMasterInFirstViewport": true,
+      "verdict": "PASS"
+    },
+    "F3": {
+      "id": "F3",
+      "name": "no engineering field leak",
+      "forbiddenInternalHits": 0,
+      "snakeLeakHits": 0,
+      "verdict": "PASS"
+    }
+  },
+  "networkEntryCount": 4,
+  "bodyCapture": "none",
+  "cookieCapture": "none"
+}

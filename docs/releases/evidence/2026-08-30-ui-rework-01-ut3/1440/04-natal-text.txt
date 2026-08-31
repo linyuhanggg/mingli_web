@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "sentinel": "SYNTHETIC-UT3-20260831",
+  "phase": "natal",
+  "path": "/bazi",
+  "bodyTextPersisted": false,
+  "bodyTextLength": 1670,
+  "hasSyntheticSubject": false,
+  "hasChartText": true,
+  "queueNarrative": false,
+  "forbiddenInternalHits": 0,
+  "snakeLeakHits": 0,
+  "overflowX": false
+}

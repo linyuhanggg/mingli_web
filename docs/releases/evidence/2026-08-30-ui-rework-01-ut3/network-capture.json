@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "sentinel": "SYNTHETIC-UT3-20260831",
+  "bodyCapture": "none",
+  "cookiesCaptured": false,
+  "storageStateCaptured": false,
+  "entries": [
+    {
+      "path": "/api/v1/readings/preview",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/readings/72d9551d-50fa-49e1-bac9-c6f011c77746",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/72d9551d-50fa-49e1-bac9-c6f011c77746",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/72d9551d-50fa-49e1-bac9-c6f011c77746/result",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/preview",
+      "method": "POST",
+      "status": 201
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d/result",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d/result",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d/result",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d/result",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d",
+      "method": "GET",
+      "status": 200
+    },
+    {
+      "path": "/api/v1/readings/7e060874-df24-41e4-b0e7-e47f59cad11d/result",
+      "method": "GET",
+      "status": 200
+    }
+  ]
+}

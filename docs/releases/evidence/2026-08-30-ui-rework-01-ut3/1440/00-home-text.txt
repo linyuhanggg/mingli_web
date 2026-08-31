@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "sentinel": "SYNTHETIC-UT3-20260831",
+  "phase": "home",
+  "path": "/",
+  "bodyTextPersisted": false,
+  "bodyTextLength": 935,
+  "hasSyntheticSubject": false,
+  "hasChartText": true,
+  "queueNarrative": false,
+  "forbiddenInternalHits": 0,
+  "snakeLeakHits": 0,
+  "overflowX": false
+}

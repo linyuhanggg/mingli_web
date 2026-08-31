@@ -1,0 +1,5 @@
+sentinel=SYNTHETIC-UT3-20260831
+input_profile=repository-approved-synthetic
+body_capture=none
+cookie_capture=none
+overall=PASS

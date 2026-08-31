@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "sentinel": "SYNTHETIC-UT3-20260831",
+  "release": "ui-rework-01-ut3-synthetic-20260831",
+  "viewports": {
+    "360": {
+      "elapsedMs": 1515,
+      "timedOut": false
+    },
+    "1440": {
+      "elapsedMs": 1516,
+      "timedOut": false
+    }
+  }
+}
