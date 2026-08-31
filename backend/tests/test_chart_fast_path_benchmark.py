@@ -5,11 +5,12 @@ from pathlib import Path
 from types import SimpleNamespace
 from typing import cast
 
-import chart_fast_path_benchmark as benchmark
 import pytest
 from app.adapters.runtime import OneShotMingliRuntimeAdapter
 from app.config import _RUNTIME_RELEASE_PROFILES
 from app.readings.runtime_contracts import Described
+
+import chart_fast_path_benchmark as benchmark
 
 
 @pytest.mark.parametrize(
