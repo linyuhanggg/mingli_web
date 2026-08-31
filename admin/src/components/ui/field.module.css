@@ -1,9 +1,9 @@
 .field {
-  --field-control-height: var(--target-submit);
+  --field-control-height: var(--ds-control-lg);
   --field-textarea-height: 7rem;
   display: grid;
-  gap: 0.5rem;
   min-width: 0;
+  gap: var(--ds-space-2);
 }
 
 .labelRow {
@@ -12,37 +12,48 @@
   gap: 0.2rem;
 }
 
-.label,
-.labelRow {
+.label {
   color: var(--color-text);
   font-family: var(--font-sans);
   font-size: var(--font-size-label);
-  font-weight: 700;
+  font-weight: 560;
 }
 
 .required {
   color: var(--color-danger);
+  font-weight: 700;
 }
 
 .control {
   width: 100%;
-  min-height: var(--field-control-height, var(--target-submit));
-  padding: 0.7rem 0.85rem;
+  min-height: var(--field-control-height, var(--ds-control-lg));
+  padding: var(--ds-space-3) var(--ds-space-4);
   border: 1px solid var(--color-border-strong);
-  border-radius: var(--radius-control);
-  background: var(--color-canvas);
+  border-radius: var(--ds-radius-1);
+  background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+  transition: border-color var(--ds-duration-fast) var(--ds-ease-out);
+}
+
+.control:hover:not(:disabled) {
+  border-color: var(--ds-line-ink);
 }
 
 .control:focus-visible {
-  outline: 2px solid var(--color-focus);
-  outline-offset: 2px;
   border-color: var(--color-focus);
+  outline: 1px solid var(--color-focus);
+  outline-offset: 3px;
+  box-shadow: var(--ds-shadow-focus);
 }
 
 .control[aria-invalid="true"] {
   border-color: var(--color-danger);
+}
+
+.control:disabled {
+  background: var(--color-surface-subtle);
+  opacity: 0.58;
 }
 
 select.control {
@@ -59,22 +70,41 @@ textarea.control {
 .error,
 .disabledReason {
   margin: 0;
-  font-size: var(--font-size-label);
+  font-size: var(--ds-text-12);
+  line-height: 1.55;
 }
 
 .description {
-  color: var(--color-text-secondary);
+  color: var(--color-text-muted);
 }
 
 .error {
   color: var(--color-danger);
   font-weight: 680;
+  animation: field-error-enter var(--ds-duration-fast) var(--ds-ease-out) both;
 }
 
 .disabledReason {
-  padding: 0.7rem 0.85rem;
+  padding: var(--ds-space-2) var(--ds-space-3);
   border: 1px dashed var(--color-border-strong);
-  border-radius: var(--radius-control);
+  border-radius: var(--ds-radius-2);
   background: var(--color-surface-subtle);
   color: var(--color-text-secondary);
+}
+
+@keyframes field-error-enter {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .control {
+    transition: none;
+  }
+
+  .error {
+    animation: none;
+  }
 }

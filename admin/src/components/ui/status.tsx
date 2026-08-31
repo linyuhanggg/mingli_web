@@ -2,27 +2,43 @@ import {
   AlertCircle,
   Ban,
   CheckCircle2,
+  CircleHelp,
   Inbox,
   Loader2,
   LockKeyhole,
   ShieldAlert,
   type LucideIcon,
 } from "lucide-react";
-import { useId } from "react";
+import { useId, type ReactNode } from "react";
 
 import styles from "./status.module.css";
 
 
-export type StatusState =
+export type CoreStatusState =
   | "loading"
   | "empty"
-  | "error"
+  | "ready"
+  | "locked"
+  | "need-input"
+  | "error";
+
+export type StatusState =
+  | CoreStatusState
   | "processing"
   | "success"
   | "unavailable"
-  | "unauthorized"
-  | "locked";
+  | "unauthorized";
 
+export const CORE_STATUS_STATES = [
+  "loading",
+  "empty",
+  "ready",
+  "locked",
+  "need-input",
+  "error",
+] as const satisfies readonly CoreStatusState[];
+
+/** Admin UI Lab scenarios retained for compatibility; use CORE_STATUS_STATES for shared states. */
 export const STATUS_STATES = [
   "loading",
   "empty",
@@ -39,6 +55,7 @@ export type StatusProps = {
   title?: string;
   description?: string;
   compact?: boolean;
+  actions?: ReactNode;
 };
 
 const copy: Record<StatusState, { title: string; description: string; icon: LucideIcon }> = {
@@ -51,6 +68,21 @@ const copy: Record<StatusState, { title: string; description: string; icon: Luci
     title: "暂无内容",
     description: "还没有可展示的记录。",
     icon: Inbox,
+  },
+  ready: {
+    title: "内容已就绪",
+    description: "服务端事实已经返回，可以继续核对或操作。",
+    icon: CheckCircle2,
+  },
+  locked: {
+    title: "已锁定",
+    description: "当前内容被锁定，暂不能修改或访问。",
+    icon: LockKeyhole,
+  },
+  "need-input": {
+    title: "需要补充信息",
+    description: "补齐必需信息后才能继续。",
+    icon: CircleHelp,
   },
   error: {
     title: "出现错误",
@@ -77,16 +109,11 @@ const copy: Record<StatusState, { title: string; description: string; icon: Luci
     description: "登录后才能查看或继续这项操作。",
     icon: ShieldAlert,
   },
-  locked: {
-    title: "已锁定",
-    description: "当前内容被锁定，暂不能修改或访问。",
-    icon: LockKeyhole,
-  },
 };
 
 const busyStates: ReadonlySet<StatusState> = new Set(["loading", "processing"]);
 
-export function Status({ state, title, description, compact = false }: StatusProps) {
+export function Status({ state, title, description, compact = false, actions }: StatusProps) {
   const headingId = useId();
   const descriptionId = useId();
   const definition = copy[state];
@@ -98,6 +125,7 @@ export function Status({ state, title, description, compact = false }: StatusPro
   return (
     <section
       className={`${styles.panel} ${styles[state]} ${compact ? styles.compact : ""}`}
+      data-core-state={CORE_STATUS_STATES.includes(state as CoreStatusState) ? state : undefined}
       data-state={state}
       data-variant={compact ? "compact" : "panel"}
       role={state === "error" ? "alert" : "status"}
@@ -117,6 +145,7 @@ export function Status({ state, title, description, compact = false }: StatusPro
           {resolvedDescription}
         </p>
       </div>
+      {actions ? <div className={styles.actions}>{actions}</div> : null}
     </section>
   );
 }

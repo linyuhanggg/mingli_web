@@ -14,11 +14,24 @@ import {
 import styles from "./button.module.css";
 
 
-export type ButtonVariant = "primary" | "secondary" | "ghost" | "destructive" | "icon";
+export type ButtonVariant =
+  | "primary"
+  | "secondary"
+  | "quiet"
+  | "signal"
+  | "danger"
+  | "icon"
+  /** Admin compatibility alias: retains the dense toolbar treatment. */
+  | "ghost"
+  /** Admin compatibility alias: retains the explicit destructive treatment. */
+  | "destructive";
+
+export type ButtonSize = "sm" | "md" | "lg";
 
 type ButtonBaseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
   loading?: boolean;
   asChild?: boolean;
+  size?: ButtonSize;
   children: ReactNode;
 };
 
@@ -37,6 +50,7 @@ export function Button({
   variant = "primary",
   loading = false,
   asChild = false,
+  size = "md",
   disabled,
   className,
   children,
@@ -58,7 +72,11 @@ export function Button({
     // Radix Slot clones exactly one element. When loading we inject the
     // spinner into that element's children so it renders alongside the
     // consumer's content rather than as a sibling that would break the Slot.
-    const child = Children.only(children);
+    const childNodes = Children.toArray(children);
+    if (childNodes.length !== 1 || !isValidElement(childNodes[0])) {
+      throw new Error("Button asChild requires exactly one React element child.");
+    }
+    const child = childNodes[0];
     const slottable =
       loading && isValidElement<{ children?: ReactNode }>(child)
         ? cloneElement(child, undefined, spinner, child.props.children)
@@ -80,8 +98,9 @@ export function Button({
 
     return (
       <Slot.Root
-        className={clsx(styles.button, styles[variant], className)}
+        className={clsx(styles.button, styles[variant], styles[size], className)}
         data-loading={loading ? "true" : undefined}
+        data-size={size}
         data-variant={variant}
         aria-busy={loading || undefined}
         {...props}
@@ -94,8 +113,9 @@ export function Button({
 
   return (
     <button
-      className={clsx(styles.button, styles[variant], className)}
+      className={clsx(styles.button, styles[variant], styles[size], className)}
       data-loading={loading ? "true" : undefined}
+      data-size={size}
       data-variant={variant}
       aria-busy={loading || undefined}
       disabled={isDisabled}

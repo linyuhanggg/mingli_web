@@ -92,18 +92,30 @@ const sampleRows = [
 ];
 
 describe("Button", () => {
-  it("renders every variant and keeps a 44px target", () => {
+  it("renders the shared variant and size contract while retaining Admin aliases", () => {
     const { rerender } = render(<Button>保存</Button>);
     const primary = screen.getByRole("button", { name: "保存" });
     expect(primary).toHaveAttribute("data-variant", "primary");
-    expect(primary).toHaveStyle({ minHeight: "var(--target-min)", minWidth: "var(--target-min)" });
+    expect(primary).toHaveAttribute("data-size", "md");
 
-    for (const variant of ["secondary", "ghost", "destructive"] as const) {
+    for (const variant of [
+      "secondary",
+      "quiet",
+      "signal",
+      "danger",
+      "ghost",
+      "destructive",
+    ] as const) {
       rerender(<Button variant={variant}>操作</Button>);
       expect(screen.getByRole("button", { name: "操作" })).toHaveAttribute(
         "data-variant",
         variant,
       );
+    }
+
+    for (const size of ["sm", "md", "lg"] as const) {
+      rerender(<Button size={size}>尺寸</Button>);
+      expect(screen.getByRole("button", { name: "尺寸" })).toHaveAttribute("data-size", size);
     }
   });
 
@@ -115,7 +127,7 @@ describe("Button", () => {
     );
     const button = screen.getByRole("button", { name: "关闭" });
     expect(button).toHaveAttribute("data-variant", "icon");
-    expect(button).toHaveStyle({ width: "var(--target-min)", height: "var(--target-min)" });
+    expect(button).toHaveStyle({ width: "var(--ds-touch-min)", height: "var(--ds-touch-min)" });
   });
 
   it("rejects an icon Button without a non-empty aria-label", () => {
@@ -174,6 +186,16 @@ describe("Button", () => {
     expect(link).toHaveAttribute("aria-disabled", "true");
     expect(link).toHaveAttribute("aria-busy", "true");
     expect(container.querySelector("[class*='spinner']")).toBeInTheDocument();
+  });
+
+  it("normalizes a single-element children array for an asChild target", () => {
+    render(
+      <Button asChild>
+        {[<a href="#next" key="next">继续</a>]}
+      </Button>,
+    );
+
+    expect(screen.getByRole("link", { name: "继续" })).toHaveAttribute("href", "#next");
   });
 });
 
@@ -389,6 +411,18 @@ describe("Status", () => {
       "empty",
     );
 
+    rerender(<Status state="ready" />);
+    expect(screen.getByRole("status", { name: "内容已就绪" })).toHaveAttribute(
+      "data-core-state",
+      "ready",
+    );
+
+    rerender(<Status state="need-input" />);
+    expect(screen.getByRole("status", { name: "需要补充信息" })).toHaveAttribute(
+      "data-core-state",
+      "need-input",
+    );
+
     rerender(<Status state="error" />);
     expect(screen.getByRole("alert", { name: "出现错误" })).toHaveAttribute(
       "data-state",
@@ -423,6 +457,21 @@ describe("Status", () => {
       "data-state",
       "locked",
     );
+  });
+
+  it("keeps Admin compact density while supporting shared recovery actions", () => {
+    render(
+      <Status
+        actions={<button type="button">重试</button>}
+        compact
+        description="请补齐筛选条件。"
+        state="need-input"
+      />,
+    );
+
+    const status = screen.getByRole("status", { name: "需要补充信息" });
+    expect(status).toHaveAttribute("data-variant", "compact");
+    expect(screen.getByRole("button", { name: "重试" })).toBeVisible();
   });
 
   it("keeps the icon decorative for screen readers", () => {

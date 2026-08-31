@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { act, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -242,6 +245,20 @@ describe("identity-first application shell", () => {
         hidden: true,
       }),
     ).toHaveAttribute("href", "/account/profiles");
+  });
+
+  it("keeps the 360 account navigation internally scrollable with a visible scrollbar cue", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/private-shell.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(/\.accountNavigation\s*\{[^}]*overflow:\s*hidden/);
+    expect(css).toMatch(/\.accountNav\s*\{[^}]*overflow-x:\s*auto/);
+    expect(css).toMatch(/\.accountNav\s*\{[^}]*overscroll-behavior-inline:\s*contain/);
+    expect(css).toMatch(/\.accountNav\s*\{[^}]*scroll-snap-type:\s*inline proximity/);
+    expect(css).toMatch(/\.accountNav::\-webkit-scrollbar\s*\{[^}]*display:\s*block[^}]*height:\s*var\(--ds-space-1\)/);
+    expect(css).toMatch(/\.accountNav::\-webkit-scrollbar-thumb\s*\{[^}]*background:\s*var\(--color-border-strong\)/);
   });
 
   it("makes guest mode and the login action explicit", async () => {

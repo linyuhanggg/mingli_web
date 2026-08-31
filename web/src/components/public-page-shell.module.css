@@ -62,9 +62,21 @@
   font-weight: 500;
 }
 
-@media (max-width: 839px) {
-  .shell {
-    padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
-    scroll-padding-bottom: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
-  }
+.breadcrumbStatusItem {
+  display: inline-flex;
+  align-items: center;
+}
+
+.breadcrumbStatus {
+  display: inline-flex;
+  min-height: var(--ds-control-sm);
+  align-items: center;
+  padding-inline: var(--ds-space-2);
+  border: 1px solid var(--ds-line-ink);
+  border-radius: var(--ds-radius-1);
+  background: var(--ds-surface);
+  color: var(--ds-ink);
+  font-family: var(--ds-font-mono);
+  font-size: var(--ds-text-10);
+  font-weight: 650;
 }

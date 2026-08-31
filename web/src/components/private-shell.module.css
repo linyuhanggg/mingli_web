@@ -139,6 +139,7 @@
   z-index: 20;
   top: 3.5rem;
   min-width: 0;
+  overflow: hidden;
   border-bottom: 1px solid var(--color-border);
   background: var(--color-surface);
 }
@@ -151,11 +152,25 @@
   gap: 0.15rem;
   overflow-x: auto;
   padding-inline: 0.25rem;
+  overscroll-behavior-inline: contain;
+  scroll-snap-type: inline proximity;
+  scrollbar-color: var(--color-border-strong) transparent;
+  scrollbar-gutter: stable;
   scrollbar-width: thin;
 }
 
 .accountNav::-webkit-scrollbar {
-  display: none;
+  display: block;
+  height: var(--ds-space-1);
+}
+
+.accountNav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.accountNav::-webkit-scrollbar-thumb {
+  border-radius: var(--radius-pill);
+  background: var(--color-border-strong);
 }
 
 .accountNav a {
@@ -169,6 +184,7 @@
   color: var(--color-text-secondary);
   font-size: var(--font-size-label);
   font-weight: 720;
+  scroll-snap-align: start;
   white-space: nowrap;
   transition:
     background-color var(--duration-feedback) ease,

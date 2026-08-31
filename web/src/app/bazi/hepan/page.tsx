@@ -2,12 +2,21 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 
 import { RelationshipTaskPage } from "@/components/relationship/relationship-task-page";
+import { Status } from "@/components/ui/status";
 
 export const metadata: Metadata = { title: "八字双人合盘", description: "填写双方资料和关系。" };
 
 export default function BaziRelationshipPage() {
   return (
-    <Suspense fallback={<p>正在加载合盘…</p>}>
+    <Suspense
+      fallback={(
+        <Status
+          description="正在准备八字合盘输入与结果状态，请稍候。"
+          state="loading"
+          title="正在加载八字合盘"
+        />
+      )}
+    >
       <RelationshipTaskPage productId="bazi" />
     </Suspense>
   );

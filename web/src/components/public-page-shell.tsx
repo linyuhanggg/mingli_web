@@ -7,6 +7,7 @@ import type { ReactNode } from "react";
 import { Container } from "./container";
 import { SiteFooter } from "./site-footer";
 import { MobileNavigation, PublicShellChrome, SiteHeader } from "./site-header";
+import { CORE_STATUS_STATES, type CoreStatusState } from "./ui/status";
 import styles from "./public-page-shell.module.css";
 
 type BreadcrumbItem = Readonly<{
@@ -76,6 +77,27 @@ const DYNAMIC_BREADCRUMBS: readonly Readonly<{
   { matches: /^\/workbench\/[^/]+$/, breadcrumbs: [{ label: "结果工作台" }] },
 ];
 
+const BREADCRUMB_STATUS_LABELS: Readonly<Record<CoreStatusState, string>> = {
+  loading: "LOADING",
+  empty: "EMPTY",
+  ready: "READY",
+  locked: "LOCKED",
+  "need-input": "NEED-INPUT",
+  error: "ERROR",
+};
+
+const NEED_INPUT_ROUTES = new Set([
+  "/bazi",
+  "/bazi/hepan",
+  "/daliuren",
+  "/liuyao",
+  "/meihua",
+  "/qizheng",
+  "/qizheng/hepan",
+  "/ziwei",
+  "/ziwei/hepan",
+]);
+
 function getBreadcrumbs(pathname: string) {
   const normalizedPathname = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   return (
@@ -85,9 +107,31 @@ function getBreadcrumbs(pathname: string) {
   );
 }
 
-function Breadcrumb({ pathname }: Readonly<{ pathname: string }>) {
+function isCoreStatusState(value: string): value is CoreStatusState {
+  return CORE_STATUS_STATES.includes(value as CoreStatusState);
+}
+
+function getRouteBreadcrumbStatus(pathname: string): CoreStatusState | null {
+  const normalizedPathname = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
+  if (NEED_INPUT_ROUTES.has(normalizedPathname)) return "need-input";
+  if (/^\/workbench\/[^/]+$/.test(normalizedPathname)) return "ready";
+  return null;
+}
+
+function getBreadcrumbStatus(pathname: string, requestedStatus?: string): CoreStatusState | null {
+  if (requestedStatus !== undefined) {
+    return isCoreStatusState(requestedStatus) ? requestedStatus : null;
+  }
+  return getRouteBreadcrumbStatus(pathname);
+}
+
+function Breadcrumb({
+  pathname,
+  requestedStatus,
+}: Readonly<{ pathname: string; requestedStatus?: string }>) {
   const breadcrumbs = getBreadcrumbs(pathname);
   if (!breadcrumbs) return null;
+  const status = getBreadcrumbStatus(pathname, requestedStatus);
 
   return (
     <div className={styles.breadcrumbBar}>
@@ -110,6 +154,17 @@ function Breadcrumb({ pathname }: Readonly<{ pathname: string }>) {
                 </li>
               );
             })}
+            {status ? (
+              <li className={styles.breadcrumbStatusItem}>
+                <span
+                  aria-label={`当前状态：${BREADCRUMB_STATUS_LABELS[status]}`}
+                  className={styles.breadcrumbStatus}
+                  data-state={status}
+                >
+                  {BREADCRUMB_STATUS_LABELS[status]}
+                </span>
+              </li>
+            ) : null}
           </ol>
         </nav>
       </Container>
@@ -117,15 +172,24 @@ function Breadcrumb({ pathname }: Readonly<{ pathname: string }>) {
   );
 }
 
-export function PublicPageShell({ children }: Readonly<{ children: ReactNode }>) {
+export function PublicPageShell({
+  breadcrumbStatus,
+  children,
+}: Readonly<{ breadcrumbStatus?: string; children: ReactNode }>) {
   const pathname = usePathname() || "/";
   const isHome = pathname === "/";
+  const breadcrumb =
+    breadcrumbStatus === undefined ? (
+      <Breadcrumb pathname={pathname} />
+    ) : (
+      <Breadcrumb pathname={pathname} requestedStatus={breadcrumbStatus} />
+    );
 
   return (
     <PublicShellChrome>
       <div className={styles.shell}>
         <SiteHeader />
-        <Breadcrumb pathname={pathname} />
+        {breadcrumb}
         {children}
         <MobileNavigation pathname={pathname} />
         <SiteFooter home={isHome} />
