@@ -483,6 +483,7 @@ def audit_bazi_provider(
             "month_layers",
             "day_layers",
             "dimension_fact_scope",
+            "life_kline",
         }
     )
     _finding(findings, required_fields, "Bazi provider declaration is incomplete")

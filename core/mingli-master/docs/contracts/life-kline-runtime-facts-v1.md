@@ -41,6 +41,34 @@ produces byte-for-byte equal JSON. Changing any bound identity changes the
 cache identity. A host must not reuse this result across profiles, fact
 digests, Runtime releases, or manifests.
 
+The Runtime derives these values inside the signed release boundary:
+
+- `profile_version_id` is the opaque, immutable `subject_ref` selected by the
+  caller for this `prepare` turn;
+- `runtime_release` comes from `release/version.json`;
+- `runtime_source_commit` and `runtime_manifest_digest` come from the signed
+  `.mingli-release-manifest.json` (the digest is over its exact bytes);
+- `source_fact_digest` is the deterministic Bazi `natal_fact_digest` for that
+  subject.
+
+Missing or malformed signed release identity stops the turn. The host cannot
+provide defaults for any of these values.
+
+## Portable Runtime path
+
+The supported production route is the existing one-shot JSON Adapter. A host
+submits `prepare` with `capability_id=bazi`, `object_id=life_kline`,
+`horizon.kind_id=life`, and the existing `overview` dimension. The resulting
+`prepared.brief.facts` contains exactly one
+`fact:<subject_ref>/calculated/bazi/life_kline` value using this contract.
+
+The dedicated object is advertised by `describe`, but the contract adds no
+public dimension: `life_kline` is an extension fact, not a fourth Command, a
+Backend import, or a browser
+calculation. Unknown caller fields (including a supplied `life_kline`, score,
+OHLC, direction, delta, or host default) are outside the Bazi input manifest
+and cannot replace the Runtime-produced fact.
+
 ## Field semantics
 
 | Field | Meaning |

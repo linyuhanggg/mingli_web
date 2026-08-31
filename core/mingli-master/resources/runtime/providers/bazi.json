@@ -31,6 +31,7 @@
     ],
     "independent_lineage_id": "bazi",
     "object_ids": [
+      "life_kline",
       "natal",
       "near_time_personal"
     ],
@@ -185,13 +186,23 @@
           "/fact_extension/facts/dimension_fact_scope"
         ],
         "name": "dimension_fact_scope"
+      },
+      {
+        "horizons": [
+          "life"
+        ],
+        "json_pointers": [
+          "/fact_extension/facts/life_kline"
+        ],
+        "name": "life_kline"
       }
     ],
     "extension_outputs": [
       "year_layers",
       "month_layers",
       "day_layers",
-      "dimension_fact_scope"
+      "dimension_fact_scope",
+      "life_kline"
     ],
     "finding_bindings": [
       {
@@ -265,6 +276,7 @@
     "independent_lineage": "bazi",
     "mode": "calculation",
     "objects": [
+      "life_kline",
       "natal",
       "near_time_personal"
     ],
@@ -448,6 +460,11 @@
     "life": {
       "display": {
         "zh-CN": "一生"
+      }
+    },
+    "life_kline": {
+      "display": {
+        "zh-CN": "人生 K 线事实状态"
       }
     },
     "limit.source_gap": {

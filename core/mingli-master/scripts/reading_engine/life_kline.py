@@ -12,6 +12,7 @@ import hashlib
 import json
 import re
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 
@@ -27,6 +28,9 @@ CHANGE_UNAVAILABLE_REASON = "missing_authoritative_close_values"
 _OPAQUE_ID_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$")
 _SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
 _SOURCE_COMMIT_RE = re.compile(r"^[0-9a-f]{40}$")
+
+_RELEASE_MANIFEST = ".mingli-release-manifest.json"
+_RELEASE_VERSION = "release/version.json"
 
 _AUDITED_SOURCE_CONTRACTS = (
     {
@@ -119,6 +123,78 @@ _MINIMUM_IMPLEMENTATION_SLICE = (
 
 class LifeKlineContractError(ValueError):
     """The payload is not the exact fail-closed v1 authority contract."""
+
+
+def load_runtime_release_identity(skill_root: str | Path) -> dict[str, str]:
+    """Read the immutable identity carried by one signed Runtime release.
+
+    The portable adapter runs from a materialized release whose root contains
+    both the canonical version file and the signed release manifest.  Reading
+    those files keeps release identity inside the Runtime boundary; a host
+    cannot provide a source commit or substitute its own digest.
+    """
+
+    root = Path(skill_root).resolve()
+    release_dir = root / "release"
+    version_path = root / _RELEASE_VERSION
+    manifest_path = root / _RELEASE_MANIFEST
+    if (
+        release_dir.is_symlink()
+        or version_path.is_symlink()
+        or manifest_path.is_symlink()
+        or not version_path.is_file()
+        or not manifest_path.is_file()
+    ):
+        raise LifeKlineContractError(
+            "signed Runtime release identity is unavailable"
+        )
+    try:
+        version_bytes = version_path.read_bytes()
+        version_payload = json.loads(version_bytes)
+        manifest_bytes = manifest_path.read_bytes()
+        manifest_payload = json.loads(manifest_bytes)
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError) as exc:
+        raise LifeKlineContractError(
+            "signed Runtime release identity is unavailable"
+        ) from exc
+    if not isinstance(version_payload, Mapping) or not isinstance(
+        manifest_payload, Mapping
+    ):
+        raise LifeKlineContractError(
+            "signed Runtime release identity must be JSON objects"
+        )
+    release_name = version_payload.get("name")
+    release_version = version_payload.get("version")
+    if (
+        manifest_payload.get("schema_version") != 3
+        or not isinstance(manifest_payload.get("release"), str)
+        or not str(manifest_payload["release"]).strip()
+    ):
+        raise LifeKlineContractError("signed Runtime release manifest is invalid")
+    release_files = manifest_payload.get("files")
+    expected_version_digest = (
+        release_files.get(_RELEASE_VERSION)
+        if isinstance(release_files, Mapping)
+        else None
+    )
+    if (
+        not isinstance(expected_version_digest, str)
+        or _SHA256_RE.fullmatch(expected_version_digest) is None
+        or hashlib.sha256(version_bytes).hexdigest() != expected_version_digest
+    ):
+        raise LifeKlineContractError(
+            "Runtime version is not bound by the signed release manifest"
+        )
+    return {
+        "runtime_release": (
+            f"{_opaque_id(release_name, 'release.name')}/"
+            f"{_opaque_id(release_version, 'release.version')}"
+        ),
+        "runtime_source_commit": _source_commit(
+            manifest_payload.get("source_commit")
+        ),
+        "runtime_manifest_digest": hashlib.sha256(manifest_bytes).hexdigest(),
+    }
 
 
 def _opaque_id(value: object, field_name: str) -> str:
@@ -272,5 +348,6 @@ __all__ = [
     "STATUS",
     "VALUE_AXIS_UNAVAILABLE_REASON",
     "build_unavailable_life_kline_facts",
+    "load_runtime_release_identity",
     "validate_life_kline_facts",
 ]
