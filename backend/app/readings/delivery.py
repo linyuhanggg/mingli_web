@@ -144,10 +144,8 @@ class ReadingDeliveryService:
         self,
         owner: OwnerProtocol,
         version_id: UUID,
-        *,
-        grant_mode: Literal["owner", "public"] = "owner",
     ) -> ReadingDocumentV1:
-        root, version = await self._owned_version(owner, version_id)
+        _root, version = await self._owned_version(owner, version_id)
         if version.status != "accepted":
             raise ReadingDocumentUnavailableError("Reading is not accepted")
         document = await self.repository.load_reading_document(version_id)
@@ -155,14 +153,9 @@ class ReadingDeliveryService:
             raise ReadingDocumentUnavailableError("ReadingDocument is not available")
         brief = await self.repository.load_fact_brief(version_id)
         projection = await project_owned_reading_presentation(
-            self.session,
-            owner,
-            root=root,
-            version=version,
             brief=brief,
             view_model=document.view_model,
             document=document,
-            grant_mode=grant_mode,
         )
         if projection.document is None:
             raise ReadingDocumentUnavailableError("ReadingDocument is not available")
@@ -239,11 +232,7 @@ class ReadingDeliveryService:
         version_id: UUID,
         ttl: timedelta,
     ) -> ShareToken:
-        document = await self._owned_document(
-            owner,
-            version_id,
-            grant_mode="public",
-        )
+        document = await self._owned_document(owner, version_id)
         if not document.actions.share.enabled:
             raise ReadingDocumentUnavailableError("Sharing is disabled for this document")
         if ttl < timedelta(minutes=5) or ttl > timedelta(days=7):

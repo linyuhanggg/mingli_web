@@ -762,7 +762,7 @@ async def save_fact_referencing_document(
     product_id: str,
     brief: ReadingBrief,
     public_fact_ref: str,
-    restricted_fact_ref: str,
+    supported_time_fact_ref: str,
 ) -> None:
     await advance_to_accepted(
         database,
@@ -790,39 +790,39 @@ async def save_fact_referencing_document(
                 "product_version": f"{product_id}-reading/test",
                 "presentation_contract_version": f"{product_id}-presentation/test",
                 "view_model": view_model.model_dump(mode="json"),
-                "answer_summary": "仅付费流月支持的结论不得出现在公开结果。",
+                "answer_summary": "受支持流月事实形成的结论应保持引用闭包。",
                 "subject_summaries": [
                     {"subject_ref": subject_ref, "label": "本人"}
                 ],
                 "themes": [{"theme_id": "career", "label": "事业"}],
                 "claims": [
                     {
-                        "claim_id": "claim:restricted-only",
+                        "claim_id": "claim:time-layer",
                         "section_id": "overview",
-                        "text": "仅付费流月支持的结论不得出现在公开结果。",
+                        "text": "受支持流月事实形成的结论应保持引用闭包。",
                         "subject_ref": subject_ref,
                         "dimension_id": "career",
                         "claim_kind_id": "kind.tendency",
                         "certainty_id": "certainty.tendency",
-                        "fact_refs": [restricted_fact_ref],
+                        "fact_refs": [supported_time_fact_ref],
                         "finding_refs": [],
-                        "evidence_refs": ["evidence:restricted-only"],
+                        "evidence_refs": ["evidence:time-layer"],
                         "limit_refs": [],
                         "verification": {"enabled": True},
                     },
                     {
-                        "claim_id": "claim:entitlement-projection",
+                        "claim_id": "claim:fact-closure",
                         "section_id": "overview",
                         "text": "公开结果必须保持事实引用闭包。",
                         "subject_ref": subject_ref,
                         "dimension_id": "career",
                         "claim_kind_id": "kind.tendency",
                         "certainty_id": "certainty.tendency",
-                        "fact_refs": [public_fact_ref, restricted_fact_ref],
+                        "fact_refs": [public_fact_ref, supported_time_fact_ref],
                         "finding_refs": [],
                         "evidence_refs": [
-                            "evidence:entitlement-projection",
-                            "evidence:restricted-only",
+                            "evidence:fact-closure",
+                            "evidence:time-layer",
                         ],
                         "limit_refs": [],
                         "verification": {"enabled": True},
@@ -830,14 +830,17 @@ async def save_fact_referencing_document(
                 ],
                 "evidence": [
                     {
-                        "evidence_ref": "evidence:entitlement-projection",
+                        "evidence_ref": "evidence:fact-closure",
                         "title": "测试依据",
-                        "supports_fact_refs": [public_fact_ref, restricted_fact_ref],
+                        "supports_fact_refs": [
+                            public_fact_ref,
+                            supported_time_fact_ref,
+                        ],
                     },
                     {
-                        "evidence_ref": "evidence:restricted-only",
-                        "title": "仅付费流月支持依据",
-                        "supports_fact_refs": [restricted_fact_ref],
+                        "evidence_ref": "evidence:time-layer",
+                        "title": "流月事实依据",
+                        "supports_fact_refs": [supported_time_fact_ref],
                     }
                 ],
                 "boundaries": [],
@@ -872,7 +875,7 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     monkeypatch.setattr(
-        "app.readings.service._profile_free_preview_year",
+        "app.readings.service._profile_default_preview_year",
         lambda _profile: 2032,
     )
     headers = await create_guest(client)
@@ -5700,7 +5703,7 @@ async def test_guest_can_start_each_remaining_core_product(
     assert_private_headers(started)
 
 
-async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_year(
+async def test_guest_result_exposes_all_supported_bazi_layers_without_billing_state(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -5738,13 +5741,13 @@ async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_ye
     month_capability = next(item for item in view_layers if item["layer_id"] == "month")
     assert entitlement["schema_version"] == TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
     assert restored.capability_id == "bazi"
-    assert entitlement["resolution"] == "unauthenticated"
+    assert entitlement["resolution"] == "granted"
     assert entitlement["free_year_set"] == [2026]
     assert layers["life"]["access"] == "readable"
     assert layers["year"]["access"] == "readable"
     assert layers["year"]["upgrade_cta"] is None
-    assert layers["month"]["access"] == "fail_closed_unknown"
-    assert layers["month"]["upgrade_cta"] == "professional_info"
+    assert layers["month"]["access"] == "readable"
+    assert layers["month"]["upgrade_cta"] is None
     assert layers["hour"]["access"] == "unavailable"
     assert layers["hour"]["upgrade_cta"] is None
     assert month_capability["available"] is True
@@ -5754,8 +5757,8 @@ async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_ye
         "四柱：年柱甲戌、月柱戊辰、日柱丙戌、时柱辛卯。"
     )
     assert public_facts["year_layers"].startswith("流年：2026年丙午")
-    assert "month_layers" not in public_facts
-    assert body["view_model"]["core_facts"]["month_layers"] is None
+    assert public_facts["month_layers"].startswith("流月：2026-08")
+    assert body["view_model"]["core_facts"]["month_layers"] is not None
     assert all("{" not in text for text in public_facts.values())
     assert_private_headers(result)
 
@@ -5806,7 +5809,7 @@ async def test_fortune_result_keeps_runtime_text_outside_humanized_guarantee(
     assert_private_headers(result)
 
 
-async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
+async def test_user_result_and_delivery_expose_supported_layers_without_grants(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -5852,9 +5855,9 @@ async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
         brief=ziwei_brief,
     )
     bazi_public_ref = f"fact:{bazi_subject}/calculated/bazi/four_pillars"
-    bazi_restricted_ref = f"fact:{bazi_subject}/calculated/bazi/month_layers"
+    bazi_time_ref = f"fact:{bazi_subject}/calculated/bazi/month_layers"
     ziwei_public_ref = f"fact:{bazi_subject}/calculated/ziwei/palaces"
-    ziwei_restricted_ref = (
+    ziwei_time_ref = (
         f"fact:{bazi_subject}/calculated/ziwei/monthly_layers"
     )
     await save_fact_referencing_document(
@@ -5865,7 +5868,7 @@ async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
         product_id="bazi",
         brief=bazi_brief,
         public_fact_ref=bazi_public_ref,
-        restricted_fact_ref=bazi_restricted_ref,
+        supported_time_fact_ref=bazi_time_ref,
     )
     await save_fact_referencing_document(
         database,
@@ -5875,7 +5878,7 @@ async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
         product_id="ziwei",
         brief=ziwei_brief,
         public_fact_ref=ziwei_public_ref,
-        restricted_fact_ref=ziwei_restricted_ref,
+        supported_time_fact_ref=ziwei_time_ref,
     )
 
     bazi_result = await client.get(
@@ -5896,20 +5899,22 @@ async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
     TimeLayerEntitlementV1.from_dict(ziwei_entitlement)
     bazi_layers = _entitlement_by_id(bazi_entitlement)
     ziwei_layers = _entitlement_by_id(ziwei_entitlement)
-    assert bazi_entitlement["resolution"] == "unknown"
-    assert ziwei_entitlement["resolution"] == "unknown"
+    assert bazi_entitlement["resolution"] == "granted"
+    assert ziwei_entitlement["resolution"] == "granted"
     assert ziwei_entitlement["capability_id"] == "ziwei"
-    assert bazi_layers["month"]["access"] == "fail_closed_unknown"
+    assert bazi_layers["month"]["access"] == "readable"
+    assert bazi_layers["month"]["upgrade_cta"] is None
     assert ziwei_layers["life"]["access"] == "readable"
     assert ziwei_layers["year"]["access"] == "unavailable"
     assert ziwei_layers["year"]["upgrade_cta"] is None
-    assert ziwei_layers["month"]["access"] == "fail_closed_unknown"
+    assert ziwei_layers["month"]["access"] == "readable"
+    assert ziwei_layers["month"]["upgrade_cta"] is None
     assert ziwei_public_facts[0]["display_text"].startswith(
         "十二宫：命宫（甲子）主星紫微；"
     )
-    for payload, restricted_ref in (
-        (bazi_payload, bazi_restricted_ref),
-        (ziwei_payload, ziwei_restricted_ref),
+    for payload, time_ref in (
+        (bazi_payload, bazi_time_ref),
+        (ziwei_payload, ziwei_time_ref),
     ):
         public_fact_refs = {
             item["ref"] for item in payload["fact_panel"]["facts"]
@@ -5925,21 +5930,20 @@ async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
             for evidence in document["evidence"]
         )
         assert [claim["claim_id"] for claim in document["claims"]] == [
-            "claim:entitlement-projection"
-        ]
-        assert document["claims"][0]["evidence_refs"] == [
-            "evidence:entitlement-projection"
+            "claim:time-layer",
+            "claim:fact-closure",
         ]
         assert [evidence["evidence_ref"] for evidence in document["evidence"]] == [
-            "evidence:entitlement-projection"
+            "evidence:fact-closure",
+            "evidence:time-layer",
         ]
-        assert document["answer_summary"] == "公开结果必须保持事实引用闭包。"
-        assert restricted_ref not in str(document)
-        assert "仅付费流月支持" not in str(document)
-    assert bazi_payload["document"]["claims"][0]["fact_refs"] == [bazi_public_ref]
-    assert ziwei_payload["document"]["claims"][0]["fact_refs"] == [ziwei_public_ref]
-    assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"] is None
-    assert ziwei_payload["document"]["view_model"]["core_facts"]["monthly_layers"] is None
+        assert document["answer_summary"] == (
+            "受支持流月事实形成的结论应保持引用闭包。"
+        )
+        assert time_ref in public_fact_refs
+        assert time_ref in str(document)
+    assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"]
+    assert ziwei_payload["document"]["view_model"]["core_facts"]["monthly_layers"]
 
     export_documents: list[ReadingDocumentV1] = []
 
@@ -5978,131 +5982,15 @@ async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
         assert bearer.status_code == 200, bearer.text
         bearer_document = bearer.json()["document"]
         assert bearer_document["answer_summary"] == (
-            "公开结果必须保持事实引用闭包。"
+            "受支持流月事实形成的结论应保持引用闭包。"
         )
-        assert "仅付费流月支持" not in str(bearer_document)
+        assert "流月事实依据" in str(bearer_document)
     assert len(export_documents) == 2
     assert all(
-        document.answer_summary == "公开结果必须保持事实引用闭包。"
-        and "仅付费流月支持" not in str(document)
+        document.answer_summary == "受支持流月事实形成的结论应保持引用闭包。"
+        and "流月事实依据" in str(document)
         for document in export_documents
     )
-
-    commerce_module = importlib.import_module("app.commerce.service")
-    entitlement_module = importlib.import_module("app.entitlements.service")
-    async with database.sessions() as session:
-        commerce = commerce_module.CommerceService(session)
-        for capability_id in ("bazi", "ziwei"):
-            await commerce.append_entitlement_event(
-                owner_user_id=UUID(logged_in["user_id"]),
-                entitlement_id=entitlement_module.formal_capability_entitlement_id(
-                    capability_id
-                ),
-                kind="GRANT",
-                quantity=1,
-                source_type="admin_grant",
-                source_ref=f"time-layer-{capability_id}-grant",
-                target_ref=capability_id,
-            )
-        await session.commit()
-
-    granted_bazi = await client.get(
-        f"/api/v1/readings/{bazi_started['reading_version_id']}/result"
-    )
-    granted_ziwei = await client.get(
-        f"/api/v1/readings/{ziwei_started.json()['reading_version_id']}/result"
-    )
-    assert granted_bazi.status_code == 200
-    assert granted_ziwei.status_code == 200
-    for response, restricted_ref in (
-        (granted_bazi, bazi_restricted_ref),
-        (granted_ziwei, ziwei_restricted_ref),
-    ):
-        payload = response.json()
-        assert payload["time_layer_entitlement"]["resolution"] == "granted"
-        assert restricted_ref in {
-            fact["ref"] for fact in payload["fact_panel"]["facts"]
-        }
-        document = payload["document"]
-        assert document["answer_summary"] == (
-            "仅付费流月支持的结论不得出现在公开结果。"
-        )
-        assert [claim["claim_id"] for claim in document["claims"]] == [
-            "claim:restricted-only",
-            "claim:entitlement-projection",
-        ]
-        assert restricted_ref in str(document)
-
-    export_documents.clear()
-    for version_id in version_ids:
-        exported = await client.post(
-            f"/api/v1/readings/{version_id}/export",
-            headers=user_headers,
-            json={"format": "pdf", "ttl_seconds": 300},
-        )
-        assert exported.status_code == 201, exported.text
-        shared = await client.post(
-            f"/api/v1/readings/{version_id}/share",
-            headers=user_headers,
-            json={"ttl_seconds": 300},
-        )
-        assert shared.status_code == 201, shared.text
-        bearer = await client.get(f"/api/v1/share/{shared.json()['token']}")
-        assert bearer.status_code == 200, bearer.text
-        assert "仅付费流月支持" not in str(bearer.json()["document"])
-    assert len(export_documents) == 2
-    assert all(
-        document.answer_summary
-        == "仅付费流月支持的结论不得出现在公开结果。"
-        and "仅付费流月支持" in str(document)
-        for document in export_documents
-    )
-
-    async with database.sessions() as session:
-        commerce = commerce_module.CommerceService(session)
-        for capability_id in ("bazi", "ziwei"):
-            entitlement_id = entitlement_module.formal_capability_entitlement_id(
-                capability_id
-            )
-            await commerce.append_entitlement_event(
-                owner_user_id=UUID(logged_in["user_id"]),
-                entitlement_id=entitlement_id,
-                kind="RESERVE",
-                quantity=1,
-                source_type="fulfillment",
-                source_ref=f"time-layer-{capability_id}-reserve",
-                target_ref=capability_id,
-            )
-            await commerce.append_entitlement_event(
-                owner_user_id=UUID(logged_in["user_id"]),
-                entitlement_id=entitlement_id,
-                kind="CONSUME",
-                quantity=1,
-                source_type="fulfillment",
-                source_ref=f"time-layer-{capability_id}-consume",
-                target_ref=capability_id,
-            )
-        await session.commit()
-
-    denied_bazi = await client.get(
-        f"/api/v1/readings/{bazi_started['reading_version_id']}/result"
-    )
-    denied_ziwei = await client.get(
-        f"/api/v1/readings/{ziwei_started.json()['reading_version_id']}/result"
-    )
-    for response, restricted_ref in (
-        (denied_bazi, bazi_restricted_ref),
-        (denied_ziwei, ziwei_restricted_ref),
-    ):
-        assert response.status_code == 200
-        payload = response.json()
-        assert payload["time_layer_entitlement"]["resolution"] == "denied"
-        assert restricted_ref not in str(payload["document"])
-        assert payload["document"]["answer_summary"] == (
-            "公开结果必须保持事实引用闭包。"
-        )
-
-
 
 async def test_result_without_session_is_401_and_omits_entitlement(
     client: AsyncClient,
@@ -6113,7 +6001,7 @@ async def test_result_without_session_is_401_and_omits_entitlement(
     assert "time_layer_entitlement" not in response.json()
 
 
-async def test_request_failed_result_locks_only_paid_bazi_layers(
+async def test_request_failed_result_keeps_supported_bazi_layers_readable(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
@@ -6147,10 +6035,16 @@ async def test_request_failed_result_locks_only_paid_bazi_layers(
     entitlement = result.json()["time_layer_entitlement"]
     layers = _entitlement_by_id(entitlement)
     TimeLayerEntitlementV1.from_dict(entitlement)
-    assert entitlement["resolution"] == "request_failed"
+    assert entitlement["resolution"] == "granted"
     assert layers["year"]["access"] == "readable"
-    assert layers["month"]["access"] == "fail_closed_unknown"
+    assert layers["month"]["access"] == "readable"
+    assert layers["month"]["upgrade_cta"] is None
     assert layers["hour"]["access"] == "unavailable"
+    public_refs = {
+        item["ref"].rsplit("/", 1)[-1]
+        for item in result.json()["fact_panel"]["facts"]
+    }
+    assert "month_layers" in public_refs
 
 
 async def test_liuyao_result_does_not_invent_time_layer_entitlement(

@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from time import perf_counter
-from typing import Any, Literal, cast
+from typing import Any, cast
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
@@ -28,22 +28,16 @@ from app.adapters.runtime import (
     append_runtime_turn_audit,
     failure_for_transport_fault,
     runtime_command_digest,
-    time_layer_entitlement_resolution_for_session,
-    time_layer_entitlement_resolution_for_transport_fault,
 )
 from app.charts.contracts import BaziChartV1, ZiweiChartV1
 from app.charts.projectors import project_runtime_view_model
-from app.commerce.ledger import LedgerError
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
 from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
-from app.commerce.repository import CommerceRepository
 from app.commerce.service import CommerceError, CommerceService
 from app.config import Settings
-from app.entitlements.repository import EntitlementRepository
 from app.entitlements.service import (
     EntitlementDeniedError,
     EntitlementService,
-    formal_grant_covers_capability,
 )
 from app.profiles.models import ProfileVersion
 from app.profiles.schemas import ProfileConfirmRequest
@@ -69,8 +63,9 @@ from app.readings.capability_policy import (
     require_public_runtime_capabilities,
 )
 from app.readings.errors import RuntimeTransportError
-from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
+from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
+from app.readings.presentation.access_policy import ACTIVE_CONTENT_ACCESS_POLICY
 from app.readings.presentation.contracts import ReadingDocumentV1
 from app.readings.presentation.fact_panel import (
     project_presented_fact_panel,
@@ -197,16 +192,16 @@ DEFAULT_QUERIES = {
 }
 
 
-def _profile_free_preview_year(
+def _profile_default_preview_year(
     profile: ConfirmedProfileVersion,
     *,
     reference: datetime | None = None,
 ) -> int:
-    """Select the free civil year in the confirmed Profile's timezone."""
+    """Select the default civil year in the confirmed Profile's timezone."""
 
     instant = reference or datetime.now(UTC)
     if instant.tzinfo is None:
-        raise ValueError("free preview reference datetime must be timezone-aware")
+        raise ValueError("preview reference datetime must be timezone-aware")
     return instant.astimezone(ZoneInfo(profile.timezone)).year
 
 
@@ -286,118 +281,13 @@ def _project_presented_document(
     )
 
 
-def _time_layer_grant_capability_ids(
-    root: ReadingRoot,
-    version: ReadingVersion,
-) -> tuple[str, ...]:
-    """Return the existing capability/product aliases that may carry a grant."""
-
-    raw_values: list[object] = [
-        version.capability_id,
-        version.product_id,
-        root.capability_id,
-        root.product_id,
-        *(version.runtime_capability_ids or ()),
-        *(root.runtime_capability_ids or ()),
-    ]
-    aliases: set[str] = set()
-    for value in raw_values:
-        if not isinstance(value, str) or not value.strip():
-            continue
-        normalized = value.strip()
-        aliases.add(normalized)
-        aliases.add(normalized.replace("-", "_"))
-        aliases.add(normalized.replace("_", "-"))
-    return tuple(sorted(aliases))
-
-
-async def _resolve_time_layer_paid_grant(
-    session: AsyncSession,
-    owner: OwnerProtocol,
-    *,
-    root: ReadingRoot,
-    version: ReadingVersion,
-) -> bool | None:
-    """Resolve only authoritative positive/negative grants; absence stays unknown."""
-
-    if owner.kind != "user":
-        return None
-
-    delivered = await session.scalar(
-        select(FulfillmentRecord.id).where(
-            FulfillmentRecord.owner_user_id == owner.id,
-            FulfillmentRecord.reading_version_ref == str(version.id),
-            FulfillmentRecord.status == "delivered",
-        )
-    )
-    if delivered is not None:
-        return True
-
-    capability_ids = _time_layer_grant_capability_ids(root, version)
-    if not capability_ids:
-        return None
-
-    dogfood_grants = await EntitlementRepository(session).list_active_grants(
-        owner_user_id=owner.id
-    )
-    if any(grant.capability_id in capability_ids for grant in dogfood_grants):
-        return True
-
-    repository = CommerceRepository(session)
-    events = await repository.list_events(owner_user_id=owner.id, limit=500)
-    inspected: set[str] = set()
-    matching_entitlement_seen = False
-    try:
-        for event in events:
-            if event.entitlement_id in inspected:
-                continue
-            inspected.add(event.entitlement_id)
-            target_refs = {
-                row.target_ref
-                for row in events
-                if row.entitlement_id == event.entitlement_id and row.target_ref
-            }
-            if not any(
-                formal_grant_covers_capability(
-                    entitlement_id=event.entitlement_id,
-                    target_refs=target_refs,
-                    capability_id=capability_id,
-                )
-                for capability_id in capability_ids
-            ):
-                continue
-            matching_entitlement_seen = True
-            projection = await repository.project(
-                entitlement_id=event.entitlement_id,
-                owner_user_id=owner.id,
-            )
-            if projection.available >= 1:
-                return True
-    except (LedgerError, ValueError):
-        _logger.warning(
-            "time_layer_grant_projection_invalid",
-            extra={"reading_version_id": str(version.id)},
-            exc_info=True,
-        )
-        return None
-    return False if matching_entitlement_seen else None
-
-
-def _project_owner_time_layer_entitlement(
+def _project_active_time_layer_access(
     view_model: object,
-    owner: OwnerProtocol,
-    *,
-    request_failed: bool = False,
-    paid_grant: bool | None = None,
 ) -> TimeLayerEntitlementV1 | None:
-    if request_failed:
-        resolution = time_layer_entitlement_resolution_for_transport_fault("request")
-    else:
-        resolution = time_layer_entitlement_resolution_for_session(
-            owner_kind=owner.kind,
-            paid_grant=paid_grant,
-        )
-    return project_time_layer_entitlement(view_model, resolution=resolution)
+    return project_time_layer_entitlement(
+        view_model,
+        resolution=ACTIVE_CONTENT_ACCESS_POLICY.legacy_time_layer_resolution,
+    )
 
 
 @dataclass(frozen=True, slots=True)
@@ -409,18 +299,12 @@ class PresentedReadingProjection:
 
 
 async def project_owned_reading_presentation(
-    session: AsyncSession,
-    owner: OwnerProtocol,
     *,
-    root: ReadingRoot,
-    version: ReadingVersion,
     brief: ReadingBrief | Mapping[str, object] | None,
     view_model: object,
     document: ReadingDocumentV1 | None,
-    grant_mode: Literal["owner", "public"] = "owner",
-    request_failed: bool = False,
 ) -> PresentedReadingProjection:
-    """Apply one entitlement and fact-closure projection at every read boundary."""
+    """Apply active content access and fact closure at an owned read boundary."""
 
     entitlement_view_model = (
         view_model
@@ -430,27 +314,13 @@ async def project_owned_reading_presentation(
         and isinstance(document.view_model, (BaziChartV1, ZiweiChartV1))
         else None
     )
-    paid_grant = (
-        await _resolve_time_layer_paid_grant(
-            session,
-            owner,
-            root=root,
-            version=version,
-        )
-        if grant_mode == "owner" and entitlement_view_model is not None
-        else None
-    )
-    time_layer_entitlement = _project_owner_time_layer_entitlement(
-        entitlement_view_model,
-        owner,
-        request_failed=request_failed,
-        paid_grant=paid_grant,
+    time_layer_entitlement = _project_active_time_layer_access(
+        entitlement_view_model
     )
     fact_panel = (
         project_presented_fact_panel(
             brief,
             view_model=view_model,
-            time_layer_entitlement=time_layer_entitlement,
         )
         if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
         else project_public_fact_panel(brief)
@@ -458,7 +328,6 @@ async def project_owned_reading_presentation(
     presented_view_model = (
         project_presented_view_model(
             view_model,
-            time_layer_entitlement=time_layer_entitlement,
         )
         if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
         else view_model
@@ -471,13 +340,11 @@ async def project_owned_reading_presentation(
         document_fact_panel = project_presented_fact_panel(
             brief,
             view_model=document.view_model,
-            time_layer_entitlement=time_layer_entitlement,
         )
         presented_document = _project_presented_document(
             document,
             view_model=project_presented_view_model(
                 document.view_model,
-                time_layer_entitlement=time_layer_entitlement,
             ),
             public_fact_refs=_presented_fact_refs(document_fact_panel),
         )
@@ -635,7 +502,7 @@ class AtomicProfilePreviewClaim:
     context: IdempotencyContext
     reading_version_id: UUID
     lease_token: str
-    free_preview_year: int | None
+    default_preview_year: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -800,8 +667,8 @@ class ReadingService:
                 owner,
                 profile.profile_version_id,
             )
-            free_preview_year = (
-                _profile_free_preview_year(confirmed)
+            default_preview_year = (
+                _profile_default_preview_year(confirmed)
                 if target_year is None
                 and target_month is None
                 and target_date is None
@@ -814,7 +681,7 @@ class ReadingService:
                 target_year=target_year,
                 target_month=target_month,
                 target_date=target_date,
-                free_preview_year=free_preview_year,
+                default_preview_year=default_preview_year,
             )
         except (IntegrityError, LookupError, ValueError):
             await savepoint.rollback()
@@ -878,7 +745,7 @@ class ReadingService:
             context=idempotency,
             reading_version_id=version.id,
             lease_token=lease_token,
-            free_preview_year=free_preview_year,
+            default_preview_year=default_preview_year,
         )
         return None
 
@@ -1197,7 +1064,7 @@ class ReadingService:
         target_year: int | None,
         target_month: str | None,
         target_date: date | None,
-        free_preview_year: int | None = None,
+        default_preview_year: int | None = None,
     ) -> Prepare:
         resolved_dimensions = tuple(dimension_ids)
         if target_year is None and target_month is None and target_date is None:
@@ -1206,9 +1073,9 @@ class ReadingService:
                 query=query,
                 profile=profile,
                 year=(
-                    free_preview_year
-                    if free_preview_year is not None
-                    else _profile_free_preview_year(profile)
+                    default_preview_year
+                    if default_preview_year is not None
+                    else _profile_default_preview_year(profile)
                 ),
                 dimension_ids=resolved_dimensions,
             )
@@ -1293,8 +1160,8 @@ class ReadingService:
             target_year=target_year,
             target_month=target_month,
             target_date=target_date,
-            free_preview_year=(
-                claim.free_preview_year if owns_claim and claim is not None else None
+            default_preview_year=(
+                claim.default_preview_year if owns_claim and claim is not None else None
             ),
         )
         if owns_claim and rollback_on_failure:
@@ -1938,7 +1805,7 @@ class ReadingService:
         dimension_ids: Sequence[str],
         target_year: int | None,
         target_month: str | None,
-        free_preview_year: int | None = None,
+        default_preview_year: int | None = None,
     ) -> Prepare:
         resolved_dimensions = tuple(dimension_ids)
         if target_year is None and target_month is None:
@@ -1947,9 +1814,9 @@ class ReadingService:
                 query=query,
                 profile=profile,
                 year=(
-                    free_preview_year
-                    if free_preview_year is not None
-                    else _profile_free_preview_year(profile)
+                    default_preview_year
+                    if default_preview_year is not None
+                    else _profile_default_preview_year(profile)
                 ),
                 dimension_ids=resolved_dimensions,
             )
@@ -3213,15 +3080,9 @@ class ReadingService:
             job_status=job_status,
         )
         presentation = await project_owned_reading_presentation(
-            self.session,
-            owner,
-            root=root,
-            version=version,
             brief=brief,
             view_model=view_model,
             document=document,
-            request_failed=status
-            in {ReadingStatus.TERMINAL_STOPPED, ReadingStatus.RUNTIME_UNKNOWN},
         )
         return ReadingResultResponse(
             reading_version_id=version.id,
@@ -4421,12 +4282,14 @@ class ReadingService:
         request_failed: bool = False,
         paid_grant: bool | None = None,
     ) -> TimeLayerEntitlementV1 | None:
-        return _project_owner_time_layer_entitlement(
-            view_model,
-            owner,
-            request_failed=request_failed,
-            paid_grant=paid_grant,
-        )
+        """Project the dormant v1 shape through the active content policy.
+
+        Owner, transport, and billing arguments remain accepted for internal
+        compatibility, but do not gate supported development content.
+        """
+
+        _ = owner, request_failed, paid_grant
+        return _project_active_time_layer_access(view_model)
 
     @staticmethod
     def _poll_fields(

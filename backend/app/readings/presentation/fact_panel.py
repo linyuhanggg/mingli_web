@@ -6,10 +6,7 @@ from typing import Any
 
 from app.charts.contracts import BaziChartV1, ZiweiChartV1
 from app.readings.public_fact_panel import project_public_fact_panel
-from app.readings.runtime_contracts import (
-    ReadingBrief,
-    TimeLayerEntitlementV1,
-)
+from app.readings.runtime_contracts import ReadingBrief
 
 _CALCULATED_FACT_REF = re.compile(
     r"/calculated/(?P<capability>bazi|ziwei)/(?P<field_id>[^/]+)$"
@@ -34,13 +31,6 @@ _ELEMENT_LABELS = {
     "water": "水",
 }
 _DIRECTION_LABELS = {"forward": "顺排", "reverse": "逆排"}
-_PAID_FACT_LAYERS = {
-    ("bazi", "month_layers"): "month",
-    ("bazi", "day_layers"): "day",
-    ("ziwei", "monthly_layers"): "month",
-}
-
-
 def _sentence(label: str, value: str) -> str:
     return f"{label}：{value}。"
 
@@ -581,45 +571,12 @@ _ZIWEI_FORMATTERS: dict[str, Callable[[ZiweiChartV1], str | None]] = {
 }
 
 
-def _paid_layer_is_readable(
-    entitlement: TimeLayerEntitlementV1 | None,
-    layer_id: str,
-) -> bool:
-    if entitlement is None:
-        return False
-    return any(
-        item.layer_id == layer_id and item.access == "readable"
-        for item in entitlement.layers
-    )
-
-
 def project_presented_view_model(
     view_model: BaziChartV1 | ZiweiChartV1,
-    *,
-    time_layer_entitlement: TimeLayerEntitlementV1 | None,
 ) -> BaziChartV1 | ZiweiChartV1:
-    """Remove unreadable paid fact values while preserving capability metadata."""
+    """Expose every fact already supported by the typed Runtime ViewModel."""
 
-    core = view_model.core_facts
-    if core is None:
-        return view_model
-    if isinstance(view_model, BaziChartV1):
-        updates: dict[str, object] = {}
-        if not _paid_layer_is_readable(time_layer_entitlement, "month"):
-            updates["month_layers"] = None
-        if not _paid_layer_is_readable(time_layer_entitlement, "day"):
-            updates["day_layers"] = None
-        if not updates:
-            return view_model
-        return view_model.model_copy(
-            update={"core_facts": core.model_copy(update=updates)}
-        )
-
-    if _paid_layer_is_readable(time_layer_entitlement, "month"):
-        return view_model
-    return view_model.model_copy(
-        update={"core_facts": core.model_copy(update={"monthly_layers": None})}
-    )
+    return view_model
 
 
 def _project_display_text(
@@ -627,11 +584,7 @@ def _project_display_text(
     capability_id: str,
     field_id: str,
     view_model: object,
-    entitlement: TimeLayerEntitlementV1 | None,
 ) -> str | None:
-    paid_layer = _PAID_FACT_LAYERS.get((capability_id, field_id))
-    if paid_layer is not None and not _paid_layer_is_readable(entitlement, paid_layer):
-        return None
     if capability_id == "bazi" and isinstance(view_model, BaziChartV1):
         bazi_formatter = _BAZI_FORMATTERS.get(field_id)
         return (
@@ -679,13 +632,12 @@ def project_presented_fact_panel(
     brief: ReadingBrief | Mapping[str, object] | None,
     *,
     view_model: object,
-    time_layer_entitlement: TimeLayerEntitlementV1 | None,
 ) -> dict[str, Any] | None:
     """Project API-safe facts with stable user-facing text for Bazi and Ziwei.
 
     Runtime values and the typed ViewModel remain authoritative. Unsupported
-    calculated facts, unsafe display strings, and unreadable paid layers are
-    removed together with their outbound dependency references.
+    calculated facts and unsafe display strings are removed together with their
+    outbound dependency references. Billing state does not hide supported facts.
     """
 
     panel = project_public_fact_panel(brief)
@@ -710,7 +662,6 @@ def project_presented_fact_panel(
                 capability_id=match.group("capability"),
                 field_id=match.group("field_id"),
                 view_model=view_model,
-                entitlement=time_layer_entitlement,
             )
         if display_text is None:
             if isinstance(ref, str):

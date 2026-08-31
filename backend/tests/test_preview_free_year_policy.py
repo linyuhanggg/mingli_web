@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import UTC, datetime
 
 from app.readings.request_compiler import ConfirmedProfileVersion
-from app.readings.service import ReadingService, _profile_free_preview_year
+from app.readings.service import ReadingService, _profile_default_preview_year
 
 
 def _profile(*, timezone: str = "Asia/Shanghai") -> ConfirmedProfileVersion:
@@ -22,12 +22,12 @@ def _profile(*, timezone: str = "Asia/Shanghai") -> ConfirmedProfileVersion:
     )
 
 
-def test_free_preview_year_uses_the_profile_civil_timezone() -> None:
+def test_default_preview_year_uses_the_profile_civil_timezone() -> None:
     instant = datetime(2031, 12, 31, 16, 30, tzinfo=UTC)
 
-    assert _profile_free_preview_year(_profile(), reference=instant) == 2032
+    assert _profile_default_preview_year(_profile(), reference=instant) == 2032
     assert (
-        _profile_free_preview_year(
+        _profile_default_preview_year(
             _profile(timezone="America/Los_Angeles"),
             reference=instant,
         )
@@ -35,15 +35,15 @@ def test_free_preview_year_uses_the_profile_civil_timezone() -> None:
     )
 
 
-def test_default_bazi_preview_requests_the_server_selected_free_year() -> None:
+def test_default_bazi_preview_requests_the_server_selected_year() -> None:
     prepare = ReadingService._compile_profile_preview_prepare(
         _profile(),
-        query="查看免费盘与流年",
+        query="查看默认盘与流年",
         dimension_ids=("career",),
         target_year=None,
         target_month=None,
         target_date=None,
-        free_preview_year=2032,
+        default_preview_year=2032,
     )
 
     assert prepare.intent["horizon"] == {
@@ -54,14 +54,14 @@ def test_default_bazi_preview_requests_the_server_selected_free_year() -> None:
     assert prepare.intent["capability_id"] == "bazi"
 
 
-def test_default_ziwei_preview_requests_the_server_selected_free_year() -> None:
+def test_default_ziwei_preview_requests_the_server_selected_year() -> None:
     prepare = ReadingService._compile_ziwei_preview_prepare(
         _profile(),
-        query="查看免费盘与流年",
+        query="查看默认盘与流年",
         dimension_ids=("career",),
         target_year=None,
         target_month=None,
-        free_preview_year=2032,
+        default_preview_year=2032,
     )
 
     assert prepare.intent["horizon"] == {
@@ -72,7 +72,7 @@ def test_default_ziwei_preview_requests_the_server_selected_free_year() -> None:
     assert prepare.intent["capability_id"] == "ziwei"
 
 
-def test_explicit_year_stays_authoritative_over_the_free_preview_policy() -> None:
+def test_explicit_year_stays_authoritative_over_the_default_preview_policy() -> None:
     bazi = ReadingService._compile_profile_preview_prepare(
         _profile(),
         query="查看指定流年",
@@ -80,7 +80,7 @@ def test_explicit_year_stays_authoritative_over_the_free_preview_policy() -> Non
         target_year=2028,
         target_month=None,
         target_date=None,
-        free_preview_year=2032,
+        default_preview_year=2032,
     )
     ziwei = ReadingService._compile_ziwei_preview_prepare(
         _profile(),
@@ -88,7 +88,7 @@ def test_explicit_year_stays_authoritative_over_the_free_preview_policy() -> Non
         dimension_ids=("career",),
         target_year=2028,
         target_month=None,
-        free_preview_year=2032,
+        default_preview_year=2032,
     )
 
     assert bazi.intent["horizon"]["start"] == "2028"

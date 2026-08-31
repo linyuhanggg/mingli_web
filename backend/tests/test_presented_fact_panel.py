@@ -3,11 +3,12 @@ from __future__ import annotations
 from typing import Any
 
 from app.charts.projectors import project_runtime_view_model
+from app.readings.presentation.access_policy import ACTIVE_CONTENT_ACCESS_POLICY
 from app.readings.presentation.fact_panel import (
     project_presented_fact_panel,
     project_presented_view_model,
 )
-from app.readings.runtime_contracts import ReadingBrief, project_time_layer_entitlement
+from app.readings.runtime_contracts import ReadingBrief
 
 
 def _brief(capability_id: str, facts: list[dict[str, Any]]) -> ReadingBrief:
@@ -115,21 +116,15 @@ def test_bazi_public_facts_use_named_view_model_text_and_fail_closed() -> None:
                     "boundary": "只表示旬空位置事实。",
                 },
             ),
-            _fact("bazi", "month_layers", {"2032-01": {"engine": "paid"}}),
+            _fact("bazi", "month_layers", {"unsupported": True}),
             _fact("bazi", "unknown_engine_dump", {"engine": "bazi-core"}),
         ],
     )
     view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
     assert view_model is not None
-    entitlement = project_time_layer_entitlement(
-        view_model,
-        resolution="unauthenticated",
-    )
-
     panel = project_presented_fact_panel(
         brief,
         view_model=view_model,
-        time_layer_entitlement=entitlement,
     )
 
     assert panel is not None
@@ -175,21 +170,15 @@ def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
                     "soul_star": "贪狼",
                 },
             ),
-            _fact("ziwei", "monthly_layers", {"2032-01": {"engine": "paid"}}),
+            _fact("ziwei", "monthly_layers", {"unsupported": True}),
             _fact("ziwei", "unknown_engine_dump", {"engine": "ziwei-core"}),
         ],
     )
     view_model = project_runtime_view_model(brief.to_dict(), product_id="ziwei")
     assert view_model is not None
-    entitlement = project_time_layer_entitlement(
-        view_model,
-        resolution="unknown",
-    )
-
     panel = project_presented_fact_panel(
         brief,
         view_model=view_model,
-        time_layer_entitlement=entitlement,
     )
 
     assert panel is not None
@@ -203,7 +192,7 @@ def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
     assert "monthly_layers" not in str(panel)
 
 
-def test_paid_time_layer_values_are_removed_from_public_view_models() -> None:
+def test_supported_time_layer_values_are_visible_without_billing_state() -> None:
     bazi_brief = _brief(
         "bazi",
         [
@@ -270,41 +259,23 @@ def test_paid_time_layer_values_are_removed_from_public_view_models() -> None:
     assert ziwei.core_facts is not None
     assert ziwei.core_facts.monthly_layers is not None
 
-    presented_bazi = project_presented_view_model(
-        bazi,
-        time_layer_entitlement=project_time_layer_entitlement(
-            bazi,
-            resolution="unauthenticated",
-        ),
-    )
-    presented_ziwei = project_presented_view_model(
-        ziwei,
-        time_layer_entitlement=project_time_layer_entitlement(
-            ziwei,
-            resolution="unknown",
-        ),
-    )
+    presented_bazi = project_presented_view_model(bazi)
+    presented_ziwei = project_presented_view_model(ziwei)
 
     assert presented_bazi.core_facts is not None
-    assert presented_bazi.core_facts.month_layers is None
+    assert presented_bazi.core_facts.month_layers is not None
     assert presented_ziwei.core_facts is not None
-    assert presented_ziwei.core_facts.monthly_layers is None
+    assert presented_ziwei.core_facts.monthly_layers is not None
 
-    readable_bazi = project_presented_view_model(
-        bazi,
-        time_layer_entitlement=project_time_layer_entitlement(
-            bazi,
-            resolution="granted",
-        ),
-    )
-    readable_ziwei = project_presented_view_model(
-        ziwei,
-        time_layer_entitlement=project_time_layer_entitlement(
-            ziwei,
-            resolution="granted",
-        ),
-    )
-    assert readable_bazi.core_facts is not None
-    assert readable_bazi.core_facts.month_layers is not None
-    assert readable_ziwei.core_facts is not None
-    assert readable_ziwei.core_facts.monthly_layers is not None
+    bazi_panel = project_presented_fact_panel(bazi_brief, view_model=bazi)
+    ziwei_panel = project_presented_fact_panel(ziwei_brief, view_model=ziwei)
+
+    assert bazi_panel is not None
+    assert ziwei_panel is not None
+    assert _texts(bazi_panel)["month_layers"] == "流月：2032-01·壬子。"
+    assert _texts(ziwei_panel)["monthly_layers"] == "流月：2032年1月。"
+
+
+def test_active_content_access_policy_defaults_all_supported_content_to_readable() -> None:
+    assert ACTIVE_CONTENT_ACCESS_POLICY.phase == "development_free_all_supported"
+    assert ACTIVE_CONTENT_ACCESS_POLICY.legacy_time_layer_resolution == "granted"
