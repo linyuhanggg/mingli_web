@@ -541,11 +541,49 @@ def _ziwei_annual_layers(view: ZiweiChartV1) -> str | None:
     )
 
 
+def _ziwei_liu_yue_salient(liu_yue: object) -> str | None:
+    """Render the authoritative Liu Yue placement fields for one segment."""
+
+    if not isinstance(liu_yue, Mapping):
+        return None
+    palace = _mapping_text(liu_yue, "name", "palace", "palace_name")
+    if palace is None:
+        return None
+    stem = _mapping_text(liu_yue, "heavenlyStem")
+    branch = _mapping_text(liu_yue, "earthlyBranch")
+    if stem is not None and branch is not None:
+        return f"{palace}（{stem}{branch}）"
+    return palace
+
+
 def _ziwei_monthly_layers(view: ZiweiChartV1) -> str | None:
     rows = view.core_facts.monthly_layers if view.core_facts is not None else None
     if not rows:
         return None
-    return _sentence("流月", "、".join(f"{row.year}年{row.month}月" for row in rows))
+    values: list[str] = []
+    for row in rows:
+        segments: list[str] = []
+        for segment in row.segments:
+            if not isinstance(segment, Mapping):
+                return None
+            start_inclusive = _mapping_text(segment, "start_inclusive")
+            end_exclusive = _mapping_text(segment, "end_exclusive")
+            if start_inclusive is None or end_exclusive is None:
+                return None
+            liu_yue = segment.get("liu_yue")
+            if liu_yue is None:
+                liu_yue = row.liu_yue
+            salient = _ziwei_liu_yue_salient(liu_yue)
+            if salient is None:
+                return None
+            segments.append(
+                f"{_half_open_interval(start_inclusive, end_exclusive)}·流月{salient}"
+            )
+        joined = _join_nonempty(segments, separator="；")
+        if joined is None:
+            return None
+        values.append(f"{row.year}年{row.month}月：{joined}")
+    return _sentence("流月", "、".join(values))
 
 
 _BAZI_FORMATTERS: dict[str, Callable[[BaziChartV1], str | None]] = {

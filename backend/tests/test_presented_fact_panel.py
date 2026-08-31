@@ -545,9 +545,34 @@ def test_supported_time_layer_values_are_visible_without_billing_state() -> None
                     "2032-01": {
                         "year": 2032,
                         "month": 1,
-                        "liu_yue": {"palace": "命宫"},
-                        "segments": [{"start": "2032-01-01"}],
-                        "representative_scope": "month",
+                        "liu_yue": {
+                            "name": "命宫",
+                            "heavenlyStem": "甲",
+                            "earthlyBranch": "子",
+                        },
+                        "segments": [
+                            {
+                                "start_inclusive": "2032-01-01",
+                                "end_exclusive": "2032-01-16",
+                                "liu_yue": {
+                                    "name": "命宫",
+                                    "heavenlyStem": "甲",
+                                    "earthlyBranch": "子",
+                                },
+                            },
+                            {
+                                "start_inclusive": "2032-01-16",
+                                "end_exclusive": "2032-02-01",
+                                "liu_yue": {
+                                    "name": "财帛",
+                                    "heavenlyStem": "乙",
+                                    "earthlyBranch": "丑",
+                                },
+                            },
+                        ],
+                        "representative_scope": (
+                            "first exact segment; use segments for all dates"
+                        ),
                     }
                 },
             ),
@@ -579,8 +604,10 @@ def test_supported_time_layer_values_are_visible_without_billing_state() -> None
         "流月：2032-01·壬子（区间自2032-01-01T00:00:00+08:00（含）"
         "至2032-02-01T00:00:00+08:00（不含））。"
     )
-    assert _texts(ziwei_panel)["monthly_layers"] == "流月：2032年1月。"
-
+    assert _texts(ziwei_panel)["monthly_layers"] == (
+        "流月：2032年1月：自2032-01-01（含）至2032-01-16（不含）·流月命宫（甲子）；"
+        "自2032-01-16（含）至2032-02-01（不含）·流月财帛（乙丑）。"
+    )
 
 def test_active_content_access_policy_defaults_all_supported_content_to_readable() -> None:
     assert ACTIVE_CONTENT_ACCESS_POLICY.phase == "development_free_all_supported"

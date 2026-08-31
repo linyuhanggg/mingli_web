@@ -693,9 +693,25 @@ def _ziwei_chart_brief(
                     "2032-01": {
                         "year": 2032,
                         "month": 1,
-                        "liu_yue": {"palace": "命宫"},
-                        "segments": [{"start": "2032-01-01"}],
-                        "representative_scope": "month",
+                        "liu_yue": {
+                            "name": "命宫",
+                            "heavenlyStem": "甲",
+                            "earthlyBranch": "子",
+                        },
+                        "segments": [
+                            {
+                                "start_inclusive": "2032-01-01",
+                                "end_exclusive": "2032-02-01",
+                                "liu_yue": {
+                                    "name": "命宫",
+                                    "heavenlyStem": "甲",
+                                    "earthlyBranch": "子",
+                                },
+                            }
+                        ],
+                        "representative_scope": (
+                            "first exact segment; use segments for all dates"
+                        ),
                     }
                 },
                 "display_text": "流月层已由 Runtime 计算。",

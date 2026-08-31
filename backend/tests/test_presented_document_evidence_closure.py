@@ -6,6 +6,7 @@ from app.readings.presentation.fact_panel import project_presented_fact_panel
 from app.readings.runtime_contracts import ReadingBrief
 from app.readings.service import (
     _presented_public_facts,
+    _presented_public_findings,
     _project_presented_document,
 )
 
@@ -108,6 +109,7 @@ def _document_payload(
     presentation_contract_version: str,
     claims: list[dict[str, object]],
     evidence: list[dict[str, object]],
+    boundaries: list[dict[str, object]] | None = None,
 ) -> dict[str, object]:
     return {
         "document_id": "reading-version:test",
@@ -121,7 +123,7 @@ def _document_payload(
         "themes": [{"theme_id": "career", "label": "事业"}],
         "claims": claims,
         "evidence": evidence,
-        "boundaries": [],
+        "boundaries": boundaries or [],
         "actions": {
             "correction": {"enabled": True},
             "follow_up": {"enabled": False},
@@ -142,6 +144,8 @@ def _claim(
     subject_ref: str,
     fact_refs: list[str],
     evidence_refs: list[str] | None = None,
+    finding_refs: list[str] | None = None,
+    limit_refs: list[str] | None = None,
 ) -> dict[str, object]:
     return {
         "claim_id": claim_id,
@@ -152,9 +156,9 @@ def _claim(
         "claim_kind_id": "kind.tendency",
         "certainty_id": "certainty.tendency",
         "fact_refs": fact_refs,
-        "finding_refs": [],
+        "finding_refs": finding_refs or [],
         "evidence_refs": evidence_refs or [],
-        "limit_refs": [],
+        "limit_refs": limit_refs or [],
         "verification": {"enabled": True},
     }
 
@@ -171,6 +175,7 @@ def _project(
         document,
         view_model=view_model,
         public_facts=_presented_public_facts(panel),
+        public_findings=_presented_public_findings(panel),
     )
 
 
@@ -389,6 +394,218 @@ def test_project_presented_document_rebuilds_bazi_deep_claims_to_final_fact_text
     assert [item.evidence_ref for item in projected.evidence] == [
         "evidence:empty-dependency"
     ]
+    assert projected.actions.share.enabled is True
+    assert projected.actions.export.enabled is True
+    assert projected.presentation_contract_version == "bazi-deep-presentation/v1"
+
+
+def test_project_presented_document_keeps_finding_and_limit_grounded_bazi_deep_claims() -> None:
+    subject_ref = "profile-version:test"
+    finding_single = "月令季节状态已经确定；这不等于整盘身强身弱。"
+    finding_multi = "四柱与日主共同支撑当前结构判断。"
+    limit_text = "本解读仅供传统文化参考，不构成现实决策保证。"
+    brief = ReadingBrief.from_dict(
+        {
+            "question": "查看本命四柱结构",
+            "vocabulary": [],
+            "facts": [
+                {
+                    "ref": f"fact:{subject_ref}/calculated/bazi/four_pillars",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "year": "甲子",
+                        "month": "乙丑",
+                        "day": "丙寅",
+                        "hour": "丁卯",
+                    },
+                    "display_text": "四柱已由 Runtime 计算。",
+                },
+                {
+                    "ref": f"fact:{subject_ref}/calculated/bazi/day_master",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {"stem": "丙", "element": "火", "polarity": "阳"},
+                    "display_text": "日主已由 Runtime 计算。",
+                },
+                {
+                    "ref": f"fact:{subject_ref}/calculated/bazi/xunkong",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "day_pillar": "丙寅",
+                        "xun": "甲子",
+                        "branches": ["戌", "亥"],
+                        "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+                        "boundary": "只表示旬空位置事实。",
+                    },
+                    "display_text": "旬空已由 Runtime 计算。",
+                },
+            ],
+            "evidence": [
+                {
+                    "ref": "evidence:classic-1",
+                    "evidence_ref": "evidence:classic-1",
+                    "rule_id": "bazi/test#R-01",
+                    "source_title": "测试古籍",
+                    "locator": "测试卷",
+                    "excerpt": "只用于合同测试的短摘录。",
+                    "verification_status": "verified_exact",
+                    "verbatim_excerpt": "只用于合同测试的短摘录。",
+                    "verbatim_citations": [
+                        {
+                            "source_title": "测试古籍",
+                            "locator": "测试卷",
+                            "verbatim_excerpt": "只用于合同测试的短摘录。",
+                            "verification_status": "verified_exact",
+                        }
+                    ],
+                    "supports_fact_refs": [
+                        f"fact:{subject_ref}/calculated/bazi/four_pillars",
+                        f"fact:{subject_ref}/calculated/bazi/day_master",
+                    ],
+                }
+            ],
+            "findings": [
+                {
+                    "ref": "finding:single-fact",
+                    "subject_ref": subject_ref,
+                    "dimension_ids": ["career"],
+                    "kind_id": "kind.tendency",
+                    "data": {"runtime_candidate": True},
+                    "public_text": finding_single,
+                    "fact_refs": [
+                        f"fact:{subject_ref}/calculated/bazi/four_pillars"
+                    ],
+                    "evidence_refs": ["evidence:classic-1"],
+                    "limit_kind_ids": ["limit:traditional"],
+                    "support_mode": "exact",
+                },
+                {
+                    "ref": "finding:multi-fact",
+                    "subject_ref": subject_ref,
+                    "dimension_ids": ["career"],
+                    "kind_id": "kind.tendency",
+                    "data": {"runtime_candidate": True},
+                    "public_text": finding_multi,
+                    "fact_refs": [
+                        f"fact:{subject_ref}/calculated/bazi/four_pillars",
+                        f"fact:{subject_ref}/calculated/bazi/day_master",
+                    ],
+                    "evidence_refs": ["evidence:classic-1"],
+                    "limit_kind_ids": ["limit:traditional"],
+                    "support_mode": "exact",
+                },
+            ],
+            "claim_scopes": [
+                {
+                    "subject_ref": subject_ref,
+                    "dimension_id": "career",
+                    "allowed_kind_ids": ["kind.tendency"],
+                    "certainty_ceiling_id": "certainty.tendency",
+                    "fact_refs": [
+                        f"fact:{subject_ref}/calculated/bazi/four_pillars",
+                        f"fact:{subject_ref}/calculated/bazi/day_master",
+                    ],
+                    "evidence_refs": ["evidence:classic-1"],
+                }
+            ],
+            "limits": [
+                {
+                    "kind_id": "limit:traditional",
+                    "public_text": limit_text,
+                    "scope_refs": [subject_ref],
+                    "detail_ids": [],
+                }
+            ],
+            "prior_answer": None,
+            "request_view": {
+                "subject_refs": [subject_ref],
+                "capability_ids": ["bazi"],
+                "object_id": "natal",
+                "dimension_ids": ["career"],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+            },
+        }
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
+    assert view_model is not None
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+    assert panel is not None
+    public_facts = _presented_public_facts(panel)
+    public_findings = _presented_public_findings(panel)
+    four_pillars = f"fact:{subject_ref}/calculated/bazi/four_pillars"
+    day_master = f"fact:{subject_ref}/calculated/bazi/day_master"
+    xunkong = f"fact:{subject_ref}/calculated/bazi/xunkong"
+    assert public_findings["finding:single-fact"] == finding_single
+    assert public_findings["finding:multi-fact"] == finding_multi
+    document = ReadingDocumentV1.model_validate(
+        _document_payload(
+            subject_ref=subject_ref,
+            view_model=view_model,
+            product_version="bazi-deep-reading/v1",
+            presentation_contract_version="bazi-deep-presentation/v1",
+            claims=[
+                _claim(
+                    claim_id="claim:finding-single",
+                    text=finding_single,
+                    subject_ref=subject_ref,
+                    fact_refs=[four_pillars],
+                    finding_refs=["finding:single-fact"],
+                    evidence_refs=["evidence:classic-1"],
+                    limit_refs=["limit:traditional"],
+                ),
+                _claim(
+                    claim_id="claim:finding-multi",
+                    text=finding_multi,
+                    subject_ref=subject_ref,
+                    fact_refs=[four_pillars, day_master],
+                    finding_refs=["finding:multi-fact"],
+                    evidence_refs=["evidence:classic-1"],
+                    limit_refs=["limit:traditional"],
+                ),
+                _claim(
+                    claim_id="claim:limit-only",
+                    text=limit_text,
+                    subject_ref=subject_ref,
+                    fact_refs=[],
+                    limit_refs=["limit:traditional"],
+                ),
+            ],
+            evidence=[
+                {
+                    "evidence_ref": "evidence:classic-1",
+                    "title": "经典依据",
+                    "supports_fact_refs": [four_pillars, day_master],
+                }
+            ],
+            boundaries=[
+                {"limit_ref": "limit:traditional", "text": limit_text},
+            ],
+        )
+    )
+
+    projected = _project_presented_document(
+        document,
+        view_model=view_model,
+        public_facts=public_facts,
+        public_findings=public_findings,
+    )
+
+    assert projected is not None
+    assert [claim.text for claim in projected.claims] == [
+        finding_single,
+        finding_multi,
+        limit_text,
+    ]
+    assert projected.answer_summary == finding_single
+    assert public_facts[four_pillars] not in {
+        claim.text for claim in projected.claims
+    }
+    assert public_facts[day_master] not in {
+        claim.text for claim in projected.claims
+    }
+    assert public_facts[xunkong] not in {claim.text for claim in projected.claims}
     assert projected.actions.share.enabled is True
     assert projected.actions.export.enabled is True
     assert projected.presentation_contract_version == "bazi-deep-presentation/v1"

@@ -232,6 +232,37 @@ def _presented_public_facts(
     return public_facts
 
 
+def _presented_public_findings(
+    fact_panel: Mapping[str, object] | None,
+) -> dict[str, str]:
+    """Map retained finding refs to their public_text."""
+
+    if fact_panel is None:
+        return {}
+    findings = fact_panel.get("findings")
+    if not isinstance(findings, Sequence) or isinstance(findings, (str, bytes)):
+        return {}
+    public_findings: dict[str, str] = {}
+    for item in findings:
+        if not isinstance(item, Mapping):
+            continue
+        ref = item.get("ref")
+        public_text = item.get("public_text")
+        if isinstance(ref, str) and isinstance(public_text, str) and public_text:
+            public_findings[ref] = public_text
+    return public_findings
+
+
+def _presented_public_limits(document: ReadingDocumentV1) -> dict[str, str]:
+    """Map document boundary limit refs to their public texts."""
+
+    return {
+        boundary.limit_ref: boundary.text
+        for boundary in document.boundaries
+        if boundary.limit_ref and boundary.text
+    }
+
+
 def _product_id_for_presented_document(document: ReadingDocumentV1) -> str:
     """Recover the product lane encoded in a stored document version string."""
 
@@ -252,18 +283,35 @@ def _project_presented_claim(
     claim: ClaimCard,
     *,
     public_facts: Mapping[str, str],
+    public_findings: Mapping[str, str],
+    public_limits: Mapping[str, str],
     retained_evidence_refs: frozenset[str],
     require_extractive_text: bool,
 ) -> ClaimCard | None:
-    """Retain or rebuild a claim against the final public fact closure."""
+    """Retain or rebuild a claim against the final public source closure."""
 
     if not set(claim.fact_refs).issubset(public_facts):
         return None
     if not set(claim.evidence_refs).issubset(retained_evidence_refs):
         return None
-    if not require_extractive_text or not claim.fact_refs:
+    if not require_extractive_text:
+        return claim
+    if not set(claim.finding_refs).issubset(public_findings):
+        return None
+    if not set(claim.limit_refs).issubset(public_limits):
+        return None
+    # NarrativeGuard permits exact finding / limit / fact grounding. Match
+    # retained finding and limit sources before any fact-text rebuild so the
+    # reference closer's supporting fact_refs cannot rewrite or drop them.
+    if any(public_findings[ref] == claim.text for ref in claim.finding_refs):
+        return claim
+    if any(public_limits[ref] == claim.text for ref in claim.limit_refs):
         return claim
     if any(public_facts[ref] == claim.text for ref in claim.fact_refs):
+        return claim
+    if claim.finding_refs or claim.limit_refs:
+        return None
+    if not claim.fact_refs:
         return claim
     # Fact-grounded bazi-deep blocks are extractive: rebuild from the single
     # referenced final display_text, or drop when the source is ambiguous.
@@ -339,10 +387,15 @@ def _project_presented_document(
     *,
     view_model: BaziChartV1 | ZiweiChartV1,
     public_facts: Mapping[str, str],
+    public_findings: Mapping[str, str] | None = None,
 ) -> ReadingDocumentV1 | None:
     """Keep public document dependencies inside the presented fact closure."""
 
     public_fact_refs = frozenset(public_facts)
+    retained_findings = (
+        dict(public_findings) if public_findings is not None else {}
+    )
+    public_limits = _presented_public_limits(document)
     evidence = tuple(
         item
         for item in document.evidence
@@ -355,6 +408,8 @@ def _project_presented_document(
         projected_claim = _project_presented_claim(
             claim,
             public_facts=public_facts,
+            public_findings=retained_findings,
+            public_limits=public_limits,
             retained_evidence_refs=retained_evidence_refs,
             require_extractive_text=require_extractive_text,
         )
@@ -505,6 +560,7 @@ async def project_owned_reading_presentation(
                 document.view_model,
             ),
             public_facts=_presented_public_facts(document_fact_panel),
+            public_findings=_presented_public_findings(document_fact_panel),
         )
     return PresentedReadingProjection(
         fact_panel=fact_panel,

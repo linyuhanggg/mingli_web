@@ -85,9 +85,9 @@ def _document_payload(version_id: str, accepted_copy_ref: str) -> dict[str, obje
                 "claim_kind_id": "kind.tendency",
                 "certainty_id": "certainty.tendency",
                 "fact_refs": [],
-                "finding_refs": ["finding:1"],
+                "finding_refs": [],
                 "evidence_refs": ["evidence:1"],
-                "limit_refs": ["limit:1"],
+                "limit_refs": [],
                 "verification": {"enabled": True},
             }
         ],
