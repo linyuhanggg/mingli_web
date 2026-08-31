@@ -772,6 +772,9 @@ async def save_fact_referencing_document(
     )
     view_model = project_runtime_view_model(brief.to_dict(), product_id=product_id)
     assert view_model is not None
+    removed_fact_ref = (
+        f"fact:{subject_ref}/calculated/{product_id}/unknown_engine_dump"
+    )
     cipher = EnvelopeCipher.from_settings(settings)
     async with database.sessions() as session:
         readings = __import__(
@@ -790,12 +793,26 @@ async def save_fact_referencing_document(
                 "product_version": f"{product_id}-reading/test",
                 "presentation_contract_version": f"{product_id}-presentation/test",
                 "view_model": view_model.model_dump(mode="json"),
-                "answer_summary": "受支持流月事实形成的结论应保持引用闭包。",
+                "answer_summary": "MIXED-CLAIM-MUST-DROP",
                 "subject_summaries": [
                     {"subject_ref": subject_ref, "label": "本人"}
                 ],
                 "themes": [{"theme_id": "career", "label": "事业"}],
                 "claims": [
+                    {
+                        "claim_id": "claim:mixed-must-drop",
+                        "section_id": "overview",
+                        "text": "MIXED-CLAIM-MUST-DROP",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [public_fact_ref, removed_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": ["evidence:mixed-must-drop"],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
                     {
                         "claim_id": "claim:time-layer",
                         "section_id": "overview",
@@ -829,6 +846,14 @@ async def save_fact_referencing_document(
                     }
                 ],
                 "evidence": [
+                    {
+                        "evidence_ref": "evidence:mixed-must-drop",
+                        "title": "MIXED-EVIDENCE-MUST-DROP",
+                        "supports_fact_refs": [
+                            public_fact_ref,
+                            removed_fact_ref,
+                        ],
+                    },
                     {
                         "evidence_ref": "evidence:fact-closure",
                         "title": "测试依据",
@@ -4923,7 +4948,12 @@ async def test_recast_creates_a_new_root_from_an_accepted_reading(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        "app.readings.service._profile_default_preview_year",
+        lambda _profile: 2032,
+    )
     headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, headers)
     await seed_runtime_release(database, test_settings)
@@ -4957,6 +4987,11 @@ async def test_recast_creates_a_new_root_from_an_accepted_reading(
     assert body["reading_root_id"] != source["reading_root_id"]
     assert body["profile_version_id"] == confirmed["profile_version_id"]
     assert body["capability_id"] == "bazi"
+    assert body["horizon"] == {
+        "kind_id": "year",
+        "start": "2032",
+        "end": "2032",
+    }
 
     replayed = await client.post(
         f"/api/v1/readings/{source['reading_version_id']}/recast",
@@ -5940,6 +5975,8 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
         assert document["answer_summary"] == (
             "受支持流月事实形成的结论应保持引用闭包。"
         )
+        assert "MIXED-CLAIM-MUST-DROP" not in str(document)
+        assert "MIXED-EVIDENCE-MUST-DROP" not in str(document)
         assert time_ref in public_fact_refs
         assert time_ref in str(document)
     assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"]
@@ -5985,10 +6022,14 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
             "受支持流月事实形成的结论应保持引用闭包。"
         )
         assert "流月事实依据" in str(bearer_document)
+        assert "MIXED-CLAIM-MUST-DROP" not in str(bearer_document)
+        assert "MIXED-EVIDENCE-MUST-DROP" not in str(bearer_document)
     assert len(export_documents) == 2
     assert all(
         document.answer_summary == "受支持流月事实形成的结论应保持引用闭包。"
         and "流月事实依据" in str(document)
+        and "MIXED-CLAIM-MUST-DROP" not in str(document)
+        and "MIXED-EVIDENCE-MUST-DROP" not in str(document)
         for document in export_documents
     )
 

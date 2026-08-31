@@ -229,42 +229,19 @@ def _project_presented_document(
 ) -> ReadingDocumentV1:
     """Keep public document dependencies inside the presented fact closure."""
 
-    claims_with_public_support = tuple(
-        claim.model_copy(
-            update={
-                "fact_refs": tuple(
-                    ref for ref in claim.fact_refs if ref in public_fact_refs
-                )
-            }
-        )
-        for claim in document.claims
-        if any(ref in public_fact_refs for ref in claim.fact_refs)
-    )
     evidence = tuple(
-        item.model_copy(
-            update={
-                "supports_fact_refs": tuple(
-                    ref
-                    for ref in item.supports_fact_refs
-                    if ref in public_fact_refs
-                )
-            }
-        )
+        item
         for item in document.evidence
-        if any(ref in public_fact_refs for ref in item.supports_fact_refs)
+        if item.supports_fact_refs
+        and set(item.supports_fact_refs).issubset(public_fact_refs)
     )
     retained_evidence_refs = frozenset(item.evidence_ref for item in evidence)
     claims = tuple(
-        claim.model_copy(
-            update={
-                "evidence_refs": tuple(
-                    ref
-                    for ref in claim.evidence_refs
-                    if ref in retained_evidence_refs
-                )
-            }
-        )
-        for claim in claims_with_public_support
+        claim
+        for claim in document.claims
+        if claim.fact_refs
+        and set(claim.fact_refs).issubset(public_fact_refs)
+        and set(claim.evidence_refs).issubset(retained_evidence_refs)
     )
     answer_summary = (
         claims[0].text
@@ -2750,11 +2727,17 @@ class ReadingService:
             return replayed, False
         await self._require_accepted_source(owner, source_version_id)
         if action == "profile_preview":
-            prepare = compile_bazi_prepare(
-                action=action,
+            profile = await self._owned_confirmed_profile(
+                owner,
+                profile_version_id,
+            )
+            prepare = self._compile_profile_preview_prepare(
+                profile,
                 query=resolved_query,
-                profile=await self._owned_confirmed_profile(owner, profile_version_id),
                 dimension_ids=tuple(resolved_dimensions),
+                target_year=None,
+                target_month=None,
+                target_date=None,
             )
             capability_id = "bazi"
         elif action in {"today", "week"}:

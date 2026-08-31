@@ -602,30 +602,74 @@ def _project_display_text(
     return None
 
 
-def _filter_ref_list(values: object, removed: set[str]) -> list[str]:
-    if not isinstance(values, list):
+def _string_refs(values: object) -> tuple[str, ...] | None:
+    if not isinstance(values, list) or not all(
+        isinstance(item, str) for item in values
+    ):
+        return None
+    return tuple(values)
+
+
+def _closed_dependency_pairs(
+    *,
+    original: object,
+    projected: object,
+    fact_ref_field: str,
+    kept_fact_refs: frozenset[str],
+) -> list[tuple[Mapping[str, object], dict[str, Any]]]:
+    if not isinstance(original, list) or not isinstance(projected, list):
         return []
-    return [item for item in values if isinstance(item, str) and item not in removed]
+    original_items = [item for item in original if isinstance(item, Mapping)]
+    projected_items = [item for item in projected if isinstance(item, Mapping)]
+    if len(original_items) != len(projected_items):
+        return []
 
-
-def _remove_dependencies(panel: dict[str, Any], removed: set[str]) -> None:
-    if not removed:
-        return
-    for collection_name in ("claim_scopes", "findings"):
-        values = panel.get(collection_name)
-        if not isinstance(values, list):
+    kept: list[tuple[Mapping[str, object], dict[str, Any]]] = []
+    for source, item in zip(original_items, projected_items, strict=True):
+        required_fact_refs = _string_refs(source.get(fact_ref_field))
+        if required_fact_refs is None or not set(required_fact_refs).issubset(
+            kept_fact_refs
+        ):
             continue
-        for item in values:
-            if isinstance(item, dict):
-                item["fact_refs"] = _filter_ref_list(item.get("fact_refs"), removed)
-    evidence = panel.get("evidence")
-    if isinstance(evidence, list):
-        for item in evidence:
-            if isinstance(item, dict):
-                item["supports_fact_refs"] = _filter_ref_list(
-                    item.get("supports_fact_refs"),
-                    removed,
-                )
+        kept.append((source, dict(item)))
+    return kept
+
+
+def _retain_closed_dependencies(
+    panel: dict[str, Any],
+    *,
+    original: Mapping[str, object],
+    kept_fact_refs: frozenset[str],
+) -> None:
+    evidence_pairs = _closed_dependency_pairs(
+        original=original.get("evidence"),
+        projected=panel.get("evidence"),
+        fact_ref_field="supports_fact_refs",
+        kept_fact_refs=kept_fact_refs,
+    )
+    panel["evidence"] = [item for _source, item in evidence_pairs]
+    retained_evidence_refs = frozenset(
+        item["ref"]
+        for _source, item in evidence_pairs
+        if isinstance(item.get("ref"), str)
+    )
+
+    for collection_name in ("claim_scopes", "findings"):
+        dependency_pairs = _closed_dependency_pairs(
+            original=original.get(collection_name),
+            projected=panel.get(collection_name),
+            fact_ref_field="fact_refs",
+            kept_fact_refs=kept_fact_refs,
+        )
+        panel[collection_name] = [
+            item
+            for source, item in dependency_pairs
+            if (
+                evidence_refs := _string_refs(source.get("evidence_refs"))
+            )
+            is not None
+            and set(evidence_refs).issubset(retained_evidence_refs)
+        ]
 
 
 def project_presented_fact_panel(
@@ -636,10 +680,11 @@ def project_presented_fact_panel(
     """Project API-safe facts with stable user-facing text for Bazi and Ziwei.
 
     Runtime values and the typed ViewModel remain authoritative. Unsupported
-    calculated facts and unsafe display strings are removed together with their
-    outbound dependency references. Billing state does not hide supported facts.
+    calculated facts and unsafe display strings are removed together with every
+    dependent record. Billing state does not hide supported facts.
     """
 
+    original = brief.to_dict() if isinstance(brief, ReadingBrief) else dict(brief or {})
     panel = project_public_fact_panel(brief)
     if panel is None:
         return None
@@ -648,7 +693,6 @@ def project_presented_fact_panel(
         return panel
 
     kept: list[dict[str, Any]] = []
-    removed: set[str] = set()
     for item in facts:
         if not isinstance(item, Mapping):
             continue
@@ -664,12 +708,19 @@ def project_presented_fact_panel(
                 view_model=view_model,
             )
         if display_text is None:
-            if isinstance(ref, str):
-                removed.add(ref)
             continue
         next_item["display_text"] = display_text
         kept.append(next_item)
 
     panel["facts"] = kept
-    _remove_dependencies(panel, removed)
+    kept_fact_refs = frozenset(
+        ref
+        for item in kept
+        if isinstance((ref := item.get("ref")), str)
+    )
+    _retain_closed_dependencies(
+        panel,
+        original=original,
+        kept_fact_refs=kept_fact_refs,
+    )
     return panel

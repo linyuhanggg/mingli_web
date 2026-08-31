@@ -138,9 +138,11 @@ def test_bazi_public_facts_use_named_view_model_text_and_fail_closed() -> None:
     assert "schema_version" not in serialized
     assert "unknown_engine_dump" not in serialized
     assert "month_layers" not in serialized
-    assert panel["claim_scopes"][0]["fact_refs"] == []
-    assert panel["findings"][0]["fact_refs"] == []
-    assert panel["evidence"][0]["supports_fact_refs"] == []
+    assert panel["claim_scopes"] == []
+    assert panel["findings"] == []
+    assert panel["evidence"] == []
+    assert "fixture" not in serialized
+    assert "仅用于合同测试。" not in serialized
 
 
 def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
