@@ -6,7 +6,7 @@ import re
 from collections.abc import Callable
 from functools import lru_cache
 from pathlib import Path
-from typing import Any, Literal, Self
+from typing import Any, Literal, NotRequired, Self, TypedDict
 
 from pydantic import Field, SecretStr, model_validator
 from pydantic.fields import FieldInfo
@@ -39,7 +39,22 @@ _V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST = (
     "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
 )
 _FROZEN_CAPABILITY_SHAPE_SHA256 = "8ce44f539004405dc174236612e7185547057b241d9e5fef042dffc958517f60"
-_RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
+
+
+class _RuntimeReleaseIdentity(TypedDict):
+    manifest_digest: str
+    capability_shape_sha256: str
+    release_manifest_sha256: str
+    release_name: str
+    source_commit: str
+    signed_file_count: int
+    physical_file_count: int
+    worker_sha256: NotRequired[str]
+    worker_protocol: NotRequired[str]
+    worker_turn_terminal: NotRequired[str]
+
+
+_RUNTIME_RELEASE_PROFILES: dict[str, _RuntimeReleaseIdentity] = {
     "v51": {
         "manifest_digest": _FROZEN_DESCRIBE_MANIFEST_DIGEST,
         "capability_shape_sha256": _FROZEN_CAPABILITY_SHAPE_SHA256,
@@ -48,6 +63,8 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
         ),
         "release_name": "mingli-master-portable-core",
         "source_commit": "3f70b9025f828343759aaef22dab9ac5f2879a8c",
+        "signed_file_count": 218,
+        "physical_file_count": 219,
         "worker_sha256": (
             "b8d05ca1a4d6392598442e8fed80d73a2ce079b757c2d6bc059f5ff13b629e3e"
         ),
@@ -64,6 +81,8 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
         ),
         "release_name": "mingli-master-portable-core-v51-extension-facts",
         "source_commit": "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
+        "signed_file_count": 218,
+        "physical_file_count": 219,
     },
     "v52-relationship": {
         "manifest_digest": _V52_RELATIONSHIP_DESCRIBE_MANIFEST_DIGEST,
@@ -73,6 +92,8 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
         ),
         "release_name": "mingli-master-portable-core-v52-relationship",
         "source_commit": "da46e7c0d565fe781e40a115acbb2874c400a195",
+        "signed_file_count": 218,
+        "physical_file_count": 219,
     },
     "v53-time-check": {
         "manifest_digest": _V53_TIME_CHECK_DESCRIBE_MANIFEST_DIGEST,
@@ -80,12 +101,14 @@ _RUNTIME_RELEASE_PROFILES: dict[str, dict[str, str]] = {
             "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
         ),
         "release_manifest_sha256": (
-            "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+            "f1deb17a9b4f39b09b2478c8942dcf0761d90bcba95dcbc44a15b8c84f79190b"
         ),
         "release_name": "mingli-master-portable-core",
-        "source_commit": "9c615a70f08d5609af09ead100d2b5d90e558fe8",
+        "source_commit": "6db9dd37d8e62cd425798be2c64ad1121c1c1649",
+        "signed_file_count": 227,
+        "physical_file_count": 228,
         "worker_sha256": (
-            "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+            "e89df2c08df29e65ffc91c05e8e4e5be99f72f67e26b79c5b23a4eb2222ddc9c"
         ),
         "worker_protocol": "mingli-runtime-worker-v2",
         "worker_turn_terminal": "result-idle-v1",

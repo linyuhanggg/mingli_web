@@ -27,7 +27,6 @@ if str(BACKEND_ROOT) not in sys.path:
     sys.path.insert(0, str(BACKEND_ROOT))
 
 from app.adapters.runtime import (
-    V53_TIME_CHECK_RELEASE_FILE_COUNT,
     FileSystemRuntimeReleaseInspector,
     OneShotMingliRuntimeAdapter,
     RuntimeStartupGate,
@@ -149,6 +148,60 @@ def _overlay_locked_scripts(
         }
     )
     return identity
+
+
+def _selected_overlays(args: argparse.Namespace) -> list[tuple[str, Path, str]]:
+    overlays: list[tuple[str, Path, str]] = []
+    if args.overlay_bazi_calc is not None:
+        overlays.append(
+            (
+                _BAZI_CALC_RELATIVE,
+                args.overlay_bazi_calc,
+                QA_LOCKED_BAZI_CALC_SHA256,
+            )
+        )
+    if args.overlay_liuren_calc is not None:
+        overlays.append(
+            (
+                _LIUREN_CALC_RELATIVE,
+                args.overlay_liuren_calc,
+                QA_LOCKED_LIUREN_CALC_SHA256,
+            )
+        )
+    return overlays
+
+
+def _build_overlay_runtime_startup_gate(
+    *,
+    runtime: OneShotMingliRuntimeAdapter,
+    release_root: Path,
+    profile: dict[str, Any],
+    expected_release_manifest_sha256: str,
+    described: Described,
+) -> RuntimeStartupGate:
+    expected_release_file_count = int(profile["signed_file_count"])
+    expected_physical_file_count = int(profile["physical_file_count"])
+    inspector = FileSystemRuntimeReleaseInspector(
+        release_root=release_root,
+        expected_release_manifest_sha256=expected_release_manifest_sha256,
+        expected_release_name=profile["release_name"],
+        expected_source_commit=profile["source_commit"],
+        expected_capability_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+        expected_release_file_count=expected_release_file_count,
+        expected_physical_file_count=expected_physical_file_count,
+    )
+    return RuntimeStartupGate(
+        runtime=runtime,
+        release_inspector=inspector,
+        expected_manifest_digest=described.manifest_digest,
+        expected_release_manifest_sha256=expected_release_manifest_sha256,
+        expected_capability_shape_sha256=runtime_capability_shape_sha256(
+            described.capabilities
+        ),
+        expected_capability_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
+        expected_release_file_count=expected_release_file_count,
+        expected_physical_file_count=expected_physical_file_count,
+    )
 
 
 def _canonical_view_model(view_model: dict[str, Any]) -> dict[str, Any]:
@@ -370,23 +423,7 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
         release_root = temporary_root / "release"
         _copy_admitted_release(args.release_root, release_root)
         overlay_identity: dict[str, str] | None = None
-        overlays: list[tuple[str, Path, str]] = []
-        if args.overlay_bazi_calc is not None:
-            overlays.append(
-                (
-                    _BAZI_CALC_RELATIVE,
-                    args.overlay_bazi_calc,
-                    QA_LOCKED_BAZI_CALC_SHA256,
-                )
-            )
-        if args.overlay_liuren_calc is not None:
-            overlays.append(
-                (
-                    _LIUREN_CALC_RELATIVE,
-                    args.overlay_liuren_calc,
-                    QA_LOCKED_LIUREN_CALC_SHA256,
-                )
-            )
+        overlays = _selected_overlays(args)
         if overlays:
             overlay_identity = _overlay_locked_scripts(release_root, overlays)
         runtime_python = _copy_clean_runtime_python(
@@ -463,23 +500,12 @@ async def benchmark(args: argparse.Namespace) -> dict[str, Any]:
             if not isinstance(described_result, Described):
                 raise RuntimeError("candidate Runtime did not return Described")
             described = described_result
-            capability_shape = runtime_capability_shape_sha256(described.capabilities)
-            inspector = FileSystemRuntimeReleaseInspector(
-                release_root=release_root,
-                expected_release_manifest_sha256=expected_release_manifest_sha256,
-                expected_release_name=profile["release_name"],
-                expected_source_commit=profile["source_commit"],
-                expected_capability_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
-                expected_release_file_count=V53_TIME_CHECK_RELEASE_FILE_COUNT,
-            )
-            gate = RuntimeStartupGate(
+            gate = _build_overlay_runtime_startup_gate(
                 runtime=runtime,
-                release_inspector=inspector,
-                expected_manifest_digest=described.manifest_digest,
+                release_root=release_root,
+                profile=profile,
                 expected_release_manifest_sha256=expected_release_manifest_sha256,
-                expected_capability_shape_sha256=capability_shape,
-                expected_capability_ids=V53_TIME_CHECK_RELEASE_CAPABILITY_IDS,
-                expected_release_file_count=V53_TIME_CHECK_RELEASE_FILE_COUNT,
+                described=described,
             )
             described = await gate.startup()
             runtime = gate.runtime

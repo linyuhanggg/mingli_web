@@ -124,9 +124,6 @@ for var in MINGLI_RUNTIME_LAUNCHER_PATH MINGLI_RUNTIME_PYTHON_PATH; do
         fail_closed "$var does not point to a file: ${!var}"
     fi
 done
-if [ ! -x "$MINGLI_RUNTIME_LAUNCHER_PATH" ]; then
-    fail_closed "runtime launcher is not executable: $MINGLI_RUNTIME_LAUNCHER_PATH"
-fi
 for var in MINGLI_RUNTIME_RELEASE_ROOT MINGLI_RUNTIME_STATE_ROOT; do
     if [ ! -d "${!var}" ]; then
         fail_closed "$var does not point to a directory: ${!var}"

@@ -30,11 +30,11 @@ MINGLI_CORE_ROOT = mingli_paths.MINGLI_CORE_ROOT
 
 WORKER_RELATIVE = "scripts/reading_engine/runtime_worker.py"
 WORKER_STOPPED_COPY = "本次处理未完成，请稍后重试。"
-LOCKED_CORE_WORKER_SHA256 = "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+LOCKED_CORE_WORKER_SHA256 = "e89df2c08df29e65ffc91c05e8e4e5be99f72f67e26b79c5b23a4eb2222ddc9c"
 LOCKED_CORE_LISTING_SHA256 = (
-    "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+    "f1deb17a9b4f39b09b2478c8942dcf0761d90bcba95dcbc44a15b8c84f79190b"
 )
-LOCKED_CORE_SOURCE_COMMIT = "9c615a70f08d5609af09ead100d2b5d90e558fe8"
+LOCKED_CORE_SOURCE_COMMIT = "6db9dd37d8e62cd425798be2c64ad1121c1c1649"
 WORKER_PROTOCOL = "mingli-runtime-worker-v2"
 WORKER_TURN_TERMINAL = "result-idle-v1"
 
@@ -671,6 +671,7 @@ async def test_startup_gate_starts_worker_before_describe() -> None:
             return RuntimeReleaseInventory(
                 release_manifest_sha256="e" * 64,
                 release_file_count=218,
+                physical_file_count=219,
                 provider_ids=capability_ids,
                 ready_provider_ids=capability_ids,
                 reference_pack_count=55,
@@ -714,7 +715,7 @@ def _materialize_locked_core_release(destination: Path) -> str:
     not (MINGLI_CORE_ROOT / WORKER_RELATIVE).is_file(),
     reason="worker is not in Core overlay",
 )
-async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
+async def test_real_worker_ready_five_products_and_one_shot_shell_signed_mode(
     tmp_path: Path,
 ) -> None:
     from app.charts.projectors import project_runtime_view_model
@@ -759,7 +760,12 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
         assert view_model is not None
 
     shell = release_root / "scripts" / "run_reading_transaction.sh"
-    assert stat.S_IMODE(shell.stat().st_mode) == 0o644
+    manifest = json.loads(
+        (release_root / ".mingli-release-manifest.json").read_text(encoding="utf-8")
+    )
+    assert stat.S_IMODE(shell.stat().st_mode) == manifest["modes"][
+        "scripts/run_reading_transaction.sh"
+    ]
     assert one_shot_spawn_argv(shell) == ("/bin/sh", str(shell))
     chmod_before = stat.S_IMODE(shell.stat().st_mode)
     for product_id, worker_payload in worker_results.items():
@@ -798,7 +804,7 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
         assert worker_normalized == one_shot_normalized
         view = project_runtime_view_model(worker_payload["brief"], product_id=product_id)
         assert view is not None
-    assert stat.S_IMODE(shell.stat().st_mode) == chmod_before == 0o644
+    assert stat.S_IMODE(shell.stat().st_mode) == chmod_before
     await adapter.close()
 
 
