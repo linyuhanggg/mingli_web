@@ -1883,7 +1883,7 @@ function ProductSpecificNatalOptions({
       <p className={styles.productNote}>八字专有：后续可分别确认真太阳时换算、早晚子时与换日规则。</p>
       <fieldset className={styles.fieldGroup}>
         <legend>目标时间层（可选，三选一）</legend>
-        <p className={styles.productNote}>不填时只计算本命与大运；填写一项后计算对应的流年、流月或流日。</p>
+        <p className={styles.productNote}>不填时由系统按当前免费规则返回可用流年；填写一项后计算对应的流年、流月或流日。</p>
         <div className={styles.twoColumns}>
           <Field htmlFor="bazi-target-year" label="流年目标年份" error={errors.targetYear?.message}>
             <input id="bazi-target-year" inputMode="numeric" placeholder="例如 2026" {...register("targetYear")} />

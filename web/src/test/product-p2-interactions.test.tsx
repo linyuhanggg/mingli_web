@@ -119,16 +119,45 @@ describe("P2 product interaction contracts", () => {
     expect(group).toHaveTextContent("坐标来源");
   });
 
-  it("exposes the three mutually exclusive Bazi temporal targets in advanced options", async () => {
+  it("keeps an empty Bazi temporal target server-selected and explains the free year", async () => {
     const user = userEvent.setup();
-    render(<ProductInputForm product={getProductDefinition("bazi")} onConfirm={vi.fn()} />);
+    const onConfirm = vi.fn();
+    const profileVersionId = "11111111-1111-4111-8111-111111111111";
+    render(<ProductInputForm product={getProductDefinition("bazi")} onConfirm={onConfirm} />);
 
     await user.click(screen.getByText("高级排盘选项"));
 
     expect(screen.getByRole("group", { name: "目标时间层（可选，三选一）" })).toBeVisible();
+    expect(screen.getByText("不填时由系统按当前免费规则返回可用流年；填写一项后计算对应的流年、流月或流日。")).toBeVisible();
+    expect(screen.queryByText("不填时只计算本命与大运；填写一项后计算对应的流年、流月或流日。")).not.toBeInTheDocument();
     expect(screen.getByLabelText("流年目标年份")).toHaveAttribute("inputmode", "numeric");
     expect(screen.getByLabelText("流月目标月份")).toHaveAttribute("type", "month");
     expect(screen.getByLabelText("流日目标日期")).toHaveAttribute("type", "date");
+
+    cleanup();
+    render(
+      <ProductInputForm
+        onConfirm={onConfirm}
+        product={getProductDefinition("bazi")}
+        profiles={[{
+          profile_id: "22222222-2222-4222-8222-222222222222",
+          profile_version_id: profileVersionId,
+          subject_ref: `profile-version:${profileVersionId}`,
+          version: 1,
+          created_at: "2026-08-31T00:00:00Z",
+        }]}
+        selectedProfileVersionId={profileVersionId}
+      />,
+    );
+
+    await user.click(submitButton("bazi"));
+
+    expect(onConfirm).toHaveBeenCalledTimes(1);
+    expect(onConfirm).toHaveBeenCalledWith(expect.objectContaining({
+      targetDate: "",
+      targetMonth: "",
+      targetYear: "",
+    }));
   });
 
   it("opens the compact workbench menu from the keyboard and explains every disabled action", async () => {
