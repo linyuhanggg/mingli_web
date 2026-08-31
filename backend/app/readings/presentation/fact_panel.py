@@ -322,6 +322,19 @@ def _bazi_year_layers(view: BaziChartV1) -> str | None:
     )
 
 
+def _bazi_active_transit_identities(value: object) -> str | None:
+    """Render Runtime-owned year/month/day transit identities for one day segment."""
+
+    if not isinstance(value, Mapping):
+        return None
+    year = _mapping_text(value, "year")
+    month = _mapping_text(value, "month")
+    day = _mapping_text(value, "day")
+    if year is None or month is None or day is None:
+        return None
+    return f"行运年{year}、月{month}、日{day}"
+
+
 def _bazi_temporal_layers(
     view: BaziChartV1,
     *,
@@ -347,10 +360,18 @@ def _bazi_temporal_layers(
             end_exclusive = _mapping_text(item, "end_exclusive")
             if ganzhi is None or start_inclusive is None or end_exclusive is None:
                 return None
-            segments.append(
+            detail = (
                 f"{ganzhi}（区间"
-                f"{_half_open_interval(start_inclusive, end_exclusive)}）"
+                f"{_half_open_interval(start_inclusive, end_exclusive)}"
             )
+            if granularity == "day":
+                if not isinstance(item, Mapping):
+                    return None
+                transits = _bazi_active_transit_identities(item.get("active_transits"))
+                if transits is None:
+                    return None
+                detail = f"{detail}；{transits}"
+            segments.append(f"{detail}）")
         joined = _join_nonempty(segments, separator="；")
         if joined is None:
             return None
@@ -391,6 +412,37 @@ def _ziwei_active_major_limit(view: ZiweiChartV1) -> str | None:
     return _sentence("当前大限", details)
 
 
+def _ziwei_major_limit_salient(major_limit: object) -> str | None:
+    """Render the authoritative major-limit placement for one segment."""
+
+    if not isinstance(major_limit, Mapping):
+        return None
+    palace = _mapping_text(
+        major_limit,
+        "palace",
+        "palace_name",
+        "temporal_palace",
+        "name",
+    )
+    if palace is None:
+        active_natal = major_limit.get("active_natal_palace")
+        palace = _mapping_text(active_natal, "name", "palace")
+    if palace is None:
+        return None
+    stem = _mapping_text(major_limit, "heavenlyStem", "heavenly_stem")
+    branch = _mapping_text(major_limit, "earthlyBranch", "earthly_branch")
+    details = (
+        f"{palace}（{stem}{branch}）"
+        if stem is not None and branch is not None
+        else palace
+    )
+    age_start = _mapping_text(major_limit, "age_start")
+    age_end = _mapping_text(major_limit, "age_end")
+    if age_start is not None and age_end is not None:
+        details = f"{details} · {age_start}至{age_end}岁"
+    return details
+
+
 def _ziwei_major_limit_segments(view: ZiweiChartV1) -> str | None:
     rows = (
         view.core_facts.active_major_limit_segments
@@ -399,13 +451,17 @@ def _ziwei_major_limit_segments(view: ZiweiChartV1) -> str | None:
     )
     if not rows:
         return None
-    return _sentence(
-        "当前大限区间",
-        "、".join(
-            _half_open_interval(row.start_inclusive, row.end_exclusive)
-            for row in rows
-        ),
-    )
+    values: list[str] = []
+    for row in rows:
+        salient = _ziwei_major_limit_salient(row.major_limit)
+        if salient is None:
+            return None
+        values.append(
+            f"{_half_open_interval(row.start_inclusive, row.end_exclusive)}"
+            f"·大限{salient}"
+        )
+    joined = _join_nonempty(values)
+    return None if joined is None else _sentence("当前大限区间", joined)
 
 
 def _ziwei_calendar_coverage(view: ZiweiChartV1) -> str | None:
@@ -527,20 +583,6 @@ def _ziwei_star_facts(view: ZiweiChartV1) -> str | None:
     )
 
 
-def _ziwei_annual_layers(view: ZiweiChartV1) -> str | None:
-    rows = view.core_facts.annual_layers if view.core_facts is not None else None
-    if not rows:
-        return None
-    return _sentence(
-        "流年",
-        "、".join(
-            f"{row.year}年（区间"
-            f"{_half_open_interval(row.coverage_start, row.coverage_end_exclusive)}）"
-            for row in rows
-        ),
-    )
-
-
 def _ziwei_liu_yue_salient(liu_yue: object) -> str | None:
     """Render the authoritative Liu Yue placement fields for one segment."""
 
@@ -554,6 +596,42 @@ def _ziwei_liu_yue_salient(liu_yue: object) -> str | None:
     if stem is not None and branch is not None:
         return f"{palace}（{stem}{branch}）"
     return palace
+
+
+def _ziwei_liu_nian_salient(liu_nian: object) -> str | None:
+    """Render the authoritative Liu Nian placement fields for one segment."""
+
+    return _ziwei_liu_yue_salient(liu_nian)
+
+
+def _ziwei_annual_layers(view: ZiweiChartV1) -> str | None:
+    rows = view.core_facts.annual_layers if view.core_facts is not None else None
+    if not rows:
+        return None
+    values: list[str] = []
+    for row in rows:
+        segments: list[str] = []
+        for segment in row.segments:
+            if not isinstance(segment, Mapping):
+                return None
+            start_inclusive = _mapping_text(segment, "start_inclusive")
+            end_exclusive = _mapping_text(segment, "end_exclusive")
+            if start_inclusive is None or end_exclusive is None:
+                return None
+            liu_nian = segment.get("liu_nian")
+            if liu_nian is None:
+                liu_nian = row.liu_nian
+            salient = _ziwei_liu_nian_salient(liu_nian)
+            if salient is None:
+                return None
+            segments.append(
+                f"{_half_open_interval(start_inclusive, end_exclusive)}·流年{salient}"
+            )
+        joined = _join_nonempty(segments, separator="；")
+        if joined is None:
+            return None
+        values.append(f"{row.year}年：{joined}")
+    return _sentence("流年", "、".join(values))
 
 
 def _ziwei_monthly_layers(view: ZiweiChartV1) -> str | None:

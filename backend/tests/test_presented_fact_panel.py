@@ -306,13 +306,21 @@ def test_bazi_month_and_day_layers_render_every_half_open_segment() -> None:
                                 "ganzhi": "丁酉",
                                 "start_inclusive": "2024-02-04T00:00:00+08:00",
                                 "end_exclusive": "2024-02-04T16:26:53+08:00",
-                                "active_transits": {"month": "乙丑"},
+                                "active_transits": {
+                                    "year": "甲辰",
+                                    "month": "乙丑",
+                                    "day": "丁酉",
+                                },
                             },
                             {
                                 "ganzhi": "丁酉",
                                 "start_inclusive": "2024-02-04T16:26:53+08:00",
                                 "end_exclusive": "2024-02-05T00:00:00+08:00",
-                                "active_transits": {"month": "丙寅"},
+                                "active_transits": {
+                                    "year": "甲辰",
+                                    "month": "丙寅",
+                                    "day": "丁酉",
+                                },
                             },
                         ],
                     ),
@@ -324,11 +332,21 @@ def test_bazi_month_and_day_layers_render_every_half_open_segment() -> None:
                                 "ganzhi": "戊戌",
                                 "start_inclusive": "2024-02-05T00:00:00+08:00",
                                 "end_exclusive": "2024-02-05T23:00:00+08:00",
+                                "active_transits": {
+                                    "year": "甲辰",
+                                    "month": "丙寅",
+                                    "day": "戊戌",
+                                },
                             },
                             {
                                 "ganzhi": "己亥",
                                 "start_inclusive": "2024-02-05T23:00:00+08:00",
                                 "end_exclusive": "2024-02-06T00:00:00+08:00",
+                                "active_transits": {
+                                    "year": "甲辰",
+                                    "month": "丙寅",
+                                    "day": "己亥",
+                                },
                             },
                         ],
                     ),
@@ -353,13 +371,17 @@ def test_bazi_month_and_day_layers_render_every_half_open_segment() -> None:
     assert texts["day_layers"] == (
         "流日：2024-02-04·"
         "丁酉（区间自2024-02-04T00:00:00+08:00（含）"
-        "至2024-02-04T16:26:53+08:00（不含））；"
+        "至2024-02-04T16:26:53+08:00（不含）；"
+        "行运年甲辰、月乙丑、日丁酉）；"
         "丁酉（区间自2024-02-04T16:26:53+08:00（含）"
-        "至2024-02-05T00:00:00+08:00（不含））、"
+        "至2024-02-05T00:00:00+08:00（不含）；"
+        "行运年甲辰、月丙寅、日丁酉）、"
         "2024-02-05·戊戌（区间自2024-02-05T00:00:00+08:00（含）"
-        "至2024-02-05T23:00:00+08:00（不含））；"
+        "至2024-02-05T23:00:00+08:00（不含）；"
+        "行运年甲辰、月丙寅、日戊戌）；"
         "己亥（区间自2024-02-05T23:00:00+08:00（含）"
-        "至2024-02-06T00:00:00+08:00（不含））。"
+        "至2024-02-06T00:00:00+08:00（不含）；"
+        "行运年甲辰、月丙寅、日己亥）。"
     )
 
 
@@ -435,12 +457,24 @@ def test_ziwei_half_open_intervals_are_explicit_in_presented_text() -> None:
                     {
                         "start_inclusive": "2026-01-01",
                         "end_exclusive": "2026-07-01",
-                        "major_limit": {"index": 1},
+                        "major_limit": {
+                            "palace": "命宫",
+                            "heavenlyStem": "甲",
+                            "earthlyBranch": "子",
+                            "age_start": 16,
+                            "age_end": 25,
+                        },
                     },
                     {
                         "start_inclusive": "2026-07-01",
                         "end_exclusive": "2027-01-01",
-                        "major_limit": {"index": 2},
+                        "major_limit": {
+                            "palace": "财帛",
+                            "heavenlyStem": "乙",
+                            "earthlyBranch": "丑",
+                            "age_start": 26,
+                            "age_end": 35,
+                        },
                     },
                 ],
             ),
@@ -461,8 +495,31 @@ def test_ziwei_half_open_intervals_are_explicit_in_presented_text() -> None:
                         "year": 2026,
                         "coverage_start": "2026-02-17",
                         "coverage_end_exclusive": "2027-02-06",
-                        "liu_nian": {"year": 2026},
-                        "segments": [{"start_inclusive": "2026-02-17"}],
+                        "liu_nian": {
+                            "name": "命宫",
+                            "heavenlyStem": "丙",
+                            "earthlyBranch": "寅",
+                        },
+                        "segments": [
+                            {
+                                "start_inclusive": "2026-02-17",
+                                "end_exclusive": "2026-08-01",
+                                "liu_nian": {
+                                    "name": "命宫",
+                                    "heavenlyStem": "丙",
+                                    "earthlyBranch": "寅",
+                                },
+                            },
+                            {
+                                "start_inclusive": "2026-08-01",
+                                "end_exclusive": "2027-02-06",
+                                "liu_nian": {
+                                    "name": "兄弟",
+                                    "heavenlyStem": "丁",
+                                    "earthlyBranch": "卯",
+                                },
+                            },
+                        ],
                         "representative_scope": "year:2026",
                     }
                 },
@@ -477,15 +534,19 @@ def test_ziwei_half_open_intervals_are_explicit_in_presented_text() -> None:
     assert panel is not None
     texts = _texts(panel)
     assert texts["active_major_limit_segments"] == (
-        "当前大限区间：自2026-01-01（含）至2026-07-01（不含）、"
-        "自2026-07-01（含）至2027-01-01（不含）。"
+        "当前大限区间：自2026-01-01（含）至2026-07-01（不含）"
+        "·大限命宫（甲子） · 16至25岁、"
+        "自2026-07-01（含）至2027-01-01（不含）"
+        "·大限财帛（乙丑） · 26至35岁。"
     )
     assert texts["calendar_coverage"] == (
         "历法覆盖：自2026-01-01（含）至2027-01-01（不含）"
         " · 目标日2026-06-01。"
     )
     assert texts["annual_layers"] == (
-        "流年：2026年（区间自2026-02-17（含）至2027-02-06（不含））。"
+        "流年：2026年："
+        "自2026-02-17（含）至2026-08-01（不含）·流年命宫（丙寅）；"
+        "自2026-08-01（含）至2027-02-06（不含）·流年兄弟（丁卯）。"
     )
 
 
@@ -608,6 +669,316 @@ def test_supported_time_layer_values_are_visible_without_billing_state() -> None
         "流月：2032年1月：自2032-01-01（含）至2032-01-16（不含）·流月命宫（甲子）；"
         "自2032-01-16（含）至2032-02-01（不含）·流月财帛（乙丑）。"
     )
+
+
+def test_bazi_day_layers_render_active_transits_across_jie_boundary() -> None:
+    brief = _brief(
+        "bazi",
+        [
+            _fact(
+                "bazi",
+                "four_pillars",
+                {"year": "甲戌", "month": "戊辰", "day": "丙戌", "hour": "辛卯"},
+            ),
+            _fact(
+                "bazi",
+                "day_layers",
+                {
+                    "2024-02-04": {
+                        "year": 2024,
+                        "month": 2,
+                        "date": "2024-02-04",
+                        "ganzhi_segments": [
+                            {
+                                "ganzhi": "丁酉",
+                                "start_inclusive": "2024-02-04T00:00:00+08:00",
+                                "end_exclusive": "2024-02-04T16:26:53+08:00",
+                                "active_transits": {
+                                    "year": "甲辰",
+                                    "month": "乙丑",
+                                    "day": "丁酉",
+                                },
+                            },
+                            {
+                                "ganzhi": "丁酉",
+                                "start_inclusive": "2024-02-04T16:26:53+08:00",
+                                "end_exclusive": "2024-02-05T00:00:00+08:00",
+                                "active_transits": {
+                                    "year": "甲辰",
+                                    "month": "丙寅",
+                                    "day": "丁酉",
+                                },
+                            },
+                        ],
+                        "structural_changes": {"status": "fixture"},
+                        "seasonal_tiaohou_delta": {"status": "fixture"},
+                        "shensha_auxiliary": {"status": "fixture"},
+                        "active_luck_cycle": {"status": "fixture"},
+                        "calendar_normalization": {"status": "fixture"},
+                        "rule_trace": [{"rule_id": "bazi.test.day.jie"}],
+                    }
+                },
+            ),
+        ],
+    )
+    incomplete = _brief(
+        "bazi",
+        [
+            _fact(
+                "bazi",
+                "four_pillars",
+                {"year": "甲戌", "month": "戊辰", "day": "丙戌", "hour": "辛卯"},
+            ),
+            _fact(
+                "bazi",
+                "day_layers",
+                {
+                    "2024-02-05": {
+                        "year": 2024,
+                        "month": 2,
+                        "date": "2024-02-05",
+                        "ganzhi_segments": [
+                            {
+                                "ganzhi": "戊戌",
+                                "start_inclusive": "2024-02-05T00:00:00+08:00",
+                                "end_exclusive": "2024-02-06T00:00:00+08:00",
+                                "active_transits": {"month": "丙寅"},
+                            }
+                        ],
+                        "structural_changes": {"status": "fixture"},
+                        "seasonal_tiaohou_delta": {"status": "fixture"},
+                        "shensha_auxiliary": {"status": "fixture"},
+                        "active_luck_cycle": {"status": "fixture"},
+                        "calendar_normalization": {"status": "fixture"},
+                        "rule_trace": [{"rule_id": "bazi.test.day.missing"}],
+                    }
+                },
+            ),
+        ],
+    )
+
+    view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
+    incomplete_view = project_runtime_view_model(
+        incomplete.to_dict(), product_id="bazi"
+    )
+    assert view_model is not None
+    assert incomplete_view is not None
+
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+    incomplete_panel = project_presented_fact_panel(
+        incomplete, view_model=incomplete_view
+    )
+
+    assert panel is not None
+    assert incomplete_panel is not None
+    texts = _texts(panel)
+    assert texts["day_layers"] == (
+        "流日：2024-02-04·"
+        "丁酉（区间自2024-02-04T00:00:00+08:00（含）"
+        "至2024-02-04T16:26:53+08:00（不含）；"
+        "行运年甲辰、月乙丑、日丁酉）；"
+        "丁酉（区间自2024-02-04T16:26:53+08:00（含）"
+        "至2024-02-05T00:00:00+08:00（不含）；"
+        "行运年甲辰、月丙寅、日丁酉）。"
+    )
+    assert "乙丑" in texts["day_layers"]
+    assert "丙寅" in texts["day_layers"]
+    assert "day_layers" not in _texts(incomplete_panel)
+    assert "{" not in "".join(texts.values())
+
+
+def test_ziwei_major_limit_segments_render_placement_or_omit() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    complete = _brief(
+        "ziwei",
+        [
+            _fact("ziwei", "palaces", palaces),
+            _fact(
+                "ziwei",
+                "active_major_limit_segments",
+                [
+                    {
+                        "start_inclusive": "2026-01-01",
+                        "end_exclusive": "2026-07-01",
+                        "major_limit": {
+                            "name": "命宫",
+                            "heavenlyStem": "甲",
+                            "earthlyBranch": "子",
+                        },
+                    },
+                    {
+                        "start_inclusive": "2026-07-01",
+                        "end_exclusive": "2027-01-01",
+                        "major_limit": {
+                            "palace": "财帛",
+                            "heavenlyStem": "乙",
+                            "earthlyBranch": "丑",
+                        },
+                    },
+                ],
+            ),
+        ],
+    )
+    incomplete = _brief(
+        "ziwei",
+        [
+            _fact("ziwei", "palaces", palaces),
+            _fact(
+                "ziwei",
+                "active_major_limit_segments",
+                [
+                    {
+                        "start_inclusive": "2026-01-01",
+                        "end_exclusive": "2026-07-01",
+                        "major_limit": {"index": 1},
+                    }
+                ],
+            ),
+        ],
+    )
+
+    complete_view = project_runtime_view_model(complete.to_dict(), product_id="ziwei")
+    incomplete_view = project_runtime_view_model(
+        incomplete.to_dict(), product_id="ziwei"
+    )
+    assert complete_view is not None
+    assert incomplete_view is not None
+
+    complete_panel = project_presented_fact_panel(complete, view_model=complete_view)
+    incomplete_panel = project_presented_fact_panel(
+        incomplete, view_model=incomplete_view
+    )
+
+    assert complete_panel is not None
+    assert incomplete_panel is not None
+    texts = _texts(complete_panel)
+    assert texts["active_major_limit_segments"] == (
+        "当前大限区间：自2026-01-01（含）至2026-07-01（不含）"
+        "·大限命宫（甲子）、"
+        "自2026-07-01（含）至2027-01-01（不含）"
+        "·大限财帛（乙丑）。"
+    )
+    assert "{" not in texts["active_major_limit_segments"]
+    assert "active_major_limit_segments" not in _texts(incomplete_panel)
+
+
+def test_ziwei_annual_layers_render_each_segment_liu_nian_or_fail_closed() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    complete = _brief(
+        "ziwei",
+        [
+            _fact("ziwei", "palaces", palaces),
+            _fact(
+                "ziwei",
+                "annual_layers",
+                {
+                    "2026": {
+                        "year": 2026,
+                        "coverage_start": "2026-02-17",
+                        "coverage_end_exclusive": "2027-02-06",
+                        "liu_nian": {
+                            "name": "命宫",
+                            "heavenlyStem": "丙",
+                            "earthlyBranch": "寅",
+                        },
+                        "segments": [
+                            {
+                                "start_inclusive": "2026-02-17",
+                                "end_exclusive": "2026-08-01",
+                                "liu_nian": {
+                                    "name": "命宫",
+                                    "heavenlyStem": "丙",
+                                    "earthlyBranch": "寅",
+                                },
+                            },
+                            {
+                                "start_inclusive": "2026-08-01",
+                                "end_exclusive": "2027-02-06",
+                                "liu_nian": {
+                                    "name": "兄弟",
+                                    "heavenlyStem": "丁",
+                                    "earthlyBranch": "卯",
+                                },
+                            },
+                        ],
+                        "representative_scope": (
+                            "first exact segment; use segments for all dates"
+                        ),
+                    }
+                },
+            ),
+        ],
+    )
+    incomplete = _brief(
+        "ziwei",
+        [
+            _fact("ziwei", "palaces", palaces),
+            _fact(
+                "ziwei",
+                "annual_layers",
+                {
+                    "2026": {
+                        "year": 2026,
+                        "coverage_start": "2026-02-17",
+                        "coverage_end_exclusive": "2027-02-06",
+                        "liu_nian": {"year": 2026},
+                        "segments": [
+                            {
+                                "start_inclusive": "2026-02-17",
+                                "end_exclusive": "2027-02-06",
+                                "liu_nian": {"year": 2026},
+                            }
+                        ],
+                        "representative_scope": "year:2026",
+                    }
+                },
+            ),
+        ],
+    )
+
+    complete_view = project_runtime_view_model(complete.to_dict(), product_id="ziwei")
+    incomplete_view = project_runtime_view_model(
+        incomplete.to_dict(), product_id="ziwei"
+    )
+    assert complete_view is not None
+    assert incomplete_view is not None
+
+    complete_panel = project_presented_fact_panel(complete, view_model=complete_view)
+    incomplete_panel = project_presented_fact_panel(
+        incomplete, view_model=incomplete_view
+    )
+
+    assert complete_panel is not None
+    assert incomplete_panel is not None
+    texts = _texts(complete_panel)
+    assert texts["annual_layers"] == (
+        "流年：2026年："
+        "自2026-02-17（含）至2026-08-01（不含）·流年命宫（丙寅）；"
+        "自2026-08-01（含）至2027-02-06（不含）·流年兄弟（丁卯）。"
+    )
+    assert "annual_layers" not in _texts(incomplete_panel)
+    assert "{" not in texts["annual_layers"]
+
 
 def test_active_content_access_policy_defaults_all_supported_content_to_readable() -> None:
     assert ACTIVE_CONTENT_ACCESS_POLICY.phase == "development_free_all_supported"
