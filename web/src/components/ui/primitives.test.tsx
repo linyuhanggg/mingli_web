@@ -16,6 +16,7 @@ import {
   Status,
   Table,
   Tabs,
+  Toast,
   type ButtonProps,
 } from "@/components/ui";
 
@@ -247,6 +248,54 @@ describe("Field", () => {
     expect(describedBy).toContain(screen.getByText("用于登录通知").id);
     expect(describedBy).toContain(screen.getByRole("alert").id);
     expect(describedBy).toContain(screen.getByText("需要先完成验证").id);
+  });
+});
+
+describe("Toast", () => {
+  it("announces polite short feedback without moving focus", () => {
+    const focusBeforeRender = document.activeElement;
+    const { container } = render(
+      <Toast description="档案仍保留在当前页面。" title="保存成功" tone="success" />,
+    );
+
+    const toast = screen.getByRole("status");
+    expect(toast).toHaveAttribute("aria-live", "polite");
+    expect(toast).toHaveAttribute("aria-atomic", "true");
+    expect(toast).toHaveAttribute("data-tone", "success");
+    expect(toast).toHaveTextContent("保存成功");
+    expect(toast).toHaveTextContent("档案仍保留在当前页面。");
+    expect(document.activeElement).toBe(focusBeforeRender);
+    expect(container.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("keeps neutral feedback as a polite status", () => {
+    render(<Toast title="已复制链接" />);
+
+    const toast = screen.getByRole("status");
+    expect(toast).toHaveAttribute("aria-live", "polite");
+    expect(toast).toHaveAttribute("aria-atomic", "true");
+    expect(toast).toHaveAttribute("data-tone", "neutral");
+  });
+
+  it("announces error feedback immediately as an assertive alert", () => {
+    render(<Toast title="保存失败" tone="error" />);
+
+    const toast = screen.getByRole("alert");
+    expect(toast).toHaveAttribute("aria-live", "assertive");
+    expect(toast).toHaveAttribute("aria-atomic", "true");
+    expect(toast).toHaveAttribute("data-tone", "error");
+  });
+
+  it("uses the frozen 420ms transform entrance and near-instant reduced motion", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/toast.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(/animation:\s*toast-enter var\(--ds-duration-slow\) var\(--ds-ease-out\) both/);
+    expect(css).toMatch(/@keyframes toast-enter[\s\S]*opacity:\s*0[\s\S]*transform:\s*translateY/);
+    expect(css).toMatch(/\[data-tone="success"\][^}]*border-left:\s*2px solid var\(--color-success\)/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion:\s*reduce\)[\s\S]*animation-duration:\s*1ms/);
   });
 });
 

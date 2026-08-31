@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import type { ComponentPropsWithoutRef } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import { PublicPageShell } from "@/components/public-page-shell";
 import { SiteHeader } from "@/components/site-header";
 import { ApiError } from "@/lib/api";
 
@@ -290,7 +291,7 @@ describe("public shell responsive and cache contracts", () => {
   });
 
   it.each([360, 768])(
-    "keeps the mobile bottom bar fixed and reserves its safe area at %ipx",
+    "keeps the mobile bottom bar in static flow with its own safe area at %ipx",
     (viewportWidth) => {
       const css = readFileSync(
         resolve(process.cwd(), "src/components/site-chrome.module.css"),
@@ -305,23 +306,20 @@ describe("public shell responsive and cache contracts", () => {
       expect(css).toMatch(/@media \(max-width:\s*839px\)/);
       expect(css).toMatch(/\.header[\s\S]*min-height:\s*var\(--header-desktop\)/);
       expect(css).toMatch(/@media \(max-width:\s*839px\)[\s\S]*\.header,[\s\S]*min-height:\s*var\(--header-mobile\)/);
-      expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*position:\s*fixed/);
-      expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*bottom:\s*0/);
+      expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*position:\s*static/);
+      expect(css).not.toMatch(/\.mobileBottomBar\s*\{[^}]*position:\s*(?:fixed|sticky)/);
+      expect(css).not.toMatch(/\.mobileBottomBar\s*\{[^}]*bottom:\s*0/);
       expect(css).toMatch(/\.mobileBottomBar[\s\S]*grid-template-columns:\s*repeat\(5,/);
       expect(css).toMatch(/\.mobileBottomBar\s*\{[^}]*min-height:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/);
       expect(css).toMatch(/env\(safe-area-inset-bottom\)/);
       expect(css).toMatch(/overflow-x:\s*clip/);
       expect(css).toMatch(/\.mobileDrawer\.mobileDrawer\s*\{[^}]*width:\s*100vw/);
-      expect(shellCss).toMatch(
-        /@media \(max-width:\s*839px\)[\s\S]*\.shell\s*\{[^}]*padding-bottom:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/,
-      );
-      expect(shellCss).toMatch(
-        /@media \(max-width:\s*839px\)[\s\S]*\.shell\s*\{[^}]*scroll-padding-bottom:\s*calc\(var\(--nav-bottom\) \+ env\(safe-area-inset-bottom\)\)/,
-      );
+      expect(shellCss).not.toMatch(/padding-bottom:\s*calc\(var\(--nav-bottom\)/);
+      expect(shellCss).not.toMatch(/scroll-padding-bottom:\s*calc\(var\(--nav-bottom\)/);
     },
   );
 
-  it("keeps the fixed mobile navigation mutually exclusive with desktop navigation at 840px", () => {
+  it("keeps the static mobile navigation mutually exclusive with desktop navigation at 840px", () => {
     const css = readFileSync(
       resolve(process.cwd(), "src/components/site-chrome.module.css"),
       "utf8",
@@ -331,6 +329,88 @@ describe("public shell responsive and cache contracts", () => {
     expect(css).toMatch(/@media \(min-width:\s*840px\)[\s\S]*\.mobileBottomBar,[\s\S]*display:\s*none/);
     expect(css).toMatch(/\.desktopOnly\s*\{[^}]*display:\s*flex/);
     expect(css).toMatch(/@media \(max-width:\s*839px\)[\s\S]*\.desktopOnly,[\s\S]*display:\s*none/);
+  });
+
+  it("places the five-item mobile navigation after main content without a padding workaround", () => {
+    usePathnameMock.mockReturnValue("/bazi");
+    render(
+      <PublicPageShell>
+        <main id="main-content">八字录入</main>
+      </PublicPageShell>,
+    );
+
+    const main = screen.getByRole("main");
+    const bottomBar = screen.getByLabelText("移动底栏");
+    expect(main.compareDocumentPosition(bottomBar) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(within(bottomBar).getAllByRole("link", { hidden: true })).toHaveLength(4);
+    expect(
+      within(bottomBar).getByRole("button", { name: "打开术数菜单", hidden: true }),
+    ).toBeInTheDocument();
+  });
+
+  it("renders only explicitly supplied breadcrumb states and fails closed otherwise", () => {
+    usePathnameMock.mockReturnValue("/workbench/private-handle");
+    const inferredReadyView = render(
+      <PublicPageShell>
+        <main id="main-content">结果</main>
+      </PublicPageShell>,
+    );
+
+    const inferredReadyBreadcrumb = screen.getByRole("navigation", { name: "面包屑" });
+    expect(inferredReadyBreadcrumb.querySelector("[data-state]")).toBeNull();
+    expect(inferredReadyBreadcrumb).not.toHaveTextContent("private-handle");
+    inferredReadyView.unmount();
+
+    const explicitReadyView = render(
+      <PublicPageShell breadcrumbStatus="ready">
+        <main id="main-content">结果</main>
+      </PublicPageShell>,
+    );
+    expect(screen.getByLabelText("当前状态：READY")).toHaveAttribute(
+      "data-state",
+      "ready",
+    );
+    explicitReadyView.unmount();
+
+    usePathnameMock.mockReturnValue("/bazi/hepan");
+    const inferredInputView = render(
+      <PublicPageShell>
+        <main id="main-content">合盘录入</main>
+      </PublicPageShell>,
+    );
+    expect(screen.getByRole("navigation", { name: "面包屑" }).querySelector("[data-state]"))
+      .toBeNull();
+    inferredInputView.unmount();
+
+    const explicitInputView = render(
+      <PublicPageShell breadcrumbStatus="need-input">
+        <main id="main-content">合盘录入</main>
+      </PublicPageShell>,
+    );
+    expect(screen.getByLabelText("当前状态：NEED-INPUT")).toHaveAttribute(
+      "data-state",
+      "need-input",
+    );
+    explicitInputView.unmount();
+
+    render(
+      <PublicPageShell breadcrumbStatus="future-state">
+        <main id="main-content">未知状态</main>
+      </PublicPageShell>,
+    );
+    expect(screen.queryByText("FUTURE-STATE")).not.toBeInTheDocument();
+    expect(screen.getByRole("navigation", { name: "面包屑" }).querySelector("[data-state]")).toBeNull();
+  });
+
+  it("uses the shared loading Status for every relationship Suspense fallback", () => {
+    for (const product of ["bazi", "ziwei", "qizheng"] as const) {
+      const source = readFileSync(
+        resolve(process.cwd(), `src/app/${product}/hepan/page.tsx`),
+        "utf8",
+      );
+      expect(source).toMatch(/<Status[\s\S]*state="loading"/);
+      expect(source).not.toContain("<p>正在加载合盘…</p>");
+    }
   });
 
   it("backs every shell destination with either a product surface or a public page", () => {

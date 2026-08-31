@@ -420,12 +420,10 @@
   .mobileMenuTrigger { display: inline-flex; }
 
   .mobileBottomBar {
-    position: fixed;
+    position: static;
     z-index: var(--z-nav);
-    right: 0;
-    bottom: 0;
-    left: 0;
     display: grid;
+    width: 100%;
     min-height: calc(var(--nav-bottom) + env(safe-area-inset-bottom));
     grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: var(--space-xs);
