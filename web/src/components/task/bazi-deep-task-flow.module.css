@@ -17,6 +17,12 @@
   background: var(--color-surface);
 }
 
+.chartFirstSection {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
 .backButton {
   display: inline-flex;
   min-height: var(--target-min);
@@ -28,6 +34,13 @@
   background: var(--color-surface);
   color: var(--color-text);
   font-weight: 680;
+}
+
+.backButton:focus-visible,
+.primaryAction:focus-visible,
+.secondaryAction:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 .title {
@@ -111,6 +124,18 @@
   min-width: 0;
 }
 
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .result :global(.readingLayout) {
   min-width: 0;
 }
@@ -118,12 +143,6 @@
 .securityNote {
   color: var(--color-text-muted) !important;
   font-size: var(--font-size-meta);
-}
-
-@media (min-width: 64rem) and (max-width: 79.999rem) {
-  .result :global([data-bazi-chart-host="true"]) {
-    margin-inline: -3.2rem;
-  }
 }
 
 @media (max-width: 47.999rem) {
@@ -138,6 +157,5 @@
 
   .title {
     width: 100%;
-    order: -1;
   }
 }

@@ -43,6 +43,10 @@ import {
 } from "@/lib/classical-source-markers";
 
 import { ChartWorkspaceShell } from "./chart-workspace-shell";
+import {
+  projectBaziRuntimeFindings,
+  type BaziRuntimeFinding,
+} from "./bazi-chart-findings";
 
 import styles from "./bazi-chart.module.css";
 
@@ -1965,6 +1969,30 @@ function BaziCoreFactSummary({
   );
 }
 
+function BaziRuntimeFindingSection({
+  findings,
+}: Readonly<{ findings: ReadonlyArray<BaziRuntimeFinding> }>) {
+  const headingId = `bazi-runtime-findings-${useId()}`;
+  if (findings.length === 0) return null;
+
+  return (
+    <section className={styles.runtimeFindings} aria-labelledby={headingId}>
+      <div className={styles.sectionHeading}>
+        <h4 id={headingId}>已核验解读依据</h4>
+        <p>只展示 Runtime 已公开、带事实与证据引用的准入单元；候选不升级为定论。</p>
+      </div>
+      <div className={styles.runtimeFindingList}>
+        {findings.map((finding) => (
+          <article className={styles.runtimeFinding} key={finding.id}>
+            <h5>{finding.title}</h5>
+            <p>{finding.publicText}</p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+}
+
 function collectBaziFocusExtras(
   chart: BaziChartView,
   evidenceItems: ReadonlyArray<ReadingEvidence>,
@@ -2039,12 +2067,14 @@ export function BaziChart({
   chart,
   title = "八字命盘",
   evidence = [],
+  findings = [],
   showInterpretiveSections = true,
   timeLayerEntitlement = null,
 }: Readonly<{
   chart: BaziChartView;
   title?: string;
   evidence?: ReadonlyArray<ReadingEvidence>;
+  findings?: ReadonlyArray<unknown>;
   showInterpretiveSections?: boolean;
   timeLayerEntitlement?: TimeLayerEntitlement | null;
 }>) {
@@ -2083,6 +2113,10 @@ export function BaziChart({
         firstScreenCitation.locator,
       )
     : null;
+  const runtimeFindings = useMemo(
+    () => showInterpretiveSections ? projectBaziRuntimeFindings(findings) : [],
+    [findings, showInterpretiveSections],
+  );
 
   // §21.3 第 1/2 级：只统计抽屉真正会展示的、已核验的条目，标记数与抽屉计数同源。
   const pillarSourceCounts = useMemo<PillarSourceCounts | null>(() => {
@@ -2165,6 +2199,26 @@ export function BaziChart({
           ) : null}
         </div>
 
+        <PillarGrid
+          cells={workspaceView.cells}
+          selectedId={selectedCellId}
+          transientId={transientCellId}
+          detailId={detailId}
+          onTransientChange={setTransientCellId}
+          onSelect={(cellId) => {
+            setSelectedCellId((current) => (current === cellId ? null : cellId));
+            if (
+              cellId &&
+              isPillarId(cellId) &&
+              (pillarSourceCounts?.[cellId] ?? 0) > 0
+            ) {
+              setEvidenceDrawerOpen(true);
+              setEvidenceFocusPillar(cellId);
+            }
+          }}
+          sourceCounts={pillarSourceCounts}
+        />
+
         <div className={styles.disclosure} aria-label="盘面披露层级">
           {([
             ["basic", "基本排盘"],
@@ -2189,26 +2243,6 @@ export function BaziChart({
             解读笔记（待接入）
           </button>
         </div>
-
-        <PillarGrid
-          cells={workspaceView.cells}
-          selectedId={selectedCellId}
-          transientId={transientCellId}
-          detailId={detailId}
-          onTransientChange={setTransientCellId}
-          onSelect={(cellId) => {
-            setSelectedCellId((current) => (current === cellId ? null : cellId));
-            if (
-              cellId &&
-              isPillarId(cellId) &&
-              (pillarSourceCounts?.[cellId] ?? 0) > 0
-            ) {
-              setEvidenceDrawerOpen(true);
-              setEvidenceFocusPillar(cellId);
-            }
-          }}
-          sourceCounts={pillarSourceCounts}
-        />
 
         {displayMode === "professional" ? <BaziFactMatrix chart={chart} /> : null}
 
@@ -2242,16 +2276,21 @@ export function BaziChart({
         ) : null}
 
         {displayMode === "professional" ? (
-          <BaziCoreFactSummary
-            facts={chart.coreFacts}
-            pillars={chart.pillars}
-            selection={selection}
-            evidence={evidence}
-            showInterpretiveSections={showInterpretiveSections}
-            evidenceDrawerOpen={evidenceDrawerOpen}
-            onEvidenceDrawerOpenChange={setEvidenceDrawerOpen}
-            evidenceFocusPillar={evidenceFocusPillar}
-          />
+          <>
+            <BaziCoreFactSummary
+              facts={chart.coreFacts}
+              pillars={chart.pillars}
+              selection={selection}
+              evidence={evidence}
+              showInterpretiveSections={showInterpretiveSections}
+              evidenceDrawerOpen={evidenceDrawerOpen}
+              onEvidenceDrawerOpenChange={setEvidenceDrawerOpen}
+              evidenceFocusPillar={evidenceFocusPillar}
+            />
+            {showInterpretiveSections ? (
+              <BaziRuntimeFindingSection findings={runtimeFindings} />
+            ) : null}
+          </>
         ) : null}
       </div>
     );
@@ -2265,6 +2304,7 @@ export function BaziChart({
       detailId={detailId}
       onCloseDetail={() => setSelectedCellId(null)}
       boardLabel="八字盘面"
+      prioritizeBoard
     />
   );
 }

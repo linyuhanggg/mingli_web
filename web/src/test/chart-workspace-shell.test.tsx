@@ -100,7 +100,7 @@ function WorkspaceFixture({ view }: Readonly<{ view: ChartWorkspaceView }>) {
 }
 
 describe("ChartWorkspaceShell", () => {
-  it("starts the chart and reading split at 1024px with governed column widths", () => {
+  it("opens the chart and reading split only for a real detail on a roomy desktop", () => {
     const css = readFileSync(
       join(
         process.cwd(),
@@ -109,11 +109,11 @@ describe("ChartWorkspaceShell", () => {
       "utf8",
     );
 
-    expect(css).toMatch(/@media \(min-width: 1024px\)/);
+    expect(css).toMatch(/@media \(min-width: 80rem\)/);
     expect(css).toMatch(
-      /grid-template-columns:\s*minmax\(30rem, 32\.5rem\) minmax\(22\.5rem, 1fr\)/,
+      /\.body\[data-has-detail="true"\]\s*\{[\s\S]*?grid-template-columns:\s*minmax\(30rem, 32\.5rem\) minmax\(22\.5rem, 1fr\)/,
     );
-    expect(css).not.toMatch(/@media \(min-width: 1181px\)/);
+    expect(css).not.toMatch(/@media \(min-width: 1024px\)/);
   });
 
   it("renders layer tabs from the view model with the natal layer active", () => {

@@ -305,6 +305,12 @@ describe("Bazi deep task state contract", () => {
 
     expect(await screen.findByText("深读需要登录")).toBeVisible();
     expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
+    const chart = screen.getByTestId("reading-result-preview-1");
+    const toolbar = screen.getByRole("heading", { name: "八字工作台" }).closest("header");
+    expect(toolbar).not.toBeNull();
+    expect(
+      chart.compareDocumentPosition(toolbar!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
     expect(mockStartBaziDeepReading).not.toHaveBeenCalled();
     expect(mockBindReadingFulfillment).not.toHaveBeenCalled();
   });
@@ -449,6 +455,7 @@ describe("Bazi deep task state contract", () => {
 
     await userEvent.click(await screen.findByRole("button", { name: "开始安全结账" }));
     expect(await screen.findByText("confirmed payment is required")).toBeVisible();
+    expect(screen.getByTestId("reading-result-preview-1")).toBeVisible();
     expect(screen.queryByTestId("reading-result-deep-1")).not.toBeInTheDocument();
   });
 

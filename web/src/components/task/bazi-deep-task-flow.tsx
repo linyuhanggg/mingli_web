@@ -267,6 +267,7 @@ export function BaziDeepTaskFlow({
   const [checkoutUrl, setCheckoutUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
+  const [readyPreviewReadingId, setReadyPreviewReadingId] = useState<string | null>(null);
   const [previewRetryKey, setPreviewRetryKey] = useState(0);
   const [deepRetryKey, setDeepRetryKey] = useState(0);
   const deepStartKeyRef = useRef<string | null>(null);
@@ -310,8 +311,14 @@ export function BaziDeepTaskFlow({
     if (!previewCallbacksEnabledRef.current) return;
     setError(null);
     setErrorStatus(null);
-    setState(stateForReadingStatus(summary.status, "preview", previewPollHints(summary)));
-  }, []);
+    const nextState = stateForReadingStatus(
+      summary.status,
+      "preview",
+      previewPollHints(summary),
+    );
+    if (nextState === "free") setReadyPreviewReadingId(previewReadingId);
+    setState(nextState);
+  }, [previewReadingId]);
 
   const handleDeepSummary = useCallback((summary: ReadingVersionSummary) => {
     setError(null);
@@ -375,7 +382,7 @@ export function BaziDeepTaskFlow({
       bindingFailurePendingRef.current = true;
       setState("failed");
       setErrorStatus(errorHttpStatus(reason));
-        setError(readableError(reason));
+      setError(readableError(reason));
       return false;
     }
   }, []);
@@ -509,6 +516,20 @@ export function BaziDeepTaskFlow({
   const showDeepResult = ["queued", "running", "succeeded"].includes(accessState)
     && deepReadingId !== null
     && session?.state.status === "signedIn";
+  const previewReady = readyPreviewReadingId === previewReadingId;
+  const showFreeResult = previewReady || [
+    "preview_loading",
+    "free",
+    "unauthenticated",
+    "unpaid",
+    "awaiting_fulfillment",
+    "checkout_pending",
+    "checkout_unavailable",
+    "checkout_failed",
+    "queued",
+    "running",
+    "succeeded",
+  ].includes(accessState);
 
   function retry() {
     setError(null);
@@ -544,12 +565,33 @@ export function BaziDeepTaskFlow({
 
   return (
     <section className={styles.flow} aria-labelledby="bazi-deep-task-title">
+      {showFreeResult ? (
+        <section
+          className={`${styles.section} ${styles.chartFirstSection}`}
+          aria-labelledby="bazi-free-result-title"
+          data-chart-first="true"
+        >
+          <h2 className={styles.visuallyHidden} id="bazi-free-result-title">
+            免费确定性盘面
+          </h2>
+          <div className={styles.result}>
+            <ReadingResult
+              baziDeepFulfilled={accessState === "succeeded"}
+              key={`preview-${previewReadingId}-${previewRetryKey}`}
+              onPollError={handlePreviewPollError}
+              onSummary={handlePreviewSummary}
+              readingId={previewReadingId}
+            />
+          </div>
+        </section>
+      ) : null}
+
       <header className={styles.toolbar}>
+        <h2 className={styles.title} id="bazi-deep-task-title">八字工作台</h2>
         <button className={styles.backButton} onClick={handleBack} type="button">
           <ArrowLeft aria-hidden="true" size={17} />
           返回录入
         </button>
-        <h2 className={styles.title} id="bazi-deep-task-title">八字工作台</h2>
         <p className={styles.toolbarNote}>当前任务状态由服务端确认</p>
       </header>
 
@@ -618,36 +660,6 @@ export function BaziDeepTaskFlow({
           <Status state="success" title={phase.title} description={phase.text} />
         ) : null}
       </section>
-
-      {(
-        accessState === "preview_loading"
-        || accessState === "free"
-        || accessState === "unauthenticated"
-        || accessState === "unpaid"
-        || accessState === "awaiting_fulfillment"
-        || accessState === "checkout_pending"
-        || accessState === "checkout_unavailable"
-        || accessState === "checkout_failed"
-        || accessState === "queued"
-        || accessState === "running"
-        || showDeepResult
-      ) ? (
-        <section className={styles.section} aria-labelledby="bazi-free-result-title">
-          <div className={styles.statusCopy}>
-            <h2 id="bazi-free-result-title">免费确定性盘面</h2>
-            <p>盘面和事实由服务端排定；这里不展示尚未生成的深读内容。</p>
-          </div>
-          <div className={styles.result}>
-            <ReadingResult
-              baziDeepFulfilled={accessState === "succeeded"}
-              key={`preview-${previewReadingId}-${previewRetryKey}`}
-              onPollError={handlePreviewPollError}
-              onSummary={handlePreviewSummary}
-              readingId={previewReadingId}
-            />
-          </div>
-        </section>
-      ) : null}
 
       {accessState === "free" && sessionChecking ? (
         <Status state="loading" title="正在确认深读资格" description="只确认账户状态，不会创建深读任务。" />

@@ -23,12 +23,26 @@ describe("responsive reading layout", () => {
     expect(css).toMatch(/@container \(min-width: 34rem\)/);
   });
 
-  it("opens the evidence column only on a roomy desktop and clears the sticky header", () => {
-    const css = read("src/components/app-surface.module.css");
+  it("uses the full result width until a real focus detail exists", () => {
+    const shellCss = read("src/components/readings/chart-workspace-shell.module.css");
+    const resultCss = read("src/components/readings/reading-result.module.css");
 
-    expect(css).toMatch(
-      /@media \(min-width: 80rem\)[\s\S]*?\.readingLayout\s*\{[\s\S]*?grid-template-columns/,
+    expect(shellCss).toMatch(
+      /@media \(min-width: 80rem\)[\s\S]*?\.body\[data-has-detail="true"\]\s*\{[\s\S]*?grid-template-columns/,
     );
-    expect(css).toMatch(/\.evidenceRail\s*\{[\s\S]*?top:\s*6\.25rem/);
+    expect(shellCss).not.toMatch(/@media \(min-width: 1024px\)[\s\S]*?grid-template-columns/);
+    expect(resultCss).toMatch(
+      /@media \(min-width: 80rem\)[\s\S]*?\.chartFirstLayout\.chartFirstLayout\s*\{[\s\S]*?grid-template-columns:\s*minmax\(0,\s*1fr\)/,
+    );
+  });
+
+  it("keeps the chart-first rail and task controls responsive without visual-order hacks", () => {
+    const resultCss = read("src/components/readings/reading-result.module.css");
+    const taskCss = read("src/components/task/bazi-deep-task-flow.module.css");
+
+    expect(resultCss).toMatch(/\.chartFirstRail/);
+    expect(taskCss).toMatch(/\.backButton\s*\{[\s\S]*?min-height:\s*var\(--target-min\)/);
+    expect(taskCss).not.toMatch(/\.result\s+:global\(\[data-bazi-chart-host="true"\]\)\s*\{[\s\S]*?margin-inline:\s*-/);
+    expect(taskCss).not.toMatch(/order:\s*-1/);
   });
 });
