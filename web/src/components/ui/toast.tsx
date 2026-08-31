@@ -30,10 +30,10 @@ export function Toast({
   return (
     <div
       aria-atomic="true"
-      aria-live="polite"
+      aria-live={tone === "error" ? "assertive" : "polite"}
       className={clsx(styles.toast, className)}
       data-tone={tone}
-      role="status"
+      role={tone === "error" ? "alert" : "status"}
     >
       <span aria-hidden="true" className={styles.icon}>
         <Icon aria-hidden="true" size={18} strokeWidth={1.8} />

@@ -268,6 +268,24 @@ describe("Toast", () => {
     expect(container.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
   });
 
+  it("keeps neutral feedback as a polite status", () => {
+    render(<Toast title="已复制链接" />);
+
+    const toast = screen.getByRole("status");
+    expect(toast).toHaveAttribute("aria-live", "polite");
+    expect(toast).toHaveAttribute("aria-atomic", "true");
+    expect(toast).toHaveAttribute("data-tone", "neutral");
+  });
+
+  it("announces error feedback immediately as an assertive alert", () => {
+    render(<Toast title="保存失败" tone="error" />);
+
+    const toast = screen.getByRole("alert");
+    expect(toast).toHaveAttribute("aria-live", "assertive");
+    expect(toast).toHaveAttribute("aria-atomic", "true");
+    expect(toast).toHaveAttribute("data-tone", "error");
+  });
+
   it("uses the frozen 420ms transform entrance and near-instant reduced motion", () => {
     const css = readFileSync(
       resolve(process.cwd(), "src/components/ui/toast.module.css"),
