@@ -913,7 +913,12 @@ async def save_fact_referencing_document(
                         "evidence_ref": "evidence:time-layer",
                         "title": "流月事实依据",
                         "supports_fact_refs": [supported_time_fact_ref],
-                    }
+                    },
+                    {
+                        "evidence_ref": "evidence:empty-dependency",
+                        "title": "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP",
+                        "supports_fact_refs": [],
+                    },
                 ],
                 "boundaries": [],
                 "actions": {
@@ -6113,10 +6118,12 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
         assert [evidence["evidence_ref"] for evidence in document["evidence"]] == [
             "evidence:fact-closure",
             "evidence:time-layer",
+            "evidence:empty-dependency",
         ]
         assert document["answer_summary"] == (
             "受支持流月事实形成的结论应保持引用闭包。"
         )
+        assert "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP" in str(document)
         assert "MIXED-CLAIM-MUST-DROP" not in str(document)
         assert "MIXED-EVIDENCE-MUST-DROP" not in str(document)
         assert payload["accepted_copy"] == "\n\n".join(
@@ -6174,6 +6181,7 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
             "受支持流月事实形成的结论应保持引用闭包。"
         )
         assert "流月事实依据" in str(bearer_document)
+        assert "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP" in str(bearer_document)
         assert "claim:limit-only" in str(bearer_document)
         assert "claim:empty-dependency" in str(bearer_document)
         assert "MIXED-CLAIM-MUST-DROP" not in str(bearer_document)
@@ -6182,6 +6190,7 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
     assert all(
         document.answer_summary == "受支持流月事实形成的结论应保持引用闭包。"
         and "流月事实依据" in str(document)
+        and "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP" in str(document)
         and "claim:limit-only" in str(document)
         and "claim:empty-dependency" in str(document)
         and "MIXED-CLAIM-MUST-DROP" not in str(document)

@@ -232,8 +232,7 @@ def _project_presented_document(
     evidence = tuple(
         item
         for item in document.evidence
-        if item.supports_fact_refs
-        and set(item.supports_fact_refs).issubset(public_fact_refs)
+        if set(item.supports_fact_refs).issubset(public_fact_refs)
     )
     retained_evidence_refs = frozenset(item.evidence_ref for item in evidence)
     claims = tuple(
