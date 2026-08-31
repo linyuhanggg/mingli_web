@@ -13,6 +13,7 @@
     "scripts/runtime_launcher.py",
     "scripts/runtime_python.py",
     "scripts/provision_runtime.py",
+    "scripts/reading_engine/runtime_worker.py",
     "scripts/adapter_validate.py",
     "scripts/bazi_calc.py",
     "scripts/bazi_fact_adapter.py",

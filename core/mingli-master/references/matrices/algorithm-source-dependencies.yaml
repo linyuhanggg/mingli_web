@@ -1226,7 +1226,7 @@ providers:
         source_artifact:
           path: references/matrices/classical-evidence-bindings-v1.json
           schema_version: mingli-classical-evidence-bindings-v1
-          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+          sha256: 75a19665334f6976424fce62fb5f869d9a7745b85039ed25302c099fe1c8fb89
         independent_test_sample:
           id: luming-source-conditioned-patterns
           source: scripts/test_v51_luming_completion.py::LumingFactLayerTests.test_source_conditioned_patterns_are_exact_identities_without_verdicts
@@ -1447,7 +1447,7 @@ providers:
         source_artifact:
           path: references/matrices/classical-evidence-bindings-v1.json
           schema_version: mingli-classical-evidence-bindings-v1
-          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+          sha256: 75a19665334f6976424fce62fb5f869d9a7745b85039ed25302c099fe1c8fb89
         independent_test_sample:
           id: xingming-source-conditioned-patterns
           source: scripts/test_v51_xingming_completion.py::XingmingFixtureContractTests.test_source_conditioned_patterns_are_exact_identities_without_verdicts
@@ -2322,7 +2322,7 @@ providers:
         source_artifact:
           path: references/matrices/classical-evidence-bindings-v1.json
           schema_version: mingli-classical-evidence-bindings-v1
-          sha256: 73c5a8a5d2041e7d49f838c70d0ca184fee060fd355a8f29b0fd6f9a0a7abc8d
+          sha256: 75a19665334f6976424fce62fb5f869d9a7745b85039ed25302c099fe1c8fb89
         independent_test_sample:
           id: selection-source-conditioned-patterns
           source: scripts/test_v51_selection_completion.py::test_source_conditioned_patterns_are_exact_identities_without_verdicts
