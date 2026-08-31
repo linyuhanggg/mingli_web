@@ -790,12 +790,26 @@ async def save_fact_referencing_document(
                 "product_version": f"{product_id}-reading/test",
                 "presentation_contract_version": f"{product_id}-presentation/test",
                 "view_model": view_model.model_dump(mode="json"),
-                "answer_summary": "公开结果必须保持事实引用闭包。",
+                "answer_summary": "仅付费流月支持的结论不得出现在公开结果。",
                 "subject_summaries": [
                     {"subject_ref": subject_ref, "label": "本人"}
                 ],
                 "themes": [{"theme_id": "career", "label": "事业"}],
                 "claims": [
+                    {
+                        "claim_id": "claim:restricted-only",
+                        "section_id": "overview",
+                        "text": "仅付费流月支持的结论不得出现在公开结果。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [restricted_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": ["evidence:restricted-only"],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
                     {
                         "claim_id": "claim:entitlement-projection",
                         "section_id": "overview",
@@ -810,20 +824,6 @@ async def save_fact_referencing_document(
                             "evidence:entitlement-projection",
                             "evidence:restricted-only",
                         ],
-                        "limit_refs": [],
-                        "verification": {"enabled": True},
-                    },
-                    {
-                        "claim_id": "claim:restricted-only",
-                        "section_id": "overview",
-                        "text": "仅付费流月支持的结论不得出现在公开结果。",
-                        "subject_ref": subject_ref,
-                        "dimension_id": "career",
-                        "claim_kind_id": "kind.tendency",
-                        "certainty_id": "certainty.tendency",
-                        "fact_refs": [restricted_fact_ref],
-                        "finding_refs": [],
-                        "evidence_refs": ["evidence:restricted-only"],
                         "limit_refs": [],
                         "verification": {"enabled": True},
                     }
@@ -5806,10 +5806,11 @@ async def test_fortune_result_keeps_runtime_text_outside_humanized_guarantee(
     assert_private_headers(result)
 
 
-async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
+async def test_user_result_and_delivery_apply_authoritative_time_layer_grants(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     guest_headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, guest_headers)
@@ -5932,12 +5933,175 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
         assert [evidence["evidence_ref"] for evidence in document["evidence"]] == [
             "evidence:entitlement-projection"
         ]
+        assert document["answer_summary"] == "公开结果必须保持事实引用闭包。"
         assert restricted_ref not in str(document)
         assert "仅付费流月支持" not in str(document)
     assert bazi_payload["document"]["claims"][0]["fact_refs"] == [bazi_public_ref]
     assert ziwei_payload["document"]["claims"][0]["fact_refs"] == [ziwei_public_ref]
     assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"] is None
     assert ziwei_payload["document"]["view_model"]["core_facts"]["monthly_layers"] is None
+
+    export_documents: list[ReadingDocumentV1] = []
+
+    def capture_export(document: ReadingDocumentV1, export_format: str) -> Any:
+        exports = importlib.import_module("app.readings.export")
+        export_documents.append(document)
+        return exports.RenderedExport(
+            format=export_format,
+            content_type="application/pdf",
+            file_name="reading.pdf",
+            payload=b"%PDF-public-projection",
+        )
+
+    monkeypatch.setattr(
+        "app.readings.export.render_reading_export",
+        capture_export,
+    )
+    version_ids = (
+        bazi_started["reading_version_id"],
+        ziwei_started.json()["reading_version_id"],
+    )
+    for version_id in version_ids:
+        exported = await client.post(
+            f"/api/v1/readings/{version_id}/export",
+            headers=user_headers,
+            json={"format": "pdf", "ttl_seconds": 300},
+        )
+        assert exported.status_code == 201, exported.text
+        shared = await client.post(
+            f"/api/v1/readings/{version_id}/share",
+            headers=user_headers,
+            json={"ttl_seconds": 300},
+        )
+        assert shared.status_code == 201, shared.text
+        bearer = await client.get(f"/api/v1/share/{shared.json()['token']}")
+        assert bearer.status_code == 200, bearer.text
+        bearer_document = bearer.json()["document"]
+        assert bearer_document["answer_summary"] == (
+            "公开结果必须保持事实引用闭包。"
+        )
+        assert "仅付费流月支持" not in str(bearer_document)
+    assert len(export_documents) == 2
+    assert all(
+        document.answer_summary == "公开结果必须保持事实引用闭包。"
+        and "仅付费流月支持" not in str(document)
+        for document in export_documents
+    )
+
+    commerce_module = importlib.import_module("app.commerce.service")
+    entitlement_module = importlib.import_module("app.entitlements.service")
+    async with database.sessions() as session:
+        commerce = commerce_module.CommerceService(session)
+        for capability_id in ("bazi", "ziwei"):
+            await commerce.append_entitlement_event(
+                owner_user_id=UUID(logged_in["user_id"]),
+                entitlement_id=entitlement_module.formal_capability_entitlement_id(
+                    capability_id
+                ),
+                kind="GRANT",
+                quantity=1,
+                source_type="admin_grant",
+                source_ref=f"time-layer-{capability_id}-grant",
+                target_ref=capability_id,
+            )
+        await session.commit()
+
+    granted_bazi = await client.get(
+        f"/api/v1/readings/{bazi_started['reading_version_id']}/result"
+    )
+    granted_ziwei = await client.get(
+        f"/api/v1/readings/{ziwei_started.json()['reading_version_id']}/result"
+    )
+    assert granted_bazi.status_code == 200
+    assert granted_ziwei.status_code == 200
+    for response, restricted_ref in (
+        (granted_bazi, bazi_restricted_ref),
+        (granted_ziwei, ziwei_restricted_ref),
+    ):
+        payload = response.json()
+        assert payload["time_layer_entitlement"]["resolution"] == "granted"
+        assert restricted_ref in {
+            fact["ref"] for fact in payload["fact_panel"]["facts"]
+        }
+        document = payload["document"]
+        assert document["answer_summary"] == (
+            "仅付费流月支持的结论不得出现在公开结果。"
+        )
+        assert [claim["claim_id"] for claim in document["claims"]] == [
+            "claim:restricted-only",
+            "claim:entitlement-projection",
+        ]
+        assert restricted_ref in str(document)
+
+    export_documents.clear()
+    for version_id in version_ids:
+        exported = await client.post(
+            f"/api/v1/readings/{version_id}/export",
+            headers=user_headers,
+            json={"format": "pdf", "ttl_seconds": 300},
+        )
+        assert exported.status_code == 201, exported.text
+        shared = await client.post(
+            f"/api/v1/readings/{version_id}/share",
+            headers=user_headers,
+            json={"ttl_seconds": 300},
+        )
+        assert shared.status_code == 201, shared.text
+        bearer = await client.get(f"/api/v1/share/{shared.json()['token']}")
+        assert bearer.status_code == 200, bearer.text
+        assert "仅付费流月支持" not in str(bearer.json()["document"])
+    assert len(export_documents) == 2
+    assert all(
+        document.answer_summary
+        == "仅付费流月支持的结论不得出现在公开结果。"
+        and "仅付费流月支持" in str(document)
+        for document in export_documents
+    )
+
+    async with database.sessions() as session:
+        commerce = commerce_module.CommerceService(session)
+        for capability_id in ("bazi", "ziwei"):
+            entitlement_id = entitlement_module.formal_capability_entitlement_id(
+                capability_id
+            )
+            await commerce.append_entitlement_event(
+                owner_user_id=UUID(logged_in["user_id"]),
+                entitlement_id=entitlement_id,
+                kind="RESERVE",
+                quantity=1,
+                source_type="fulfillment",
+                source_ref=f"time-layer-{capability_id}-reserve",
+                target_ref=capability_id,
+            )
+            await commerce.append_entitlement_event(
+                owner_user_id=UUID(logged_in["user_id"]),
+                entitlement_id=entitlement_id,
+                kind="CONSUME",
+                quantity=1,
+                source_type="fulfillment",
+                source_ref=f"time-layer-{capability_id}-consume",
+                target_ref=capability_id,
+            )
+        await session.commit()
+
+    denied_bazi = await client.get(
+        f"/api/v1/readings/{bazi_started['reading_version_id']}/result"
+    )
+    denied_ziwei = await client.get(
+        f"/api/v1/readings/{ziwei_started.json()['reading_version_id']}/result"
+    )
+    for response, restricted_ref in (
+        (denied_bazi, bazi_restricted_ref),
+        (denied_ziwei, ziwei_restricted_ref),
+    ):
+        assert response.status_code == 200
+        payload = response.json()
+        assert payload["time_layer_entitlement"]["resolution"] == "denied"
+        assert restricted_ref not in str(payload["document"])
+        assert payload["document"]["answer_summary"] == (
+            "公开结果必须保持事实引用闭包。"
+        )
+
 
 
 async def test_result_without_session_is_401_and_omits_entitlement(

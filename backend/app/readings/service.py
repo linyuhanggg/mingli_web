@@ -11,7 +11,7 @@ from dataclasses import dataclass
 from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 from time import perf_counter
-from typing import Any, cast
+from typing import Any, Literal, cast
 from uuid import UUID, uuid4
 from zoneinfo import ZoneInfo
 
@@ -33,11 +33,18 @@ from app.adapters.runtime import (
 )
 from app.charts.contracts import BaziChartV1, ZiweiChartV1
 from app.charts.projectors import project_runtime_view_model
+from app.commerce.ledger import LedgerError
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
 from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
+from app.commerce.repository import CommerceRepository
 from app.commerce.service import CommerceError, CommerceService
 from app.config import Settings
-from app.entitlements.service import EntitlementDeniedError, EntitlementService
+from app.entitlements.repository import EntitlementRepository
+from app.entitlements.service import (
+    EntitlementDeniedError,
+    EntitlementService,
+    formal_grant_covers_capability,
+)
 from app.profiles.models import ProfileVersion
 from app.profiles.schemas import ProfileConfirmRequest
 from app.profiles.service import OwnerProtocol, ProfileService, owner_ids
@@ -62,7 +69,7 @@ from app.readings.capability_policy import (
     require_public_runtime_capabilities,
 )
 from app.readings.errors import RuntimeTransportError
-from app.readings.models import ReadingJobRecord, ReadingVersion
+from app.readings.models import ReadingJobRecord, ReadingRoot, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
 from app.readings.presentation.contracts import ReadingDocumentV1
 from app.readings.presentation.fact_panel import (
@@ -111,6 +118,7 @@ from app.readings.runtime_contracts import (
     MingliResult,
     Prepare,
     Prepared,
+    ReadingBrief,
     Stopped,
     TimeLayerEntitlementV1,
     project_time_layer_entitlement,
@@ -263,12 +271,221 @@ def _project_presented_document(
         )
         for claim in claims_with_public_support
     )
+    answer_summary = (
+        claims[0].text
+        if claims
+        else "当前没有可公开展示的结论。"
+    )
     return document.model_copy(
         update={
             "view_model": view_model,
+            "answer_summary": answer_summary,
             "claims": claims,
             "evidence": evidence,
         }
+    )
+
+
+def _time_layer_grant_capability_ids(
+    root: ReadingRoot,
+    version: ReadingVersion,
+) -> tuple[str, ...]:
+    """Return the existing capability/product aliases that may carry a grant."""
+
+    raw_values: list[object] = [
+        version.capability_id,
+        version.product_id,
+        root.capability_id,
+        root.product_id,
+        *(version.runtime_capability_ids or ()),
+        *(root.runtime_capability_ids or ()),
+    ]
+    aliases: set[str] = set()
+    for value in raw_values:
+        if not isinstance(value, str) or not value.strip():
+            continue
+        normalized = value.strip()
+        aliases.add(normalized)
+        aliases.add(normalized.replace("-", "_"))
+        aliases.add(normalized.replace("_", "-"))
+    return tuple(sorted(aliases))
+
+
+async def _resolve_time_layer_paid_grant(
+    session: AsyncSession,
+    owner: OwnerProtocol,
+    *,
+    root: ReadingRoot,
+    version: ReadingVersion,
+) -> bool | None:
+    """Resolve only authoritative positive/negative grants; absence stays unknown."""
+
+    if owner.kind != "user":
+        return None
+
+    delivered = await session.scalar(
+        select(FulfillmentRecord.id).where(
+            FulfillmentRecord.owner_user_id == owner.id,
+            FulfillmentRecord.reading_version_ref == str(version.id),
+            FulfillmentRecord.status == "delivered",
+        )
+    )
+    if delivered is not None:
+        return True
+
+    capability_ids = _time_layer_grant_capability_ids(root, version)
+    if not capability_ids:
+        return None
+
+    dogfood_grants = await EntitlementRepository(session).list_active_grants(
+        owner_user_id=owner.id
+    )
+    if any(grant.capability_id in capability_ids for grant in dogfood_grants):
+        return True
+
+    repository = CommerceRepository(session)
+    events = await repository.list_events(owner_user_id=owner.id, limit=500)
+    inspected: set[str] = set()
+    matching_entitlement_seen = False
+    try:
+        for event in events:
+            if event.entitlement_id in inspected:
+                continue
+            inspected.add(event.entitlement_id)
+            target_refs = {
+                row.target_ref
+                for row in events
+                if row.entitlement_id == event.entitlement_id and row.target_ref
+            }
+            if not any(
+                formal_grant_covers_capability(
+                    entitlement_id=event.entitlement_id,
+                    target_refs=target_refs,
+                    capability_id=capability_id,
+                )
+                for capability_id in capability_ids
+            ):
+                continue
+            matching_entitlement_seen = True
+            projection = await repository.project(
+                entitlement_id=event.entitlement_id,
+                owner_user_id=owner.id,
+            )
+            if projection.available >= 1:
+                return True
+    except (LedgerError, ValueError):
+        _logger.warning(
+            "time_layer_grant_projection_invalid",
+            extra={"reading_version_id": str(version.id)},
+            exc_info=True,
+        )
+        return None
+    return False if matching_entitlement_seen else None
+
+
+def _project_owner_time_layer_entitlement(
+    view_model: object,
+    owner: OwnerProtocol,
+    *,
+    request_failed: bool = False,
+    paid_grant: bool | None = None,
+) -> TimeLayerEntitlementV1 | None:
+    if request_failed:
+        resolution = time_layer_entitlement_resolution_for_transport_fault("request")
+    else:
+        resolution = time_layer_entitlement_resolution_for_session(
+            owner_kind=owner.kind,
+            paid_grant=paid_grant,
+        )
+    return project_time_layer_entitlement(view_model, resolution=resolution)
+
+
+@dataclass(frozen=True, slots=True)
+class PresentedReadingProjection:
+    fact_panel: dict[str, Any] | None
+    view_model: object
+    document: ReadingDocumentV1 | None
+    time_layer_entitlement: TimeLayerEntitlementV1 | None
+
+
+async def project_owned_reading_presentation(
+    session: AsyncSession,
+    owner: OwnerProtocol,
+    *,
+    root: ReadingRoot,
+    version: ReadingVersion,
+    brief: ReadingBrief | Mapping[str, object] | None,
+    view_model: object,
+    document: ReadingDocumentV1 | None,
+    grant_mode: Literal["owner", "public"] = "owner",
+    request_failed: bool = False,
+) -> PresentedReadingProjection:
+    """Apply one entitlement and fact-closure projection at every read boundary."""
+
+    entitlement_view_model = (
+        view_model
+        if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+        else document.view_model
+        if document is not None
+        and isinstance(document.view_model, (BaziChartV1, ZiweiChartV1))
+        else None
+    )
+    paid_grant = (
+        await _resolve_time_layer_paid_grant(
+            session,
+            owner,
+            root=root,
+            version=version,
+        )
+        if grant_mode == "owner" and entitlement_view_model is not None
+        else None
+    )
+    time_layer_entitlement = _project_owner_time_layer_entitlement(
+        entitlement_view_model,
+        owner,
+        request_failed=request_failed,
+        paid_grant=paid_grant,
+    )
+    fact_panel = (
+        project_presented_fact_panel(
+            brief,
+            view_model=view_model,
+            time_layer_entitlement=time_layer_entitlement,
+        )
+        if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+        else project_public_fact_panel(brief)
+    )
+    presented_view_model = (
+        project_presented_view_model(
+            view_model,
+            time_layer_entitlement=time_layer_entitlement,
+        )
+        if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+        else view_model
+    )
+    presented_document = document
+    if document is not None and isinstance(
+        document.view_model,
+        (BaziChartV1, ZiweiChartV1),
+    ):
+        document_fact_panel = project_presented_fact_panel(
+            brief,
+            view_model=document.view_model,
+            time_layer_entitlement=time_layer_entitlement,
+        )
+        presented_document = _project_presented_document(
+            document,
+            view_model=project_presented_view_model(
+                document.view_model,
+                time_layer_entitlement=time_layer_entitlement,
+            ),
+            public_fact_refs=_presented_fact_refs(document_fact_panel),
+        )
+    return PresentedReadingProjection(
+        fact_panel=fact_panel,
+        view_model=presented_view_model,
+        document=presented_document,
+        time_layer_entitlement=time_layer_entitlement,
     )
 
 
@@ -2995,48 +3212,23 @@ class ReadingService:
             view_model,
             job_status=job_status,
         )
-        time_layer_entitlement = self.project_time_layer_entitlement(
-            view_model,
+        presentation = await project_owned_reading_presentation(
+            self.session,
             owner,
+            root=root,
+            version=version,
+            brief=brief,
+            view_model=view_model,
+            document=document,
             request_failed=status
             in {ReadingStatus.TERMINAL_STOPPED, ReadingStatus.RUNTIME_UNKNOWN},
         )
-        fact_panel = (
-            project_presented_fact_panel(
-                brief,
-                view_model=view_model,
-                time_layer_entitlement=time_layer_entitlement,
-            )
-            if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
-            else project_public_fact_panel(brief)
-        )
-        presented_view_model = (
-            project_presented_view_model(
-                view_model,
-                time_layer_entitlement=time_layer_entitlement,
-            )
-            if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
-            else view_model
-        )
-        presented_document = document
-        if document is not None and isinstance(
-            document.view_model,
-            (BaziChartV1, ZiweiChartV1),
-        ):
-            presented_document = _project_presented_document(
-                document,
-                view_model=project_presented_view_model(
-                    document.view_model,
-                    time_layer_entitlement=time_layer_entitlement,
-                ),
-                public_fact_refs=_presented_fact_refs(fact_panel),
-            )
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=status,
             accepted_copy=accepted_copy,
-            fact_panel=fact_panel,
-            view_model=presented_view_model,
+            fact_panel=presentation.fact_panel,
+            view_model=presentation.view_model,
             capability=CapabilityProjection(
                 capability_id=capability_projection.capability_id,
                 label=capability_projection.label,
@@ -3055,12 +3247,12 @@ class ReadingService:
             input_request=(
                 None if waiting is None else _public_json(waiting.input_request)
             ),
-            document=presented_document,
+            document=presentation.document,
             result_available=result_available,
             poll_required=poll_required,
             poll_after_seconds=poll_after_seconds,
             time_layer_entitlement=TimeLayerEntitlementResponse.from_contract(
-                time_layer_entitlement
+                presentation.time_layer_entitlement
             ),
         )
 
@@ -4229,16 +4421,12 @@ class ReadingService:
         request_failed: bool = False,
         paid_grant: bool | None = None,
     ) -> TimeLayerEntitlementV1 | None:
-        if request_failed:
-            resolution = time_layer_entitlement_resolution_for_transport_fault(
-                "request"
-            )
-        else:
-            resolution = time_layer_entitlement_resolution_for_session(
-                owner_kind=owner.kind,
-                paid_grant=paid_grant,
-            )
-        return project_time_layer_entitlement(view_model, resolution=resolution)
+        return _project_owner_time_layer_entitlement(
+            view_model,
+            owner,
+            request_failed=request_failed,
+            paid_grant=paid_grant,
+        )
 
     @staticmethod
     def _poll_fields(

@@ -8,6 +8,7 @@ from uuid import uuid4
 
 import pytest
 from sqlalchemy.ext.asyncio import AsyncSession
+from test_narrative_guard import build_brief
 from test_reading_repository import create_reading_graph
 
 
@@ -83,7 +84,7 @@ def _document_payload(version_id: str, accepted_copy_ref: str) -> dict[str, obje
                 "dimension_id": "career",
                 "claim_kind_id": "kind.tendency",
                 "certainty_id": "certainty.tendency",
-                "fact_refs": ["fact:1"],
+                "fact_refs": ["fact:career-structure"],
                 "finding_refs": ["finding:1"],
                 "evidence_refs": ["evidence:1"],
                 "limit_refs": ["limit:1"],
@@ -94,7 +95,7 @@ def _document_payload(version_id: str, accepted_copy_ref: str) -> dict[str, obje
             {
                 "evidence_ref": "evidence:1",
                 "title": "依据",
-                "supports_fact_refs": ["fact:1"],
+                "supports_fact_refs": ["fact:career-structure"],
             }
         ],
         "boundaries": [{"limit_ref": "limit:1", "text": "仅供个人参考。"}],
@@ -117,12 +118,21 @@ async def _accepted_graph(session: AsyncSession) -> tuple[Any, Any, Any, Any, An
     runtime_contracts = importlib.import_module("app.readings.runtime_contracts")
     cipher = envelope.EnvelopeCipher(key=b"k" * 32, key_id="test-key-v1")
     repository, profile, version, job, _contracts = await create_reading_graph(session)
-    await repository.record_completion_intent(str(job.id), "已接纳正文", datetime.now(UTC))
+    now = datetime.now(UTC)
+    await repository.record_prepared(
+        str(job.id),
+        runtime_contracts.Prepared(
+            state_token="state-token",
+            brief=build_brief(),
+        ),
+        now,
+    )
+    await repository.record_completion_intent(str(job.id), "已接纳正文", now)
     accepted = runtime_contracts.Accepted(
         state_token="state-token",
         public_copy="已接纳正文",
     )
-    await repository.record_accepted(str(job.id), accepted, datetime.now(UTC))
+    await repository.record_accepted(str(job.id), accepted, now)
     copy_row = await repository.get_accepted_copy(version.id)
     assert copy_row is not None
     return repository, profile, version, job, cipher, copy_row
