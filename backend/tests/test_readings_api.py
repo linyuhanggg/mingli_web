@@ -5832,7 +5832,8 @@ async def test_guest_result_exposes_all_supported_bazi_layers_without_billing_st
     assert public_facts["four_pillars"] == (
         "四柱：年柱甲戌、月柱戊辰、日柱丙戌、时柱辛卯。"
     )
-    assert public_facts["year_layers"].startswith("流年：2026年丙午")
+    assert public_facts["year_layers"].startswith("流年：2026年：乙巳（区间自")
+    assert "；丙午（区间自" in public_facts["year_layers"]
     assert public_facts["month_layers"].startswith("流月：2026-08")
     assert body["view_model"]["core_facts"]["month_layers"] is not None
     assert all("{" not in text for text in public_facts.values())

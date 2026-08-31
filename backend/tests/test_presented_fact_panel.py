@@ -201,6 +201,49 @@ def test_bazi_calendar_distinguishes_missing_empty_and_changed_pillars() -> None
     )
 
 
+def test_bazi_year_layers_render_each_exact_ganzhi_segment() -> None:
+    from test_bazi_view_model_projector import _year_layer
+
+    year_layers = _year_layer()
+    layer = year_layers["2026"]
+    assert isinstance(layer, dict)
+    segments = layer["ganzhi_segments"]
+    assert isinstance(segments, list)
+    second = segments[1]
+    assert isinstance(second, dict)
+    segments[1] = {
+        **second,
+        "start_inclusive": "2026-02-04T04:01:51+08:00",
+        "end_exclusive": "2027-01-01T00:00:00+08:00",
+        "ganzhi": "丙午",
+        "stem_ten_god": "正印",
+    }
+    brief = _brief(
+        "bazi",
+        [
+            _fact(
+                "bazi",
+                "four_pillars",
+                {"year": "甲戌", "month": "戊辰", "day": "丙戌", "hour": "辛卯"},
+            ),
+            _fact("bazi", "year_layers", year_layers),
+        ],
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
+
+    assert view_model is not None
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+
+    assert panel is not None
+    assert _texts(panel)["year_layers"] == (
+        "流年：2026年："
+        "乙巳（区间自2026-01-01T00:00:00+08:00（含）"
+        "至2026-02-04T04:01:51+08:00（不含），天干十神七杀）；"
+        "丙午（区间自2026-02-04T04:01:51+08:00（含）"
+        "至2027-01-01T00:00:00+08:00（不含），天干十神正印）。"
+    )
+
+
 def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
     palaces = [
         {
@@ -248,6 +291,83 @@ def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
     assert "schema_version" not in str(panel)
     assert "unknown_engine_dump" not in str(panel)
     assert "monthly_layers" not in str(panel)
+
+
+def test_ziwei_half_open_intervals_are_explicit_in_presented_text() -> None:
+    palaces = [
+        {
+            "index": index,
+            "name": "命宫" if index == 0 else f"宫{index}",
+            "heavenlyStem": "甲",
+            "earthlyBranch": "子",
+            "majorStars": [{"name": "紫微"}] if index == 0 else [],
+            "isBodyPalace": index == 1,
+        }
+        for index in range(12)
+    ]
+    brief = _brief(
+        "ziwei",
+        [
+            _fact("ziwei", "palaces", palaces),
+            _fact(
+                "ziwei",
+                "active_major_limit_segments",
+                [
+                    {
+                        "start_inclusive": "2026-01-01",
+                        "end_exclusive": "2026-07-01",
+                        "major_limit": {"index": 1},
+                    },
+                    {
+                        "start_inclusive": "2026-07-01",
+                        "end_exclusive": "2027-01-01",
+                        "major_limit": {"index": 2},
+                    },
+                ],
+            ),
+            _fact(
+                "ziwei",
+                "calendar_coverage",
+                {
+                    "start_inclusive": "2026-01-01",
+                    "end_exclusive": "2027-01-01",
+                    "requested_target_date": "2026-06-01",
+                },
+            ),
+            _fact(
+                "ziwei",
+                "annual_layers",
+                {
+                    "2026": {
+                        "year": 2026,
+                        "coverage_start": "2026-02-17",
+                        "coverage_end_exclusive": "2027-02-06",
+                        "liu_nian": {"year": 2026},
+                        "segments": [{"start_inclusive": "2026-02-17"}],
+                        "representative_scope": "year:2026",
+                    }
+                },
+            ),
+        ],
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id="ziwei")
+
+    assert view_model is not None
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+
+    assert panel is not None
+    texts = _texts(panel)
+    assert texts["active_major_limit_segments"] == (
+        "当前大限区间：自2026-01-01（含）至2026-07-01（不含）、"
+        "自2026-07-01（含）至2027-01-01（不含）。"
+    )
+    assert texts["calendar_coverage"] == (
+        "历法覆盖：自2026-01-01（含）至2027-01-01（不含）"
+        " · 目标日2026-06-01。"
+    )
+    assert texts["annual_layers"] == (
+        "流年：2026年（区间自2026-02-17（含）至2027-02-06（不含））。"
+    )
 
 
 def test_supported_time_layer_values_are_visible_without_billing_state() -> None:

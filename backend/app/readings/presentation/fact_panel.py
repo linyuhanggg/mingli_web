@@ -31,6 +31,8 @@ _ELEMENT_LABELS = {
     "water": "水",
 }
 _DIRECTION_LABELS = {"forward": "顺排", "reverse": "逆排"}
+
+
 def _sentence(label: str, value: str) -> str:
     return f"{label}：{value}。"
 
@@ -67,6 +69,10 @@ def _mapping_text(value: object, *keys: str) -> str | None:
 def _join_nonempty(values: Sequence[str], *, separator: str = "、") -> str | None:
     kept = tuple(value.strip() for value in values if value.strip())
     return separator.join(kept) if kept else None
+
+
+def _half_open_interval(start_inclusive: str, end_exclusive: str) -> str:
+    return f"自{start_inclusive}（含）至{end_exclusive}（不含）"
 
 
 def _bazi_four_pillars(view: BaziChartV1) -> str:
@@ -302,7 +308,15 @@ def _bazi_year_layers(view: BaziChartV1) -> str | None:
     return _sentence(
         "流年",
         "、".join(
-            f"{row.year}年{row.ganzhi}（天干十神{row.stem_ten_god}）"
+            f"{row.year}年："
+            + "；".join(
+                (
+                    f"{segment.ganzhi}（区间"
+                    f"{_half_open_interval(segment.start_inclusive, segment.end_exclusive)}，"
+                    f"天干十神{segment.stem_ten_god}）"
+                )
+                for segment in row.ganzhi_segments
+            )
             for row in rows
         ),
     )
@@ -380,7 +394,10 @@ def _ziwei_major_limit_segments(view: ZiweiChartV1) -> str | None:
         return None
     return _sentence(
         "当前大限区间",
-        "、".join(f"{row.start_inclusive}至{row.end_exclusive}" for row in rows),
+        "、".join(
+            _half_open_interval(row.start_inclusive, row.end_exclusive)
+            for row in rows
+        ),
     )
 
 
@@ -395,7 +412,7 @@ def _ziwei_calendar_coverage(view: ZiweiChartV1) -> str | None:
     )
     return _sentence(
         "历法覆盖",
-        f"{fact.start_inclusive}至{fact.end_exclusive}{target}",
+        f"{_half_open_interval(fact.start_inclusive, fact.end_exclusive)}{target}",
     )
 
 
@@ -510,7 +527,8 @@ def _ziwei_annual_layers(view: ZiweiChartV1) -> str | None:
     return _sentence(
         "流年",
         "、".join(
-            f"{row.year}年（{row.coverage_start}至{row.coverage_end_exclusive}）"
+            f"{row.year}年（区间"
+            f"{_half_open_interval(row.coverage_start, row.coverage_end_exclusive)}）"
             for row in rows
         ),
     )
