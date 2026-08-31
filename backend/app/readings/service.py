@@ -64,6 +64,7 @@ from app.readings.capability_policy import (
 from app.readings.errors import RuntimeTransportError
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
+from app.readings.presentation.contracts import ReadingDocumentV1
 from app.readings.presentation.fact_panel import (
     project_presented_fact_panel,
     project_presented_view_model,
@@ -199,6 +200,61 @@ def _profile_free_preview_year(
     if instant.tzinfo is None:
         raise ValueError("free preview reference datetime must be timezone-aware")
     return instant.astimezone(ZoneInfo(profile.timezone)).year
+
+
+def _presented_fact_refs(
+    fact_panel: Mapping[str, object] | None,
+) -> frozenset[str]:
+    if fact_panel is None:
+        return frozenset()
+    facts = fact_panel.get("facts")
+    if not isinstance(facts, Sequence) or isinstance(facts, (str, bytes)):
+        return frozenset()
+    return frozenset(
+        ref
+        for item in facts
+        if isinstance(item, Mapping)
+        and isinstance((ref := item.get("ref")), str)
+    )
+
+
+def _project_presented_document(
+    document: ReadingDocumentV1,
+    *,
+    view_model: BaziChartV1 | ZiweiChartV1,
+    public_fact_refs: frozenset[str],
+) -> ReadingDocumentV1:
+    """Keep public document dependencies inside the presented fact closure."""
+
+    claims = tuple(
+        claim.model_copy(
+            update={
+                "fact_refs": tuple(
+                    ref for ref in claim.fact_refs if ref in public_fact_refs
+                )
+            }
+        )
+        for claim in document.claims
+    )
+    evidence = tuple(
+        item.model_copy(
+            update={
+                "supports_fact_refs": tuple(
+                    ref
+                    for ref in item.supports_fact_refs
+                    if ref in public_fact_refs
+                )
+            }
+        )
+        for item in document.evidence
+    )
+    return document.model_copy(
+        update={
+            "view_model": view_model,
+            "claims": claims,
+            "evidence": evidence,
+        }
+    )
 
 
 def _post_write_runtime_transport_fault(
@@ -2952,13 +3008,13 @@ class ReadingService:
             document.view_model,
             (BaziChartV1, ZiweiChartV1),
         ):
-            presented_document = document.model_copy(
-                update={
-                    "view_model": project_presented_view_model(
-                        document.view_model,
-                        time_layer_entitlement=time_layer_entitlement,
-                    )
-                }
+            presented_document = _project_presented_document(
+                document,
+                view_model=project_presented_view_model(
+                    document.view_model,
+                    time_layer_entitlement=time_layer_entitlement,
+                ),
+                public_fact_refs=_presented_fact_refs(fact_panel),
             )
         return ReadingResultResponse(
             reading_version_id=version.id,

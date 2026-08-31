@@ -14,6 +14,7 @@ from app.adapters.runtime import (
     generic_runtime_stopped,
     runtime_command_digest,
 )
+from app.charts.projectors import project_runtime_view_model
 from app.identity.models import GuestSession
 from app.profiles.models import ProfileVersion, SubjectProfile
 from app.readings.errors import RuntimeTransportError
@@ -27,6 +28,7 @@ from app.readings.models import (
     ReadingVersion,
     RuntimeRelease,
 )
+from app.readings.presentation import ReadingDocumentV1
 from app.readings.request_compiler import compile_liuyao_prepare
 from app.readings.runtime_contracts import (
     TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION,
@@ -646,7 +648,11 @@ def _bazi_chart_brief(
     )
 
 
-def _ziwei_chart_brief(subject_ref: str) -> ReadingBrief:
+def _ziwei_chart_brief(
+    subject_ref: str,
+    *,
+    include_month: bool = False,
+) -> ReadingBrief:
     palaces = [
         {
             "index": index,
@@ -658,19 +664,38 @@ def _ziwei_chart_brief(subject_ref: str) -> ReadingBrief:
         }
         for index in range(12)
     ]
+    facts: list[dict[str, Any]] = [
+        {
+            "ref": f"fact:{subject_ref}/calculated/ziwei/palaces",
+            "subject_ref": subject_ref,
+            "kind_id": "kind.structure",
+            "value": palaces,
+            "display_text": "十二宫盘面事实",
+        }
+    ]
+    if include_month:
+        facts.append(
+            {
+                "ref": f"fact:{subject_ref}/calculated/ziwei/monthly_layers",
+                "subject_ref": subject_ref,
+                "kind_id": "kind.fact",
+                "value": {
+                    "2032-01": {
+                        "year": 2032,
+                        "month": 1,
+                        "liu_yue": {"palace": "命宫"},
+                        "segments": [{"start": "2032-01-01"}],
+                        "representative_scope": "month",
+                    }
+                },
+                "display_text": "流月层已由 Runtime 计算。",
+            }
+        )
     return ReadingBrief.from_dict(
         {
             "question": "查看本命紫微盘",
             "vocabulary": [],
-            "facts": [
-                {
-                    "ref": f"fact:{subject_ref}/calculated/ziwei/palaces",
-                    "subject_ref": subject_ref,
-                    "kind_id": "kind.structure",
-                    "value": palaces,
-                    "display_text": "十二宫盘面事实",
-                }
-            ],
+            "facts": facts,
             "evidence": [],
             "findings": [],
             "claim_scopes": [],
@@ -720,6 +745,92 @@ async def replace_prepared_brief(
                 brief=brief,
             ),
             datetime.now(UTC),
+        )
+        await session.commit()
+
+
+async def save_fact_referencing_document(
+    database: Any,
+    settings: Any,
+    *,
+    version_id: str,
+    subject_ref: str,
+    product_id: str,
+    brief: ReadingBrief,
+    public_fact_ref: str,
+    restricted_fact_ref: str,
+) -> None:
+    await advance_to_accepted(
+        database,
+        settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id=product_id)
+    assert view_model is not None
+    cipher = EnvelopeCipher.from_settings(settings)
+    async with database.sessions() as session:
+        readings = __import__(
+            "app.readings.repository",
+            fromlist=["SqlReadingRepository"],
+        )
+        repository = readings.SqlReadingRepository(session, cipher)
+        version_uuid = UUID(version_id)
+        accepted_copy = await repository.get_accepted_copy(version_uuid)
+        assert accepted_copy is not None
+        document = ReadingDocumentV1.model_validate(
+            {
+                "document_id": f"reading-version:{version_id}",
+                "reading_version_id": version_id,
+                "accepted_copy_ref": f"accepted-copy:{accepted_copy.id}",
+                "product_version": f"{product_id}-reading/test",
+                "presentation_contract_version": f"{product_id}-presentation/test",
+                "view_model": view_model.model_dump(mode="json"),
+                "answer_summary": "公开结果必须保持事实引用闭包。",
+                "subject_summaries": [
+                    {"subject_ref": subject_ref, "label": "本人"}
+                ],
+                "themes": [{"theme_id": "career", "label": "事业"}],
+                "claims": [
+                    {
+                        "claim_id": "claim:entitlement-projection",
+                        "section_id": "overview",
+                        "text": "公开结果必须保持事实引用闭包。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [public_fact_ref, restricted_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": ["evidence:entitlement-projection"],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    }
+                ],
+                "evidence": [
+                    {
+                        "evidence_ref": "evidence:entitlement-projection",
+                        "title": "测试依据",
+                        "supports_fact_refs": [public_fact_ref, restricted_fact_ref],
+                    }
+                ],
+                "boundaries": [],
+                "actions": {
+                    "correction": {"enabled": True},
+                    "follow_up": {"enabled": False},
+                    "export": {"enabled": True},
+                    "share": {"enabled": True},
+                },
+                "versions": {
+                    "runtime_release": "mingli-runtime/test",
+                    "view_model_schema": view_model.schema_version,
+                },
+            }
+        )
+        await repository.save_reading_document(
+            version_id=version_uuid,
+            accepted_copy_id=accepted_copy.id,
+            document=document,
         )
         await session.commit()
 
@@ -5649,17 +5760,49 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
     )
     assert ziwei_started.status_code == 201, ziwei_started.text
     bazi_subject = f"profile-version:{confirmed['profile_version_id']}"
+    bazi_brief = _bazi_chart_brief(
+        bazi_subject,
+        include_year=True,
+        include_month=True,
+    )
+    ziwei_brief = _ziwei_chart_brief(bazi_subject, include_month=True)
     await replace_prepared_brief(
         database,
         test_settings,
         version_id=bazi_started["reading_version_id"],
-        brief=_bazi_chart_brief(bazi_subject, include_year=True, include_month=True),
+        brief=bazi_brief,
     )
     await replace_prepared_brief(
         database,
         test_settings,
         version_id=ziwei_started.json()["reading_version_id"],
-        brief=_ziwei_chart_brief(bazi_subject),
+        brief=ziwei_brief,
+    )
+    bazi_public_ref = f"fact:{bazi_subject}/calculated/bazi/four_pillars"
+    bazi_restricted_ref = f"fact:{bazi_subject}/calculated/bazi/month_layers"
+    ziwei_public_ref = f"fact:{bazi_subject}/calculated/ziwei/palaces"
+    ziwei_restricted_ref = (
+        f"fact:{bazi_subject}/calculated/ziwei/monthly_layers"
+    )
+    await save_fact_referencing_document(
+        database,
+        test_settings,
+        version_id=bazi_started["reading_version_id"],
+        subject_ref=bazi_subject,
+        product_id="bazi",
+        brief=bazi_brief,
+        public_fact_ref=bazi_public_ref,
+        restricted_fact_ref=bazi_restricted_ref,
+    )
+    await save_fact_referencing_document(
+        database,
+        test_settings,
+        version_id=ziwei_started.json()["reading_version_id"],
+        subject_ref=bazi_subject,
+        product_id="ziwei",
+        brief=ziwei_brief,
+        public_fact_ref=ziwei_public_ref,
+        restricted_fact_ref=ziwei_restricted_ref,
     )
 
     bazi_result = await client.get(
@@ -5671,9 +5814,11 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
 
     assert bazi_result.status_code == 200
     assert ziwei_result.status_code == 200
-    bazi_entitlement = bazi_result.json()["time_layer_entitlement"]
-    ziwei_entitlement = ziwei_result.json()["time_layer_entitlement"]
-    ziwei_public_facts = ziwei_result.json()["fact_panel"]["facts"]
+    bazi_payload = bazi_result.json()
+    ziwei_payload = ziwei_result.json()
+    bazi_entitlement = bazi_payload["time_layer_entitlement"]
+    ziwei_entitlement = ziwei_payload["time_layer_entitlement"]
+    ziwei_public_facts = ziwei_payload["fact_panel"]["facts"]
     TimeLayerEntitlementV1.from_dict(bazi_entitlement)
     TimeLayerEntitlementV1.from_dict(ziwei_entitlement)
     bazi_layers = _entitlement_by_id(bazi_entitlement)
@@ -5685,10 +5830,32 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
     assert ziwei_layers["life"]["access"] == "readable"
     assert ziwei_layers["year"]["access"] == "unavailable"
     assert ziwei_layers["year"]["upgrade_cta"] is None
-    assert ziwei_layers["month"]["access"] == "unavailable"
+    assert ziwei_layers["month"]["access"] == "fail_closed_unknown"
     assert ziwei_public_facts[0]["display_text"].startswith(
         "十二宫：命宫（甲子）主星紫微；"
     )
+    for payload, restricted_ref in (
+        (bazi_payload, bazi_restricted_ref),
+        (ziwei_payload, ziwei_restricted_ref),
+    ):
+        public_fact_refs = {
+            item["ref"] for item in payload["fact_panel"]["facts"]
+        }
+        document = payload["document"]
+        assert document is not None
+        assert all(
+            set(claim["fact_refs"]) <= public_fact_refs
+            for claim in document["claims"]
+        )
+        assert all(
+            set(evidence["supports_fact_refs"]) <= public_fact_refs
+            for evidence in document["evidence"]
+        )
+        assert restricted_ref not in str(document)
+    assert bazi_payload["document"]["claims"][0]["fact_refs"] == [bazi_public_ref]
+    assert ziwei_payload["document"]["claims"][0]["fact_refs"] == [ziwei_public_ref]
+    assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"] is None
+    assert ziwei_payload["document"]["view_model"]["core_facts"]["monthly_layers"] is None
 
 
 async def test_result_without_session_is_401_and_omits_entitlement(
