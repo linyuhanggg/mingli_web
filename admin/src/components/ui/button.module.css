@@ -1,6 +1,6 @@
 .button {
   display: inline-flex;
-  min-width: var(--ds-control-md);
+  min-width: var(--ds-touch-min);
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
@@ -37,17 +37,17 @@
 }
 
 .sm {
-  min-height: var(--ds-control-sm);
+  min-height: max(var(--ds-control-sm), var(--ds-touch-min));
   padding: 0 var(--ds-space-3);
 }
 
 .md {
-  min-height: var(--ds-control-md);
+  min-height: max(var(--ds-control-md), var(--ds-touch-min));
   padding: 0 var(--ds-space-4);
 }
 
 .lg {
-  min-height: var(--ds-control-lg);
+  min-height: max(var(--ds-control-lg), var(--ds-touch-min));
   padding: 0 var(--ds-space-6);
   font-size: var(--font-size-body);
 }

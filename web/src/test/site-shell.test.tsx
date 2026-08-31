@@ -348,25 +348,42 @@ describe("public shell responsive and cache contracts", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders known breadcrumb states as text badges and fails closed for unknown states", () => {
+  it("renders only explicitly supplied breadcrumb states and fails closed otherwise", () => {
     usePathnameMock.mockReturnValue("/workbench/private-handle");
-    const readyView = render(
+    const inferredReadyView = render(
       <PublicPageShell>
         <main id="main-content">结果</main>
       </PublicPageShell>,
     );
 
-    const readyBreadcrumb = screen.getByRole("navigation", { name: "面包屑" });
-    expect(within(readyBreadcrumb).getByLabelText("当前状态：READY")).toHaveAttribute(
+    const inferredReadyBreadcrumb = screen.getByRole("navigation", { name: "面包屑" });
+    expect(inferredReadyBreadcrumb.querySelector("[data-state]")).toBeNull();
+    expect(inferredReadyBreadcrumb).not.toHaveTextContent("private-handle");
+    inferredReadyView.unmount();
+
+    const explicitReadyView = render(
+      <PublicPageShell breadcrumbStatus="ready">
+        <main id="main-content">结果</main>
+      </PublicPageShell>,
+    );
+    expect(screen.getByLabelText("当前状态：READY")).toHaveAttribute(
       "data-state",
       "ready",
     );
-    expect(readyBreadcrumb).not.toHaveTextContent("private-handle");
-    readyView.unmount();
+    explicitReadyView.unmount();
 
     usePathnameMock.mockReturnValue("/bazi/hepan");
-    const inputView = render(
+    const inferredInputView = render(
       <PublicPageShell>
+        <main id="main-content">合盘录入</main>
+      </PublicPageShell>,
+    );
+    expect(screen.getByRole("navigation", { name: "面包屑" }).querySelector("[data-state]"))
+      .toBeNull();
+    inferredInputView.unmount();
+
+    const explicitInputView = render(
+      <PublicPageShell breadcrumbStatus="need-input">
         <main id="main-content">合盘录入</main>
       </PublicPageShell>,
     );
@@ -374,7 +391,7 @@ describe("public shell responsive and cache contracts", () => {
       "data-state",
       "need-input",
     );
-    inputView.unmount();
+    explicitInputView.unmount();
 
     render(
       <PublicPageShell breadcrumbStatus="future-state">

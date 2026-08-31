@@ -86,18 +86,6 @@ const BREADCRUMB_STATUS_LABELS: Readonly<Record<CoreStatusState, string>> = {
   error: "ERROR",
 };
 
-const NEED_INPUT_ROUTES = new Set([
-  "/bazi",
-  "/bazi/hepan",
-  "/daliuren",
-  "/liuyao",
-  "/meihua",
-  "/qizheng",
-  "/qizheng/hepan",
-  "/ziwei",
-  "/ziwei/hepan",
-]);
-
 function getBreadcrumbs(pathname: string) {
   const normalizedPathname = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
   return (
@@ -111,18 +99,10 @@ function isCoreStatusState(value: string): value is CoreStatusState {
   return CORE_STATUS_STATES.includes(value as CoreStatusState);
 }
 
-function getRouteBreadcrumbStatus(pathname: string): CoreStatusState | null {
-  const normalizedPathname = pathname.length > 1 ? pathname.replace(/\/+$/, "") : pathname;
-  if (NEED_INPUT_ROUTES.has(normalizedPathname)) return "need-input";
-  if (/^\/workbench\/[^/]+$/.test(normalizedPathname)) return "ready";
-  return null;
-}
-
-function getBreadcrumbStatus(pathname: string, requestedStatus?: string): CoreStatusState | null {
-  if (requestedStatus !== undefined) {
-    return isCoreStatusState(requestedStatus) ? requestedStatus : null;
-  }
-  return getRouteBreadcrumbStatus(pathname);
+function getBreadcrumbStatus(requestedStatus?: string): CoreStatusState | null {
+  return requestedStatus !== undefined && isCoreStatusState(requestedStatus)
+    ? requestedStatus
+    : null;
 }
 
 function Breadcrumb({
@@ -131,7 +111,7 @@ function Breadcrumb({
 }: Readonly<{ pathname: string; requestedStatus?: string }>) {
   const breadcrumbs = getBreadcrumbs(pathname);
   if (!breadcrumbs) return null;
-  const status = getBreadcrumbStatus(pathname, requestedStatus);
+  const status = getBreadcrumbStatus(requestedStatus);
 
   return (
     <div className={styles.breadcrumbBar}>

@@ -1,3 +1,6 @@
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { fireEvent } from "@testing-library/react";
@@ -92,6 +95,24 @@ const sampleRows = [
 ];
 
 describe("Button", () => {
+  it("keeps every size at least 44px on fine-pointer desktops", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/button.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(
+      /\.button\s*\{[^}]*min-width:\s*var\(--ds-touch-min\)/,
+    );
+    for (const size of ["sm", "md", "lg"] as const) {
+      expect(css).toMatch(
+        new RegExp(
+          `\\.${size}\\s*\\{[^}]*min-height:\\s*max\\(var\\(--ds-control-${size}\\),\\s*var\\(--ds-touch-min\\)\\)`,
+        ),
+      );
+    }
+  });
+
   it("renders the shared variant and size contract while retaining Admin aliases", () => {
     const { rerender } = render(<Button>保存</Button>);
     const primary = screen.getByRole("button", { name: "保存" });
