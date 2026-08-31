@@ -84,7 +84,7 @@ def _document_payload(version_id: str, accepted_copy_ref: str) -> dict[str, obje
                 "dimension_id": "career",
                 "claim_kind_id": "kind.tendency",
                 "certainty_id": "certainty.tendency",
-                "fact_refs": ["fact:career-structure"],
+                "fact_refs": [],
                 "finding_refs": ["finding:1"],
                 "evidence_refs": ["evidence:1"],
                 "limit_refs": ["limit:1"],
@@ -95,7 +95,7 @@ def _document_payload(version_id: str, accepted_copy_ref: str) -> dict[str, obje
             {
                 "evidence_ref": "evidence:1",
                 "title": "依据",
-                "supports_fact_refs": ["fact:career-structure"],
+                "supports_fact_refs": [],
             }
         ],
         "boundaries": [{"limit_ref": "limit:1", "text": "仅供个人参考。"}],

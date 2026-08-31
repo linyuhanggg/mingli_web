@@ -66,11 +66,16 @@ from app.readings.errors import RuntimeTransportError
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
 from app.readings.presentation.access_policy import ACTIVE_CONTENT_ACCESS_POLICY
-from app.readings.presentation.contracts import ReadingDocumentV1
+from app.readings.presentation.contracts import (
+    PresentationContract,
+    PresentationSection,
+    ReadingDocumentV1,
+)
 from app.readings.presentation.fact_panel import (
     project_presented_fact_panel,
     project_presented_view_model,
 )
+from app.readings.presentation.projector import build_reading_document
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.repository import (
     READING_HISTORY_LIMIT,
@@ -221,12 +226,80 @@ def _presented_fact_refs(
     )
 
 
+def _product_id_for_presented_document(document: ReadingDocumentV1) -> str:
+    """Recover the product lane encoded in a stored document version string."""
+
+    product_version = document.product_version.strip()
+    prefix = product_version.split("/", 1)[0]
+    if prefix.endswith("-reading"):
+        return prefix[: -len("-reading")]
+    return prefix
+
+
+def _presentation_contract_for_presented_document(
+    document: ReadingDocumentV1,
+) -> PresentationContract:
+    """Rebuild the PresentationContract Guard declared by this document."""
+
+    output_contract = output_contract_for_product(
+        _product_id_for_presented_document(document),
+        tuple(
+            dict.fromkeys(
+                claim.dimension_id for claim in document.claims if claim.dimension_id
+            )
+        ),
+    )
+    source_claim_count = len(document.claims)
+    # An accepted source document was valid under its Guard. Product policy still
+    # supplies the floor when the source met it; otherwise keep the observed
+    # accepted floor so projection cannot invent a stricter contract version.
+    min_claims = (
+        min(output_contract.min_blocks, source_claim_count)
+        if source_claim_count > 0
+        else output_contract.min_blocks
+    )
+    max_claims = max(
+        output_contract.max_blocks,
+        source_claim_count,
+        min_claims,
+    )
+    allowed_kinds = tuple(
+        dict.fromkeys(
+            [
+                *(claim.claim_kind_id for claim in document.claims),
+                "kind.fact",
+                "kind.tendency",
+            ]
+        )
+    )
+    max_chars = max(
+        max((len(claim.text) for claim in document.claims), default=1),
+        output_contract.max_output_chars,
+    )
+    return PresentationContract(
+        contract_version=document.presentation_contract_version,
+        product_version=document.product_version,
+        renderer="reading-document/v1",
+        sections=(
+            PresentationSection(
+                section_id="overview",
+                title="判断",
+                min_claims=min_claims,
+                max_claims=max_claims,
+                max_chars_per_claim=max_chars,
+                allowed_claim_kind_ids=allowed_kinds,
+            ),
+        ),
+        fixed_disclosures=tuple(boundary.text for boundary in document.boundaries),
+    )
+
+
 def _project_presented_document(
     document: ReadingDocumentV1,
     *,
     view_model: BaziChartV1 | ZiweiChartV1,
     public_fact_refs: frozenset[str],
-) -> ReadingDocumentV1:
+) -> ReadingDocumentV1 | None:
     """Keep public document dependencies inside the presented fact closure."""
 
     evidence = tuple(
@@ -246,7 +319,7 @@ def _project_presented_document(
         if claims
         else "当前没有可公开展示的结论。"
     )
-    return document.model_copy(
+    projected = document.model_copy(
         update={
             "view_model": view_model,
             "answer_summary": answer_summary,
@@ -254,6 +327,15 @@ def _project_presented_document(
             "evidence": evidence,
         }
     )
+    try:
+        return build_reading_document(
+            _presentation_contract_for_presented_document(document),
+            projected.model_dump(mode="json"),
+        )
+    except ValueError:
+        # Filtering can drop a document below its declared PresentationContract
+        # minima. Fail closed instead of shipping an illegal accepted document.
+        return None
 
 
 def _project_presented_accepted_copy(

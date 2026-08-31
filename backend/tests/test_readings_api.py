@@ -941,6 +941,82 @@ async def save_fact_referencing_document(
         await session.commit()
 
 
+async def save_presentation_contract_breaking_document(
+    database: Any,
+    settings: Any,
+    *,
+    version_id: str,
+    subject_ref: str,
+    product_id: str,
+    brief: ReadingBrief,
+    public_fact_ref: str,
+    product_version: str,
+    presentation_contract_version: str,
+    claims: list[dict[str, object]],
+) -> None:
+    """Persist an accepted document that becomes illegal after public projection."""
+
+    await advance_to_accepted(
+        database,
+        settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        public_copy="\n\n".join(claim["text"] for claim in claims),
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id=product_id)
+    assert view_model is not None
+    cipher = EnvelopeCipher.from_settings(settings)
+    async with database.sessions() as session:
+        readings = __import__(
+            "app.readings.repository",
+            fromlist=["SqlReadingRepository"],
+        )
+        repository = readings.SqlReadingRepository(session, cipher)
+        version_uuid = UUID(version_id)
+        accepted_copy = await repository.get_accepted_copy(version_uuid)
+        assert accepted_copy is not None
+        document = ReadingDocumentV1.model_validate(
+            {
+                "document_id": f"reading-version:{version_id}",
+                "reading_version_id": version_id,
+                "accepted_copy_ref": f"accepted-copy:{accepted_copy.id}",
+                "product_version": product_version,
+                "presentation_contract_version": presentation_contract_version,
+                "view_model": view_model.model_dump(mode="json"),
+                "answer_summary": claims[0]["text"],
+                "subject_summaries": [
+                    {"subject_ref": subject_ref, "label": "本人"}
+                ],
+                "themes": [{"theme_id": "career", "label": "事业"}],
+                "claims": claims,
+                "evidence": [
+                    {
+                        "evidence_ref": "evidence:empty-dependency",
+                        "title": "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP",
+                        "supports_fact_refs": [],
+                    }
+                ],
+                "boundaries": [],
+                "actions": {
+                    "correction": {"enabled": True},
+                    "follow_up": {"enabled": False},
+                    "export": {"enabled": True},
+                    "share": {"enabled": True},
+                },
+                "versions": {
+                    "runtime_release": "mingli-runtime/test",
+                    "view_model_schema": view_model.schema_version,
+                },
+            }
+        )
+        await repository.save_reading_document(
+            version_id=version_uuid,
+            accepted_copy_id=accepted_copy.id,
+            document=document,
+        )
+        await session.commit()
+
+
 def _entitlement_by_id(payload: dict[str, Any]) -> dict[str, dict[str, Any]]:
     return {item["layer_id"]: item for item in payload["layers"]}
 
@@ -6197,6 +6273,188 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
         and "MIXED-EVIDENCE-MUST-DROP" not in str(document)
         for document in export_documents
     )
+
+
+async def test_projected_document_below_presentation_contract_fail_closes_delivery(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    guest_headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, guest_headers)
+    await seed_runtime_release(database, test_settings)
+    logged_in = await login_current_guest(client, guest_headers)
+    user_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+
+    preview = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="presentation-contract-preview-fail-closed",
+    )
+    deep = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="presentation-contract-deep-fail-closed",
+    )
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    brief = _bazi_chart_brief(subject_ref)
+    public_fact_ref = f"fact:{subject_ref}/calculated/bazi/four_pillars"
+    removed_fact_ref = f"fact:{subject_ref}/calculated/bazi/unknown_engine_dump"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=preview["reading_version_id"],
+        brief=brief,
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=deep["reading_version_id"],
+        brief=brief,
+    )
+    await save_presentation_contract_breaking_document(
+        database,
+        test_settings,
+        version_id=preview["reading_version_id"],
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=public_fact_ref,
+        product_version="bazi-reading/test",
+        presentation_contract_version="bazi-presentation/test",
+        claims=[
+            {
+                "claim_id": "claim:unsupported-only",
+                "section_id": "overview",
+                "text": "SOLE-CLAIM-MUST-DROP",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [removed_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            }
+        ],
+    )
+    await save_presentation_contract_breaking_document(
+        database,
+        test_settings,
+        version_id=deep["reading_version_id"],
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=public_fact_ref,
+        product_version="bazi-deep-reading/v1",
+        presentation_contract_version="bazi-deep-presentation/v1",
+        claims=[
+            {
+                "claim_id": "claim:keep-one",
+                "section_id": "overview",
+                "text": "深读结论一",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [public_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            },
+            {
+                "claim_id": "claim:keep-two",
+                "section_id": "overview",
+                "text": "深读结论二",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [public_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            },
+            {
+                "claim_id": "claim:drop",
+                "section_id": "overview",
+                "text": "DEEP-CLAIM-MUST-DROP",
+                "subject_ref": subject_ref,
+                "dimension_id": "career",
+                "claim_kind_id": "kind.tendency",
+                "certainty_id": "certainty.tendency",
+                "fact_refs": [removed_fact_ref],
+                "finding_refs": [],
+                "evidence_refs": [],
+                "limit_refs": [],
+                "verification": {"enabled": True},
+            },
+        ],
+    )
+
+    export_calls: list[ReadingDocumentV1] = []
+
+    def capture_export(document: ReadingDocumentV1, export_format: str) -> Any:
+        exports = importlib.import_module("app.readings.export")
+        export_calls.append(document)
+        return exports.RenderedExport(
+            format=export_format,
+            content_type="application/pdf",
+            file_name="reading.pdf",
+            payload=b"%PDF-must-not-emit",
+        )
+
+    monkeypatch.setattr(
+        "app.readings.export.render_reading_export",
+        capture_export,
+    )
+
+    for version_id in (
+        preview["reading_version_id"],
+        deep["reading_version_id"],
+    ):
+        result = await client.get(f"/api/v1/readings/{version_id}/result")
+        assert result.status_code == 200, result.text
+        body = result.json()
+        assert body["status"] == "accepted"
+        assert body["document"] is None
+        assert body["accepted_copy"] is None
+        assert "SOLE-CLAIM-MUST-DROP" not in str(body)
+        assert "DEEP-CLAIM-MUST-DROP" not in str(body)
+        assert "当前没有可公开展示的结论。" not in str(body)
+
+        exported = await client.post(
+            f"/api/v1/readings/{version_id}/export",
+            headers=user_headers,
+            json={"format": "pdf", "ttl_seconds": 300},
+        )
+        assert exported.status_code == 400, exported.text
+        assert "SOLE-CLAIM-MUST-DROP" not in exported.text
+        assert "DEEP-CLAIM-MUST-DROP" not in exported.text
+
+        shared = await client.post(
+            f"/api/v1/readings/{version_id}/share",
+            headers=user_headers,
+            json={"ttl_seconds": 300},
+        )
+        assert shared.status_code == 400, shared.text
+        assert "token" not in shared.json()
+        assert "SOLE-CLAIM-MUST-DROP" not in shared.text
+        assert "DEEP-CLAIM-MUST-DROP" not in shared.text
+
+        bearer = await client.get("/api/v1/share/not-created-for-invalid-document")
+        assert bearer.status_code == 404, bearer.text
+        assert "SOLE-CLAIM-MUST-DROP" not in bearer.text
+        assert "DEEP-CLAIM-MUST-DROP" not in bearer.text
+
+    assert export_calls == []
+
 
 async def test_result_without_session_is_401_and_omits_entitlement(
     client: AsyncClient,
