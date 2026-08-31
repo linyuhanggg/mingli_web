@@ -3042,6 +3042,24 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
         )
 
     @staticmethod
+    def unsupported_request(request: ReadingRequest) -> str | None:
+        """Reject life-K-line selections outside their one exact gap scope."""
+
+        if not request.intent:
+            return None
+        frame = IntentFrame.from_dict(request.intent)
+        if frame.calculation_object != "life_kline":
+            return None
+        if (
+            frame.question_dimensions != ("overview",)
+            or frame.horizon.kind != "life"
+            or frame.horizon.start is not None
+            or frame.horizon.end is not None
+        ):
+            return "life_kline_scope_unsupported"
+        return None
+
+    @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
     ) -> tuple[str, ...]:
@@ -3422,8 +3440,10 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
         if (
             extension is None
             or extension.status != "complete"
-            or "overview" not in extension.requested_dimensions
+            or extension.requested_dimensions != ("overview",)
             or str(extension.horizon.get("kind") or "") != "life"
+            or extension.horizon.get("start") is not None
+            or extension.horizon.get("end") is not None
         ):
             return calculation
         frame = IntentFrame.from_dict(request.intent)

@@ -61,6 +61,9 @@ submits `prepare` with `capability_id=bazi`, `object_id=life_kline`,
 `horizon.kind_id=life`, and the existing `overview` dimension. The resulting
 `prepared.brief.facts` contains exactly one
 `fact:<subject_ref>/calculated/bazi/life_kline` value using this contract.
+This scope is exact: every other catalog-advertised dimension or horizon
+paired with `object_id=life_kline` stops as `unsupported` before Bazi
+calculation, rather than returning an unrelated natal or transit payload.
 
 The dedicated object is advertised by `describe`, but the contract adds no
 public dimension: `life_kline` is an extension fact, not a fourth Command, a

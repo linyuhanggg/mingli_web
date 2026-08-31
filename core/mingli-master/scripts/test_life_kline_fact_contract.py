@@ -279,152 +279,195 @@ class LifeKlineReleaseIdentityTests(unittest.TestCase):
 
 
 class LifeKlinePortableAdapterIntegrationTests(unittest.TestCase):
-    def test_prepare_exposes_exact_gap_and_ignores_host_fabrication(self) -> None:
-        subject_ref = "profile-version:synthetic-kline"
-        source_commit = "d" * 40
-        with tempfile.TemporaryDirectory() as temporary:
-            root = Path(temporary)
-            source = root / "source"
-            installed = root / "installed"
-            home = root / "home"
-            shutil.copytree(
-                CORE_ROOT,
-                source,
-                ignore=shutil.ignore_patterns(".git", "__pycache__"),
-            )
-            subprocess.run(["git", "init", "-q", str(source)], check=True)
-            subprocess.run(["git", "-C", str(source), "add", "."], check=True)
-            selected = release_deploy.tracked_release_files(source)
-            manifest = release_deploy.build_manifest(
-                source,
-                selected,
-                source_commit,
-            )
-            release_deploy.sync_destination(
-                source,
-                installed,
-                manifest,
-                apply=True,
-            )
-            runtime_python = os.environ.get("MINGLI_PYTHON") or sys.executable
-            adapter_command = [
-                runtime_python,
-                "-I",
-                "-B",
-                str(installed / "scripts/adapters/json_cli.py"),
-            ]
-            environment = {
-                "HOME": str(home),
-                "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
-                "PYTHONDONTWRITEBYTECODE": "1",
-            }
+    SUBJECT_REF = "profile-version:synthetic-kline"
+    SOURCE_COMMIT = "d" * 40
 
-            def execute_adapter(payload: dict[str, Any]) -> dict[str, Any]:
-                completed = subprocess.run(
-                    adapter_command,
-                    input=json.dumps(payload, ensure_ascii=False),
-                    capture_output=True,
-                    text=True,
-                    cwd=str(installed),
-                    env=environment,
-                )
-                self.assertEqual(completed.returncode, 0, completed.stderr)
-                return json.loads(completed.stdout)
+    @classmethod
+    def setUpClass(cls) -> None:
+        cls._temporary = tempfile.TemporaryDirectory()
+        root = Path(cls._temporary.name)
+        source = root / "source"
+        cls._installed = root / "installed"
+        home = root / "home"
+        shutil.copytree(
+            CORE_ROOT,
+            source,
+            ignore=shutil.ignore_patterns(".git", "__pycache__"),
+        )
+        subprocess.run(["git", "init", "-q", str(source)], check=True)
+        subprocess.run(["git", "-C", str(source), "add", "."], check=True)
+        selected = release_deploy.tracked_release_files(source)
+        manifest = release_deploy.build_manifest(
+            source,
+            selected,
+            cls.SOURCE_COMMIT,
+        )
+        release_deploy.sync_destination(
+            source,
+            cls._installed,
+            manifest,
+            apply=True,
+        )
+        runtime_python = os.environ.get("MINGLI_PYTHON") or sys.executable
+        cls._adapter_command = [
+            runtime_python,
+            "-I",
+            "-B",
+            str(cls._installed / "scripts/adapters/json_cli.py"),
+        ]
+        cls._environment = {
+            "HOME": str(home),
+            "PATH": os.environ.get("PATH", "/usr/bin:/bin"),
+            "PYTHONDONTWRITEBYTECODE": "1",
+        }
 
-            described = execute_adapter({"kind": "describe"})
-            bazi = next(
-                capability
-                for capability in described["capabilities"]
-                if capability["id"] == "bazi"
-            )
-            self.assertIn(
-                "life_kline",
-                {item["id"] for item in bazi["objects"]},
-            )
+    @classmethod
+    def tearDownClass(cls) -> None:
+        cls._temporary.cleanup()
 
-            command = {
-                "kind": "prepare",
-                "query": "读取人生 K 线当前事实状态。",
-                "intent": {
-                    "subject_refs": [subject_ref],
-                    "object_id": "life_kline",
-                    "dimension_ids": ["overview"],
-                    "horizon": {"kind_id": "life"},
-                    "capability_id": "bazi",
-                    "comparisons": [],
-                },
-                "facts": {
-                    subject_ref: {
-                        "birth_datetime_or_four_pillars": [
-                            "乙酉",
-                            "辛巳",
-                            "丙午",
-                            "癸巳",
+    @classmethod
+    def _execute_adapter(cls, payload: dict[str, Any]) -> dict[str, Any]:
+        completed = subprocess.run(
+            cls._adapter_command,
+            input=json.dumps(payload, ensure_ascii=False),
+            capture_output=True,
+            text=True,
+            cwd=str(cls._installed),
+            env=cls._environment,
+        )
+        if completed.returncode != 0:
+            raise AssertionError(completed.stderr)
+        return json.loads(completed.stdout)
+
+    @classmethod
+    def _command(cls) -> dict[str, Any]:
+        return {
+            "kind": "prepare",
+            "query": "读取人生 K 线当前事实状态。",
+            "intent": {
+                "subject_refs": [cls.SUBJECT_REF],
+                "object_id": "life_kline",
+                "dimension_ids": ["overview"],
+                "horizon": {"kind_id": "life"},
+                "capability_id": "bazi",
+                "comparisons": [],
+            },
+            "facts": {
+                cls.SUBJECT_REF: {
+                    "birth_datetime_or_four_pillars": [
+                        "乙酉",
+                        "辛巳",
+                        "丙午",
+                        "癸巳",
+                    ],
+                    "life_kline": {
+                        "status": "ready",
+                        "series": [
+                            {
+                                "open": 40,
+                                "high": 60,
+                                "low": 30,
+                                "close": 55,
+                                "direction": "up",
+                                "delta": 15,
+                            }
                         ],
-                        "life_kline": {
-                            "status": "ready",
-                            "series": [
-                                {
-                                    "open": 40,
-                                    "high": 60,
-                                    "low": 30,
-                                    "close": 55,
-                                    "direction": "up",
-                                    "delta": 15,
-                                }
-                            ],
-                        },
-                        "host_default": 50,
-                    }
-                },
-            }
-            result = execute_adapter(command)
-            self.assertEqual(result["kind"], "prepared", result)
-            matching = [
-                fact
-                for fact in result["brief"]["facts"]
-                if fact["ref"]
-                == f"fact:{subject_ref}/calculated/bazi/life_kline"
-            ]
-            self.assertEqual(len(matching), 1, result["brief"]["facts"])
-            payload = matching[0]["value"]
+                    },
+                    "host_default": 50,
+                }
+            },
+        }
 
-            validate_life_kline_facts(payload)
-            self.assertEqual(payload["status"], STATUS)
-            self.assertEqual(payload["series"], [])
-            self.assertFalse(payload["algorithm_gap"]["user_input_can_resolve"])
-            self.assertEqual(payload["identity"]["subject_ref"], subject_ref)
-            self.assertEqual(
-                payload["identity"]["profile_version_id"],
-                subject_ref,
-            )
-            self.assertEqual(
-                payload["identity"]["runtime_source_commit"],
-                source_commit,
-            )
-            forbidden = {
-                "score",
-                "open",
-                "high",
-                "low",
-                "close",
-                "direction",
-                "delta",
-                "host_default",
-            }
-            self.assertEqual(_all_keys(payload) & forbidden, set())
-            self.assertNotIn("host_default", json.dumps(result, sort_keys=True))
+    def test_non_target_catalog_matrix_is_unsupported(self) -> None:
+        described = self._execute_adapter({"kind": "describe"})
+        bazi = next(
+            capability
+            for capability in described["capabilities"]
+            if capability["id"] == "bazi"
+        )
+        dimensions = tuple(item["id"] for item in bazi["dimensions"])
+        horizons = tuple(item["id"] for item in bazi["horizons"])
+        matrix = {
+            (dimension, horizon)
+            for dimension in dimensions
+            for horizon in horizons
+            if (dimension, horizon) != ("overview", "life")
+        }
+        self.assertIn(("overview", "year"), matrix)
+        self.assertIn(("timing", "life"), matrix)
 
-            natal_command = copy.deepcopy(command)
-            natal_command["intent"]["object_id"] = "natal"
-            natal = execute_adapter(natal_command)
-            self.assertEqual(natal["kind"], "prepared", natal)
-            self.assertFalse(
-                any(
-                    fact["ref"].endswith("/calculated/bazi/life_kline")
-                    for fact in natal["brief"]["facts"]
-                )
+        for dimension, horizon in sorted(matrix):
+            command = self._command()
+            command["intent"]["dimension_ids"] = [dimension]
+            command["intent"]["horizon"] = {"kind_id": horizon}
+            result = self._execute_adapter(command)
+            with self.subTest(dimension=dimension, horizon=horizon):
+                self.assertEqual(result["kind"], "stopped", result)
+                self.assertEqual(result["reason"], "unsupported", result)
+                self.assertIsNone(result["state_token"], result)
+                self.assertTrue(result["terminal"], result)
+                self.assertNotIn("brief", result)
+
+    def test_prepare_exposes_exact_gap_and_ignores_host_fabrication(self) -> None:
+        described = self._execute_adapter({"kind": "describe"})
+        bazi = next(
+            capability
+            for capability in described["capabilities"]
+            if capability["id"] == "bazi"
+        )
+        self.assertIn(
+            "life_kline",
+            {item["id"] for item in bazi["objects"]},
+        )
+
+        command = self._command()
+        result = self._execute_adapter(command)
+        self.assertEqual(result["kind"], "prepared", result)
+        matching = [
+            fact
+            for fact in result["brief"]["facts"]
+            if fact["ref"]
+            == f"fact:{self.SUBJECT_REF}/calculated/bazi/life_kline"
+        ]
+        self.assertEqual(len(matching), 1, result["brief"]["facts"])
+        payload = matching[0]["value"]
+
+        validate_life_kline_facts(payload)
+        self.assertEqual(payload["status"], STATUS)
+        self.assertEqual(payload["series"], [])
+        self.assertFalse(payload["algorithm_gap"]["user_input_can_resolve"])
+        self.assertEqual(payload["identity"]["subject_ref"], self.SUBJECT_REF)
+        self.assertEqual(
+            payload["identity"]["profile_version_id"],
+            self.SUBJECT_REF,
+        )
+        self.assertEqual(
+            payload["identity"]["runtime_source_commit"],
+            self.SOURCE_COMMIT,
+        )
+        forbidden = {
+            "score",
+            "open",
+            "high",
+            "low",
+            "close",
+            "direction",
+            "delta",
+            "host_default",
+        }
+        self.assertEqual(_all_keys(payload) & forbidden, set())
+        self.assertNotIn("host_default", json.dumps(result, sort_keys=True))
+
+        natal_command = copy.deepcopy(command)
+        natal_command["intent"]["object_id"] = "natal"
+        natal = self._execute_adapter(natal_command)
+        self.assertEqual(natal["kind"], "prepared", natal)
+        self.assertFalse(
+            any(
+                fact["ref"].endswith("/calculated/bazi/life_kline")
+                for fact in natal["brief"]["facts"]
             )
+        )
 
 
 if __name__ == "__main__":
