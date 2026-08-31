@@ -424,6 +424,7 @@ async def advance_to_accepted(
     *,
     version_id: str,
     subject_ref: str,
+    public_copy: str = ACCEPTED_COPY,
 ) -> None:
     readings = __import__("app.readings.repository", fromlist=["SqlReadingRepository"])
     cipher = EnvelopeCipher.from_settings(settings)
@@ -453,7 +454,10 @@ async def advance_to_accepted(
             )
         await repository.record_accepted(
             str(job.id),
-            Accepted(state_token=state_token or "api-test-token", public_copy=ACCEPTED_COPY),
+            Accepted(
+                state_token=state_token or "api-test-token",
+                public_copy=public_copy,
+            ),
             now,
         )
         await session.commit()
@@ -764,11 +768,20 @@ async def save_fact_referencing_document(
     public_fact_ref: str,
     supported_time_fact_ref: str,
 ) -> None:
+    claim_texts = (
+        "MIXED-CLAIM-MUST-DROP",
+        "受支持流月事实形成的结论应保持引用闭包。",
+        "公开结果必须保持事实引用闭包。",
+        "公开边界可独立支撑这条结论。",
+        "这条公开说明没有事实依赖。",
+    )
+    public_copy_suffix = "本解读仅供传统文化参考，不构成现实决策保证。"
     await advance_to_accepted(
         database,
         settings,
         version_id=version_id,
         subject_ref=subject_ref,
+        public_copy="\n\n".join((*claim_texts, public_copy_suffix)),
     )
     view_model = project_runtime_view_model(brief.to_dict(), product_id=product_id)
     assert view_model is not None
@@ -843,7 +856,35 @@ async def save_fact_referencing_document(
                         ],
                         "limit_refs": [],
                         "verification": {"enabled": True},
-                    }
+                    },
+                    {
+                        "claim_id": "claim:limit-only",
+                        "section_id": "overview",
+                        "text": "公开边界可独立支撑这条结论。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [],
+                        "finding_refs": [],
+                        "evidence_refs": [],
+                        "limit_refs": ["limit:traditional"],
+                        "verification": {"enabled": True},
+                    },
+                    {
+                        "claim_id": "claim:empty-dependency",
+                        "section_id": "overview",
+                        "text": "这条公开说明没有事实依赖。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [],
+                        "finding_refs": [],
+                        "evidence_refs": [],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
                 ],
                 "evidence": [
                     {
@@ -5967,6 +6008,8 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
         assert [claim["claim_id"] for claim in document["claims"]] == [
             "claim:time-layer",
             "claim:fact-closure",
+            "claim:limit-only",
+            "claim:empty-dependency",
         ]
         assert [evidence["evidence_ref"] for evidence in document["evidence"]] == [
             "evidence:fact-closure",
@@ -5977,6 +6020,16 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
         )
         assert "MIXED-CLAIM-MUST-DROP" not in str(document)
         assert "MIXED-EVIDENCE-MUST-DROP" not in str(document)
+        assert payload["accepted_copy"] == "\n\n".join(
+            (
+                "受支持流月事实形成的结论应保持引用闭包。",
+                "公开结果必须保持事实引用闭包。",
+                "公开边界可独立支撑这条结论。",
+                "这条公开说明没有事实依赖。",
+                "本解读仅供传统文化参考，不构成现实决策保证。",
+            )
+        )
+        assert "MIXED-CLAIM-MUST-DROP" not in payload["accepted_copy"]
         assert time_ref in public_fact_refs
         assert time_ref in str(document)
     assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"]
@@ -6022,12 +6075,16 @@ async def test_user_result_and_delivery_expose_supported_layers_without_grants(
             "受支持流月事实形成的结论应保持引用闭包。"
         )
         assert "流月事实依据" in str(bearer_document)
+        assert "claim:limit-only" in str(bearer_document)
+        assert "claim:empty-dependency" in str(bearer_document)
         assert "MIXED-CLAIM-MUST-DROP" not in str(bearer_document)
         assert "MIXED-EVIDENCE-MUST-DROP" not in str(bearer_document)
     assert len(export_documents) == 2
     assert all(
         document.answer_summary == "受支持流月事实形成的结论应保持引用闭包。"
         and "流月事实依据" in str(document)
+        and "claim:limit-only" in str(document)
+        and "claim:empty-dependency" in str(document)
         and "MIXED-CLAIM-MUST-DROP" not in str(document)
         and "MIXED-EVIDENCE-MUST-DROP" not in str(document)
         for document in export_documents

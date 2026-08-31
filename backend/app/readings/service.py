@@ -239,8 +239,7 @@ def _project_presented_document(
     claims = tuple(
         claim
         for claim in document.claims
-        if claim.fact_refs
-        and set(claim.fact_refs).issubset(public_fact_refs)
+        if set(claim.fact_refs).issubset(public_fact_refs)
         and set(claim.evidence_refs).issubset(retained_evidence_refs)
     )
     answer_summary = (
@@ -256,6 +255,57 @@ def _project_presented_document(
             "evidence": evidence,
         }
     )
+
+
+def _project_presented_accepted_copy(
+    accepted_copy: str | None,
+    *,
+    source_document: ReadingDocumentV1 | None,
+    presented_document: ReadingDocumentV1 | None,
+) -> str | None:
+    """Keep owner copy text inside the retained document claim closure."""
+
+    if accepted_copy is None or source_document is None:
+        return accepted_copy
+    if presented_document is None:
+        return None
+
+    source_claim_ids = tuple(claim.claim_id for claim in source_document.claims)
+    retained_claim_ids = tuple(claim.claim_id for claim in presented_document.claims)
+    if source_document.claims == presented_document.claims:
+        return accepted_copy
+    if (
+        len(set(source_claim_ids)) != len(source_claim_ids)
+        or len(set(retained_claim_ids)) != len(retained_claim_ids)
+    ):
+        return None
+    retained_claim_id_set = set(retained_claim_ids)
+    if retained_claim_ids != tuple(
+        claim_id
+        for claim_id in source_claim_ids
+        if claim_id in retained_claim_id_set
+    ):
+        return None
+    if not presented_document.claims:
+        return None
+
+    separator = "\n\n"
+    source_claim_prefix = separator.join(
+        claim.text for claim in source_document.claims
+    )
+    if accepted_copy == source_claim_prefix:
+        suffix = None
+    elif accepted_copy.startswith(f"{source_claim_prefix}{separator}"):
+        suffix = accepted_copy[len(source_claim_prefix) + len(separator) :]
+    else:
+        # The immutable copy and document are not mechanically aligned, so a
+        # partial projection cannot prove which text belongs to a removed claim.
+        return None
+
+    parts = [claim.text for claim in presented_document.claims]
+    if suffix:
+        parts.append(suffix)
+    return separator.join(parts)
 
 
 def _project_active_time_layer_access(
@@ -3070,7 +3120,11 @@ class ReadingService:
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=status,
-            accepted_copy=accepted_copy,
+            accepted_copy=_project_presented_accepted_copy(
+                accepted_copy,
+                source_document=document,
+                presented_document=presentation.document,
+            ),
             fact_panel=presentation.fact_panel,
             view_model=presentation.view_model,
             capability=CapabilityProjection(
