@@ -715,7 +715,7 @@ def _materialize_locked_core_release(destination: Path) -> str:
     not (MINGLI_CORE_ROOT / WORKER_RELATIVE).is_file(),
     reason="worker is not in Core overlay",
 )
-async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
+async def test_real_worker_ready_five_products_and_one_shot_shell_signed_mode(
     tmp_path: Path,
 ) -> None:
     from app.charts.projectors import project_runtime_view_model
@@ -760,7 +760,12 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
         assert view_model is not None
 
     shell = release_root / "scripts" / "run_reading_transaction.sh"
-    assert stat.S_IMODE(shell.stat().st_mode) == 0o644
+    manifest = json.loads(
+        (release_root / ".mingli-release-manifest.json").read_text(encoding="utf-8")
+    )
+    assert stat.S_IMODE(shell.stat().st_mode) == manifest["modes"][
+        "scripts/run_reading_transaction.sh"
+    ]
     assert one_shot_spawn_argv(shell) == ("/bin/sh", str(shell))
     chmod_before = stat.S_IMODE(shell.stat().st_mode)
     for product_id, worker_payload in worker_results.items():
@@ -799,7 +804,7 @@ async def test_real_worker_ready_five_products_and_one_shot_shell_100644(
         assert worker_normalized == one_shot_normalized
         view = project_runtime_view_model(worker_payload["brief"], product_id=product_id)
         assert view is not None
-    assert stat.S_IMODE(shell.stat().st_mode) == chmod_before == 0o644
+    assert stat.S_IMODE(shell.stat().st_mode) == chmod_before
     await adapter.close()
 
 
