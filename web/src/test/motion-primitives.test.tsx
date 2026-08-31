@@ -42,7 +42,11 @@ vi.mock("motion/react", async () => {
   };
 });
 
-import { RouteEnter } from "@/components/motion-primitives";
+import {
+  indicatorSpring,
+  motionDurations,
+  RouteEnter,
+} from "@/components/motion-primitives";
 
 function useProductionMotionEnvironment() {
   vi.stubEnv("NODE_ENV", "production");
@@ -85,6 +89,22 @@ afterEach(() => {
 });
 
 describe("RouteEnter hydration motion", () => {
+  it("freezes product feedback and indicator motion within the 280ms cap", () => {
+    expect(motionDurations).toMatchObject({
+      feedback: 0.12,
+      stateFeedback: 0.18,
+      state: 0.22,
+      content: 0.22,
+      productMax: 0.28,
+    });
+    expect(indicatorSpring).toEqual({
+      type: "spring",
+      stiffness: 360,
+      damping: 32,
+      mass: 0.6,
+    });
+  });
+
   it("hydrates reduced motion from visible SSR markup without starting an entrance", async () => {
     motionRuntime.reducedMotion = true;
     const consoleError = vi.spyOn(console, "error").mockImplementation(() => undefined);

@@ -1,11 +1,16 @@
 "use client";
 
 import { Check, ChevronRight, Circle } from "lucide-react";
+import { AnimatePresence } from "motion/react";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
 import { Status } from "@/components/ui/status";
 import { ReadingResult } from "@/components/readings/reading-result";
+import {
+  ChartReadyReveal,
+  ChartStructureSkeleton,
+} from "@/components/readings/chart-structure-skeleton";
 import { WorkbenchShell } from "@/components/workbench/workbench-shell";
 import {
   confirmProfileDraft,
@@ -89,6 +94,9 @@ type TaskStage = "input" | "workbench";
 
 const PENDING_START_READ_ERROR = "无法恢复登录前的排盘资料";
 const PENDING_START_WRITE_ERROR = "无法保存登录续接资料，请允许本网站使用会话存储后重试。";
+const CHART_SKELETON_DELAY_MS = 300;
+const CHART_RETURN_DELAY_MS = 15_000;
+const CHART_START_TIMEOUT_MS = 60_000;
 
 type PendingStartFormState = {
   version: 1;
@@ -420,6 +428,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [nameConflict, setNameConflict] = useState<ProfileNameConflict | null>(null);
   const [createdProfile, setCreatedProfile] = useState<ProfileSummary | null>(null);
   const [busy, setBusy] = useState(false);
+  const [chartWaitAttempt, setChartWaitAttempt] = useState<number | null>(null);
+  const [showChartSkeleton, setShowChartSkeleton] = useState(false);
+  const [canReturnFromChartWait, setCanReturnFromChartWait] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
     restoredBaziReadingId,
@@ -477,6 +488,37 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     body: ProfileConfirmRequest;
     nextValues: TaskFormValues;
   } | null>(null);
+  const chartWaitAttemptRef = useRef(0);
+
+  useEffect(() => {
+    if (chartWaitAttempt === null) return;
+
+    const skeletonTimer = window.setTimeout(
+      () => setShowChartSkeleton(true),
+      CHART_SKELETON_DELAY_MS,
+    );
+    const returnTimer = window.setTimeout(
+      () => setCanReturnFromChartWait(true),
+      CHART_RETURN_DELAY_MS,
+    );
+    const timeoutTimer = window.setTimeout(() => {
+      if (chartWaitAttemptRef.current !== chartWaitAttempt) return;
+      chartWaitAttemptRef.current += 1;
+      setShowChartSkeleton(false);
+      setCanReturnFromChartWait(false);
+      setChartWaitAttempt(null);
+      setBusy(false);
+      setSubmitErrorState("error");
+      setSubmitError("排盘等待超过 60 秒，已停止当前页面等待；原资料仍可直接重试。");
+      setSubmitErrorAction("retry");
+    }, CHART_START_TIMEOUT_MS);
+
+    return () => {
+      window.clearTimeout(skeletonTimer);
+      window.clearTimeout(returnTimer);
+      window.clearTimeout(timeoutTimer);
+    };
+  }, [chartWaitAttempt]);
 
   async function startAndConsumeContinuation<T>(start: () => Promise<T>): Promise<T> {
     const response = await start();
@@ -630,6 +672,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   async function confirmTaskProfile(
     nextValues: TaskFormValues,
     body: ProfileConfirmRequest,
+    shouldApply: () => boolean = () => true,
   ): Promise<ProfileSummary | null> {
     let pending = pendingProfileRef.current;
     if (pending && pending.nextValues !== nextValues) {
@@ -649,6 +692,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       return profile;
     } catch (reason) {
       if (isProfileNameConflict(reason)) {
+        if (!shouldApply()) return null;
         setNameConflict(readProfileNameConflict(reason));
         return null;
       }
@@ -665,6 +709,18 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       return;
     }
     if (busy) return;
+    const chartAttemptId = product.id === "bazi" || product.id === "ziwei"
+      ? chartWaitAttemptRef.current + 1
+      : null;
+    if (chartAttemptId !== null) {
+      chartWaitAttemptRef.current = chartAttemptId;
+      setShowChartSkeleton(false);
+      setCanReturnFromChartWait(false);
+      setChartWaitAttempt(chartAttemptId);
+    }
+    const chartAttemptIsActive = () => (
+      chartAttemptId === null || chartWaitAttemptRef.current === chartAttemptId
+    );
     setBusy(true);
     setSubmitError(null);
     setSubmitErrorAction(null);
@@ -774,8 +830,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
             on_name_conflict: "reject",
           };
-          const profile = await confirmTaskProfile(nextValues, body);
+          const profile = await confirmTaskProfile(nextValues, body, chartAttemptIsActive);
           if (!profile) return;
+          profileVersionRef.current = profile.profile_version_id;
+          if (!chartAttemptIsActive()) return;
           profileVersionId = profile.profile_version_id;
         }
         profileVersionRef.current = profileVersionId;
@@ -808,6 +866,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               ? startZiweiReading(payload, intent.key)
               : startQizhengReading(payload, intent.key)
         ));
+        if (!chartAttemptIsActive()) return;
         if (product.id === "bazi") {
           const recovery = persistBaziPreviewRecoveryState({
             readingId: response.reading_version_id,
@@ -1126,6 +1185,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       ));
       router.push(`/app/readings/${response.reading_version_id}`);
     } catch (reason) {
+      if (!chartAttemptIsActive()) return;
       const mapped = mapStartReadingFailure(reason);
       const action = startReadingFailureAction(reason);
       setSubmitErrorState(mapped.state);
@@ -1156,8 +1216,31 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       setSubmitErrorAction(action);
       setLoginIntentKey(intent?.key);
     } finally {
-      setBusy(false);
+      if (chartAttemptId === null || chartAttemptIsActive()) {
+        setBusy(false);
+        if (chartAttemptId !== null) {
+          setShowChartSkeleton(false);
+          setCanReturnFromChartWait(false);
+          setChartWaitAttempt(null);
+        }
+      }
     }
+  }
+
+  function returnFromChartWait() {
+    if (chartWaitAttempt === null) return;
+    chartWaitAttemptRef.current += 1;
+    setShowChartSkeleton(false);
+    setCanReturnFromChartWait(false);
+    setChartWaitAttempt(null);
+    setBusy(false);
+    setSubmitError(null);
+    setSubmitErrorAction(null);
+    setLoginIntentKey(undefined);
+    setStage("input");
+    window.requestAnimationFrame(() => {
+      document.getElementById(`${product.id}-submit`)?.focus();
+    });
   }
 
   async function restartInlineReading() {
@@ -1279,6 +1362,16 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           void cancelProfileConflict();
         }}
       />
+      <AnimatePresence initial={false}>
+        {showChartSkeleton && (product.id === "bazi" || product.id === "ziwei") ? (
+          <ChartStructureSkeleton
+            canReturn={canReturnFromChartWait}
+            key={`chart-wait-${chartWaitAttempt ?? "none"}`}
+            onReturn={returnFromChartWait}
+            variant={product.id}
+          />
+        ) : null}
+      </AnimatePresence>
       {stage !== "input" ? <TaskProgress product={product} stage={stage} /> : null}
       {createdProfile && stage === "workbench" ? (
         <div className={styles.renameBar}>
@@ -1290,7 +1383,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         <div
           className={styles.inputLayout}
           data-input-region="first-screen"
-          hidden={stage !== "input"}
+          hidden={stage !== "input" || showChartSkeleton}
         >
           {resumeStorageFailure ? (
             <Status
@@ -1429,12 +1522,14 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
         activeBaziRecovery ? (
-          <BaziDeepTaskFlow
-            onBack={returnToBaziInput}
-            previewReadingId={baziPreviewReadingId}
-            profileVersionId={activeBaziRecovery.profileVersionId}
-            query={activeBaziRecovery.question}
-          />
+          <ChartReadyReveal>
+            <BaziDeepTaskFlow
+              onBack={returnToBaziInput}
+              previewReadingId={baziPreviewReadingId}
+              profileVersionId={activeBaziRecovery.profileVersionId}
+              query={activeBaziRecovery.question}
+            />
+          </ChartReadyReveal>
         ) : !browserReady ? (
           <Status
             description="正在核对当前盘面的恢复信息，不会在确认原问题前开放深读。"
@@ -1473,7 +1568,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         />
       ) : null}
       {stage === "workbench" && product.id === "ziwei" && ziweiPreviewReadingId ? (
-        <>
+        <ChartReadyReveal>
           <Status
             actions={
               <button
@@ -1502,7 +1597,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
               startedAt={activeInlineRecovery?.startedAt}
             />
           )}
-        </>
+        </ChartReadyReveal>
       ) : null}
     </div>
   );

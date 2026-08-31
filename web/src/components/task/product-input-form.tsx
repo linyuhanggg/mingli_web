@@ -8,6 +8,7 @@ import { useForm, useWatch, type FieldErrors, type UseFormRegister } from "react
 import { z } from "zod";
 
 import { Status } from "@/components/ui/status";
+import { Button } from "@/components/ui/button";
 import { IanaTimeZoneOptions } from "@/components/iana-timezone-options";
 import { formatProfileOption, type ProfileSummary } from "@/lib/api";
 import {
@@ -1661,7 +1662,7 @@ export function ProductInputForm({
               submitErrorAction === "login" ? (
                 <Link href={loginHref}>登录后继续</Link>
               ) : (
-                <button type="button" onClick={() => onRetry?.()}>
+                <button autoFocus type="button" onClick={() => onRetry?.()}>
                   重试
                 </button>
               )
@@ -1679,14 +1680,17 @@ export function ProductInputForm({
         )
       ) : null}
 
-      <button
-        aria-busy={busy}
+      <Button
         className={styles.primaryButton}
-        disabled={busy}
+        errorLabel="生成失败 · 可重试"
+        id={`${product.id}-submit`}
+        loadingLabel="正在生成盘面…"
+        state={busy ? "loading" : submitErrorState === "error" && submitError ? "error" : "idle"}
+        successLabel="盘面已生成"
         type="submit"
       >
-        {busy ? "正在生成盘面…" : submitLabel(product)}
-      </button>
+        {submitLabel(product)}
+      </Button>
       <details className={styles.submitBoundary}>
         <summary>提交后会发生什么</summary>
         <p>

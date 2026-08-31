@@ -1,6 +1,7 @@
 "use client";
 
 import clsx from "clsx";
+import { Check, CircleAlert } from "lucide-react";
 import { Slot } from "radix-ui";
 import {
   Children,
@@ -12,6 +13,7 @@ import {
 } from "react";
 
 import styles from "./button.module.css";
+import { LocalLoader } from "./local-loader";
 
 
 export type ButtonVariant =
@@ -27,9 +29,15 @@ export type ButtonVariant =
   | "destructive";
 
 export type ButtonSize = "sm" | "md" | "lg";
+export type ButtonState = "idle" | "loading" | "success" | "error";
 
 type ButtonBaseProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, "children"> & {
+  /** Compatibility shortcut. Prefer `state="loading"` for width-stable task buttons. */
   loading?: boolean;
+  state?: ButtonState;
+  loadingLabel?: ReactNode;
+  successLabel?: ReactNode;
+  errorLabel?: ReactNode;
   asChild?: boolean;
   size?: ButtonSize;
   children: ReactNode;
@@ -49,6 +57,10 @@ export type ButtonProps = IconButtonProps | TextButtonProps;
 export function Button({
   variant = "primary",
   loading = false,
+  state,
+  loadingLabel = "正在处理",
+  successLabel = "已完成",
+  errorLabel = "操作失败",
   asChild = false,
   size = "md",
   disabled,
@@ -65,22 +77,61 @@ export function Button({
     throw new Error('Button variant="icon" requires a non-empty aria-label.');
   }
 
-  const isDisabled = Boolean(disabled || loading);
-  const spinner = loading ? <span aria-hidden="true" className={styles.spinner} /> : null;
+  const resolvedState = state ?? (loading ? "loading" : "idle");
+  const isLoading = resolvedState === "loading";
+  const isStateful = state !== undefined;
+  const isDisabled = Boolean(disabled || isLoading);
+
+  function renderContent(content: ReactNode) {
+    if (!isStateful) {
+      return (
+        <>
+          {isLoading ? <LocalLoader /> : null}
+          {content}
+        </>
+      );
+    }
+
+    return (
+      <span className={styles.stateContent}>
+        <span aria-hidden="true" className={styles.stateIcon}>
+          {resolvedState === "loading" ? <LocalLoader /> : null}
+          {resolvedState === "success" ? <Check size={18} strokeWidth={2.4} /> : null}
+          {resolvedState === "error" ? <CircleAlert size={18} strokeWidth={2.2} /> : null}
+        </span>
+        <span aria-live="polite" className={styles.stateLabels}>
+          {([
+            ["idle", content],
+            ["loading", loadingLabel],
+            ["success", successLabel],
+            ["error", errorLabel],
+          ] as const).map(([labelState, label]) => (
+            <span
+              aria-hidden={resolvedState === labelState ? undefined : "true"}
+              className={styles.stateLabel}
+              data-visible={resolvedState === labelState ? "true" : undefined}
+              key={labelState}
+            >
+              {label}
+            </span>
+          ))}
+        </span>
+      </span>
+    );
+  }
 
   if (asChild) {
     // Radix Slot clones exactly one element. When loading we inject the
-    // spinner into that element's children so it renders alongside the
+    // feedback into that element's children so it renders alongside the
     // consumer's content rather than as a sibling that would break the Slot.
     const childNodes = Children.toArray(children);
     if (childNodes.length !== 1 || !isValidElement(childNodes[0])) {
       throw new Error("Button asChild requires exactly one React element child.");
     }
     const child = childNodes[0];
-    const slottable =
-      loading && isValidElement<{ children?: ReactNode }>(child)
-        ? cloneElement(child, undefined, spinner, child.props.children)
-        : child;
+    const slottable = isValidElement<{ children?: ReactNode }>(child)
+      ? cloneElement(child, undefined, renderContent(child.props.children))
+      : child;
 
     // An `asChild` target (a link, a form control, …) cannot carry the native
     // `disabled` attribute, so block it three ways: remove it from the tab
@@ -99,10 +150,11 @@ export function Button({
     return (
       <Slot.Root
         className={clsx(styles.button, styles[variant], styles[size], className)}
-        data-loading={loading ? "true" : undefined}
+        data-loading={isLoading ? "true" : undefined}
+        data-state={resolvedState}
         data-size={size}
         data-variant={variant}
-        aria-busy={loading || undefined}
+        aria-busy={isLoading || undefined}
         {...props}
         {...inert}
       >
@@ -114,16 +166,16 @@ export function Button({
   return (
     <button
       className={clsx(styles.button, styles[variant], styles[size], className)}
-      data-loading={loading ? "true" : undefined}
+      data-loading={isLoading ? "true" : undefined}
+      data-state={resolvedState}
       data-size={size}
       data-variant={variant}
-      aria-busy={loading || undefined}
+      aria-busy={isLoading || undefined}
       disabled={isDisabled}
       type={type}
       {...props}
     >
-      {spinner}
-      {children}
+      {renderContent(children)}
     </button>
   );
 }

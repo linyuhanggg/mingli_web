@@ -98,7 +98,9 @@
   --ds-reading: 42rem;
 
   --ds-duration-fast: 120ms;
+  --ds-duration-feedback: 180ms;
   --ds-duration-base: 220ms;
+  --ds-duration-max: 280ms;
   --ds-duration-slow: 420ms;
   --ds-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ds-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -195,7 +197,9 @@
   --z-toast: 70;
 
   --duration-feedback: var(--ds-duration-fast);
+  --duration-state-feedback: var(--ds-duration-feedback);
   --duration-overlay: var(--ds-duration-base);
+  --duration-product-max: var(--ds-duration-max);
   --duration-page: var(--ds-duration-slow);
   --ease-out: var(--ds-ease-out);
   --ease-in: var(--ds-ease-in-out);
@@ -296,7 +300,9 @@
 @media (prefers-reduced-motion: reduce) {
   :root {
     --ds-duration-fast: 1ms;
+    --ds-duration-feedback: 1ms;
     --ds-duration-base: 1ms;
+    --ds-duration-max: 1ms;
     --ds-duration-slow: 1ms;
   }
 }

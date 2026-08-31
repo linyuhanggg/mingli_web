@@ -1,0 +1,159 @@
+.waiting {
+  display: grid;
+  min-width: 0;
+  gap: var(--space-md);
+}
+
+.structure {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1.7fr) minmax(12rem, 0.8fr);
+  gap: var(--space-md);
+  min-height: 20rem;
+  padding: var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-panel);
+  background: var(--color-surface);
+}
+
+.structure span,
+.palaces li {
+  display: block;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-subtle);
+}
+
+.timeLayer {
+  grid-column: 1 / -1;
+  min-height: 3.5rem;
+}
+
+.pillars {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-sm);
+  min-height: 14rem;
+}
+
+.pillars span {
+  border-radius: var(--radius-control);
+}
+
+.reading {
+  min-height: 14rem;
+}
+
+.ziweiBoard {
+  position: relative;
+  grid-column: 1 / -1;
+  min-height: 24rem;
+}
+
+.palaces {
+  display: grid;
+  height: 100%;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-rows: repeat(4, minmax(4rem, 1fr));
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.palaces li:nth-child(5) {
+  grid-column: 4;
+  grid-row: 2;
+}
+
+.palaces li:nth-child(6) {
+  grid-column: 4;
+  grid-row: 3;
+}
+
+.palaces li:nth-child(7) {
+  grid-column: 4;
+  grid-row: 4;
+}
+
+.palaces li:nth-child(8) {
+  grid-column: 3;
+  grid-row: 4;
+}
+
+.palaces li:nth-child(9) {
+  grid-column: 2;
+  grid-row: 4;
+}
+
+.palaces li:nth-child(10) {
+  grid-column: 1;
+  grid-row: 4;
+}
+
+.palaces li:nth-child(11) {
+  grid-column: 1;
+  grid-row: 3;
+}
+
+.palaces li:nth-child(12) {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.center {
+  position: absolute;
+  inset: calc(25% + var(--space-xs)) calc(25% + var(--space-xs));
+}
+
+@media (max-width: 63.999rem) {
+  .structure {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .timeLayer {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 47.99rem) {
+  .structure {
+    min-height: auto;
+    padding: var(--space-sm);
+  }
+
+  .pillars {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    min-height: 15rem;
+  }
+
+  .ziweiBoard {
+    display: grid;
+    gap: var(--space-xs);
+    min-height: auto;
+  }
+
+  .palaces {
+    height: auto;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: none;
+  }
+
+  .palaces li,
+  .palaces li:nth-child(n) {
+    min-height: 2.75rem;
+    grid-column: auto;
+    grid-row: auto;
+  }
+
+  .center {
+    position: static;
+    min-height: 4.5rem;
+    order: -1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .waiting {
+    transform: none;
+  }
+}

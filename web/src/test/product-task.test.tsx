@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
@@ -61,6 +61,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  vi.useRealTimers();
   cleanup();
   vi.clearAllMocks();
 });
@@ -173,6 +174,63 @@ describe("ProductTaskPage input shell", () => {
 });
 
 describe("ProductTaskExperience retained profile drafts", () => {
+  it("delays the bazi structure skeleton, then offers a safe return without accepting a late start", async () => {
+    taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+    let releaseStart!: (value: { reading_version_id: string }) => void;
+    taskMocks.startPreviewReading.mockReturnValue(new Promise((resolve) => {
+      releaseStart = resolve;
+    }));
+    render(<ProductTaskPage productId="bazi" />);
+    expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    expect(taskMocks.startPreviewReading).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("button", { name: "正在生成盘面…" })).toBeDisabled();
+    expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(299));
+    expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.getByRole("status", { name: "正在同步八字盘面" })).toBeVisible();
+    expect(screen.queryByRole("button", { name: "返回录入" })).not.toBeInTheDocument();
+
+    act(() => vi.advanceTimersByTime(14_700));
+    fireEvent.click(screen.getByRole("button", { name: "返回录入" }));
+    expect(screen.getByRole("form", { name: "八字任务输入" })).toBeVisible();
+    expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
+
+    await act(async () => {
+      releaseStart({ reading_version_id: "late-bazi" });
+      await Promise.resolve();
+    });
+    expect(screen.getByRole("form", { name: "八字任务输入" })).toBeVisible();
+    expect(screen.queryByText("late-bazi")).not.toBeInTheDocument();
+  });
+
+  it("stops the start wait at 60 seconds and focuses the retry action", async () => {
+    taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+    taskMocks.startPreviewReading.mockReturnValue(new Promise(() => undefined));
+    render(<ProductTaskPage productId="bazi" />);
+    expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+    vi.useFakeTimers();
+    fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => vi.advanceTimersByTime(60_000));
+
+    expect(screen.getByRole("alert", { name: /排盘等待超过 60 秒/ })).toBeVisible();
+    expect(screen.getByRole("button", { name: "重试" })).toHaveFocus();
+    expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
+  });
+
   it("retries the same draft in a regular natal flow after a transient confirm failure", async () => {
     taskMocks.confirmProfileDraft
       .mockRejectedValueOnce(

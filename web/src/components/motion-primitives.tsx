@@ -13,9 +13,21 @@ export const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 
 export const motionDurations = {
   feedback: 0.12,
+  stateFeedback: 0.18,
   state: 0.22,
+  content: 0.22,
+  productMax: 0.28,
+  // Reserved for the explicitly approved marketing/home entrance treatment.
+  // Product task and reading surfaces use `state`, `content`, or `productMax`.
   entrance: 0.42,
   focal: 0.42,
+} as const;
+
+export const indicatorSpring = {
+  type: "spring",
+  stiffness: 360,
+  damping: 32,
+  mass: 0.6,
 } as const;
 
 function isTestRuntime() {
