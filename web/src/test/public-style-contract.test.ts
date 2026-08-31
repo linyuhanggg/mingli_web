@@ -56,10 +56,14 @@ describe("public visual contract", () => {
     expect(homeCss).not.toMatch(/(?:linear|radial|conic)-gradient\s*\(/);
   });
 
-  it("keeps public navigation flat with compact desktop and coarse-pointer targets", () => {
+  it("keeps public navigation flat with 44px targets for every pointer type", () => {
     expect(ruleFor(chromeCss, ".nav")).not.toMatch(/border-radius:\s*999px/);
-    expect(ruleFor(chromeCss, ".navItem")).toMatch(/min-height:\s*var\(--ds-control-md\)/);
-    expect(ruleFor(chromeCss, ".utilityLink")).toMatch(/min-height:\s*var\(--ds-control-md\)/);
+    expect(ruleFor(chromeCss, ".navItem")).toMatch(
+      /min-width:\s*var\(--ds-touch-min\)[\s\S]*min-height:\s*var\(--ds-touch-min\)/,
+    );
+    expect(ruleFor(chromeCss, ".utilityLink")).toMatch(
+      /min-width:\s*var\(--ds-touch-min\)[\s\S]*min-height:\s*var\(--ds-touch-min\)/,
+    );
     expect(ruleFor(chromeCss, ".footerColumn a")).toMatch(
       /min-height:\s*var\(--ds-touch-min\)/,
     );

@@ -123,8 +123,8 @@
 .navItem {
   position: relative;
   display: inline-flex;
-  min-width: var(--ds-control-md);
-  min-height: var(--ds-control-md);
+  min-width: var(--ds-touch-min);
+  min-height: var(--ds-touch-min);
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
@@ -179,8 +179,8 @@
 
 .utilityLink {
   display: inline-flex;
-  min-width: var(--ds-control-md);
-  min-height: var(--ds-control-md);
+  min-width: var(--ds-touch-min);
+  min-height: var(--ds-touch-min);
   align-items: center;
   justify-content: center;
   padding: 0 var(--ds-space-3);
