@@ -68,58 +68,26 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe("daily / library / tools empty vs failure", () => {
-  it("keeps /daily empty copy only when the service returns nothing", async () => {
-    api.requestJson.mockResolvedValue({ items: [] });
+describe("retired daily / library and tool failure states", () => {
+  it("keeps /daily on the retired replacement surface without a content request", () => {
     render(<DailyPage />);
 
-    expect(await screen.findByText("今日还没有可展示的内容")).toBeVisible();
-    expect(screen.queryByText("读取失败，请重试")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "每日已下线" })).toBeVisible();
+    expect(screen.getByRole("link", { name: "前往人生 K 线" })).toHaveAttribute(
+      "href",
+      "/life-kline",
+    );
+    expect(api.requestJson).not.toHaveBeenCalled();
   });
 
-  it("says 读取失败，请重试 on /daily when the service fails", async () => {
-    api.requestJson.mockRejectedValue(new Error("CMS exploded"));
-    render(<DailyPage />);
-
-    expect(await screen.findByRole("alert")).toHaveTextContent("读取失败，请重试");
-    expect(screen.queryByText("今日还没有可展示的内容")).not.toBeInTheDocument();
-    expect(screen.queryByText("没有可展示的内容")).not.toBeInTheDocument();
-    expect(screen.queryByText("CMS exploded")).not.toBeInTheDocument();
-  });
-
-  it("keeps /library empty copy only when the index is empty", async () => {
-    api.requestJson.mockResolvedValue({ items: [] });
+  it("keeps /library and its slug on the same retired replacement surface", async () => {
     render(<LibraryPage />);
+    expect(screen.getByRole("heading", { name: "知识内容已下线" })).toBeVisible();
+    expect(api.requestJson).not.toHaveBeenCalled();
 
-    expect(await screen.findByText("还没有可展示的内容")).toBeVisible();
-    expect(screen.queryByText("读取失败，请重试")).not.toBeInTheDocument();
-  });
-
-  it("says 读取失败，请重试 on /library when the index fails", async () => {
-    api.requestJson.mockRejectedValue(new Error("index down"));
-    render(<LibraryPage />);
-
-    expect(await screen.findByRole("alert")).toHaveTextContent("读取失败，请重试");
-    expect(screen.queryByText("还没有可展示的内容")).not.toBeInTheDocument();
-    expect(screen.queryByText("index down")).not.toBeInTheDocument();
-  });
-
-  it("treats a missing library article as empty, not a read failure", async () => {
-    api.requestJson.mockRejectedValue(new ApiError("Not found", 404));
-    render(await LibraryArticlePage({ params: Promise.resolve({ slug: "missing" }) }));
-
-    expect(await screen.findByText("没有可展示的文章")).toBeVisible();
-    expect(screen.queryByText("读取失败，请重试")).not.toBeInTheDocument();
-    expect(screen.queryByText("missing")).not.toBeInTheDocument();
-  });
-
-  it("says 读取失败，请重试 on a library article when the service fails", async () => {
-    api.requestJson.mockRejectedValue(new ApiError("Server error", 500));
     render(await LibraryArticlePage({ params: Promise.resolve({ slug: "intro" }) }));
-
-    expect(await screen.findByRole("alert")).toHaveTextContent("读取失败，请重试");
-    expect(screen.queryByText("没有可展示的文章")).not.toBeInTheDocument();
-    expect(screen.queryByText("还没有可展示的内容")).not.toBeInTheDocument();
+    expect(screen.getAllByRole("heading", { name: "知识内容已下线" })).toHaveLength(2);
+    expect(api.requestJson).not.toHaveBeenCalled();
   });
 
   it("says 读取失败，请重试 on an opened tool when profiles fail to load", async () => {
@@ -239,12 +207,12 @@ describe("production daily / library / tools copy", () => {
     }
 
     const { container: daily, unmount: unmountDaily } = render(<DailyPage />);
-    expect(await screen.findByText("今日还没有可展示的内容")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "每日已下线" })).toBeVisible();
     expectNoConstructionCopy(daily.textContent ?? "", "/daily");
     unmountDaily();
 
     const { container: library, unmount: unmountLibrary } = render(<LibraryPage />);
-    expect(await screen.findByText("还没有可展示的内容")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "知识内容已下线" })).toBeVisible();
     expectNoConstructionCopy(library.textContent ?? "", "/library");
     unmountLibrary();
   });

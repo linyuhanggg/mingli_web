@@ -1,14 +1,19 @@
 import type { Metadata } from "next";
 
-import { LibraryArticleView } from "@/components/library-page";
+import { RetiredPublicSurface } from "@/components/retired-public-surface";
 
-export const metadata: Metadata = { title: "知识内容", description: "只展示已发布的文章。" };
+// Migration note: LibraryArticleView is intentionally replaced by the shared retired surface.
+export const metadata: Metadata = {
+  title: "知识内容已下线",
+  description: "原知识内容公开深链已下线，请前往人生 K 线。",
+  robots: { index: false, follow: true },
+};
 
 export default async function LibraryArticlePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { slug } = await params;
-  return <LibraryArticleView slug={slug} />;
+  await params;
+  return <RetiredPublicSurface title="知识内容已下线" />;
 }

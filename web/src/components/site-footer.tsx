@@ -8,11 +8,10 @@ const productLinks = [
   { href: "/arts", label: "术数总览" },
   { href: "/hecan", label: "命盘合参" },
   { href: "/tools", label: "工具" },
-  { href: "/daily", label: "每日" },
+  { href: "/life-kline", label: "人生 K 线" },
 ] as const;
 
 const contentLinks = [
-  { href: "/library", label: "知识内容" },
   { href: "/methodology", label: "方法与边界" },
   { href: "/support", label: "帮助与支持" },
 ] as const;
@@ -64,7 +63,7 @@ export function SiteFooter({ home = false }: { home?: boolean }) {
           </div>
           <div className={styles.footerColumns}>
             <FooterLinkGroup ariaLabel="产品入口" links={productLinks} title="产品入口" />
-            <FooterLinkGroup ariaLabel="知识与帮助" links={contentLinks} title="知识与帮助" />
+            <FooterLinkGroup ariaLabel="帮助" links={contentLinks} title="帮助" />
             <FooterLinkGroup ariaLabel="账户与政策" links={accountLinks} title="账户与政策" />
           </div>
         </div>

@@ -224,14 +224,12 @@ describe("identity-first application shell", () => {
       "menu",
     );
     expect(within(primaryNavigation).getByRole("button", { name: "合参" })).toBeVisible();
-    expect(within(primaryNavigation).getByRole("link", { name: "每日" })).toHaveAttribute(
+    expect(within(primaryNavigation).getByRole("link", { name: "人生 K 线" })).toHaveAttribute(
       "href",
-      "/daily",
+      "/life-kline",
     );
-    expect(within(primaryNavigation).getByRole("link", { name: "知识内容" })).toHaveAttribute(
-      "href",
-      "/library",
-    );
+    expect(within(primaryNavigation).queryByRole("link", { name: "每日" })).not.toBeInTheDocument();
+    expect(within(primaryNavigation).queryByRole("link", { name: "知识内容" })).not.toBeInTheDocument();
     expect(within(primaryNavigation).queryByRole("button", { name: "更多" })).not.toBeInTheDocument();
     const accountNavigation = screen.getByRole("navigation", {
       name: "账户中心导航",

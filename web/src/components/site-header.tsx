@@ -1,13 +1,13 @@
 "use client";
 
 import {
-  CalendarDays,
   ChevronDown,
   Home,
   LayoutGrid,
   Menu,
   UserRound,
   Wrench,
+  type LucideIcon,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -73,21 +73,23 @@ const crossLinks = [
 ] as const;
 
 const desktopLinks = [
-  { href: "/daily", label: "每日" },
-  { href: "/library", label: "知识内容" },
+  { href: "/life-kline", label: "人生 K 线" },
 ] as const;
 
-const mobileLinks = [
+const mobileLinks: readonly {
+  href: string;
+  label: string;
+  icon?: LucideIcon;
+}[] = [
   { href: "/", label: "主页", icon: Home },
   { href: "/tools", label: "工具", icon: Wrench },
-  { href: "/daily", label: "每日", icon: CalendarDays },
+  { href: "/life-kline", label: "人生 K 线" },
   { href: "/account", label: "我的", icon: UserRound },
-] as const;
+];
 
 const supplementalLinks = [
   { href: "/hecan", label: "命盘合参" },
   { href: "/wenshi", label: "问事合参" },
-  { href: "/library", label: "知识内容" },
   { href: "/about", label: "关于与边界" },
   { href: "/support", label: "帮助与支持" },
 ] as const;
@@ -416,7 +418,7 @@ export function MobileNavigation({ pathname }: { pathname: string }) {
           href={href}
           key={href}
         >
-          <Icon aria-hidden="true" size={19} strokeWidth={1.8} />
+          {Icon ? <Icon aria-hidden="true" size={19} strokeWidth={1.8} /> : null}
           <span>{label}</span>
         </Link>
       ))}
@@ -463,7 +465,7 @@ export function MobileNavigation({ pathname }: { pathname: string }) {
           href={href}
           key={href}
         >
-          <Icon aria-hidden="true" size={19} strokeWidth={1.8} />
+          {Icon ? <Icon aria-hidden="true" size={19} strokeWidth={1.8} /> : null}
           <span>{label}</span>
         </Link>
       ))}

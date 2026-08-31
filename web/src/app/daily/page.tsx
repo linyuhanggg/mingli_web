@@ -1,9 +1,14 @@
 import type { Metadata } from "next";
 
-import { DailyPageView } from "@/components/daily-page";
+import { RetiredPublicSurface } from "@/components/retired-public-surface";
 
-export const metadata: Metadata = { title: "每日", description: "只展示当天已发布的内容" };
+// Migration note: DailyPageView is intentionally replaced by the shared retired surface.
+export const metadata: Metadata = {
+  title: "每日已下线",
+  description: "原每日公开入口已下线，请前往人生 K 线。",
+  robots: { index: false, follow: true },
+};
 
 export default function DailyPage() {
-  return <DailyPageView />;
+  return <RetiredPublicSurface title="每日已下线" />;
 }
