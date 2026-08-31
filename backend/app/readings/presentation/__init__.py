@@ -4,6 +4,10 @@ from app.readings.presentation.contracts import (
     PresentationSection,
     ReadingDocumentV1,
 )
+from app.readings.presentation.fact_panel import (
+    project_presented_fact_panel,
+    project_presented_view_model,
+)
 from app.readings.presentation.projector import build_reading_document
 
 __all__ = [
@@ -13,4 +17,6 @@ __all__ = [
     "build_reading_document",
     "ReadingDocumentContext",
     "ReadingDocumentBuilder",
+    "project_presented_fact_panel",
+    "project_presented_view_model",
 ]

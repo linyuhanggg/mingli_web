@@ -732,7 +732,12 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
     client: AsyncClient,
     database: Any,
     test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    monkeypatch.setattr(
+        "app.readings.service._profile_free_preview_year",
+        lambda _profile: 2032,
+    )
     headers = await create_guest(client)
     confirmed = await create_confirmed_profile(client, headers)
     await seed_runtime_release(database, test_settings)
@@ -745,9 +750,19 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
             "dimension_ids": ["career"],
         },
     )
+    replayed = await client.post(
+        "/api/v1/readings/preview",
+        headers={**headers, "Idempotency-Key": "guest-preview-poll"},
+        json={
+            "profile_version_id": confirmed["profile_version_id"],
+            "dimension_ids": ["career"],
+        },
+    )
 
     assert started.status_code == 201
     body = started.json()
+    assert replayed.status_code == 200
+    assert replayed.json()["reading_version_id"] == body["reading_version_id"]
     UUID(body["reading_version_id"])
     UUID(body["reading_root_id"])
     assert body["profile_version_id"] == confirmed["profile_version_id"]
@@ -757,7 +772,11 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
     assert body["fast_path_timing"]["execution_lane"] == "direct_runtime"
     assert body["fast_path_timing"]["queue_wait_ms"] == 0
     assert body["object_id"] == "natal"
-    assert body["horizon"]["kind_id"] == "life"
+    assert body["horizon"] == {
+        "kind_id": "year",
+        "start": "2032",
+        "end": "2032",
+    }
     assert body["prior_answer"] is None
     assert_private_headers(started)
 
@@ -785,6 +804,10 @@ async def test_guest_starts_preview_reading_and_polls_a_prepared_chart(
         assert jobs[0].status == "complete"
         assert jobs[0].narrative_policy_version
         assert jobs[0].output_contract["contract_id"] == "preview-v1"
+        assert await session.scalar(select(func.count()).select_from(SubjectProfile)) == 1
+        assert await session.scalar(select(func.count()).select_from(ProfileVersion)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingRoot)) == 1
+        assert await session.scalar(select(func.count()).select_from(ReadingVersion)) == 1
 
 
 def test_queued_prepared_reading_keeps_polling_until_job_is_complete() -> None:
@@ -1059,7 +1082,9 @@ async def test_guest_starts_each_new_single_art_reading(
     }
     assert body["status"] == ("prepared" if is_direct_chart else "input_ready")
     expected_horizon = (
-        "life"
+        "year"
+        if path == "/api/v1/readings/ziwei"
+        else "life"
         if expected_object == "natal"
         else "month"
         if path == "/api/v1/readings/daliuren"
@@ -5569,6 +5594,10 @@ async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_ye
     restored = TimeLayerEntitlementV1.from_dict(entitlement)
     layers = _entitlement_by_id(entitlement)
     view_layers = body["view_model"]["time_layers"]
+    public_facts = {
+        item["ref"].rsplit("/", 1)[-1]: item["display_text"]
+        for item in body["fact_panel"]["facts"]
+    }
     month_capability = next(item for item in view_layers if item["layer_id"] == "month")
     assert entitlement["schema_version"] == TIME_LAYER_ENTITLEMENT_SCHEMA_VERSION
     assert restored.capability_id == "bazi"
@@ -5584,6 +5613,13 @@ async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_ye
     assert month_capability["available"] is True
     assert "tier" not in month_capability
     assert "access" not in month_capability
+    assert public_facts["four_pillars"] == (
+        "四柱：年柱甲戌、月柱戊辰、日柱丙戌、时柱辛卯。"
+    )
+    assert public_facts["year_layers"].startswith("流年：2026年丙午")
+    assert "month_layers" not in public_facts
+    assert body["view_model"]["core_facts"]["month_layers"] is None
+    assert all("{" not in text for text in public_facts.values())
     assert_private_headers(result)
 
 
@@ -5637,6 +5673,7 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
     assert ziwei_result.status_code == 200
     bazi_entitlement = bazi_result.json()["time_layer_entitlement"]
     ziwei_entitlement = ziwei_result.json()["time_layer_entitlement"]
+    ziwei_public_facts = ziwei_result.json()["fact_panel"]["facts"]
     TimeLayerEntitlementV1.from_dict(bazi_entitlement)
     TimeLayerEntitlementV1.from_dict(ziwei_entitlement)
     bazi_layers = _entitlement_by_id(bazi_entitlement)
@@ -5649,6 +5686,9 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
     assert ziwei_layers["year"]["access"] == "unavailable"
     assert ziwei_layers["year"]["upgrade_cta"] is None
     assert ziwei_layers["month"]["access"] == "unavailable"
+    assert ziwei_public_facts[0]["display_text"].startswith(
+        "十二宫：命宫（甲子）主星紫微；"
+    )
 
 
 async def test_result_without_session_is_401_and_omits_entitlement(

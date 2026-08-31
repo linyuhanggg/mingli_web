@@ -13,6 +13,7 @@ from pathlib import Path
 from time import perf_counter
 from typing import Any, cast
 from uuid import UUID, uuid4
+from zoneinfo import ZoneInfo
 
 from sqlalchemy import func, select, update
 from sqlalchemy.exc import IntegrityError
@@ -30,6 +31,7 @@ from app.adapters.runtime import (
     time_layer_entitlement_resolution_for_session,
     time_layer_entitlement_resolution_for_transport_fault,
 )
+from app.charts.contracts import BaziChartV1, ZiweiChartV1
 from app.charts.projectors import project_runtime_view_model
 from app.commerce.models import FulfillmentRecord, Order, Payment, ProductFamily, ProductVersion
 from app.commerce.public_service import BAZI_DEEP_PRODUCT_FAMILY_KEY
@@ -62,6 +64,10 @@ from app.readings.capability_policy import (
 from app.readings.errors import RuntimeTransportError
 from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
+from app.readings.presentation.fact_panel import (
+    project_presented_fact_panel,
+    project_presented_view_model,
+)
 from app.readings.public_fact_panel import project_public_fact_panel
 from app.readings.repository import (
     READING_HISTORY_LIMIT,
@@ -98,7 +104,6 @@ from app.readings.request_compiler import (
     compile_time_check_prepare,
     compile_wenshi_prepare,
     compile_ziwei_month_prepare,
-    compile_ziwei_prepare,
     compile_ziwei_year_prepare,
 )
 from app.readings.runtime_contracts import (
@@ -181,6 +186,19 @@ DEFAULT_QUERIES = {
     "selection_preview": "请比较日期范围内的择日候选事实。",
     "fengshui_preview": "请展示已确认空间观察与风水结构事实。",
 }
+
+
+def _profile_free_preview_year(
+    profile: ConfirmedProfileVersion,
+    *,
+    reference: datetime | None = None,
+) -> int:
+    """Select the free civil year in the confirmed Profile's timezone."""
+
+    instant = reference or datetime.now(UTC)
+    if instant.tzinfo is None:
+        raise ValueError("free preview reference datetime must be timezone-aware")
+    return instant.astimezone(ZoneInfo(profile.timezone)).year
 
 
 def _post_write_runtime_transport_fault(
@@ -329,6 +347,7 @@ class AtomicProfilePreviewClaim:
     context: IdempotencyContext
     reading_version_id: UUID
     lease_token: str
+    free_preview_year: int | None
 
 
 @dataclass(frozen=True, slots=True)
@@ -493,6 +512,13 @@ class ReadingService:
                 owner,
                 profile.profile_version_id,
             )
+            free_preview_year = (
+                _profile_free_preview_year(confirmed)
+                if target_year is None
+                and target_month is None
+                and target_date is None
+                else None
+            )
             prepare = self._compile_profile_preview_prepare(
                 confirmed,
                 query=query,
@@ -500,6 +526,7 @@ class ReadingService:
                 target_year=target_year,
                 target_month=target_month,
                 target_date=target_date,
+                free_preview_year=free_preview_year,
             )
         except (IntegrityError, LookupError, ValueError):
             await savepoint.rollback()
@@ -563,6 +590,7 @@ class ReadingService:
             context=idempotency,
             reading_version_id=version.id,
             lease_token=lease_token,
+            free_preview_year=free_preview_year,
         )
         return None
 
@@ -881,13 +909,19 @@ class ReadingService:
         target_year: int | None,
         target_month: str | None,
         target_date: date | None,
+        free_preview_year: int | None = None,
     ) -> Prepare:
         resolved_dimensions = tuple(dimension_ids)
         if target_year is None and target_month is None and target_date is None:
-            return compile_bazi_prepare(
-                action="profile_preview",
+            return compile_bazi_year_prepare(
+                action="bazi_year_preview",
                 query=query,
                 profile=profile,
+                year=(
+                    free_preview_year
+                    if free_preview_year is not None
+                    else _profile_free_preview_year(profile)
+                ),
                 dimension_ids=resolved_dimensions,
             )
         if target_year is not None:
@@ -971,6 +1005,9 @@ class ReadingService:
             target_year=target_year,
             target_month=target_month,
             target_date=target_date,
+            free_preview_year=(
+                claim.free_preview_year if owns_claim and claim is not None else None
+            ),
         )
         if owns_claim and rollback_on_failure:
             assert claim is not None
@@ -1589,30 +1626,13 @@ class ReadingService:
         if replayed is not None:
             return replayed, False
         profile = await self._owned_confirmed_profile(owner, profile_version_id)
-        if target_year is None and target_month is None:
-            prepare = compile_ziwei_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        elif target_year is not None:
-            prepare = compile_ziwei_year_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                year=target_year,
-                dimension_ids=tuple(resolved_dimensions),
-            )
-        else:
-            assert target_month is not None
-            prepare = compile_ziwei_month_prepare(
-                action=action,
-                query=resolved_query,
-                profile=profile,
-                month=target_month,
-                dimension_ids=tuple(resolved_dimensions),
-            )
+        prepare = self._compile_ziwei_preview_prepare(
+            profile,
+            query=resolved_query,
+            dimension_ids=resolved_dimensions,
+            target_year=target_year,
+            target_month=target_month,
+        )
         return await self._persist_start(
             owner,
             prepare,
@@ -1620,6 +1640,46 @@ class ReadingService:
             profile_version_id=profile_version_id,
             idempotency=idempotency,
             direct_chart=True,
+        )
+
+    @staticmethod
+    def _compile_ziwei_preview_prepare(
+        profile: ConfirmedProfileVersion,
+        *,
+        query: str,
+        dimension_ids: Sequence[str],
+        target_year: int | None,
+        target_month: str | None,
+        free_preview_year: int | None = None,
+    ) -> Prepare:
+        resolved_dimensions = tuple(dimension_ids)
+        if target_year is None and target_month is None:
+            return compile_ziwei_year_prepare(
+                action="ziwei_year_preview",
+                query=query,
+                profile=profile,
+                year=(
+                    free_preview_year
+                    if free_preview_year is not None
+                    else _profile_free_preview_year(profile)
+                ),
+                dimension_ids=resolved_dimensions,
+            )
+        if target_year is not None:
+            return compile_ziwei_year_prepare(
+                action="ziwei_year_preview",
+                query=query,
+                profile=profile,
+                year=target_year,
+                dimension_ids=resolved_dimensions,
+            )
+        assert target_month is not None
+        return compile_ziwei_month_prepare(
+            action="ziwei_month_preview",
+            query=query,
+            profile=profile,
+            month=target_month,
+            dimension_ids=resolved_dimensions,
         )
 
     async def start_qizheng(
@@ -2870,12 +2930,42 @@ class ReadingService:
             request_failed=status
             in {ReadingStatus.TERMINAL_STOPPED, ReadingStatus.RUNTIME_UNKNOWN},
         )
+        fact_panel = (
+            project_presented_fact_panel(
+                brief,
+                view_model=view_model,
+                time_layer_entitlement=time_layer_entitlement,
+            )
+            if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+            else project_public_fact_panel(brief)
+        )
+        presented_view_model = (
+            project_presented_view_model(
+                view_model,
+                time_layer_entitlement=time_layer_entitlement,
+            )
+            if isinstance(view_model, (BaziChartV1, ZiweiChartV1))
+            else view_model
+        )
+        presented_document = document
+        if document is not None and isinstance(
+            document.view_model,
+            (BaziChartV1, ZiweiChartV1),
+        ):
+            presented_document = document.model_copy(
+                update={
+                    "view_model": project_presented_view_model(
+                        document.view_model,
+                        time_layer_entitlement=time_layer_entitlement,
+                    )
+                }
+            )
         return ReadingResultResponse(
             reading_version_id=version.id,
             status=status,
             accepted_copy=accepted_copy,
-            fact_panel=project_public_fact_panel(brief),
-            view_model=view_model,
+            fact_panel=fact_panel,
+            view_model=presented_view_model,
             capability=CapabilityProjection(
                 capability_id=capability_projection.capability_id,
                 label=capability_projection.label,
@@ -2894,7 +2984,7 @@ class ReadingService:
             input_request=(
                 None if waiting is None else _public_json(waiting.input_request)
             ),
-            document=document,
+            document=presented_document,
             result_available=result_available,
             poll_required=poll_required,
             poll_after_seconds=poll_after_seconds,

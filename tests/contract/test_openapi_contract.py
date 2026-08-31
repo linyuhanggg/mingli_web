@@ -216,6 +216,20 @@ def test_reading_result_contract_exposes_the_runtime_view_model_slot() -> None:
     )
 
 
+def test_reading_fact_text_and_free_year_set_are_server_projected() -> None:
+    schemas = load_openapi_document()["components"]["schemas"]
+    display_text = schemas["ReadingFact"]["properties"]["display_text"]
+    free_year_set = schemas["TimeLayerEntitlementResponse"]["properties"][
+        "free_year_set"
+    ]
+    target_year = schemas["PreviewStartRequest"]["properties"]["target_year"]
+
+    assert display_text["minLength"] == 1
+    assert "never raw JSON" in display_text["description"]
+    assert "clients must not assume a fixed count" in free_year_set["description"]
+    assert "server selects the free civil year" in target_year["description"]
+
+
 def test_verified_exact_evidence_fields_are_atomic_and_multi_citation() -> None:
     schemas = load_openapi_document()["components"]["schemas"]
     evidence = schemas["ReadingEvidence"]
