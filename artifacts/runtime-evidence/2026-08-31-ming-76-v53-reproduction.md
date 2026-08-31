@@ -1,6 +1,59 @@
 # MING-76 v53 frozen Runtime reproduction evidence
 
-## Result
+## Final controlled release resolution
+
+Core PR #64 was independently QA-approved and merged normally. From its exact
+source head, the current controlled release builder now produces one complete,
+reproducible Runtime identity:
+
+- source commit: `6db9dd37d8e62cd425798be2c64ad1121c1c1649`
+- source tree: `9ef2eb24804da080ba5aa8fd8ad1aafbd4fb46b9`
+- release manifest SHA-256:
+  `f1deb17a9b4f39b09b2478c8942dcf0761d90bcba95dcbc44a15b8c84f79190b`
+- Runtime worker SHA-256:
+  `e89df2c08df29e65ffc91c05e8e4e5be99f72f67e26b79c5b23a4eb2222ddc9c`
+- signed closure: 227 files
+- physical inventory: 228 regular files; the only non-signed physical file is
+  `.mingli-release-manifest.json`; symlinks: 0
+- describe manifest digest:
+  `2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22`
+- capability-shape SHA-256:
+  `9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af`
+- describe capabilities: 14
+
+The release was regenerated from the exact clean source rather than copied
+from an older `.runtime/**` tree. The desensitized command shape was:
+
+```text
+PINNED_RUNTIME_PYTHON core/mingli-master/scripts/release_deploy.py \
+  --source CLEAN_CORE_SOURCE \
+  --destination ISOLATED_RELEASE_ROOT \
+  --apply \
+  --research-root AUTHORIZED_RESEARCH_ROOT
+```
+
+Source verification finished `13/13 verified` with no failures, and
+destination verification passed. Independent manifest, worker, signed-file,
+physical-file, symlink, describe and capability-shape measurements all matched
+the tuple above.
+
+The Backend verifier and real startup gate then passed against that same
+isolated release:
+
+```text
+python scripts/verify_frozen_runtime_release.py \
+  --release-root ISOLATED_RELEASE_ROOT
+# status=ok; signed_files=227; physical_files=228; closure_files=227
+
+bash scripts/run_local_real_runtime_smoke.sh \
+  --skip-model --env-file PRIVATE_0600_ENV
+# runtime startup OK; one-shot-process; 14/14 describe; SMOKE_EXIT_CODE=0
+```
+
+No model request, deployment, preview update, credential output, PII, or
+`.runtime/**` repository write was part of this verification.
+
+## Historical blocked reproduction result
 
 The frozen tuple requested by MING-76 is not reproducible from source commit
 `9c615a70f08d5609af09ead100d2b5d90e558fe8`. No Runtime identity constant was

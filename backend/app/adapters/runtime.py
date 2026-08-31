@@ -66,8 +66,9 @@ class MingliRuntime(Protocol):
 
 EXPECTED_RUNTIME_PROTOCOL = "mingli-portable-interface-v2"
 EXPECTED_RELEASE_FILE_COUNT = 218
-V53_TIME_CHECK_RELEASE_FILE_COUNT = 223
-V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT = 224
+EXPECTED_RELEASE_PHYSICAL_FILE_COUNT = EXPECTED_RELEASE_FILE_COUNT + 1
+V53_TIME_CHECK_RELEASE_FILE_COUNT = 227
+V53_TIME_CHECK_RELEASE_PHYSICAL_FILE_COUNT = 228
 EXPECTED_REFERENCE_PACK_COUNT = 55
 EXPECTED_EVIDENCE_RECORD_COUNT = 1328
 FROZEN_RELEASE_MANIFEST_SHA256 = (
@@ -80,6 +81,7 @@ _FORBIDDEN_V51_LISTINGS = frozenset(
         "251ecf42ea12a64c7d38618a794442007beea7432835e414251006809c2d3611",
         "e8d4111342d2334868bfa570d31c4105126301e44766a9f5482236db19f2bf68",
         "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090",
+        "f1deb17a9b4f39b09b2478c8942dcf0761d90bcba95dcbc44a15b8c84f79190b",
         "9700fe96e2c440dc8b14c41aed576264d893c7a23d638708eafe40388771db71",
     }
 )
@@ -87,11 +89,13 @@ _FORBIDDEN_V51_SOURCES = frozenset(
     {
         "494ce0bba174a77800daf9b9c38ce9c9166d9a94",
         "9c615a70f08d5609af09ead100d2b5d90e558fe8",
+        "6db9dd37d8e62cd425798be2c64ad1121c1c1649",
     }
 )
 _FORBIDDEN_V51_WORKERS = frozenset(
     {
         "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50",
+        "e89df2c08df29e65ffc91c05e8e4e5be99f72f67e26b79c5b23a4eb2222ddc9c",
     }
 )
 RUNTIME_PROCESS_PATH = "/opt/node/bin:/usr/local/bin:/usr/bin:/bin"
@@ -134,6 +138,7 @@ class RuntimeStartupError(RuntimeError):
 class RuntimeReleaseInventory:
     release_manifest_sha256: str
     release_file_count: int
+    physical_file_count: int
     provider_ids: tuple[str, ...]
     ready_provider_ids: tuple[str, ...]
     reference_pack_count: int
@@ -234,6 +239,7 @@ class FileSystemRuntimeReleaseInspector:
     expected_source_commit: str
     expected_capability_ids: tuple[str, ...] = V51_RELEASE_CAPABILITY_IDS
     expected_release_file_count: int = EXPECTED_RELEASE_FILE_COUNT
+    expected_physical_file_count: int = EXPECTED_RELEASE_PHYSICAL_FILE_COUNT
 
     def inspect(self) -> RuntimeReleaseInventory:
         _require_private_directory(self.release_root, "Runtime release root", writable=False)
@@ -281,7 +287,11 @@ class FileSystemRuntimeReleaseInspector:
                 raise RuntimeStartupError(f"signed file mode mismatch: {relative}")
             manifest_paths.add(relative)
 
-        self._verify_filesystem_inventory(manifest_paths)
+        physical_file_count = self._verify_filesystem_inventory(manifest_paths)
+        if physical_file_count != self.expected_physical_file_count:
+            raise RuntimeStartupError(
+                "Runtime release has an unexpected physical file count"
+            )
         closure_count = self._verify_closure(manifest_paths)
         provider_ids, ready_provider_ids = self._verify_providers(manifest_paths)
         pack_ids, local_ids = self._verify_reference_packs(manifest_paths)
@@ -289,6 +299,7 @@ class FileSystemRuntimeReleaseInspector:
         return RuntimeReleaseInventory(
             release_manifest_sha256=manifest_sha256,
             release_file_count=len(manifest_paths),
+            physical_file_count=physical_file_count,
             provider_ids=provider_ids,
             ready_provider_ids=ready_provider_ids,
             reference_pack_count=len(pack_ids),
@@ -296,7 +307,7 @@ class FileSystemRuntimeReleaseInspector:
             runtime_closure_file_count=closure_count,
         )
 
-    def _verify_filesystem_inventory(self, manifest_paths: set[str]) -> None:
+    def _verify_filesystem_inventory(self, manifest_paths: set[str]) -> int:
         actual_paths: set[str] = set()
         actual_directories: set[str] = set()
         for path in self.release_root.rglob("*"):
@@ -323,6 +334,7 @@ class FileSystemRuntimeReleaseInspector:
                 parent = parent.parent
         if actual_paths != expected_paths or actual_directories != expected_directories:
             raise RuntimeStartupError("Runtime release contains an unsigned filesystem entry")
+        return len(actual_paths)
 
     def _verify_closure(self, manifest_paths: set[str]) -> int:
         closure = _load_json(
@@ -563,6 +575,7 @@ class RuntimeStartupGate:
     expected_capability_shape_sha256: str
     expected_capability_ids: tuple[str, ...] = V51_RELEASE_CAPABILITY_IDS
     expected_release_file_count: int = EXPECTED_RELEASE_FILE_COUNT
+    expected_physical_file_count: int = EXPECTED_RELEASE_PHYSICAL_FILE_COUNT
     _ready: bool = field(default=False, init=False)
 
     async def _close_runtime(self) -> None:
@@ -626,6 +639,8 @@ class RuntimeStartupGate:
             )
         if inventory.release_file_count != self.expected_release_file_count:
             raise RuntimeStartupError("Runtime release manifest is incomplete")
+        if inventory.physical_file_count != self.expected_physical_file_count:
+            raise RuntimeStartupError("Runtime release physical inventory is incomplete")
         if inventory.runtime_closure_file_count != self.expected_release_file_count:
             raise RuntimeStartupError("Runtime closure is incomplete")
         if inventory.reference_pack_count != EXPECTED_REFERENCE_PACK_COUNT:
@@ -1670,11 +1685,12 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
         if settings.runtime_release_profile == "v53-time-check"
         else V51_RELEASE_CAPABILITY_IDS
     )
-    expected_release_file_count = (
-        V53_TIME_CHECK_RELEASE_FILE_COUNT
-        if settings.runtime_release_profile == "v53-time-check"
-        else EXPECTED_RELEASE_FILE_COUNT
-    )
+    expected_release_file_count = profile["signed_file_count"]
+    expected_physical_file_count = profile["physical_file_count"]
+    if expected_physical_file_count != expected_release_file_count + 1:
+        raise RuntimeStartupError(
+            "Runtime release profile must distinguish signed and physical files"
+        )
     if settings.runtime_adapter == "one-shot":
         runtime: MingliRuntime = OneShotMingliRuntimeAdapter(
             launcher_path=launcher_path,
@@ -1732,6 +1748,7 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
         expected_source_commit=profile["source_commit"],
         expected_capability_ids=expected_capability_ids,
         expected_release_file_count=expected_release_file_count,
+        expected_physical_file_count=expected_physical_file_count,
     )
     return RuntimeStartupGate(
         runtime=runtime,
@@ -1741,6 +1758,7 @@ def build_runtime_startup_gate(settings: Settings) -> RuntimeStartupGate:
         expected_capability_shape_sha256=(settings.runtime_expected_capability_shape_sha256),
         expected_capability_ids=expected_capability_ids,
         expected_release_file_count=expected_release_file_count,
+        expected_physical_file_count=expected_physical_file_count,
     )
 
 

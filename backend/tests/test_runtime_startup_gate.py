@@ -96,6 +96,7 @@ def _inventory() -> RuntimeReleaseInventory:
     return RuntimeReleaseInventory(
         release_manifest_sha256="e" * 64,
         release_file_count=218,
+        physical_file_count=219,
         provider_ids=V51_RELEASE_CAPABILITY_IDS,
         ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
         reference_pack_count=55,
@@ -360,6 +361,7 @@ Path({str(marker)!r}).write_text('executed')
     (
         ("release_manifest_sha256", "0" * 64, "release manifest digest"),
         ("release_file_count", 216, "release manifest is incomplete"),
+        ("physical_file_count", 217, "physical inventory is incomplete"),
         ("provider_ids", V51_RELEASE_CAPABILITY_IDS[:-1], "Provider inventory"),
         ("ready_provider_ids", V51_RELEASE_CAPABILITY_IDS[:-1], "13/13 ready"),
         ("reference_pack_count", 54, "55/55"),
@@ -548,6 +550,7 @@ def test_filesystem_release_inspector_recomputes_the_complete_signed_inventory(
     assert inventory == RuntimeReleaseInventory(
         release_manifest_sha256=manifest_sha256,
         release_file_count=218,
+        physical_file_count=219,
         provider_ids=V51_RELEASE_CAPABILITY_IDS,
         ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
         reference_pack_count=55,
@@ -888,17 +891,24 @@ _HEAD_RESERIALIZED_LISTING_SHA = (
     "42ac0ab548663bea785ba1c7a1b07a74eee9240ddc637ed100451887c8d04a9a"
 )
 _ADMITTED_V53_RELEASE_MANIFEST_SHA = (
-    "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+    "f1deb17a9b4f39b09b2478c8942dcf0761d90bcba95dcbc44a15b8c84f79190b"
 )
-_ADMITTED_V53_SOURCE_COMMIT = "9c615a70f08d5609af09ead100d2b5d90e558fe8"
+_ADMITTED_V53_SOURCE_COMMIT = "6db9dd37d8e62cd425798be2c64ad1121c1c1649"
 _ADMITTED_V53_WORKER_SHA256 = (
-    "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
+    "e89df2c08df29e65ffc91c05e8e4e5be99f72f67e26b79c5b23a4eb2222ddc9c"
 )
 _ADMITTED_V53_DESCRIBE_DIGEST = (
     "2da3c62b250959a6f011434ee38fc3cf3851725a5fafb794ef78d978d9367b22"
 )
 _ADMITTED_V53_CAPABILITY_SHAPE = (
     "9b9193285622a183c06802713fbfb62fa4c76e9190b692d9d422261a418e63af"
+)
+_LEGACY_V53_RELEASE_MANIFEST_SHA = (
+    "d1b49d5842feb5d4143330d1d250af625f42644a930f7d9d9c344c5d0363b090"
+)
+_LEGACY_V53_SOURCE_COMMIT = "9c615a70f08d5609af09ead100d2b5d90e558fe8"
+_LEGACY_V53_WORKER_SHA256 = (
+    "3512987322ef18bb91c4798e77d7ef982d2e7e31ae9e2ddd321d78aa90261b50"
 )
 _ADMITTED_V51_SOURCE_COMMIT = "3f70b9025f828343759aaef22dab9ac5f2879a8c"
 _ADMITTED_V51_RELEASE_MANIFEST_SHA = (
@@ -1160,6 +1170,8 @@ def test_runtime_startup_gate_admits_the_exact_v51_candidate_identity(
         "release_manifest_sha256": _ADMITTED_V51_RELEASE_MANIFEST_SHA,
         "release_name": "mingli-master-portable-core",
         "source_commit": _ADMITTED_V51_SOURCE_COMMIT,
+        "signed_file_count": 218,
+        "physical_file_count": 219,
         "worker_sha256": _ADMITTED_V51_WORKER_SHA256,
         "worker_protocol": "mingli-runtime-worker-v2",
         "worker_turn_terminal": "result-idle-v1",
@@ -1171,7 +1183,9 @@ def test_runtime_startup_gate_admits_the_exact_v51_candidate_identity(
     assert gate.release_inspector.expected_source_commit == profile["source_commit"]
     assert gate.release_inspector.expected_release_name == profile["release_name"]
     assert gate.expected_release_file_count == 218
+    assert gate.expected_physical_file_count == 219
     assert gate.release_inspector.expected_release_file_count == 218
+    assert gate.release_inspector.expected_physical_file_count == 219
     assert len(V51_RELEASE_CAPABILITY_IDS) == 13
     assert gate.expected_capability_ids == V51_RELEASE_CAPABILITY_IDS
     assert profile["release_manifest_sha256"] != _FORBIDDEN_UNSIGNED_V51_LISTING_SHA
@@ -1455,6 +1469,45 @@ def _v53_one_shot_settings(
         runtime_expected_capability_shape_sha256=_ADMITTED_V53_CAPABILITY_SHAPE,
         chart_fast_path_timeout_seconds=2.0,
     )
+
+
+def test_v53_profile_pins_one_controlled_release_and_rejects_legacy_tuple(
+    tmp_path: Path,
+) -> None:
+    from app.config import _RUNTIME_RELEASE_PROFILES
+
+    release_root = tmp_path / "release-root"
+    release_root.mkdir(mode=0o700)
+    settings = _v53_one_shot_settings(
+        tmp_path,
+        release_root=release_root,
+        runtime_python=Path("/usr/bin/python3"),
+    )
+
+    gate = build_runtime_startup_gate(settings)
+    profile = _RUNTIME_RELEASE_PROFILES["v53-time-check"]
+
+    assert profile == {
+        "manifest_digest": _ADMITTED_V53_DESCRIBE_DIGEST,
+        "capability_shape_sha256": _ADMITTED_V53_CAPABILITY_SHAPE,
+        "release_manifest_sha256": _ADMITTED_V53_RELEASE_MANIFEST_SHA,
+        "release_name": "mingli-master-portable-core",
+        "source_commit": _ADMITTED_V53_SOURCE_COMMIT,
+        "signed_file_count": 227,
+        "physical_file_count": 228,
+        "worker_sha256": _ADMITTED_V53_WORKER_SHA256,
+        "worker_protocol": "mingli-runtime-worker-v2",
+        "worker_turn_terminal": "result-idle-v1",
+    }
+    assert gate.expected_release_manifest_sha256 == _ADMITTED_V53_RELEASE_MANIFEST_SHA
+    assert gate.release_inspector.expected_source_commit == _ADMITTED_V53_SOURCE_COMMIT
+    assert gate.expected_release_file_count == 227
+    assert gate.expected_physical_file_count == 228
+    assert gate.release_inspector.expected_release_file_count == 227
+    assert gate.release_inspector.expected_physical_file_count == 228
+    assert profile["release_manifest_sha256"] != _LEGACY_V53_RELEASE_MANIFEST_SHA
+    assert profile["source_commit"] != _LEGACY_V53_SOURCE_COMMIT
+    assert profile["worker_sha256"] != _LEGACY_V53_WORKER_SHA256
 
 
 async def test_runtime_startup_gate_rejects_the_clean_443a777_manifest_identity(
@@ -2098,6 +2151,7 @@ async def test_create_app_worker_crash_does_not_fallback_to_one_shot(
         return RuntimeReleaseInventory(
             release_manifest_sha256=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
             release_file_count=218,
+            physical_file_count=219,
             provider_ids=V51_RELEASE_CAPABILITY_IDS,
             ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
             reference_pack_count=55,
@@ -2159,6 +2213,7 @@ async def test_create_app_v51_worker_crash_does_not_fallback_to_one_shot(
         return RuntimeReleaseInventory(
             release_manifest_sha256=_ADMITTED_V51_RELEASE_MANIFEST_SHA,
             release_file_count=218,
+            physical_file_count=219,
             provider_ids=V51_RELEASE_CAPABILITY_IDS,
             ready_provider_ids=V51_RELEASE_CAPABILITY_IDS,
             reference_pack_count=55,
