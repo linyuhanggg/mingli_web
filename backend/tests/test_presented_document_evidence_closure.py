@@ -2,8 +2,12 @@ from __future__ import annotations
 
 from app.charts.projectors import project_runtime_view_model
 from app.readings.presentation.contracts import ReadingDocumentV1
+from app.readings.presentation.fact_panel import project_presented_fact_panel
 from app.readings.runtime_contracts import ReadingBrief
-from app.readings.service import _project_presented_document
+from app.readings.service import (
+    _presented_public_facts,
+    _project_presented_document,
+)
 
 
 def _minimal_bazi_brief(subject_ref: str = "profile-version:test") -> ReadingBrief:
@@ -24,6 +28,61 @@ def _minimal_bazi_brief(subject_ref: str = "profile-version:test") -> ReadingBri
                     },
                     "display_text": "四柱已由 Runtime 计算。",
                 }
+            ],
+            "evidence": [],
+            "findings": [],
+            "claim_scopes": [],
+            "limits": [],
+            "prior_answer": None,
+            "request_view": {
+                "subject_refs": [subject_ref],
+                "capability_ids": ["bazi"],
+                "object_id": "natal",
+                "dimension_ids": ["overview"],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+            },
+        }
+    )
+
+
+def _deep_bazi_brief(subject_ref: str = "profile-version:test") -> ReadingBrief:
+    return ReadingBrief.from_dict(
+        {
+            "question": "查看本命四柱结构",
+            "vocabulary": [],
+            "facts": [
+                {
+                    "ref": f"fact:{subject_ref}/calculated/bazi/four_pillars",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "year": "甲子",
+                        "month": "乙丑",
+                        "day": "丙寅",
+                        "hour": "丁卯",
+                    },
+                    "display_text": "四柱已由 Runtime 计算。",
+                },
+                {
+                    "ref": f"fact:{subject_ref}/calculated/bazi/day_master",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {"stem": "丙", "element": "火", "polarity": "阳"},
+                    "display_text": "日主已由 Runtime 计算。",
+                },
+                {
+                    "ref": f"fact:{subject_ref}/calculated/bazi/xunkong",
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "day_pillar": "丙寅",
+                        "xun": "甲子",
+                        "branches": ["戌", "亥"],
+                        "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+                        "boundary": "只表示旬空位置事实。",
+                    },
+                    "display_text": "旬空已由 Runtime 计算。",
+                },
             ],
             "evidence": [],
             "findings": [],
@@ -100,12 +159,28 @@ def _claim(
     }
 
 
+def _project(
+    document: ReadingDocumentV1,
+    *,
+    brief: ReadingBrief,
+    view_model: object,
+) -> ReadingDocumentV1 | None:
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+    assert panel is not None
+    return _project_presented_document(
+        document,
+        view_model=view_model,
+        public_facts=_presented_public_facts(panel),
+    )
+
+
 def test_project_presented_document_keeps_empty_support_evidence() -> None:
     subject_ref = "profile-version:test"
     public_fact_ref = f"fact:{subject_ref}/calculated/bazi/four_pillars"
     removed_fact_ref = f"fact:{subject_ref}/calculated/bazi/unknown_engine_dump"
+    brief = _minimal_bazi_brief(subject_ref)
     view_model = project_runtime_view_model(
-        _minimal_bazi_brief(subject_ref).to_dict(),
+        brief.to_dict(),
         product_id="bazi",
     )
     assert view_model is not None
@@ -144,11 +219,7 @@ def test_project_presented_document_keeps_empty_support_evidence() -> None:
         )
     )
 
-    projected = _project_presented_document(
-        document,
-        view_model=view_model,
-        public_fact_refs=frozenset({public_fact_ref}),
-    )
+    projected = _project(document, brief=brief, view_model=view_model)
 
     assert projected is not None
     assert [item.evidence_ref for item in projected.evidence] == [
@@ -168,10 +239,10 @@ def test_project_presented_document_keeps_empty_support_evidence() -> None:
 
 def test_project_presented_document_fail_closes_when_sole_claim_is_culled() -> None:
     subject_ref = "profile-version:test"
-    public_fact_ref = f"fact:{subject_ref}/calculated/bazi/four_pillars"
     removed_fact_ref = f"fact:{subject_ref}/calculated/bazi/unknown_engine_dump"
+    brief = _minimal_bazi_brief(subject_ref)
     view_model = project_runtime_view_model(
-        _minimal_bazi_brief(subject_ref).to_dict(),
+        brief.to_dict(),
         product_id="bazi",
     )
     assert view_model is not None
@@ -199,11 +270,7 @@ def test_project_presented_document_fail_closes_when_sole_claim_is_culled() -> N
         )
     )
 
-    projected = _project_presented_document(
-        document,
-        view_model=view_model,
-        public_fact_refs=frozenset({public_fact_ref}),
-    )
+    projected = _project(document, brief=brief, view_model=view_model)
 
     assert projected is None
 
@@ -212,8 +279,9 @@ def test_project_presented_document_fail_closes_when_deep_claims_fall_below_mini
     subject_ref = "profile-version:test"
     public_fact_ref = f"fact:{subject_ref}/calculated/bazi/four_pillars"
     removed_fact_ref = f"fact:{subject_ref}/calculated/bazi/unknown_engine_dump"
+    brief = _minimal_bazi_brief(subject_ref)
     view_model = project_runtime_view_model(
-        _minimal_bazi_brief(subject_ref).to_dict(),
+        brief.to_dict(),
         product_id="bazi",
     )
     assert view_model is not None
@@ -247,10 +315,80 @@ def test_project_presented_document_fail_closes_when_deep_claims_fall_below_mini
         )
     )
 
+    projected = _project(document, brief=brief, view_model=view_model)
+
+    assert projected is None
+
+
+def test_project_presented_document_rebuilds_bazi_deep_claims_to_final_fact_text() -> None:
+    subject_ref = "profile-version:test"
+    brief = _deep_bazi_brief(subject_ref)
+    view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
+    assert view_model is not None
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+    assert panel is not None
+    public_facts = _presented_public_facts(panel)
+    four_pillars = f"fact:{subject_ref}/calculated/bazi/four_pillars"
+    day_master = f"fact:{subject_ref}/calculated/bazi/day_master"
+    xunkong = f"fact:{subject_ref}/calculated/bazi/xunkong"
+    assert public_facts[four_pillars] == "四柱：年柱甲子、月柱乙丑、日柱丙寅、时柱丁卯。"
+    assert public_facts[day_master] == "日主：丙火（阳）。"
+    assert public_facts[xunkong] == "旬空：日柱丙寅 · 甲子旬 · 旬空戌/亥。"
+    stale = "已由 Runtime 计算。"
+    document = ReadingDocumentV1.model_validate(
+        _document_payload(
+            subject_ref=subject_ref,
+            view_model=view_model,
+            product_version="bazi-deep-reading/v1",
+            presentation_contract_version="bazi-deep-presentation/v1",
+            claims=[
+                _claim(
+                    claim_id="claim:four-pillars",
+                    text=f"四柱{stale}",
+                    subject_ref=subject_ref,
+                    fact_refs=[four_pillars],
+                ),
+                _claim(
+                    claim_id="claim:day-master",
+                    text=f"日主{stale}",
+                    subject_ref=subject_ref,
+                    fact_refs=[day_master],
+                ),
+                _claim(
+                    claim_id="claim:xunkong",
+                    text=f"旬空{stale}",
+                    subject_ref=subject_ref,
+                    fact_refs=[xunkong],
+                ),
+            ],
+            evidence=[
+                {
+                    "evidence_ref": "evidence:empty-dependency",
+                    "title": "EMPTY-DEPENDENCY-EVIDENCE-MUST-KEEP",
+                    "supports_fact_refs": [],
+                }
+            ],
+        )
+    )
+
     projected = _project_presented_document(
         document,
         view_model=view_model,
-        public_fact_refs=frozenset({public_fact_ref}),
+        public_facts=public_facts,
     )
 
-    assert projected is None
+    assert projected is not None
+    assert [claim.text for claim in projected.claims] == [
+        public_facts[four_pillars],
+        public_facts[day_master],
+        public_facts[xunkong],
+    ]
+    assert projected.answer_summary == public_facts[four_pillars]
+    assert "已由 Runtime 计算。" not in projected.answer_summary
+    assert all("已由 Runtime 计算。" not in claim.text for claim in projected.claims)
+    assert [item.evidence_ref for item in projected.evidence] == [
+        "evidence:empty-dependency"
+    ]
+    assert projected.actions.share.enabled is True
+    assert projected.actions.export.enabled is True
+    assert projected.presentation_contract_version == "bazi-deep-presentation/v1"

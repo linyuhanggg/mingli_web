@@ -6456,6 +6456,212 @@ async def test_projected_document_below_presentation_contract_fail_closes_delive
     assert export_calls == []
 
 
+async def test_bazi_deep_stale_claim_text_rebuilds_or_matches_final_facts_across_delivery(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    guest_headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, guest_headers)
+    await seed_runtime_release(database, test_settings)
+    logged_in = await login_current_guest(client, guest_headers)
+    user_headers = {"X-CSRF-Token": logged_in["csrf_token"]}
+    started = await start_preview(
+        client,
+        user_headers,
+        confirmed["profile_version_id"],
+        idempotency_key="bazi-deep-stale-claim-rebuild",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    four_pillars = f"fact:{subject_ref}/calculated/bazi/four_pillars"
+    day_master = f"fact:{subject_ref}/calculated/bazi/day_master"
+    xunkong = f"fact:{subject_ref}/calculated/bazi/xunkong"
+    brief = ReadingBrief.from_dict(
+        {
+            "question": "查看本命四柱结构",
+            "vocabulary": [],
+            "facts": [
+                {
+                    "ref": four_pillars,
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "year": "甲子",
+                        "month": "乙丑",
+                        "day": "丙寅",
+                        "hour": "丁卯",
+                    },
+                    "display_text": "四柱已由 Runtime 计算。",
+                },
+                {
+                    "ref": day_master,
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {"stem": "丙", "element": "火", "polarity": "阳"},
+                    "display_text": "日主已由 Runtime 计算。",
+                },
+                {
+                    "ref": xunkong,
+                    "subject_ref": subject_ref,
+                    "kind_id": "kind.fact",
+                    "value": {
+                        "day_pillar": "丙寅",
+                        "xun": "甲子",
+                        "branches": ["戌", "亥"],
+                        "source_dependency_id": "bazi.chart.xunkong-sexagenary-v1",
+                        "boundary": "只表示旬空位置事实。",
+                    },
+                    "display_text": "旬空已由 Runtime 计算。",
+                },
+            ],
+            "evidence": [],
+            "findings": [],
+            "claim_scopes": [],
+            "limits": [],
+            "prior_answer": None,
+            "request_view": {
+                "subject_refs": [subject_ref],
+                "capability_ids": ["bazi"],
+                "object_id": "natal",
+                "dimension_ids": ["overview"],
+                "horizon": {"kind_id": "life", "start": None, "end": None},
+            },
+        }
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=brief,
+    )
+    stale_claims = [
+        {
+            "claim_id": "claim:four-pillars",
+            "section_id": "overview",
+            "text": "四柱已由 Runtime 计算。",
+            "subject_ref": subject_ref,
+            "dimension_id": "career",
+            "claim_kind_id": "kind.tendency",
+            "certainty_id": "certainty.tendency",
+            "fact_refs": [four_pillars],
+            "finding_refs": [],
+            "evidence_refs": [],
+            "limit_refs": [],
+            "verification": {"enabled": True},
+        },
+        {
+            "claim_id": "claim:day-master",
+            "section_id": "overview",
+            "text": "日主已由 Runtime 计算。",
+            "subject_ref": subject_ref,
+            "dimension_id": "career",
+            "claim_kind_id": "kind.tendency",
+            "certainty_id": "certainty.tendency",
+            "fact_refs": [day_master],
+            "finding_refs": [],
+            "evidence_refs": [],
+            "limit_refs": [],
+            "verification": {"enabled": True},
+        },
+        {
+            "claim_id": "claim:xunkong",
+            "section_id": "overview",
+            "text": "旬空已由 Runtime 计算。",
+            "subject_ref": subject_ref,
+            "dimension_id": "career",
+            "claim_kind_id": "kind.tendency",
+            "certainty_id": "certainty.tendency",
+            "fact_refs": [xunkong],
+            "finding_refs": [],
+            "evidence_refs": [],
+            "limit_refs": [],
+            "verification": {"enabled": True},
+        },
+    ]
+    await save_presentation_contract_breaking_document(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=four_pillars,
+        product_version="bazi-deep-reading/v1",
+        presentation_contract_version="bazi-deep-presentation/v1",
+        claims=stale_claims,
+    )
+
+    expected_texts = (
+        "四柱：年柱甲子、月柱乙丑、日柱丙寅、时柱丁卯。",
+        "日主：丙火（阳）。",
+        "旬空：日柱丙寅 · 甲子旬 · 旬空戌/亥。",
+    )
+    stale_marker = "已由 Runtime 计算。"
+    export_documents: list[ReadingDocumentV1] = []
+
+    def capture_export(document: ReadingDocumentV1, export_format: str) -> Any:
+        exports = importlib.import_module("app.readings.export")
+        export_documents.append(document)
+        return exports.RenderedExport(
+            format=export_format,
+            content_type="application/pdf",
+            file_name="reading.pdf",
+            payload=b"%PDF-bazi-deep-rebuild",
+        )
+
+    monkeypatch.setattr(
+        "app.readings.export.render_reading_export",
+        capture_export,
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+    assert result.status_code == 200, result.text
+    body = result.json()
+    document = body["document"]
+    assert document is not None
+    claim_texts = [claim["text"] for claim in document["claims"]]
+    assert claim_texts == list(expected_texts)
+    assert document["answer_summary"] == expected_texts[0]
+    assert stale_marker not in document["answer_summary"]
+    assert stale_marker not in str(document["claims"])
+    assert body["accepted_copy"] == "\n\n".join(expected_texts)
+    assert stale_marker not in body["accepted_copy"]
+    assert document["actions"]["share"]["enabled"] is True
+    assert document["actions"]["export"]["enabled"] is True
+    public_by_ref = {
+        item["ref"]: item["display_text"] for item in body["fact_panel"]["facts"]
+    }
+    assert public_by_ref[four_pillars] == expected_texts[0]
+    assert public_by_ref[day_master] == expected_texts[1]
+    assert public_by_ref[xunkong] == expected_texts[2]
+
+    exported = await client.post(
+        f"/api/v1/readings/{version_id}/export",
+        headers=user_headers,
+        json={"format": "pdf", "ttl_seconds": 300},
+    )
+    assert exported.status_code == 201, exported.text
+    assert len(export_documents) == 1
+    assert [claim.text for claim in export_documents[0].claims] == list(expected_texts)
+    assert export_documents[0].answer_summary == expected_texts[0]
+    assert stale_marker not in str(export_documents[0])
+
+    shared = await client.post(
+        f"/api/v1/readings/{version_id}/share",
+        headers=user_headers,
+        json={"ttl_seconds": 300},
+    )
+    assert shared.status_code == 201, shared.text
+    bearer = await client.get(f"/api/v1/share/{shared.json()['token']}")
+    assert bearer.status_code == 200, bearer.text
+    bearer_document = bearer.json()["document"]
+    assert [claim["text"] for claim in bearer_document["claims"]] == list(expected_texts)
+    assert bearer_document["answer_summary"] == expected_texts[0]
+    assert stale_marker not in str(bearer_document)
+
+
 async def test_result_without_session_is_401_and_omits_entitlement(
     client: AsyncClient,
 ) -> None:

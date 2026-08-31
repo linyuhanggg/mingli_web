@@ -67,6 +67,7 @@ from app.readings.models import ReadingJobRecord, ReadingVersion
 from app.readings.output_contracts import output_contract_for_product
 from app.readings.presentation.access_policy import ACTIVE_CONTENT_ACCESS_POLICY
 from app.readings.presentation.contracts import (
+    ClaimCard,
     PresentationContract,
     PresentationSection,
     ReadingDocumentV1,
@@ -210,20 +211,25 @@ def _profile_default_preview_year(
     return instant.astimezone(ZoneInfo(profile.timezone)).year
 
 
-def _presented_fact_refs(
+def _presented_public_facts(
     fact_panel: Mapping[str, object] | None,
-) -> frozenset[str]:
+) -> dict[str, str]:
+    """Map final public fact refs to their presented display_text."""
+
     if fact_panel is None:
-        return frozenset()
+        return {}
     facts = fact_panel.get("facts")
     if not isinstance(facts, Sequence) or isinstance(facts, (str, bytes)):
-        return frozenset()
-    return frozenset(
-        ref
-        for item in facts
-        if isinstance(item, Mapping)
-        and isinstance((ref := item.get("ref")), str)
-    )
+        return {}
+    public_facts: dict[str, str] = {}
+    for item in facts:
+        if not isinstance(item, Mapping):
+            continue
+        ref = item.get("ref")
+        display_text = item.get("display_text")
+        if isinstance(ref, str) and isinstance(display_text, str) and display_text:
+            public_facts[ref] = display_text
+    return public_facts
 
 
 def _product_id_for_presented_document(document: ReadingDocumentV1) -> str:
@@ -236,8 +242,40 @@ def _product_id_for_presented_document(document: ReadingDocumentV1) -> str:
     return prefix
 
 
+def _requires_extractive_claim_text(document: ReadingDocumentV1) -> bool:
+    """bazi-deep NarrativeGuard requires claim text == referenced public source."""
+
+    return _product_id_for_presented_document(document) == "bazi-deep"
+
+
+def _project_presented_claim(
+    claim: ClaimCard,
+    *,
+    public_facts: Mapping[str, str],
+    retained_evidence_refs: frozenset[str],
+    require_extractive_text: bool,
+) -> ClaimCard | None:
+    """Retain or rebuild a claim against the final public fact closure."""
+
+    if not set(claim.fact_refs).issubset(public_facts):
+        return None
+    if not set(claim.evidence_refs).issubset(retained_evidence_refs):
+        return None
+    if not require_extractive_text or not claim.fact_refs:
+        return claim
+    if any(public_facts[ref] == claim.text for ref in claim.fact_refs):
+        return claim
+    # Fact-grounded bazi-deep blocks are extractive: rebuild from the single
+    # referenced final display_text, or drop when the source is ambiguous.
+    if len(claim.fact_refs) != 1:
+        return None
+    return claim.model_copy(update={"text": public_facts[claim.fact_refs[0]]})
+
+
 def _presentation_contract_for_presented_document(
     document: ReadingDocumentV1,
+    *,
+    projected_claims: tuple[ClaimCard, ...] | None = None,
 ) -> PresentationContract:
     """Rebuild the PresentationContract Guard declared by this document."""
 
@@ -272,8 +310,10 @@ def _presentation_contract_for_presented_document(
             ]
         )
     )
+    claims_for_bounds = projected_claims if projected_claims is not None else document.claims
     max_chars = max(
         max((len(claim.text) for claim in document.claims), default=1),
+        max((len(claim.text) for claim in claims_for_bounds), default=1),
         output_contract.max_output_chars,
     )
     return PresentationContract(
@@ -298,28 +338,35 @@ def _project_presented_document(
     document: ReadingDocumentV1,
     *,
     view_model: BaziChartV1 | ZiweiChartV1,
-    public_fact_refs: frozenset[str],
+    public_facts: Mapping[str, str],
 ) -> ReadingDocumentV1 | None:
     """Keep public document dependencies inside the presented fact closure."""
 
+    public_fact_refs = frozenset(public_facts)
     evidence = tuple(
         item
         for item in document.evidence
         if set(item.supports_fact_refs).issubset(public_fact_refs)
     )
     retained_evidence_refs = frozenset(item.evidence_ref for item in evidence)
-    claims = tuple(
-        claim
-        for claim in document.claims
-        if set(claim.fact_refs).issubset(public_fact_refs)
-        and set(claim.evidence_refs).issubset(retained_evidence_refs)
-    )
+    require_extractive_text = _requires_extractive_claim_text(document)
+    retained_claims: list[ClaimCard] = []
+    for claim in document.claims:
+        projected_claim = _project_presented_claim(
+            claim,
+            public_facts=public_facts,
+            retained_evidence_refs=retained_evidence_refs,
+            require_extractive_text=require_extractive_text,
+        )
+        if projected_claim is not None:
+            retained_claims.append(projected_claim)
+    claims = tuple(retained_claims)
     answer_summary = (
         claims[0].text
         if claims
         else "当前没有可公开展示的结论。"
     )
-    projected = document.model_copy(
+    projected_document = document.model_copy(
         update={
             "view_model": view_model,
             "answer_summary": answer_summary,
@@ -329,8 +376,11 @@ def _project_presented_document(
     )
     try:
         return build_reading_document(
-            _presentation_contract_for_presented_document(document),
-            projected.model_dump(mode="json"),
+            _presentation_contract_for_presented_document(
+                document,
+                projected_claims=claims,
+            ),
+            projected_document.model_dump(mode="json"),
         )
     except ValueError:
         # Filtering can drop a document below its declared PresentationContract
@@ -454,7 +504,7 @@ async def project_owned_reading_presentation(
             view_model=project_presented_view_model(
                 document.view_model,
             ),
-            public_fact_refs=_presented_fact_refs(document_fact_panel),
+            public_facts=_presented_public_facts(document_fact_panel),
         )
     return PresentedReadingProjection(
         fact_panel=fact_panel,
