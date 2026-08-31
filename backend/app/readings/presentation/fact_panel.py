@@ -284,7 +284,7 @@ def _bazi_calendar(view: BaziChartV1) -> str | None:
         if view.core_facts is not None
         else None
     )
-    if fact is None:
+    if fact is None or fact.changed_pillars is None:
         return None
     status = "已完成历法与时间归一" if fact.status == "calculated" else "已返回时间口径"
     changes = (

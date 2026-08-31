@@ -84,6 +84,20 @@ def _fact(capability_id: str, field_id: str, value: object) -> dict[str, Any]:
     }
 
 
+def _calendar_normalization() -> dict[str, object]:
+    return {
+        "status": "calculated",
+        "algorithm_version": "calendar-v53",
+        "time_basis": {
+            "policy": "local_apparent_solar-v1",
+            "algorithm": {},
+            "boundary": {},
+        },
+        "true_solar_time": {"status": "apparent_solar_applied"},
+        "calendar_convention": {},
+    }
+
+
 def _texts(panel: dict[str, Any]) -> dict[str, str]:
     return {
         str(item["ref"]).rsplit("/", 1)[-1]: str(item["display_text"])
@@ -143,6 +157,48 @@ def test_bazi_public_facts_use_named_view_model_text_and_fail_closed() -> None:
     assert panel["evidence"] == []
     assert "fixture" not in serialized
     assert "仅用于合同测试。" not in serialized
+
+
+def test_bazi_calendar_distinguishes_missing_empty_and_changed_pillars() -> None:
+    projected: dict[str, dict[str, str]] = {}
+    for case, changed_pillars in (
+        ("missing", None),
+        ("empty", []),
+        ("changed", ["day", "hour"]),
+    ):
+        calendar = _calendar_normalization()
+        if changed_pillars is not None:
+            calendar["changed_pillars"] = changed_pillars
+        brief = _brief(
+            "bazi",
+            [
+                _fact(
+                    "bazi",
+                    "four_pillars",
+                    {
+                        "year": "甲戌",
+                        "month": "戊辰",
+                        "day": "丙戌",
+                        "hour": "辛卯",
+                    },
+                ),
+                _fact("bazi", "calendar_normalization", calendar),
+            ],
+        )
+        view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
+
+        assert view_model is not None
+        panel = project_presented_fact_panel(brief, view_model=view_model)
+        assert panel is not None
+        projected[case] = _texts(panel)
+
+    assert "calendar_normalization" not in projected["missing"]
+    assert projected["empty"]["calendar_normalization"] == (
+        "时间口径：已完成历法与时间归一；四柱未因校正变更。"
+    )
+    assert projected["changed"]["calendar_normalization"] == (
+        "时间口径：已完成历法与时间归一；日柱、时柱。"
+    )
 
 
 def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
