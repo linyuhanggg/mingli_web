@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createElement } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -80,6 +80,7 @@ function restoreSessionStorage() {
 }
 
 afterEach(() => {
+  vi.useRealTimers();
   restoreSessionStorage();
   cleanup();
   vi.restoreAllMocks();
@@ -294,6 +295,124 @@ describe("ProductTaskExperience resumed profile selection", () => {
       created_at: "2026-08-27T00:01:00Z",
     },
   ];
+
+  const chartContinuations = [
+    { productId: "bazi", pathname: "/bazi", startMock: mockStartPreviewReading },
+    { productId: "ziwei", pathname: "/ziwei", startMock: mockStartZiweiReading },
+  ] as const;
+
+  async function prepareResumedChart(
+    productId: "bazi" | "ziwei",
+    pathname: string,
+    startMock: typeof mockStartPreviewReading,
+  ) {
+    mockNavigation.pathname = pathname;
+    const user = userEvent.setup();
+    render(createElement(ProductTaskExperience, {
+      product: getProductDefinition(productId),
+    }));
+
+    const profileSelect = await screen.findByRole("combobox", { name: "排盘资料" });
+    await waitFor(() => expect(profileSelect).toHaveValue(profileVersionId));
+    await user.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    expect(await screen.findByRole("link", { name: "登录后继续" })).toBeVisible();
+
+    const resumeKey = startMock.mock.calls[0]?.[1] as string;
+    expect(loadPendingStartTask(resumeKey)).not.toBeNull();
+    cleanup();
+
+    mockNavigation.searchParams = new URLSearchParams({ idempotency_key: resumeKey });
+    return resumeKey;
+  }
+
+  it.each(chartContinuations)(
+    "keeps the $productId continuation and key after a late success following return",
+    async ({ productId, pathname, startMock }) => {
+      const resumeKey = await prepareResumedChart(productId, pathname, startMock);
+      let releaseStart!: (value: { reading_version_id: string }) => void;
+      startMock.mockReturnValueOnce(new Promise((resolve) => {
+        releaseStart = resolve;
+      }));
+      render(createElement(ProductTaskExperience, {
+        product: getProductDefinition(productId),
+      }));
+      const resumedProfileSelect = await screen.findByRole("combobox", {
+        name: "排盘资料",
+      });
+      await waitFor(() => expect(resumedProfileSelect).toHaveValue(profileVersionId));
+
+      vi.useFakeTimers();
+      fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(startMock).toHaveBeenCalledTimes(2);
+      act(() => vi.advanceTimersByTime(15_000));
+      fireEvent.click(screen.getByRole("button", { name: "返回录入" }));
+
+      await act(async () => {
+        releaseStart({ reading_version_id: `late-${productId}-return` });
+        await Promise.resolve();
+      });
+      expect(loadPendingStartTask(resumeKey)).not.toBeNull();
+
+      startMock.mockResolvedValueOnce({ reading_version_id: `${productId}-retry` });
+      fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(startMock).toHaveBeenCalledTimes(3);
+      expect(startMock.mock.calls[2]?.[1]).toBe(resumeKey);
+      expect(loadPendingStartTask(resumeKey)).toBeNull();
+    },
+  );
+
+  it.each(chartContinuations)(
+    "keeps the $productId continuation and key after a late success following timeout",
+    async ({ productId, pathname, startMock }) => {
+      const resumeKey = await prepareResumedChart(productId, pathname, startMock);
+      let releaseStart!: (value: { reading_version_id: string }) => void;
+      startMock.mockReturnValueOnce(new Promise((resolve) => {
+        releaseStart = resolve;
+      }));
+      render(createElement(ProductTaskExperience, {
+        product: getProductDefinition(productId),
+      }));
+      const resumedProfileSelect = await screen.findByRole("combobox", {
+        name: "排盘资料",
+      });
+      await waitFor(() => expect(resumedProfileSelect).toHaveValue(profileVersionId));
+
+      vi.useFakeTimers();
+      fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(startMock).toHaveBeenCalledTimes(2);
+      act(() => vi.advanceTimersByTime(60_000));
+      const retry = screen.getByRole("button", { name: "重试" });
+      expect(retry).toHaveFocus();
+
+      await act(async () => {
+        releaseStart({ reading_version_id: `late-${productId}-timeout` });
+        await Promise.resolve();
+      });
+      expect(loadPendingStartTask(resumeKey)).not.toBeNull();
+
+      startMock.mockResolvedValueOnce({ reading_version_id: `${productId}-retry` });
+      fireEvent.click(retry);
+      await act(async () => {
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+      expect(startMock).toHaveBeenCalledTimes(3);
+      expect(startMock.mock.calls[2]?.[1]).toBe(resumeKey);
+      expect(loadPendingStartTask(resumeKey)).toBeNull();
+    },
+  );
 
   it("consumes a successful Bazi continuation so its old URL starts a new reading", async () => {
     mockNavigation.searchParams = new URLSearchParams({ profile: profileVersionId });

@@ -2,6 +2,12 @@
   display: grid;
   min-width: 0;
   gap: var(--space-md);
+  border-radius: var(--radius-panel);
+}
+
+.waiting:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 3px;
 }
 
 .structure {

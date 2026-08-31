@@ -174,7 +174,7 @@ describe("ProductTaskPage input shell", () => {
 });
 
 describe("ProductTaskExperience retained profile drafts", () => {
-  it("delays the bazi structure skeleton, then offers a safe return without accepting a late start", async () => {
+  it("moves focus into the delayed bazi skeleton, then restores it on a safe return", async () => {
     taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
     let releaseStart!: (value: { reading_version_id: string }) => void;
     taskMocks.startPreviewReading.mockReturnValue(new Promise((resolve) => {
@@ -196,13 +196,19 @@ describe("ProductTaskExperience retained profile drafts", () => {
     act(() => vi.advanceTimersByTime(299));
     expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
     act(() => vi.advanceTimersByTime(1));
-    expect(screen.getByRole("status", { name: "正在同步八字盘面" })).toBeVisible();
+    const waitingRegion = screen.getByLabelText("正在同步八字盘面", {
+      selector: "[data-chart-skeleton='bazi']",
+    });
+    expect(waitingRegion).toBeVisible();
+    expect(waitingRegion).toHaveFocus();
     expect(screen.queryByRole("button", { name: "返回录入" })).not.toBeInTheDocument();
 
     act(() => vi.advanceTimersByTime(14_700));
     fireEvent.click(screen.getByRole("button", { name: "返回录入" }));
     expect(screen.getByRole("form", { name: "八字任务输入" })).toBeVisible();
     expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(16));
+    expect(screen.getByRole("button", { name: /^立即排盘（免费）/ })).toHaveFocus();
 
     await act(async () => {
       releaseStart({ reading_version_id: "late-bazi" });
@@ -212,9 +218,11 @@ describe("ProductTaskExperience retained profile drafts", () => {
     expect(screen.queryByText("late-bazi")).not.toBeInTheDocument();
   });
 
-  it("stops the start wait at 60 seconds and focuses the retry action", async () => {
+  it("stops the start wait at 60 seconds, focuses retry, then refocuses the next wait", async () => {
     taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
-    taskMocks.startPreviewReading.mockReturnValue(new Promise(() => undefined));
+    taskMocks.startPreviewReading
+      .mockReturnValueOnce(new Promise(() => undefined))
+      .mockReturnValueOnce(new Promise(() => undefined));
     render(<ProductTaskPage productId="bazi" />);
     expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
 
@@ -227,8 +235,19 @@ describe("ProductTaskExperience retained profile drafts", () => {
     act(() => vi.advanceTimersByTime(60_000));
 
     expect(screen.getByRole("alert", { name: /排盘等待超过 60 秒/ })).toBeVisible();
-    expect(screen.getByRole("button", { name: "重试" })).toHaveFocus();
+    const retry = screen.getByRole("button", { name: "重试" });
+    expect(retry).toHaveFocus();
     expect(screen.queryByRole("status", { name: "正在同步八字盘面" })).not.toBeInTheDocument();
+
+    fireEvent.click(retry);
+    await act(async () => {
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    act(() => vi.advanceTimersByTime(300));
+    expect(screen.getByLabelText("正在同步八字盘面", {
+      selector: "[data-chart-skeleton='bazi']",
+    })).toHaveFocus();
   });
 
   it("retries the same draft in a regular natal flow after a transient confirm failure", async () => {

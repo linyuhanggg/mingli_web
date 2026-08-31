@@ -5,7 +5,7 @@ import {
   useAnimationControls,
   useIsomorphicLayoutEffect,
 } from "motion/react";
-import type { ReactNode } from "react";
+import { useEffect, useRef, type ReactNode } from "react";
 
 import {
   easeOutExpo,
@@ -43,14 +43,22 @@ export function ChartStructureSkeleton({
 }: ChartStructureSkeletonProps) {
   const reduceMotion = useSafeReducedMotion();
   const definition = copy[variant];
+  const waitingRegionRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    waitingRegionRef.current?.focus({ preventScroll: true });
+  }, []);
 
   return (
     <motion.section
       animate={{ opacity: 1 }}
+      aria-label={definition.title}
       className={styles.waiting}
       data-chart-skeleton={variant}
       exit={reduceMotion ? undefined : { opacity: 0 }}
       initial={reduceMotion ? false : { opacity: 0 }}
+      ref={waitingRegionRef}
+      tabIndex={-1}
       transition={{ duration: motionDurations.stateFeedback, ease: easeOutExpo }}
     >
       <div aria-hidden="true" className={styles.structure} data-variant={variant}>

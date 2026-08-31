@@ -520,9 +520,12 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     };
   }, [chartWaitAttempt]);
 
-  async function startAndConsumeContinuation<T>(start: () => Promise<T>): Promise<T> {
+  async function startAndConsumeContinuation<T>(
+    start: () => Promise<T>,
+    shouldConsume: () => boolean = () => true,
+  ): Promise<T> {
     const response = await start();
-    if (resumedTask && resumeKey) {
+    if (resumedTask && resumeKey && shouldConsume()) {
       void consumePendingStartTask(resumeKey);
       intentKeyRef.current = null;
     }
@@ -857,15 +860,18 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           payload,
         });
         intentKeyRef.current = intent;
-        const response = await startAndConsumeContinuation(() => (
-          product.id === "bazi"
-            ? startPreviewReading(payload, intent.key)
-            : product.id === "luming-nayin"
-              ? startLumingNayinReading(payload as LumingNayinStartRequest, intent.key)
-            : product.id === "ziwei"
-              ? startZiweiReading(payload, intent.key)
-              : startQizhengReading(payload, intent.key)
-        ));
+        const response = await startAndConsumeContinuation(
+          () => (
+            product.id === "bazi"
+              ? startPreviewReading(payload, intent.key)
+              : product.id === "luming-nayin"
+                ? startLumingNayinReading(payload as LumingNayinStartRequest, intent.key)
+              : product.id === "ziwei"
+                ? startZiweiReading(payload, intent.key)
+                : startQizhengReading(payload, intent.key)
+          ),
+          chartAttemptIsActive,
+        );
         if (!chartAttemptIsActive()) return;
         if (product.id === "bazi") {
           const recovery = persistBaziPreviewRecoveryState({
