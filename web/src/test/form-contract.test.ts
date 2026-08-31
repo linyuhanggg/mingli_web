@@ -21,6 +21,14 @@ function ruleFor(css: string, selector: string): string {
   return matcher.exec(css)?.[1] ?? "";
 }
 
+function ruleBodiesFor(css: string, selector: string): string[] {
+  return [...css.matchAll(/([^{}]+)\{([^{}]*)\}/gs)]
+    .filter((match) =>
+      match[1].split(",").some((item) => item.trim() === selector),
+    )
+    .map((match) => match[2]);
+}
+
 const FORM_CSS = [
   "form-controls.module.css",
   "profile-form.module.css",
@@ -46,21 +54,22 @@ describe("shared form-control primitives", () => {
     }
   });
 
-  it("gives inputs a canvas background and at least 48px hit area", () => {
+  it("gives inputs the Xuan Order large-control size and surface", () => {
     const input = ruleFor(css, ".input");
-    expect(input).toContain("min-height: 3rem");
-    expect(input).toContain("var(--color-canvas)");
-    expect(input).toContain("border-radius: var(--radius-control)");
+    expect(input).toContain("min-height: var(--ds-control-lg)");
+    expect(input).toContain("var(--color-surface)");
+    expect(input).toContain("border-radius: var(--ds-radius-1)");
   });
 
-  it("styles primary actions with radius-control, never a 999px pill", () => {
+  it("styles actions with the shared compact radius, never a 999px pill", () => {
+    const action = ruleFor(css, ".action");
     const primary = ruleFor(css, ".actionPrimary");
-    expect(primary).toContain("border-radius: var(--radius-control)");
+    expect(action).toContain("border-radius: var(--ds-radius-2)");
     expect(primary).not.toContain("999px");
   });
 
   it("marks disabled actions as visibly non-interactive without hiding them", () => {
-    const disabled = ruleFor(css, ".action[disabled]");
+    const disabled = ruleFor(css, ".action:disabled");
     expect(disabled).toContain("cursor: not-allowed");
     expect(disabled).not.toContain("display: none");
   });
@@ -82,7 +91,10 @@ describe("no pill buttons in form surfaces", () => {
 
 describe("disabled controls must carry a visible reason", () => {
   it("keeps the reason text visually available, not sr-only or collapsed", () => {
-    const reason = ruleFor(read("form-controls.module.css"), ".disabledReason");
+    const reason = ruleBodiesFor(
+      read("form-controls.module.css"),
+      ".disabledReason",
+    ).join("\n");
     expect(reason).not.toBe("");
     expect(reason).not.toContain("display: none");
     expect(reason).not.toContain("position: absolute");
