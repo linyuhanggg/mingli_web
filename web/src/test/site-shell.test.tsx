@@ -272,17 +272,17 @@ describe("public shell responsive and cache contracts", () => {
     );
   });
 
-  it("keeps fine-pointer desktop header controls compact while raising coarse-capable targets", () => {
+  it("keeps desktop header controls at 44px for every pointer type", () => {
     const css = readFileSync(
       resolve(process.cwd(), "src/components/site-chrome.module.css"),
       "utf8",
     );
 
     expect(css).toMatch(
-      /\.navItem\s*\{[^}]*min-width:\s*var\(--ds-control-md\)[^}]*min-height:\s*var\(--ds-control-md\)/,
+      /\.navItem\s*\{[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/,
     );
     expect(css).toMatch(
-      /\.utilityLink\s*\{[^}]*min-width:\s*var\(--ds-control-md\)[^}]*min-height:\s*var\(--ds-control-md\)/,
+      /\.utilityLink\s*\{[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/,
     );
     expect(css).toMatch(
       /@media \(min-width:\s*840px\) and \(any-pointer:\s*coarse\)\s*\{[\s\S]*?\.navItem,\s*\.utilityLink\s*\{[^}]*min-width:\s*var\(--ds-touch-min\)[^}]*min-height:\s*var\(--ds-touch-min\)/,

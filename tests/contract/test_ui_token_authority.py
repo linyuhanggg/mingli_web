@@ -149,9 +149,11 @@ DOMAIN_FONT_ALLOWED_SELECTORS = {
     ".cardName",
     ".pillarStem",
     ".pillarBranch",
+    ".elementGlyph",
     ".names dd",
     ".yaoMark",
     ".hexagramGlyph",
+    ".focusTitle",
     ".palaceName",
     ".major",
     ".centerName",
@@ -160,11 +162,13 @@ DOMAIN_FONT_ALLOWED_SELECTORS = {
     ".lower",
     ".branch",
     ".branchLink",
+    ".locatorBranch",
 }
 STATUS_INFINITE_ALLOWLIST = {
     "web/src/components/status-panel.module.css",
     "web/src/components/ui/status.module.css",
     "web/src/components/ui/button.module.css",
+    "web/src/components/ui-lab/bazi-result-six-states.module.css",
     "admin/src/components/ui/status.module.css",
     "admin/src/components/ui/button.module.css",
 }
@@ -634,16 +638,6 @@ def test_real_dark_ancestor_descendants_use_inverse_text() -> None:
             ".rail",
             ".railMeta dt",
         ),
-        (
-            "web/src/components/readings/time-layer-tabs.module.css",
-            '.tab[data-active="true"]',
-            '.tab[data-active="true"] .tabSummary',
-        ),
-        (
-            "web/src/components/readings/time-layer-tabs.module.css",
-            '.tab[data-active="true"]',
-            '.tab[data-active="true"] .tabStatus',
-        ),
     )
 
     failures: list[str] = []
@@ -664,6 +658,23 @@ def test_real_dark_ancestor_descendants_use_inverse_text() -> None:
             failures.append(f"{rel}: {ancestor} -> {descendant}")
 
     assert failures == []
+
+
+def test_active_time_layer_tab_uses_neutral_selection_tokens() -> None:
+    rel = "web/src/components/readings/time-layer-tabs.module.css"
+    active = _rule_body(rel, '.tab[data-active="true"]')
+    source = (ROOT / rel).read_text(encoding="utf-8")
+    active_status = "\n".join(
+        body
+        for selector, body in _iter_rule_blocks(source)
+        if '.tab[data-active="true"] .tabStatus' in _selector_parts(selector)
+    )
+
+    assert "background: var(--color-surface)" in active
+    assert "color: var(--color-action)" in active
+    assert "color: var(--color-action)" in active_status
+    assert "var(--color-text-inverse)" not in active_status
+
 
 def test_account_identity_card_is_not_styled_as_an_overlay() -> None:
     identity_card = _rule_body(

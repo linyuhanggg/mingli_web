@@ -69,7 +69,8 @@ describe("P2 product interaction contracts", () => {
       "utf8",
     );
 
-    expect(tokens).toMatch(/--font-size-page:\s*30px/);
+    expect(tokens).toMatch(/--ds-text-30:\s*30px/);
+    expect(tokens).toMatch(/--font-size-page:\s*var\(--ds-text-30\)/);
     expect(tokens).toMatch(/--container-form:\s*31rem/);
     expect(css).toMatch(/\.pageLine h1\s*\{[^}]*font-size:\s*var\(--font-size-page\)/s);
     expect(css).toMatch(/\.inputLayout\s*\{[^}]*justify-items:\s*center/s);

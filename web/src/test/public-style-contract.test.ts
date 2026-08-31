@@ -37,44 +37,57 @@ describe("public visual contract", () => {
     expect(globalCss).not.toMatch(/scroll-behavior:\s*smooth/);
   });
 
-  it("scopes the approved warm homepage canvas without reviving legacy product styling", () => {
-    expect(ruleFor(homeCss, ".main")).toMatch(/background:\s*var\(--home-paper\)/);
-    expect(ruleFor(homeCss, ".card")).toMatch(/border:\s*1px solid var\(--home-line\)/);
-    expect(ruleFor(homeCss, ".card")).toMatch(/background:\s*var\(--home-paper-surface\)/);
+  it("keeps the homepage on the single Xuan Order visual baseline", () => {
+    expect(ruleFor(homeCss, ".main")).toMatch(/background:\s*var\(--ds-canvas\)/);
+    expect(ruleFor(homeCss, ".cardGrid")).toMatch(
+      /border-block:\s*1px solid var\(--ds-line\)/,
+    );
+    expect(ruleFor(homeCss, ".card:hover")).toMatch(
+      /background:\s*var\(--ds-surface-subtle\)/,
+    );
     expect(ruleFor(homeCss, ".observation")).toMatch(
-      /background:\s*var\(--home-paper-surface\)/,
+      /background:\s*var\(--ds-ink\)/,
     );
-    expect(ruleFor(homeCss, ".observation p")).toMatch(
-      /color:\s*var\(--home-ink-soft\)/,
+    expect(ruleFor(homeCss, ".observationCopy > p:last-child")).toMatch(
+      /color:\s*var\(--ds-line-strong\)/,
     );
-    expect(ruleFor(homeCss, ".spotlight")).toMatch(/radial-gradient/);
-    expect(ruleFor(homeCss, ".heroPrimary::before")).toMatch(/radial-gradient/);
-    expect(homeCss).toContain("--home-gold");
-    expect(homeCss).not.toMatch(/terracotta|moss|amber/);
-    expect(homeCss).not.toMatch(/priceCard|methodCard|linear-gradient|conic-gradient/);
+    expect(ruleFor(homeCss, ".spotlight")).toMatch(/display:\s*none/);
+    expect(homeCss).not.toMatch(/--home-|terracotta|moss|amber/);
+    expect(homeCss).not.toMatch(/(?:linear|radial|conic)-gradient\s*\(/);
   });
 
-  it("keeps public navigation flat and every public link at least 44px tall", () => {
+  it("keeps public navigation flat with 44px targets for every pointer type", () => {
     expect(ruleFor(chromeCss, ".nav")).not.toMatch(/border-radius:\s*999px/);
-    expect(ruleFor(chromeCss, ".navItem")).toMatch(/min-height:\s*var\(--target-min\)/);
-    expect(ruleFor(chromeCss, ".utilityLink")).toMatch(/min-height:\s*var\(--target-min\)/);
-    expect(ruleFor(chromeCss, ".footerColumn a")).toMatch(/min-height:\s*var\(--target-min\)/);
-    expect(ruleFor(chromeCss, ".legal a")).toMatch(/min-height:\s*var\(--target-min\)/);
+    expect(ruleFor(chromeCss, ".navItem")).toMatch(
+      /min-width:\s*var\(--ds-touch-min\)[\s\S]*min-height:\s*var\(--ds-touch-min\)/,
+    );
+    expect(ruleFor(chromeCss, ".utilityLink")).toMatch(
+      /min-width:\s*var\(--ds-touch-min\)[\s\S]*min-height:\s*var\(--ds-touch-min\)/,
+    );
+    expect(ruleFor(chromeCss, ".footerColumn a")).toMatch(
+      /min-height:\s*var\(--ds-touch-min\)/,
+    );
+    expect(ruleFor(chromeCss, ".legal a")).toMatch(
+      /min-height:\s*var\(--ds-touch-min\)/,
+    );
+    expect(chromeCss).toMatch(
+      /@media \(min-width: 840px\) and \(any-pointer: coarse\)[\s\S]*\.navItem,[\s\S]*\.utilityLink[\s\S]*min-height:\s*var\(--ds-touch-min\)/,
+    );
     expect(ruleFor(chromeCss, '.navItem[aria-current="page"]')).not.toMatch(
       /background:/,
     );
     expect(chromeCss).toMatch(/\.navItem\[aria-current="page"\]::after/);
   });
 
-  it("switches cleanly to the mobile bottom navigation at the 768px boundary", () => {
+  it("switches cleanly to the mobile bottom navigation at the 840px boundary", () => {
     expect(chromeCss).toMatch(
-      /@media \(max-width: 47\.999rem\)[\s\S]*\.desktopOnly[\s\S]*display:\s*none/,
+      /@media \(max-width: 839px\)[\s\S]*\.desktopOnly[\s\S]*display:\s*none/,
     );
     expect(chromeCss).toMatch(
-      /@media \(max-width: 47\.999rem\)[\s\S]*\.mobileBottomBar[\s\S]*display:\s*grid/,
+      /@media \(max-width: 839px\)[\s\S]*\.mobileBottomBar[\s\S]*display:\s*grid/,
     );
     expect(chromeCss).toMatch(
-      /@media \(min-width: 48rem\)[\s\S]*\.mobileBottomBar/,
+      /@media \(min-width: 840px\)[\s\S]*\.mobileBottomBar/,
     );
     expect(chromeCss).toContain("env(safe-area-inset-bottom)");
   });

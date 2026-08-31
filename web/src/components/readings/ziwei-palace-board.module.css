@@ -374,14 +374,14 @@
 
 .timeLayerLabel {
   color: currentcolor;
-  font-size: var(--ds-text-13);
+  font-size: var(--ds-text-14);
   font-weight: 650;
 }
 
 .timeLayerStatus {
   color: var(--ds-muted);
   font-size: var(--ds-text-11);
-  line-height: var(--ds-leading-ui);
+  line-height: var(--line-height-ui);
 }
 
 .locator {

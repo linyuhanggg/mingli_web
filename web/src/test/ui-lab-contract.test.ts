@@ -8,12 +8,14 @@ import { VIEW_MODEL_VERSIONS } from "@/view-models/registry";
 const EXPECTED_STATUS_STATES = [
   "loading",
   "empty",
+  "ready",
+  "locked",
+  "need-input",
   "error",
   "processing",
   "success",
   "unavailable",
   "unauthorized",
-  "locked",
 ] as const;
 
 const EXPECTED_UI_LAB_STATES = [
