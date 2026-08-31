@@ -28,6 +28,7 @@ export function ChartWorkspaceShell({
   detailId,
   onCloseDetail,
   boardLabel = "盘面",
+  prioritizeBoard = false,
 }: Readonly<{
   view: ChartWorkspaceView;
   renderBoard: (activeLayer: WorkspaceLayer) => ReactNode;
@@ -35,6 +36,7 @@ export function ChartWorkspaceShell({
   detailId?: string;
   onCloseDetail: () => void;
   boardLabel?: string;
+  prioritizeBoard?: boolean;
 }>) {
   const layerIdPrefix = useId();
   const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
@@ -94,7 +96,11 @@ export function ChartWorkspaceShell({
   }
 
   return (
-    <section className={styles.workspace} aria-label="排盘工作台">
+    <section
+      className={styles.workspace}
+      aria-label="排盘工作台"
+      data-prioritize-board={prioritizeBoard}
+    >
       <header className={styles.header}>
         <div>
           <h3 className={styles.title}>{view.title}</h3>
@@ -112,7 +118,7 @@ export function ChartWorkspaceShell({
         idPrefix={layerIdPrefix}
       />
 
-      <div className={styles.body}>
+      <div className={styles.body} data-has-detail={Boolean(detail)}>
         <div className={styles.layerPanels}>
           {view.layers.map((layer) => {
             const active = layer.id === activeLayer.id;
@@ -138,7 +144,11 @@ export function ChartWorkspaceShell({
             );
           })}
         </div>
-        <div className={styles.readingPane} aria-label="连续阅读面">
+        <div
+          className={styles.readingPane}
+          data-has-detail={Boolean(detail)}
+          aria-label="连续阅读面"
+        >
           <p className={styles.readingOrder}>盘面事实 / 方法解释 / 来源依据</p>
           <FocusDetailDrawer id={detailId} detail={detail} onClose={onCloseDetail} />
         </div>

@@ -1,4 +1,56 @@
 /* Result pages stay on the canvas; no homepage glass or page-level overflow. */
+.chartFirstLayout.chartFirstLayout {
+  grid-template-columns: minmax(0, 1fr);
+  min-width: 0;
+}
+
+.chartFirstBody {
+  padding: clamp(0.75rem, 2vw, 1.5rem);
+}
+
+.chartFirstSection {
+  padding-top: 0;
+}
+
+.chartFirstRailInfo {
+  min-width: 0;
+}
+
+.capabilityBoundary {
+  max-width: 72ch;
+  margin: 0.75rem 0 0;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: 1.65;
+}
+
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (min-width: 80rem) {
+  .chartFirstLayout.chartFirstLayout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .chartFirstRail.chartFirstRail {
+    position: static;
+    top: auto;
+    grid-template-columns: minmax(14rem, 0.72fr) repeat(2, minmax(0, 1fr));
+    align-items: start;
+  }
+}
+
 .statusCard {
   padding: clamp(1.2rem, 3vw, 1.6rem) clamp(1.2rem, 4vw, 2rem);
   border: 1px solid var(--color-border);

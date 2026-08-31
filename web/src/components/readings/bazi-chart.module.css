@@ -416,12 +416,45 @@
 
 .timeBasis,
 .candidateSection,
+.runtimeFindings,
 .evidenceDrawer {
   display: grid;
   gap: 0.7rem;
   min-width: 0;
   padding-top: 0.8rem;
   border-top: 1px solid var(--color-border);
+}
+
+.runtimeFindingList {
+  display: grid;
+  gap: 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.runtimeFinding {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.runtimeFinding h5,
+.runtimeFinding p {
+  margin: 0;
+}
+
+.runtimeFinding h5 {
+  color: var(--color-text);
+  font-size: var(--font-size-label);
+  font-weight: 750;
+}
+
+.runtimeFinding p {
+  max-width: 72ch;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-aux);
+  line-height: 1.7;
+  overflow-wrap: anywhere;
 }
 
 .timeBasis {
@@ -1155,6 +1188,71 @@
 }
 
 @container (max-width: 33.99rem) {
+  .board {
+    gap: 0.55rem;
+    padding: 0.6rem;
+  }
+
+  .brandBlock {
+    gap: 0;
+  }
+
+  .brand,
+  .brandMeta {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .pillarGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.3rem;
+  }
+
+  .pillarCard {
+    min-height: 5.75rem;
+    gap: 0.05rem;
+    padding: 0.5rem 0.15rem;
+  }
+
+  .pillarStem,
+  .pillarBranch {
+    font-size: 1.3rem;
+  }
+
+  .pillarFull {
+    font-size: var(--font-size-meta);
+  }
+
+  .pillarSourceMark {
+    position: absolute;
+    top: 0.25rem;
+    right: 0.25rem;
+    width: 0.95rem;
+    height: 0.95rem;
+    place-items: center;
+    margin: 0;
+    padding: 0;
+    border-radius: 50%;
+  }
+
+  .pillarSourceMark > span:first-child {
+    font-size: 0;
+  }
+
+  .pillarSourceMark > span:first-child::after {
+    font-size: 0.55rem;
+    content: "典";
+  }
+
+  .pillarSourceHint {
+    display: none;
+  }
+
   .timeBasisList,
   .candidateGroups,
   .luckMeta,

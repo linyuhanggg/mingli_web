@@ -508,6 +508,10 @@ export type CapabilityProjectionResponse = {
   capabilities: CapabilityProjection[];
 };
 
+export type NestedCapabilityProjection = {
+  current: CapabilityProjection | null;
+};
+
 export type TimeLayerCapabilityItemResponse = {
   layer_id: string;
   label: string;
@@ -555,7 +559,7 @@ export type ReadingResultResponse = {
   accepted_copy: string | null;
   fact_panel: ReadingFactPanel | null;
   view_model?: import("@/view-models/registry").ViewModel | null;
-  capability?: CapabilityProjection | null;
+  capability?: CapabilityProjection | NestedCapabilityProjection | null;
   verification: ReadingVerificationSummary | null;
   input_request: NeedInputRequest | null;
   document: ReadingDocumentV1 | null;

@@ -763,7 +763,7 @@ describe("ReadingVersionSummary polling and explicit result fetch", () => {
           readingResult({
             status: "prepared",
             accepted_copy: null,
-            capability: baziCapabilityA,
+            capability: { current: baziCapabilityA },
             view_model: {
               schema_version: "hecan-view/v1",
               subject_ref: "profile-version:test",
@@ -2795,6 +2795,174 @@ describe("bazi chart workspace", () => {
         Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
     expect(screen.queryByText(acceptedCopyQuery)).not.toBeInTheDocument();
+  });
+
+  it("keeps the chart before report tools and preserves Share / Export names", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            capability: baziCapabilityA,
+            view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+            document: {
+              ...readingDocument(),
+              actions: {
+                ...readingDocument().actions,
+                export: { enabled: true },
+                share: { enabled: true },
+              },
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+          object_id: "natal",
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    const chart = await screen.findByLabelText("排盘工作台");
+    const reportInfo = screen.getByRole("heading", { name: "报告信息" });
+    expect(
+      chart.compareDocumentPosition(reportInfo) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "分享" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "创建 24 小时分享" })).toBeVisible();
+    expect(screen.getByRole("heading", { name: "导出报告" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "高清 PNG" })).toBeVisible();
+    expect(screen.getByRole("button", { name: "报告 PDF" })).toBeVisible();
+  });
+
+  it("fails closed when the nested current capability projection is incomplete", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            capability: { current: { tier: "A" } },
+            view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+          object_id: "natal",
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByText("结果服务暂时不可用，不会展示未确认内容")).toBeVisible();
+    expect(screen.queryByLabelText("排盘工作台")).not.toBeInTheDocument();
+  });
+
+  it("shows only admitted exact Bazi findings for an A-tier capability", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            capability: baziCapabilityA,
+            view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+            fact_panel: {
+              ...factPanel(),
+              findings: [
+                {
+                  kind_id: "kind.tendency",
+                  support_mode: "exact",
+                  public_text: "月令状态只确定季节层，整盘旺衰仍未裁定。",
+                  fact_refs: ["fact:bazi/month-order"],
+                  evidence_refs: ["evidence:bazi/month-order"],
+                  data: {
+                    claim_unit_id: "bazi.month-order-state-v1",
+                    hard_verdict: null,
+                  },
+                },
+                {
+                  kind_id: "kind.tendency",
+                  support_mode: "exact",
+                  public_text: "未知单元不应显示。",
+                  fact_refs: ["fact:bazi/unknown"],
+                  evidence_refs: ["evidence:bazi/unknown"],
+                  data: {
+                    claim_unit_id: "bazi.unknown_runtime_unit-v1",
+                    hard_verdict: null,
+                  },
+                },
+              ],
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+          object_id: "natal",
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByRole("heading", { name: "月令状态" })).toBeVisible();
+    expect(screen.getByText("月令状态只确定季节层，整盘旺衰仍未裁定。")).toBeVisible();
+    expect(screen.queryByText("未知单元不应显示。")).not.toBeInTheDocument();
+    expect(document.body.textContent).not.toContain("bazi.unknown_runtime_unit-v1");
+  });
+
+  it("keeps interpretive Bazi findings hidden for a B-tier capability", async () => {
+    const fetchMock = vi.fn<typeof fetch>(async (url) => {
+      if (String(url).endsWith("/result")) {
+        return jsonResponse(
+          readingResult({
+            capability: {
+              ...baziCapabilityA,
+              tier: "B",
+              judgment_rule_count: 0,
+            },
+            view_model: BAZI_EVIDENCE_RESULT_VIEW_MODEL,
+            fact_panel: {
+              ...factPanel(),
+              findings: [{
+                kind_id: "kind.tendency",
+                support_mode: "exact",
+                public_text: "B 档不应显示这段解读。",
+                fact_refs: ["fact:bazi/month-order"],
+                evidence_refs: ["evidence:bazi/month-order"],
+                data: {
+                  claim_unit_id: "bazi.month-order-state-v1",
+                  hard_verdict: null,
+                },
+              }],
+            },
+          }),
+        );
+      }
+      return jsonResponse(
+        readingSummary("accepted", {
+          capability_id: "bazi",
+          product_id: "bazi",
+          object_id: "natal",
+        }),
+      );
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    render(<ReadingResult readingId={VERSION_ID} />);
+
+    expect(await screen.findByLabelText("排盘工作台")).toBeVisible();
+    expect(screen.queryByText("B 档不应显示这段解读。")).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "月令状态" })).not.toBeInTheDocument();
   });
 
 });

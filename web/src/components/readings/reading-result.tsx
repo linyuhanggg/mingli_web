@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 
 import {
   ApiError,
   getReadingResult,
   pollReading,
+  type CapabilityProjection,
   type ReadingResultResponse,
   type ReadingVersionSummary,
 } from "@/lib/api";
@@ -38,6 +39,8 @@ import { ReadingSharePanel } from "./reading-share-panel";
 import { ReadingExportPanel } from "./reading-export-panel";
 import { RuntimeChart } from "./runtime-chart";
 import { VerificationForm } from "./verification-form";
+
+import styles from "./reading-result.module.css";
 
 const DEFAULT_POLL_MS = 2000;
 const HISTORY_ESCAPE_MS = 15 * 1000;
@@ -76,6 +79,34 @@ const RELATIONSHIP_PRODUCT_IDS = new Set([
   "qizheng-relationship",
 ]);
 const RESULT_READY_STATUSES = new Set(["prepared", "completing", "accepted"]);
+
+function isCapabilityProjection(value: unknown): value is CapabilityProjection {
+  if (!value || typeof value !== "object") return false;
+  const candidate = value as Record<string, unknown>;
+  return (
+    typeof candidate.capability_id === "string"
+    && typeof candidate.label === "string"
+    && (candidate.tier === "A" || candidate.tier === "B" || candidate.tier === "C")
+    && (typeof candidate.source_system === "string" || candidate.source_system === null)
+    && typeof candidate.runtime_active_rule_count === "number"
+    && typeof candidate.judgment_rule_count === "number"
+    && (candidate.source_status === "available" || candidate.source_status === "unavailable")
+  );
+}
+
+/**
+ * Runtime now nests the admitted projection under `current`; older accepted
+ * results still carry the projection directly. Any incomplete shape stays
+ * unavailable instead of inheriting a client-side tier.
+ */
+function activeCapabilityProjection(value: unknown): CapabilityProjection | null {
+  if (!value || typeof value !== "object") return null;
+  const container = value as Record<string, unknown>;
+  const candidate = Object.prototype.hasOwnProperty.call(container, "current")
+    ? container.current
+    : value;
+  return isCapabilityProjection(candidate) ? candidate : null;
+}
 
 function validStartedAt(value: number | undefined): value is number {
   return typeof value === "number" && Number.isFinite(value) && value > 0;
@@ -193,18 +224,21 @@ function resultErrorState(error: unknown): {
 }
 
 function ArchiveRail({
+  chartFirst = false,
   elapsedMs,
   onRetry,
   readingId,
   summary,
   result,
 }: Readonly<{
+  chartFirst?: boolean;
   elapsedMs?: number;
   onRetry?: () => void;
   readingId: string;
   summary: ReadingVersionSummary;
   result: ReadingResultResponse | null;
 }>) {
+  const summaryTitleId = `reading-summary-${useId()}`;
   const meta = statusMeta(summary.status);
   const showCappedPartialStatus =
     elapsedMs !== undefined &&
@@ -218,9 +252,12 @@ function ArchiveRail({
     });
 
   return (
-    <aside className={surface.evidenceRail} aria-labelledby="reading-summary-title">
-      <div className={surface.rail}>
-        <h2 id="reading-summary-title">报告信息</h2>
+    <aside
+      className={`${surface.evidenceRail} ${chartFirst ? styles.chartFirstRail : ""}`}
+      aria-labelledby={summaryTitleId}
+    >
+      <div className={`${surface.rail} ${chartFirst ? styles.chartFirstRailInfo : ""}`}>
+        <h2 id={summaryTitleId}>报告信息</h2>
         <dl className={surface.railMeta}>
           <div>
             <dt>报告版本</dt>
@@ -644,8 +681,9 @@ function ReadingResultForVersion({
     // A missing projection is C only for a route that actually depends on a
     // Runtime ViewModel. Plain legacy result pages do not have this gate.
     const requiresCapabilityProjection = isBazi || result.view_model != null;
+    const capabilityProjection = activeCapabilityProjection(result.capability);
     const capabilityTier =
-      result.capability?.tier ?? (requiresCapabilityProjection ? "C" : null);
+      capabilityProjection?.tier ?? (requiresCapabilityProjection ? "C" : null);
     const showRuntimeChart = capabilityTier === "A" || capabilityTier === "B";
     const isFortune = summary.capability_id === "fortune";
     const isLiuyao = summary.capability_id === "liuyao";
@@ -714,7 +752,7 @@ function ReadingResultForVersion({
       result.accepted_copy == null &&
       result.document == null &&
       result.fact_panel == null;
-    const sourceUnavailable = result.capability?.source_status === "unavailable";
+    const sourceUnavailable = capabilityProjection?.source_status === "unavailable";
     if (sourceUnavailable || emptyResultPayload) {
       return (
         <article className={surface.readingBody}>
@@ -801,7 +839,7 @@ function ReadingResultForVersion({
                   ) : null}
                   <RuntimeChart
                     viewModel={result.view_model}
-                    capability={result.capability}
+                    capability={capabilityProjection}
                     timeLayerEntitlement={runtimeTimeLayerEntitlement}
                   />
                 </div>
@@ -955,7 +993,7 @@ function ReadingResultForVersion({
                     result.view_model ? (
                       <RuntimeChart
                         viewModel={result.view_model}
-                        capability={result.capability}
+                        capability={capabilityProjection}
                         timeLayerEntitlement={runtimeTimeLayerEntitlement}
                       />
                     ) : null}
@@ -1092,7 +1130,7 @@ function ReadingResultForVersion({
                     {typedReady && result.view_model ? (
                       <RuntimeChart
                         viewModel={result.view_model}
-                        capability={result.capability}
+                        capability={capabilityProjection}
                         timeLayerEntitlement={runtimeTimeLayerEntitlement}
                       />
                     ) : null}
@@ -1222,7 +1260,7 @@ function ReadingResultForVersion({
                         />
                         <RuntimeChart
                           viewModel={natalViewModel}
-                          capability={result.capability}
+                          capability={capabilityProjection}
                           timeLayerEntitlement={runtimeTimeLayerEntitlement}
                         />
                       </>
@@ -1281,37 +1319,23 @@ function ReadingResultForVersion({
     }
 
     return (
-      <div className={surface.readingLayout}>
-        <article className={surface.readingBody} aria-label="解读正文">
-          <header className={surface.readingHeader}>
-            <h2>{productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}</h2>
-            <p>
-              {productId === "bazi-deep"
-                ? "盘面事实与已接纳解读分开展示，便于逐项核对。"
-                : "四柱、日主、月令、大运与已返回的盘面事实。"}
-            </p>
-          </header>
-
-          {productId === "bazi-deep" ? (
-            <section
-              className={surface.readingSection}
-              data-layout="full-width-reading-section"
-              aria-labelledby="reading-judgment-title"
-            >
-              <div>
-                <h2 id="reading-judgment-title">深度解读</h2>
-                <AcceptedCopy text={result.accepted_copy} />
-              </div>
-            </section>
-          ) : null}
-
+      <div className={`${surface.readingLayout} ${styles.chartFirstLayout}`}>
+        <article
+          className={`${surface.readingBody} ${styles.chartFirstBody}`}
+          aria-label="解读正文"
+        >
+          <h2 className={styles.visuallyHidden}>
+            {productId === "bazi-deep" ? "八字深度解读" : "八字命盘"}
+          </h2>
           <section
-            className={surface.readingSection}
+            className={`${surface.readingSection} ${styles.chartFirstSection}`}
             data-layout="full-width-reading-section"
             aria-labelledby="reading-workspace-title"
           >
             <div>
-              <h2 id="reading-workspace-title">排盘结果</h2>
+              <h2 className={styles.visuallyHidden} id="reading-workspace-title">
+                排盘结果
+              </h2>
               {capabilityTier === "C" ? (
                 <Status
                   description="当前能力仍在适配中，暂不可用；未加载未确认的盘面或断法。"
@@ -1326,22 +1350,38 @@ function ReadingResultForVersion({
                 />
               ) : (
                 <>
-                  <p className={surface.inlineNote}>
-                    点击四柱可核对详细盘面；页面只展示系统已经计算并公开的事实。
-                  </p>
                   <div data-bazi-chart-host="true">
                     <BaziChart
                       chart={chart}
                       title="八字命盘"
                       evidence={result.fact_panel?.evidence ?? []}
+                      findings={result.fact_panel?.findings ?? []}
                       showInterpretiveSections={capabilityTier === "A"}
                       timeLayerEntitlement={timeLayerEntitlement}
                     />
                   </div>
+                  {capabilityTier === "B" ? (
+                    <p className={styles.capabilityBoundary} data-capability-tier="B">
+                      当前只提供确定性盘面与事实，不显示解释性内容。
+                    </p>
+                  ) : null}
                 </>
               )}
             </div>
           </section>
+
+          {productId === "bazi-deep" ? (
+            <section
+              className={surface.readingSection}
+              data-layout="full-width-reading-section"
+              aria-labelledby="reading-judgment-title"
+            >
+              <div>
+                <h2 id="reading-judgment-title">深度解读</h2>
+                <AcceptedCopy text={result.accepted_copy} />
+              </div>
+            </section>
+          ) : null}
 
           <section
             className={surface.readingSection}
@@ -1386,6 +1426,7 @@ function ReadingResultForVersion({
           ) : null}
         </article>
         <ArchiveRail
+          chartFirst
           elapsedMs={elapsedMs}
           onRetry={handleRetry}
           readingId={readingId}
