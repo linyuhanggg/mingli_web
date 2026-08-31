@@ -226,7 +226,7 @@ def _project_presented_document(
 ) -> ReadingDocumentV1:
     """Keep public document dependencies inside the presented fact closure."""
 
-    claims = tuple(
+    claims_with_public_support = tuple(
         claim.model_copy(
             update={
                 "fact_refs": tuple(
@@ -235,6 +235,7 @@ def _project_presented_document(
             }
         )
         for claim in document.claims
+        if any(ref in public_fact_refs for ref in claim.fact_refs)
     )
     evidence = tuple(
         item.model_copy(
@@ -247,6 +248,20 @@ def _project_presented_document(
             }
         )
         for item in document.evidence
+        if any(ref in public_fact_refs for ref in item.supports_fact_refs)
+    )
+    retained_evidence_refs = frozenset(item.evidence_ref for item in evidence)
+    claims = tuple(
+        claim.model_copy(
+            update={
+                "evidence_refs": tuple(
+                    ref
+                    for ref in claim.evidence_refs
+                    if ref in retained_evidence_refs
+                )
+            }
+        )
+        for claim in claims_with_public_support
     )
     return document.model_copy(
         update={

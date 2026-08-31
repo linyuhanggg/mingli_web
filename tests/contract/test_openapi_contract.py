@@ -226,6 +226,10 @@ def test_reading_fact_text_and_free_year_set_are_server_projected() -> None:
 
     assert display_text["minLength"] == 1
     assert "never raw JSON" in display_text["description"]
+    assert "bazi-chart-v1" in display_text["description"]
+    assert "ziwei-chart-v1" in display_text["description"]
+    assert "All other Runtime producers" in display_text["description"]
+    assert "not covered by this humanized-text guarantee" in display_text["description"]
     assert "clients must not assume a fixed count" in free_year_set["description"]
     assert "server selects the free civil year" in target_year["description"]
 

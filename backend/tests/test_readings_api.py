@@ -737,7 +737,11 @@ async def replace_prepared_brief(
         if existing_brief is not None:
             await session.delete(existing_brief)
             await session.flush()
-        state_token = await repository.load_state_token(version.id)
+        state_token = (
+            None
+            if version.state_token_fingerprint is None
+            else await repository.load_state_token(version.id)
+        )
         await repository.record_prepared(
             str(job.id),
             Prepared(
@@ -802,7 +806,24 @@ async def save_fact_referencing_document(
                         "certainty_id": "certainty.tendency",
                         "fact_refs": [public_fact_ref, restricted_fact_ref],
                         "finding_refs": [],
-                        "evidence_refs": ["evidence:entitlement-projection"],
+                        "evidence_refs": [
+                            "evidence:entitlement-projection",
+                            "evidence:restricted-only",
+                        ],
+                        "limit_refs": [],
+                        "verification": {"enabled": True},
+                    },
+                    {
+                        "claim_id": "claim:restricted-only",
+                        "section_id": "overview",
+                        "text": "仅付费流月支持的结论不得出现在公开结果。",
+                        "subject_ref": subject_ref,
+                        "dimension_id": "career",
+                        "claim_kind_id": "kind.tendency",
+                        "certainty_id": "certainty.tendency",
+                        "fact_refs": [restricted_fact_ref],
+                        "finding_refs": [],
+                        "evidence_refs": ["evidence:restricted-only"],
                         "limit_refs": [],
                         "verification": {"enabled": True},
                     }
@@ -812,6 +833,11 @@ async def save_fact_referencing_document(
                         "evidence_ref": "evidence:entitlement-projection",
                         "title": "测试依据",
                         "supports_fact_refs": [public_fact_ref, restricted_fact_ref],
+                    },
+                    {
+                        "evidence_ref": "evidence:restricted-only",
+                        "title": "仅付费流月支持依据",
+                        "supports_fact_refs": [restricted_fact_ref],
                     }
                 ],
                 "boundaries": [],
@@ -5734,6 +5760,52 @@ async def test_guest_result_fail_closes_paid_bazi_layers_without_locking_free_ye
     assert_private_headers(result)
 
 
+async def test_fortune_result_keeps_runtime_text_outside_humanized_guarantee(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await client.post(
+        "/api/v1/readings/today",
+        headers=headers,
+        json={"profile_version_id": confirmed["profile_version_id"]},
+    )
+    assert started.status_code == 201, started.text
+    version_id = started.json()["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    fallback_payload = brief_payload(
+        subject_ref,
+        {"kind_id": "day", "start": "2026-08-31", "end": "2026-08-31"},
+    )
+    runtime_text = '{"schema_version":"fortune-result/v1","engine":"fixture"}'
+    fallback_payload["facts"][0]["display_text"] = runtime_text
+    fallback_payload["request_view"]["capability_ids"] = ["fortune"]
+    fallback_payload["request_view"]["object_id"] = "today"
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=ReadingBrief.from_dict(fallback_payload),
+    )
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+
+    assert result.status_code == 200
+    body = result.json()
+    assert body["view_model"] is None
+    assert body["fact_panel"]["facts"][0]["display_text"] == runtime_text
+    assert_private_headers(result)
+
+
 async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
     client: AsyncClient,
     database: Any,
@@ -5851,7 +5923,17 @@ async def test_user_result_keeps_unknown_paid_lock_on_bazi_and_ziwei(
             set(evidence["supports_fact_refs"]) <= public_fact_refs
             for evidence in document["evidence"]
         )
+        assert [claim["claim_id"] for claim in document["claims"]] == [
+            "claim:entitlement-projection"
+        ]
+        assert document["claims"][0]["evidence_refs"] == [
+            "evidence:entitlement-projection"
+        ]
+        assert [evidence["evidence_ref"] for evidence in document["evidence"]] == [
+            "evidence:entitlement-projection"
+        ]
         assert restricted_ref not in str(document)
+        assert "仅付费流月支持" not in str(document)
     assert bazi_payload["document"]["claims"][0]["fact_refs"] == [bazi_public_ref]
     assert ziwei_payload["document"]["claims"][0]["fact_refs"] == [ziwei_public_ref]
     assert bazi_payload["document"]["view_model"]["core_facts"]["month_layers"] is None

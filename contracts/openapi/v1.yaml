@@ -4785,7 +4785,14 @@ components:
         display_text:
           type: string
           minLength: 1
-          description: Stable user-facing text projected from named versioned ViewModel fields; never raw JSON, schema names, or engine identifiers.
+          description: >-
+            Runtime-provided display text. When ReadingResultResponse.view_model
+            resolves to bazi-chart-v1 or ziwei-chart-v1, the service replaces this
+            field with stable user-facing text projected from named versioned
+            ViewModel fields; that presenter output is never raw JSON, schema
+            names, or engine identifiers. All other Runtime producers use the
+            fallback projection and are not covered by this humanized-text
+            guarantee.
     VerifiedExactCitation:
       type: object
       additionalProperties: false
