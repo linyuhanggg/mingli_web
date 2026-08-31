@@ -340,14 +340,21 @@ def _bazi_temporal_layers(
     label = "流月" if granularity == "month" else "流日"
     values: list[str] = []
     for row in rows:
-        ganzhi = _join_nonempty(
-            tuple(
-                value
-                for item in row.ganzhi_segments
-                if (value := _mapping_text(item, "ganzhi")) is not None
+        segments: list[str] = []
+        for item in row.ganzhi_segments:
+            ganzhi = _mapping_text(item, "ganzhi")
+            start_inclusive = _mapping_text(item, "start_inclusive")
+            end_exclusive = _mapping_text(item, "end_exclusive")
+            if ganzhi is None or start_inclusive is None or end_exclusive is None:
+                return None
+            segments.append(
+                f"{ganzhi}（区间"
+                f"{_half_open_interval(start_inclusive, end_exclusive)}）"
             )
-        )
-        values.append(f"{row.period}{f'·{ganzhi}' if ganzhi else ''}")
+        joined = _join_nonempty(segments, separator="；")
+        if joined is None:
+            return None
+        values.append(f"{row.period}·{joined}")
     return _sentence(label, "、".join(values))
 
 

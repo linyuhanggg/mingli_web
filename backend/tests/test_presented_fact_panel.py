@@ -244,6 +244,125 @@ def test_bazi_year_layers_render_each_exact_ganzhi_segment() -> None:
     )
 
 
+def test_bazi_month_and_day_layers_render_every_half_open_segment() -> None:
+    def temporal_layer(
+        *,
+        granularity: str,
+        period: str,
+        segments: list[dict[str, object]],
+    ) -> dict[str, object]:
+        return {
+            "year": 2024,
+            "month": 2,
+            **({"date": period} if granularity == "day" else {}),
+            "ganzhi_segments": segments,
+            "structural_changes": {"status": "fixture"},
+            "seasonal_tiaohou_delta": {"status": "fixture"},
+            "shensha_auxiliary": {"status": "fixture"},
+            "active_luck_cycle": {"status": "fixture"},
+            "calendar_normalization": {"status": "fixture"},
+            "rule_trace": [{"rule_id": f"test.{granularity}"}],
+        }
+
+    brief = _brief(
+        "bazi",
+        [
+            _fact(
+                "bazi",
+                "four_pillars",
+                {"year": "甲戌", "month": "戊辰", "day": "丙戌", "hour": "辛卯"},
+            ),
+            _fact(
+                "bazi",
+                "month_layers",
+                {
+                    "2024-02": temporal_layer(
+                        granularity="month",
+                        period="2024-02",
+                        segments=[
+                            {
+                                "ganzhi": "乙丑",
+                                "start_inclusive": "2024-02-01T00:00:00+08:00",
+                                "end_exclusive": "2024-02-04T16:26:53+08:00",
+                            },
+                            {
+                                "ganzhi": "丙寅",
+                                "start_inclusive": "2024-02-04T16:26:53+08:00",
+                                "end_exclusive": "2024-03-01T00:00:00+08:00",
+                            },
+                        ],
+                    )
+                },
+            ),
+            _fact(
+                "bazi",
+                "day_layers",
+                {
+                    "2024-02-04": temporal_layer(
+                        granularity="day",
+                        period="2024-02-04",
+                        segments=[
+                            {
+                                "ganzhi": "丁酉",
+                                "start_inclusive": "2024-02-04T00:00:00+08:00",
+                                "end_exclusive": "2024-02-04T16:26:53+08:00",
+                                "active_transits": {"month": "乙丑"},
+                            },
+                            {
+                                "ganzhi": "丁酉",
+                                "start_inclusive": "2024-02-04T16:26:53+08:00",
+                                "end_exclusive": "2024-02-05T00:00:00+08:00",
+                                "active_transits": {"month": "丙寅"},
+                            },
+                        ],
+                    ),
+                    "2024-02-05": temporal_layer(
+                        granularity="day",
+                        period="2024-02-05",
+                        segments=[
+                            {
+                                "ganzhi": "戊戌",
+                                "start_inclusive": "2024-02-05T00:00:00+08:00",
+                                "end_exclusive": "2024-02-05T23:00:00+08:00",
+                            },
+                            {
+                                "ganzhi": "己亥",
+                                "start_inclusive": "2024-02-05T23:00:00+08:00",
+                                "end_exclusive": "2024-02-06T00:00:00+08:00",
+                            },
+                        ],
+                    ),
+                },
+            ),
+        ],
+    )
+    view_model = project_runtime_view_model(brief.to_dict(), product_id="bazi")
+
+    assert view_model is not None
+    panel = project_presented_fact_panel(brief, view_model=view_model)
+
+    assert panel is not None
+    texts = _texts(panel)
+    assert texts["month_layers"] == (
+        "流月：2024-02·"
+        "乙丑（区间自2024-02-01T00:00:00+08:00（含）"
+        "至2024-02-04T16:26:53+08:00（不含））；"
+        "丙寅（区间自2024-02-04T16:26:53+08:00（含）"
+        "至2024-03-01T00:00:00+08:00（不含））。"
+    )
+    assert texts["day_layers"] == (
+        "流日：2024-02-04·"
+        "丁酉（区间自2024-02-04T00:00:00+08:00（含）"
+        "至2024-02-04T16:26:53+08:00（不含））；"
+        "丁酉（区间自2024-02-04T16:26:53+08:00（含）"
+        "至2024-02-05T00:00:00+08:00（不含））、"
+        "2024-02-05·戊戌（区间自2024-02-05T00:00:00+08:00（含）"
+        "至2024-02-05T23:00:00+08:00（不含））；"
+        "己亥（区间自2024-02-05T23:00:00+08:00（含）"
+        "至2024-02-06T00:00:00+08:00（不含））。"
+    )
+
+
 def test_ziwei_public_facts_use_named_view_model_text_and_fail_closed() -> None:
     palaces = [
         {
@@ -386,7 +505,13 @@ def test_supported_time_layer_values_are_visible_without_billing_state() -> None
                     "2032-01": {
                         "year": 2032,
                         "month": 1,
-                        "ganzhi_segments": [{"ganzhi": "壬子"}],
+                        "ganzhi_segments": [
+                            {
+                                "ganzhi": "壬子",
+                                "start_inclusive": "2032-01-01T00:00:00+08:00",
+                                "end_exclusive": "2032-02-01T00:00:00+08:00",
+                            }
+                        ],
                         "structural_changes": {"status": "fixture"},
                         "seasonal_tiaohou_delta": {"status": "fixture"},
                         "shensha_auxiliary": {"status": "fixture"},
@@ -450,7 +575,10 @@ def test_supported_time_layer_values_are_visible_without_billing_state() -> None
 
     assert bazi_panel is not None
     assert ziwei_panel is not None
-    assert _texts(bazi_panel)["month_layers"] == "流月：2032-01·壬子。"
+    assert _texts(bazi_panel)["month_layers"] == (
+        "流月：2032-01·壬子（区间自2032-01-01T00:00:00+08:00（含）"
+        "至2032-02-01T00:00:00+08:00（不含））。"
+    )
     assert _texts(ziwei_panel)["monthly_layers"] == "流月：2032年1月。"
 
 

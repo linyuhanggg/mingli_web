@@ -3198,11 +3198,34 @@ class ReadingService:
         )
         if version.status != ReadingStatus.ACCEPTED.value:
             raise ReadingNotAcceptedError("Follow-up requires an Accepted Reading")
-        accepted_copy = await self.repository.load_accepted_copy(version.id)
-        if accepted_copy is None:
+        stored_accepted_copy = await self.repository.load_accepted_copy(version.id)
+        if stored_accepted_copy is None:
             raise ReadingNotAcceptedError("Accepted Copy is missing")
         await self._check_follow_up_contract(root, version)
         prepare = await self.repository.load_prepare(version.id)
+        brief = await self.repository.load_fact_brief(version.id)
+        document = await self.repository.load_reading_document(version.id)
+        view_model = (
+            None
+            if brief is None
+            else project_runtime_view_model(
+                brief.to_dict(),
+                product_id=version.product_id or root.product_id,
+                relationship_type=version.relationship_type,
+            )
+        )
+        presentation = await project_owned_reading_presentation(
+            brief=brief,
+            view_model=view_model,
+            document=document,
+        )
+        accepted_copy = _project_presented_accepted_copy(
+            stored_accepted_copy,
+            source_document=document,
+            presented_document=presentation.document,
+        )
+        if accepted_copy is None:
+            raise ReadingNotAcceptedError("Accepted Copy is unavailable")
         facts: dict[str, object] = {}
         for subject_ref in cast(tuple[object, ...], prepare.intent["subject_refs"]):
             ref = str(subject_ref)

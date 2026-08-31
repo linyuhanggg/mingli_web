@@ -619,7 +619,13 @@ def _bazi_chart_brief(
                     "2026-08": {
                         "year": 2026,
                         "month": 8,
-                        "ganzhi_segments": [{"ganzhi": "甲申"}],
+                        "ganzhi_segments": [
+                            {
+                                "ganzhi": "甲申",
+                                "start_inclusive": "2026-08-01T00:00:00+08:00",
+                                "end_exclusive": "2026-09-01T00:00:00+08:00",
+                            }
+                        ],
                         "structural_changes": {"status": "fixture"},
                         "seasonal_tiaohou_delta": {"status": "fixture"},
                         "shensha_auxiliary": {"status": "fixture"},
@@ -4983,6 +4989,98 @@ async def test_follow_up_creates_a_new_version_with_projected_prior_answer(
         assert loaded.prepare_command.facts[subject_ref]["prior_answer"] == ACCEPTED_COPY
         assert loaded.prepare_command.state_token is not None
         assert loaded.prepare_command.transition is None
+
+
+async def test_follow_up_projects_removed_claims_out_of_owner_and_runtime_copy(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await start_preview(
+        client,
+        headers,
+        confirmed["profile_version_id"],
+        idempotency_key="follow-up-projected-copy-base",
+    )
+    version_id = started["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    brief = _bazi_chart_brief(subject_ref, include_month=True)
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=brief,
+    )
+    await save_fact_referencing_document(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+        product_id="bazi",
+        brief=brief,
+        public_fact_ref=f"fact:{subject_ref}/calculated/bazi/four_pillars",
+        supported_time_fact_ref=(
+            f"fact:{subject_ref}/calculated/bazi/month_layers"
+        ),
+    )
+    expected_copy = "\n\n".join(
+        (
+            "受支持流月事实形成的结论应保持引用闭包。",
+            "公开结果必须保持事实引用闭包。",
+            "公开边界可独立支撑这条结论。",
+            "这条公开说明没有事实依赖。",
+            "本解读仅供传统文化参考，不构成现实决策保证。",
+        )
+    )
+
+    followed = await client.post(
+        f"/api/v1/readings/{version_id}/follow-up",
+        headers={
+            **headers,
+            "Idempotency-Key": "follow-up-projected-copy-v1",
+        },
+        json={},
+    )
+
+    assert followed.status_code == 201, followed.text
+    body = followed.json()
+    assert body["prior_answer"] == expected_copy
+    assert "MIXED-CLAIM-MUST-DROP" not in body["prior_answer"]
+    assert "MIXED-EVIDENCE-MUST-DROP" not in body["prior_answer"]
+
+    async with database.sessions() as session:
+        follow_version = await session.scalar(
+            select(ReadingVersion).where(
+                ReadingVersion.reading_root_id == UUID(started["reading_root_id"]),
+                ReadingVersion.version == 2,
+            )
+        )
+        assert follow_version is not None
+        follow_job = await session.scalar(
+            select(ReadingJobRecord).where(
+                ReadingJobRecord.reading_version_id == follow_version.id,
+            )
+        )
+        assert follow_job is not None
+        readings = __import__(
+            "app.readings.repository",
+            fromlist=["SqlReadingRepository"],
+        )
+        repository = readings.SqlReadingRepository(
+            session,
+            EnvelopeCipher.from_settings(test_settings),
+        )
+        loaded = await repository.load_job(str(follow_job.id))
+        runtime_prior_answer = loaded.prepare_command.facts[subject_ref][
+            "prior_answer"
+        ]
+
+    assert runtime_prior_answer == expected_copy
+    assert "MIXED-CLAIM-MUST-DROP" not in str(runtime_prior_answer)
+    assert "MIXED-EVIDENCE-MUST-DROP" not in str(runtime_prior_answer)
 
 
 async def test_recast_creates_a_new_root_from_an_accepted_reading(
