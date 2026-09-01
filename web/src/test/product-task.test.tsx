@@ -74,6 +74,7 @@ afterEach(() => {
   vi.useRealTimers();
   cleanup();
   vi.clearAllMocks();
+  vi.restoreAllMocks();
 });
 
 function taskShellCss() {
@@ -192,6 +193,11 @@ describe("ProductTaskPage input shell", () => {
 });
 
 describe("ProductTaskExperience retained profile drafts", () => {
+  const chartFocusCases = [
+    { productId: "bazi", productName: "八字" },
+    { productId: "ziwei", productName: "紫微" },
+  ] as const;
+
   const profileRetryCases = [
     { productId: "bazi", exit: "return", editedField: "gender" },
     { productId: "bazi", exit: "timeout", editedField: "birth-date" },
@@ -273,6 +279,80 @@ describe("ProductTaskExperience retained profile drafts", () => {
       } else {
         expect(startMock.mock.calls[1]?.[1]).toBe(firstKey);
       }
+    },
+  );
+
+  it.each(chartFocusCases)(
+    "$productId transfers focus from a delayed skeleton to the named ready region",
+    async ({ productId, productName }) => {
+      taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+      const startMock = productId === "bazi"
+        ? taskMocks.startPreviewReading
+        : taskMocks.startZiweiReading;
+      let releaseStart!: (value: { reading_version_id: string }) => void;
+      startMock.mockReturnValue(new Promise((resolve) => {
+        releaseStart = resolve;
+      }));
+      const focusSpy = vi.spyOn(HTMLElement.prototype, "focus");
+
+      render(<ProductTaskPage productId={productId} />);
+      expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+      vi.useFakeTimers();
+      fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+      await flushChartStart();
+      act(() => vi.advanceTimersByTime(300));
+
+      const waitingRegion = screen.getByLabelText(`正在同步${productName}盘面`, {
+        selector: `[data-chart-skeleton='${productId}']`,
+      });
+      expect(waitingRegion).toHaveFocus();
+
+      await act(async () => {
+        releaseStart({ reading_version_id: `ready-${productId}` });
+        for (let index = 0; index < 8; index += 1) {
+          await Promise.resolve();
+        }
+      });
+
+      const readyRegion = screen.getByRole("region", {
+        name: `${productName}盘面已就绪`,
+      });
+      expect(readyRegion).toHaveAttribute("tabindex", "-1");
+      expect(readyRegion).toHaveFocus();
+      expect(document.activeElement).not.toBe(document.body);
+      expect(focusSpy).toHaveBeenLastCalledWith({ preventScroll: true });
+      expect(screen.queryByLabelText(`正在同步${productName}盘面`, {
+        selector: `[data-chart-skeleton='${productId}']`,
+      })).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(chartFocusCases)(
+    "$productId does not focus the ready region after a sub-300ms success",
+    async ({ productId, productName }) => {
+      taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+      const startMock = productId === "bazi"
+        ? taskMocks.startPreviewReading
+        : taskMocks.startZiweiReading;
+      startMock.mockResolvedValue({ reading_version_id: `fast-${productId}` });
+
+      render(<ProductTaskPage productId={productId} />);
+      expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+      vi.useFakeTimers();
+      const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+      submit.focus();
+      fireEvent.click(submit);
+      await flushChartStart();
+
+      const readyRegion = screen.getByRole("region", {
+        name: `${productName}盘面已就绪`,
+      });
+      expect(readyRegion).not.toHaveFocus();
+      expect(screen.queryByLabelText(`正在同步${productName}盘面`, {
+        selector: `[data-chart-skeleton='${productId}']`,
+      })).not.toBeInTheDocument();
     },
   );
 

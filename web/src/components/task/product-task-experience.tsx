@@ -436,6 +436,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [busy, setBusy] = useState(false);
   const [chartWaitAttempt, setChartWaitAttempt] = useState<number | null>(null);
   const [showChartSkeleton, setShowChartSkeleton] = useState(false);
+  const [focusChartReadyReveal, setFocusChartReadyReveal] = useState(false);
   const [canReturnFromChartWait, setCanReturnFromChartWait] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
@@ -727,6 +728,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     if (chartAttemptId !== null) {
       chartWaitAttemptRef.current = chartAttemptId;
       setShowChartSkeleton(false);
+      setFocusChartReadyReveal(false);
       setCanReturnFromChartWait(false);
       setChartWaitAttempt(chartAttemptId);
     }
@@ -896,6 +898,14 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           chartAttemptIsActive,
         );
         if (!chartAttemptIsActive()) return;
+        if (chartAttemptId !== null) {
+          const waitingRegion = document.querySelector(
+            `[data-chart-skeleton='${product.id}']`,
+          );
+          setFocusChartReadyReveal(
+            waitingRegion?.contains(document.activeElement) === true,
+          );
+        }
         if (product.id === "bazi") {
           const recovery = persistBaziPreviewRecoveryState({
             readingId: response.reading_version_id,
@@ -1554,7 +1564,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       ) : null}
       {stage === "workbench" && product.id === "bazi" && baziPreviewReadingId ? (
         activeBaziRecovery ? (
-          <ChartReadyReveal>
+          <ChartReadyReveal
+            focusOnMount={focusChartReadyReveal}
+            label={`${product.name}盘面已就绪`}
+          >
             <BaziDeepTaskFlow
               onBack={returnToBaziInput}
               previewReadingId={baziPreviewReadingId}
@@ -1600,7 +1613,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         />
       ) : null}
       {stage === "workbench" && product.id === "ziwei" && ziweiPreviewReadingId ? (
-        <ChartReadyReveal>
+        <ChartReadyReveal
+          focusOnMount={focusChartReadyReveal}
+          label={`${product.name}盘面已就绪`}
+        >
           <Status
             actions={
               <button

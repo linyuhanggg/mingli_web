@@ -97,9 +97,26 @@ export function ChartStructureSkeleton({
   );
 }
 
-export function ChartReadyReveal({ children }: Readonly<{ children: ReactNode }>) {
+export type ChartReadyRevealProps = Readonly<{
+  children: ReactNode;
+  focusOnMount?: boolean;
+  label: string;
+}>;
+
+export function ChartReadyReveal({
+  children,
+  focusOnMount = false,
+  label,
+}: ChartReadyRevealProps) {
   const reduceMotion = useSafeReducedMotion();
   const controls = useAnimationControls();
+  const readyRegionRef = useRef<HTMLElement>(null);
+
+  useIsomorphicLayoutEffect(() => {
+    if (focusOnMount) {
+      readyRegionRef.current?.focus({ preventScroll: true });
+    }
+  }, [focusOnMount]);
 
   useIsomorphicLayoutEffect(() => {
     controls.stop();
@@ -116,13 +133,17 @@ export function ChartReadyReveal({ children }: Readonly<{ children: ReactNode }>
   }, [controls, reduceMotion]);
 
   return (
-    <motion.div
+    <motion.section
       animate={controls}
+      aria-label={label}
+      className={styles.ready}
       data-chart-ready-reveal="true"
       initial={false}
+      ref={readyRegionRef}
       style={{ opacity: 1 }}
+      tabIndex={-1}
     >
       {children}
-    </motion.div>
+    </motion.section>
   );
 }
