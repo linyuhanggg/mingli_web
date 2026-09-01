@@ -6,6 +6,11 @@ import { useEffect, useId, useState, type FormEvent } from "react";
 import { Container } from "./container";
 import { PublicPageShell } from "./public-page-shell";
 import { Status, type CoreStatusState } from "./ui/status";
+import {
+  formatProfileOption,
+  listProfiles,
+  type ProfileSummary,
+} from "@/lib/api";
 import styles from "./life-kline-page.module.css";
 
 export type LifeKlineViewState =
@@ -26,6 +31,8 @@ type LifeKlinePageProps = Readonly<{
   profileOptions?: readonly LifeKlineProfileOption[];
 }>;
 
+type ProfileLoadState = "idle" | "loading" | "error" | "success";
+
 const breadcrumbState: Readonly<Record<LifeKlineViewState, CoreStatusState>> = {
   "need-input": "need-input",
   "select-profile": "need-input",
@@ -34,17 +41,61 @@ const breadcrumbState: Readonly<Record<LifeKlineViewState, CoreStatusState>> = {
   error: "error",
 };
 
+function toProfileOption(profile: ProfileSummary): LifeKlineProfileOption {
+  return {
+    id: profile.profile_version_id,
+    label: formatProfileOption(profile),
+    versionLabel: `版本 ${profile.version}`,
+  };
+}
+
 export function LifeKlinePage({
   initialState = "need-input",
-  profileOptions = [],
+  profileOptions,
 }: LifeKlinePageProps) {
   const [viewState, setViewState] = useState<LifeKlineViewState>(initialState);
   const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [loadedProfileOptions, setLoadedProfileOptions] = useState<
+    readonly LifeKlineProfileOption[]
+  >([]);
+  const [profileLoadState, setProfileLoadState] = useState<ProfileLoadState>(
+    profileOptions === undefined ? "idle" : "success",
+  );
+  const [profileLoadAttempt, setProfileLoadAttempt] = useState(0);
   const [showLoadingPlaceholder, setShowLoadingPlaceholder] = useState(false);
   const [canCancel, setCanCancel] = useState(false);
   const [timedOut, setTimedOut] = useState(false);
   const profileGroupId = useId();
-  const selectedProfile = profileOptions.find(({ id }) => id === selectedProfileId) ?? null;
+  const availableProfiles = profileOptions ?? loadedProfileOptions;
+  const selectedProfile =
+    availableProfiles.find(({ id }) => id === selectedProfileId) ?? null;
+
+  useEffect(() => {
+    if (viewState !== "select-profile" || profileOptions !== undefined) return;
+
+    let active = true;
+
+    listProfiles()
+      .then(({ profiles }) => {
+        if (!active) return;
+        const nextProfiles = profiles.map(toProfileOption);
+        setLoadedProfileOptions(nextProfiles);
+        setSelectedProfileId((currentId) =>
+          nextProfiles.some(({ id }) => id === currentId) ? currentId : "",
+        );
+        setProfileLoadState("success");
+      })
+      .catch(() => {
+        if (!active) return;
+        setLoadedProfileOptions([]);
+        setSelectedProfileId("");
+        setProfileLoadState("error");
+      });
+
+    return () => {
+      active = false;
+    };
+  }, [profileLoadAttempt, profileOptions, viewState]);
 
   useEffect(() => {
     if (viewState !== "loading") return;
@@ -82,6 +133,18 @@ export function LifeKlinePage({
     beginLoading();
   }
 
+  function retryProfileLoad() {
+    setProfileLoadState("loading");
+    setProfileLoadAttempt((attempt) => attempt + 1);
+  }
+
+  function openProfilePicker() {
+    if (profileOptions === undefined) {
+      setProfileLoadState("loading");
+    }
+    setViewState("select-profile");
+  }
+
   const identity = selectedProfile ? (
     <div className={styles.identity} aria-label="当前档案">
       <span>
@@ -89,7 +152,7 @@ export function LifeKlinePage({
         <strong>{selectedProfile.label}</strong>
       </span>
       <span className={styles.version}>{selectedProfile.versionLabel}</span>
-      <button className={styles.textButton} type="button" onClick={() => setViewState("select-profile")}>
+      <button className={styles.textButton} type="button" onClick={openProfilePicker}>
         切换档案
       </button>
     </div>
@@ -103,7 +166,7 @@ export function LifeKlinePage({
         actions={
           <>
             <Link href="/account/profiles/new">去建档</Link>
-            <button data-variant="secondary" type="button" onClick={() => setViewState("select-profile")}>
+            <button data-variant="secondary" type="button" onClick={openProfilePicker}>
               选择已有档案
             </button>
           </>
@@ -116,12 +179,42 @@ export function LifeKlinePage({
   } else if (viewState === "select-profile") {
     stateContent = (
       <div className={styles.stateStack}>
-        <Status
-          description="只选择档案版本；本页不会显示姓名以外的个人资料，也不会在浏览器中推算走势。"
-          state={profileOptions.length > 0 ? "need-input" : "empty"}
-          title="选择档案"
-        />
-        {profileOptions.length > 0 ? (
+        {profileLoadState === "idle" || profileLoadState === "loading" ? (
+          <Status
+            description="正在读取当前账号可用的确认档案；等待期间不会使用默认档案或演示数据。"
+            state="loading"
+            title="正在加载档案"
+          />
+        ) : null}
+        {profileLoadState === "error" ? (
+          <Status
+            actions={
+              <>
+                <button type="button" onClick={retryProfileLoad}>
+                  重新加载档案
+                </button>
+                <button
+                  data-variant="secondary"
+                  type="button"
+                  onClick={() => setViewState("need-input")}
+                >
+                  返回
+                </button>
+              </>
+            }
+            description="这次没有读到可确认的档案列表。页面不会把失败当成空列表，也不会选择默认档案。"
+            state="error"
+            title="档案读取失败"
+          />
+        ) : null}
+        {profileLoadState === "success" ? (
+          <Status
+            description="只选择档案版本；本页不会显示姓名以外的个人资料，也不会在浏览器中推算走势。"
+            state={availableProfiles.length > 0 ? "need-input" : "empty"}
+            title="选择档案"
+          />
+        ) : null}
+        {profileLoadState === "success" && availableProfiles.length > 0 ? (
           <form className={styles.profileForm} onSubmit={submitProfile}>
             <fieldset aria-describedby={`${profileGroupId}-hint`}>
               <legend>可用档案</legend>
@@ -129,7 +222,7 @@ export function LifeKlinePage({
                 请选择一个不透明档案版本，再读取当前能力状态。
               </p>
               <div className={styles.profileOptions}>
-                {profileOptions.map((profile) => (
+                {availableProfiles.map((profile) => (
                   <label className={styles.profileOption} key={profile.id}>
                     <input
                       checked={selectedProfileId === profile.id}
@@ -155,7 +248,8 @@ export function LifeKlinePage({
               </button>
             </div>
           </form>
-        ) : (
+        ) : null}
+        {profileLoadState === "success" && availableProfiles.length === 0 ? (
           <div className={styles.emptyProfiles} role="status">
             <p>当前没有可在此页读取的档案。</p>
             <div className={styles.inlineActions}>
@@ -167,7 +261,7 @@ export function LifeKlinePage({
               </button>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
     );
   } else if (viewState === "loading") {
@@ -216,7 +310,7 @@ export function LifeKlinePage({
               <button type="button" onClick={beginLoading}>
                 刷新状态
               </button>
-              <button data-variant="secondary" type="button" onClick={() => setViewState("select-profile")}>
+              <button data-variant="secondary" type="button" onClick={openProfilePicker}>
                 切换档案
               </button>
               <Link data-variant="secondary" href="/">

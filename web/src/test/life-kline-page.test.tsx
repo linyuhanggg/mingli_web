@@ -2,13 +2,15 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import LifeKlineRoute, { metadata } from "@/app/life-kline/page";
 import {
   LifeKlinePage,
   type LifeKlineViewState,
 } from "@/components/life-kline-page";
+
+const mockListProfiles = vi.hoisted(() => vi.fn());
 
 vi.mock("next/navigation", () => ({
   usePathname: () => "/life-kline",
@@ -17,7 +19,12 @@ vi.mock("next/navigation", () => ({
 vi.mock("@/lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("@/lib/api")>()),
   getAccount: vi.fn(() => new Promise(() => undefined)),
+  listProfiles: mockListProfiles,
 }));
+
+beforeEach(() => {
+  mockListProfiles.mockReset().mockResolvedValue({ profiles: [] });
+});
 
 afterEach(() => {
   vi.useRealTimers();
@@ -33,7 +40,7 @@ const stateCases: readonly [LifeKlineViewState, string][] = [
 
 describe("/life-kline honest non-ready states", () => {
   it.each(stateCases)("renders %s without a ready result", (state, title) => {
-    render(<LifeKlinePage initialState={state} />);
+    render(<LifeKlinePage initialState={state} profileOptions={[]} />);
 
     const main = screen.getByRole("main");
     expect(within(main).getByRole("heading", { level: 1, name: "人生 K 线" })).toBeVisible();
@@ -42,16 +49,68 @@ describe("/life-kline honest non-ready states", () => {
     expect(main.querySelector('[data-state="ready"]')).toBeNull();
   });
 
-  it("moves from need-input to an honest empty profile picker", () => {
+  it("loads the real profile list and distinguishes loading from empty", async () => {
+    let resolveProfiles!: (value: { profiles: [] }) => void;
+    mockListProfiles.mockReturnValueOnce(
+      new Promise<{ profiles: [] }>((resolvePromise) => {
+        resolveProfiles = resolvePromise;
+      }),
+    );
     render(<LifeKlinePage />);
 
     fireEvent.click(screen.getByRole("button", { name: "选择已有档案" }));
+    expect(screen.getByRole("heading", { level: 2, name: "正在加载档案" })).toBeVisible();
+    expect(mockListProfiles).toHaveBeenCalledTimes(1);
+
+    await act(async () => resolveProfiles({ profiles: [] }));
+
     expect(screen.getByRole("heading", { level: 2, name: "选择档案" })).toBeVisible();
     expect(screen.getByText("当前没有可在此页读取的档案。")).toBeVisible();
     expect(screen.getByRole("link", { name: "管理受测人档案" })).toHaveAttribute(
       "href",
       "/account/profiles",
     );
+  });
+
+  it("fails closed when profiles cannot be loaded and supports an explicit retry", async () => {
+    mockListProfiles.mockRejectedValueOnce(new Error("offline"));
+    render(<LifeKlinePage initialState="select-profile" />);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "档案读取失败" }),
+    ).toBeVisible();
+    expect(screen.queryByText("当前没有可在此页读取的档案。")).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "重新加载档案" }));
+
+    expect(await screen.findByText("当前没有可在此页读取的档案。")).toBeVisible();
+    expect(mockListProfiles).toHaveBeenCalledTimes(2);
+  });
+
+  it("maps a real saved profile response into an opaque selectable option", async () => {
+    mockListProfiles.mockResolvedValueOnce({
+      profiles: [
+        {
+          profile_id: "profile-a",
+          profile_version_id: "profile-version-a",
+          subject_ref: "profile-version:profile-version-a",
+          version: 3,
+          display_name: "测试档案甲",
+          created_at: "2026-08-31T00:00:00Z",
+        },
+      ],
+    });
+    render(<LifeKlinePage initialState="select-profile" />);
+
+    const profile = await screen.findByRole("radio", { name: /测试档案甲/ });
+    expect(profile).toHaveAttribute("value", "profile-version-a");
+    expect(screen.getByText("版本 3")).toBeVisible();
+
+    fireEvent.click(profile);
+    fireEvent.click(screen.getByRole("button", { name: "读取人生 K 线状态" }));
+
+    expect(screen.getByRole("heading", { level: 2, name: "正在读取时间层事实" })).toBeVisible();
+    expect(screen.queryByText(/出生|生辰|profile-version-a/)).not.toBeInTheDocument();
   });
 
   it("accepts a supplied opaque profile choice and enters loading without exposing birth data", () => {
@@ -117,5 +176,19 @@ describe("/life-kline honest non-ready states", () => {
     expect(source).not.toMatch(/Math\.random|fixture|0\s*[–-]\s*100/i);
     expect(source).not.toMatch(/life-kline-chart|open\s*[,/:]|high\s*[,/:]|low\s*[,/:]|close\s*[,/:]/i);
     expect(source).not.toMatch(/干支.*计算|五行.*计算|命理.*计算/);
+  });
+
+  it("keeps ordinary public headings on the inherited UI sans family", () => {
+    const lifeKlineStyles = readFileSync(
+      resolve(process.cwd(), "src/components/life-kline-page.module.css"),
+      "utf8",
+    );
+    const retiredStyles = readFileSync(
+      resolve(process.cwd(), "src/components/retired-public-surface.module.css"),
+      "utf8",
+    );
+
+    expect(lifeKlineStyles).not.toContain("font-family: var(--ds-font-domain)");
+    expect(retiredStyles).not.toContain("font-family: var(--ds-font-domain)");
   });
 });

@@ -22,7 +22,6 @@
 
 .header h1 {
   margin: 0;
-  font-family: var(--ds-font-domain);
   font-size: clamp(var(--ds-text-30), 5vw, var(--ds-text-36));
   font-weight: 600;
   line-height: var(--ds-leading-title);
