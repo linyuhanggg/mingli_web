@@ -40,11 +40,13 @@ const profileLoginHref = loginContinueHref(
   "?state=select-profile",
 );
 
-const breadcrumbState: Readonly<Record<LifeKlineViewState, CoreStatusState>> = {
+const breadcrumbState: Readonly<
+  Record<LifeKlineViewState, CoreStatusState | undefined>
+> = {
   "need-input": "need-input",
   "select-profile": "need-input",
   loading: "loading",
-  unsupported: "empty",
+  unsupported: undefined,
   error: "error",
 };
 
@@ -142,6 +144,11 @@ export function LifeKlinePage({
     event.preventDefault();
     if (!selectedProfileId) return;
     showUnsupported();
+  }
+
+  function cancelProfileSelection() {
+    setSelectedProfileId("");
+    setViewState("need-input");
   }
 
   function retryProfileLoad() {
@@ -273,7 +280,7 @@ export function LifeKlinePage({
               <button className={styles.primaryButton} disabled={!selectedProfileId} type="submit">
                 读取人生 K 线状态
               </button>
-              <button className={styles.secondaryButton} type="button" onClick={() => setViewState("need-input")}>
+              <button className={styles.secondaryButton} type="button" onClick={cancelProfileSelection}>
                 取消
               </button>
             </div>

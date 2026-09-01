@@ -137,6 +137,35 @@ describe("/life-kline honest non-ready states", () => {
     expect(screen.getAllByRole("button", { name: "切换档案" })).toHaveLength(2);
   });
 
+  it("discards an unconfirmed profile when selection is cancelled", () => {
+    render(
+      <LifeKlinePage
+        initialState="select-profile"
+        profileOptions={[
+          { id: "profile-version-a", label: "测试档案甲", versionLabel: "版本 A" },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("radio", { name: /测试档案甲/ }));
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
+
+    expect(screen.getByRole("main")).toHaveAttribute("data-view-state", "need-input");
+    expect(screen.getByRole("heading", { level: 2, name: "需要档案" })).toBeVisible();
+    expect(screen.queryByLabelText("当前档案")).not.toBeInTheDocument();
+  });
+
+  it("keeps unsupported unavailable while omitting an inaccurate breadcrumb badge", () => {
+    render(<LifeKlinePage initialState="unsupported" profileOptions={[]} />);
+
+    expect(
+      screen.getByRole("status", { name: "数据不足，暂不支持绘制" }),
+    ).toHaveAttribute("data-state", "unavailable");
+    expect(
+      screen.getByRole("navigation", { name: "面包屑" }).querySelector("[data-state]"),
+    ).toBeNull();
+  });
+
   it("accepts a supplied opaque profile choice without starting a request that must time out", () => {
     render(
       <LifeKlinePage
