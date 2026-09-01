@@ -28,6 +28,7 @@ VIEW_SCHEMAS = (
     "meihua-chart-v1.schema.json",
     "luming-nayin-chart-v1.schema.json",
     "rhythm-facts-view-v1.schema.json",
+    "life-kline-series-v1.schema.json",
     "taiyi-chart-v1.schema.json",
     "selection-chart-v1.schema.json",
     "fengshui-view-v1.schema.json",
@@ -211,6 +212,94 @@ def _rhythm_payload() -> dict[str, object]:
         "fact_scope": "early_luming_natal_facts",
         "interpretation_status": "facts_only",
         "source_boundary": "只展示 Runtime 四柱纳音事实。",
+    }
+
+
+def _life_kline_series_payload() -> dict[str, object]:
+    return {
+        "schema_version": "life-kline-series/v1",
+        "subject_ref": "profile-version:alice-v1",
+        "status": "unavailable_algorithm_gap",
+        "source_runtime_schema_version": "mingli-life-kline-facts-v1",
+        "source_contract_version": "life-kline-authority-v1",
+        "identity": {
+            "subject_ref": "profile-version:alice-v1",
+            "profile_version_id": "profile-version:alice-v1",
+            "runtime_release": "mingli-master/5.1",
+            "runtime_source_commit": "a" * 40,
+            "runtime_manifest_digest": "b" * 64,
+            "source_fact_digest": "c" * 64,
+            "cache_identity": "d" * 64,
+        },
+        "candidate_time_axes": [
+            {
+                "kind": "major_luck",
+                "unit": "age_years",
+                "source_schema_version": "mingli-bazi-fact-v1",
+                "source_path": "output.luck_cycles.cycles[]",
+                "role": "temporal_key_only",
+                "series_ready": False,
+            },
+            {
+                "kind": "gregorian_year",
+                "unit": "calendar_year",
+                "source_schema_version": "mingli-bazi-fact-v1",
+                "source_path": "fact_extension.facts.year_layers",
+                "role": "temporal_key_only",
+                "series_ready": False,
+            },
+            {
+                "kind": "gregorian_month",
+                "unit": "calendar_month",
+                "source_schema_version": "mingli-bazi-fact-v1",
+                "source_path": "fact_extension.facts.month_layers",
+                "role": "temporal_key_only",
+                "series_ready": False,
+            },
+            {
+                "kind": "civil_day",
+                "unit": "civil_day",
+                "source_schema_version": "mingli-bazi-fact-v1",
+                "source_path": "fact_extension.facts.day_layers",
+                "role": "temporal_key_only",
+                "series_ready": False,
+            },
+        ],
+        "value_axis": {
+            "available": False,
+            "measure_id": None,
+            "unit": None,
+            "range": None,
+            "comparability_key": None,
+            "unavailable_reason": "missing_versioned_comparable_measure",
+        },
+        "candles": {
+            "available": False,
+            "field_set": None,
+            "sampling_rule_id": None,
+            "sampling_rule_version": None,
+            "unavailable_reason": "missing_versioned_candle_sampling_semantics",
+        },
+        "change": {
+            "available": False,
+            "direction_rule_id": None,
+            "delta_unit": None,
+            "unavailable_reason": "missing_authoritative_close_values",
+        },
+        "series": [],
+        "algorithm_gap": {
+            "gap_id": "life-kline.comparable-measure-and-candle-sampling.v1",
+            "user_input_can_resolve": False,
+            "missing_inputs": ["versioned_comparable_measure_definition"],
+            "missing_semantics": ["cross_period_comparability"],
+            "required_versioned_fields": ["measure.id"],
+            "minimum_implementation_slice": [
+                "freeze_one_comparable_measure_and_its_evidence_authority"
+            ],
+        },
+        "limitations": [
+            "当前 Runtime 没有经版本化、校准的可比度量与蜡烛采样规则，人生 K 线只能诚实不可用。"
+        ],
     }
 
 
@@ -470,6 +559,23 @@ def test_rhythm_facts_view_model_is_strict_and_parseable() -> None:
 
     with pytest.raises(ValidationError):
         parse_view_model({**payload, "sound_score": 1})
+
+
+def test_life_kline_series_view_model_is_fail_closed_and_parseable() -> None:
+    payload = _life_kline_series_payload()
+    schema = _schema(SCHEMA_ROOT / "views" / "life-kline-series-v1.schema.json")
+    _draft_validator(schema).validate(payload)
+    parsed = parse_view_model(payload)
+
+    assert parsed.schema_version == "life-kline-series/v1"
+    assert parsed.status == "unavailable_algorithm_gap"
+    assert parsed.series == ()
+    assert parsed.algorithm_gap.user_input_can_resolve is False
+
+    with pytest.raises(ValidationError):
+        parse_view_model({**payload, "series": [{"close": 1}]})
+    with pytest.raises(ValidationError):
+        parse_view_model({**payload, "status": "ready"})
 
 
 def test_projector_requires_a_typed_supported_view_model() -> None:

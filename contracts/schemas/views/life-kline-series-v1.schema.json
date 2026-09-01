@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fateradar.cn/contracts/views/life-kline-series-v1.schema.json",
+  "title": "Life K-line Series ViewModel v1",
+  "description": "Product-facing fail-closed projection of Runtime mingli-life-kline-facts-v1. v1 never unlocks a ready OHLC series.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "subject_ref",
+    "status",
+    "source_runtime_schema_version",
+    "source_contract_version",
+    "identity",
+    "candidate_time_axes",
+    "value_axis",
+    "candles",
+    "change",
+    "series",
+    "algorithm_gap",
+    "limitations"
+  ],
+  "properties": {
+    "schema_version": {"const": "life-kline-series/v1"},
+    "subject_ref": {"type": "string", "minLength": 1},
+    "status": {"const": "unavailable_algorithm_gap"},
+    "source_runtime_schema_version": {"const": "mingli-life-kline-facts-v1"},
+    "source_contract_version": {"const": "life-kline-authority-v1"},
+    "identity": {"$ref": "#/$defs/identity"},
+    "candidate_time_axes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {"$ref": "#/$defs/candidateTimeAxis"}
+    },
+    "value_axis": {"$ref": "#/$defs/unavailableValueAxis"},
+    "candles": {"$ref": "#/$defs/unavailableCandles"},
+    "change": {"$ref": "#/$defs/unavailableChange"},
+    "series": {
+      "type": "array",
+      "maxItems": 0,
+      "items": false
+    },
+    "algorithm_gap": {"$ref": "#/$defs/algorithmGap"},
+    "limitations": {
+      "type": "array",
+      "minItems": 1,
+      "items": {"type": "string", "minLength": 1}
+    }
+  },
+  "$defs": {
+    "opaqueId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:/-]{0,255}$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "sourceCommit": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{40}$"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "subject_ref",
+        "profile_version_id",
+        "runtime_release",
+        "runtime_source_commit",
+        "runtime_manifest_digest",
+        "source_fact_digest",
+        "cache_identity"
+      ],
+      "properties": {
+        "subject_ref": {"$ref": "#/$defs/opaqueId"},
+        "profile_version_id": {"$ref": "#/$defs/opaqueId"},
+        "runtime_release": {"$ref": "#/$defs/opaqueId"},
+        "runtime_source_commit": {"$ref": "#/$defs/sourceCommit"},
+        "runtime_manifest_digest": {"$ref": "#/$defs/sha256"},
+        "source_fact_digest": {"$ref": "#/$defs/sha256"},
+        "cache_identity": {"$ref": "#/$defs/sha256"}
+      }
+    },
+    "candidateTimeAxis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "unit",
+        "source_schema_version",
+        "source_path",
+        "role",
+        "series_ready"
+      ],
+      "properties": {
+        "kind": {
+          "enum": ["major_luck", "gregorian_year", "gregorian_month", "civil_day"]
+        },
+        "unit": {"type": "string", "minLength": 1},
+        "source_schema_version": {"type": "string", "minLength": 1},
+        "source_path": {"type": "string", "minLength": 1},
+        "role": {"const": "temporal_key_only"},
+        "series_ready": {"const": false}
+      }
+    },
+    "unavailableValueAxis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "measure_id",
+        "unit",
+        "range",
+        "comparability_key",
+        "unavailable_reason"
+      ],
+      "properties": {
+        "available": {"const": false},
+        "measure_id": {"type": "null"},
+        "unit": {"type": "null"},
+        "range": {"type": "null"},
+        "comparability_key": {"type": "null"},
+        "unavailable_reason": {"const": "missing_versioned_comparable_measure"}
+      }
+    },
+    "unavailableCandles": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "field_set",
+        "sampling_rule_id",
+        "sampling_rule_version",
+        "unavailable_reason"
+      ],
+      "properties": {
+        "available": {"const": false},
+        "field_set": {"type": "null"},
+        "sampling_rule_id": {"type": "null"},
+        "sampling_rule_version": {"type": "null"},
+        "unavailable_reason": {
+          "const": "missing_versioned_candle_sampling_semantics"
+        }
+      }
+    },
+    "unavailableChange": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "available",
+        "direction_rule_id",
+        "delta_unit",
+        "unavailable_reason"
+      ],
+      "properties": {
+        "available": {"const": false},
+        "direction_rule_id": {"type": "null"},
+        "delta_unit": {"type": "null"},
+        "unavailable_reason": {"const": "missing_authoritative_close_values"}
+      }
+    },
+    "algorithmGap": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "gap_id",
+        "user_input_can_resolve",
+        "missing_inputs",
+        "missing_semantics",
+        "required_versioned_fields",
+        "minimum_implementation_slice"
+      ],
+      "properties": {
+        "gap_id": {
+          "const": "life-kline.comparable-measure-and-candle-sampling.v1"
+        },
+        "user_input_can_resolve": {"const": false},
+        "missing_inputs": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "missing_semantics": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "required_versioned_fields": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        },
+        "minimum_implementation_slice": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "string", "minLength": 1}
+        }
+      }
+    }
+  }
+}

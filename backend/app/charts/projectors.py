@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from collections.abc import Mapping
 from typing import Any, Final, Literal, Protocol, cast
@@ -8,6 +10,11 @@ from pydantic import ValidationError
 
 from app.charts.contracts import (
     DALIUREN_LESSON_UPPERS,
+    LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE,
+    LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS,
+    LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS,
+    LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS,
+    LIFE_KLINE_CANDIDATE_TIME_AXES,
     VIEW_MODEL_TYPES,
     ArtSignal,
     BaziBoundaryTerm,
@@ -73,6 +80,13 @@ from app.charts.contracts import (
     HecanViewV1,
     HexagramSummary,
     HousePosition,
+    LifeKlineAlgorithmGap,
+    LifeKlineCandidateTimeAxis,
+    LifeKlineSeriesIdentity,
+    LifeKlineSeriesV1,
+    LifeKlineUnavailableCandles,
+    LifeKlineUnavailableChange,
+    LifeKlineUnavailableValueAxis,
     LiuyaoChartV1,
     LiuyaoCoreFacts,
     LiuyaoLine,
@@ -1558,6 +1572,193 @@ def project_five_elements_facts_view_model(
             "调候标记只表示月令气候事实，不单独形成调候用神结论。",
             "强弱证据、结构候选与合冲信号只展示 Runtime 机械输出，不形成最终格局或吉凶结论。",
         ),
+    )
+
+
+_LIFE_KLINE_RUNTIME_SCHEMA = "mingli-life-kline-facts-v1"
+_LIFE_KLINE_CONTRACT_VERSION = "life-kline-authority-v1"
+_LIFE_KLINE_STATUS = "unavailable_algorithm_gap"
+_LIFE_KLINE_FORBIDDEN_KEYS = frozenset(
+    {"score", "open", "high", "low", "close", "direction", "delta"}
+)
+_LIFE_KLINE_LIMITATIONS = (
+    "当前 Runtime 没有经版本化、校准的可比度量与蜡烛采样规则，人生 K 线只能诚实不可用。",
+    "Backend/ViewModel 不把既有非分数事实改写成 OHLC、direction 或 delta。",
+    "补全出生资料或登录不能解除算法权威缺口；ready 蜡烛须等待 measure/sampling 合同解锁。",
+)
+
+
+def _life_kline_payload_keys(value: object) -> set[str]:
+    keys: set[str] = set()
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            if isinstance(key, str):
+                keys.add(key)
+            keys.update(_life_kline_payload_keys(child))
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            keys.update(_life_kline_payload_keys(child))
+    return keys
+
+
+def _life_kline_cache_identity_digest(
+    *,
+    schema_version: str,
+    contract_version: str,
+    subject_ref: str,
+    profile_version_id: str,
+    runtime_release: str,
+    runtime_source_commit: str,
+    runtime_manifest_digest: str,
+    source_fact_digest: str,
+) -> str:
+    """Recompute Runtime's frozen cache_identity digest for host integrity checks.
+
+    Input is schema/contract versions plus the six identity fields excluding
+    ``cache_identity`` itself. Encoding matches Runtime
+    ``reading_engine.life_kline._canonical_digest``: UTF-8 JSON, sorted keys,
+    compact separators, ``ensure_ascii=False``, ``allow_nan=False``, SHA-256.
+    """
+
+    rendered = json.dumps(
+        {
+            "schema_version": schema_version,
+            "contract_version": contract_version,
+            "subject_ref": subject_ref,
+            "profile_version_id": profile_version_id,
+            "runtime_release": runtime_release,
+            "runtime_source_commit": runtime_source_commit,
+            "runtime_manifest_digest": runtime_manifest_digest,
+            "source_fact_digest": source_fact_digest,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+    return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
+
+
+def _project_life_kline_identity(
+    value: object,
+    *,
+    expected_subject_ref: str,
+    schema_version: str,
+    contract_version: str,
+) -> LifeKlineSeriesIdentity | None:
+    if not isinstance(value, Mapping):
+        return None
+    try:
+        identity = LifeKlineSeriesIdentity.model_validate(value)
+    except Exception:
+        return None
+    if identity.subject_ref != expected_subject_ref:
+        return None
+    if identity.profile_version_id != expected_subject_ref:
+        # Runtime binds profile_version_id to the opaque subject_ref for this turn.
+        return None
+    expected_cache_identity = _life_kline_cache_identity_digest(
+        schema_version=schema_version,
+        contract_version=contract_version,
+        subject_ref=identity.subject_ref,
+        profile_version_id=identity.profile_version_id,
+        runtime_release=identity.runtime_release,
+        runtime_source_commit=identity.runtime_source_commit,
+        runtime_manifest_digest=identity.runtime_manifest_digest,
+        source_fact_digest=identity.source_fact_digest,
+    )
+    if identity.cache_identity != expected_cache_identity:
+        return None
+    return identity
+
+
+def project_life_kline_series_view_model(
+    brief: Mapping[str, object] | None,
+) -> LifeKlineSeriesV1 | None:
+    """Project only the exact fail-closed Runtime life-kline authority fact."""
+
+    if brief is None or not _capability_is(brief, "bazi"):
+        return None
+    request_view = brief.get("request_view")
+    if not isinstance(request_view, Mapping):
+        return None
+    if request_view.get("object_id") != "life_kline":
+        return None
+    facts = brief.get("facts")
+    subject_ref = _subject_ref(brief, facts)
+    if subject_ref is None:
+        return None
+    fact = _brief_fact_value(facts, "life_kline")
+    if fact is None:
+        return None
+    fact_subject, payload = fact
+    if fact_subject and fact_subject != subject_ref:
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    if _life_kline_payload_keys(payload) & _LIFE_KLINE_FORBIDDEN_KEYS:
+        return None
+    schema_version = payload.get("schema_version")
+    contract_version = payload.get("contract_version")
+    if (
+        schema_version != _LIFE_KLINE_RUNTIME_SCHEMA
+        or contract_version != _LIFE_KLINE_CONTRACT_VERSION
+        or payload.get("status") != _LIFE_KLINE_STATUS
+        or payload.get("series") != []
+    ):
+        return None
+    identity = _project_life_kline_identity(
+        payload.get("identity"),
+        expected_subject_ref=subject_ref,
+        schema_version=_LIFE_KLINE_RUNTIME_SCHEMA,
+        contract_version=_LIFE_KLINE_CONTRACT_VERSION,
+    )
+    if identity is None:
+        return None
+    axes_raw = payload.get("candidate_time_axes")
+    if not isinstance(axes_raw, list) or len(axes_raw) != len(
+        LIFE_KLINE_CANDIDATE_TIME_AXES
+    ):
+        return None
+    try:
+        axes = tuple(
+            LifeKlineCandidateTimeAxis.model_validate(item) for item in axes_raw
+        )
+        value_axis = LifeKlineUnavailableValueAxis.model_validate(
+            payload.get("value_axis")
+        )
+        candles = LifeKlineUnavailableCandles.model_validate(payload.get("candles"))
+        change = LifeKlineUnavailableChange.model_validate(payload.get("change"))
+        algorithm_gap = LifeKlineAlgorithmGap.model_validate(
+            payload.get("algorithm_gap")
+        )
+    except Exception:
+        return None
+    # Exact object/field/order match against the frozen Runtime axes.
+    if axes != LIFE_KLINE_CANDIDATE_TIME_AXES:
+        return None
+    if algorithm_gap.user_input_can_resolve:
+        return None
+    if (
+        algorithm_gap.missing_inputs != LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS
+        or algorithm_gap.missing_semantics
+        != LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS
+        or algorithm_gap.required_versioned_fields
+        != LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS
+        or algorithm_gap.minimum_implementation_slice
+        != LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE
+    ):
+        return None
+    return LifeKlineSeriesV1(
+        subject_ref=subject_ref,
+        identity=identity,
+        candidate_time_axes=axes,
+        value_axis=value_axis,
+        candles=candles,
+        change=change,
+        series=(),
+        algorithm_gap=algorithm_gap,
+        limitations=_LIFE_KLINE_LIMITATIONS,
     )
 
 
@@ -6589,6 +6790,8 @@ def project_runtime_view_model(
         return project_wenshi_view_model(brief)
     if product_id == "five-elements-facts":
         return project_five_elements_facts_view_model(brief)
+    if product_id == "life-kline-series":
+        return project_life_kline_series_view_model(brief)
     if product_id == "rhythm":
         return project_rhythm_facts_view_model(brief)
     if product_id == "chart-similarity":

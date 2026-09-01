@@ -534,6 +534,158 @@ class FiveElementsFactsViewV1(ContractModel):
     limitations: tuple[str, ...]
 
 
+class LifeKlineSeriesIdentity(ContractModel):
+    """Opaque Runtime-bound identity for the life K-line series projection."""
+
+    subject_ref: str = Field(min_length=1, max_length=256)
+    profile_version_id: str = Field(min_length=1, max_length=256)
+    runtime_release: str = Field(min_length=1, max_length=256)
+    runtime_source_commit: str = Field(min_length=40, max_length=40, pattern=r"^[0-9a-f]{40}$")
+    runtime_manifest_digest: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    source_fact_digest: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+    cache_identity: str = Field(min_length=64, max_length=64, pattern=r"^[0-9a-f]{64}$")
+
+
+class LifeKlineCandidateTimeAxis(ContractModel):
+    kind: Literal["major_luck", "gregorian_year", "gregorian_month", "civil_day"]
+    unit: str = Field(min_length=1)
+    source_schema_version: str = Field(min_length=1)
+    source_path: str = Field(min_length=1)
+    role: Literal["temporal_key_only"] = "temporal_key_only"
+    series_ready: Literal[False] = False
+
+
+# Frozen v1 candidate time axes — must stay exact with Runtime life-kline authority.
+LIFE_KLINE_CANDIDATE_TIME_AXES: tuple[LifeKlineCandidateTimeAxis, ...] = (
+    LifeKlineCandidateTimeAxis(
+        kind="major_luck",
+        unit="age_years",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="output.luck_cycles.cycles[]",
+    ),
+    LifeKlineCandidateTimeAxis(
+        kind="gregorian_year",
+        unit="calendar_year",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="fact_extension.facts.year_layers",
+    ),
+    LifeKlineCandidateTimeAxis(
+        kind="gregorian_month",
+        unit="calendar_month",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="fact_extension.facts.month_layers",
+    ),
+    LifeKlineCandidateTimeAxis(
+        kind="civil_day",
+        unit="civil_day",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="fact_extension.facts.day_layers",
+    ),
+)
+
+
+class LifeKlineUnavailableValueAxis(ContractModel):
+    available: Literal[False] = False
+    measure_id: None = None
+    unit: None = None
+    range: None = None
+    comparability_key: None = None
+    unavailable_reason: Literal["missing_versioned_comparable_measure"] = (
+        "missing_versioned_comparable_measure"
+    )
+
+
+class LifeKlineUnavailableCandles(ContractModel):
+    available: Literal[False] = False
+    field_set: None = None
+    sampling_rule_id: None = None
+    sampling_rule_version: None = None
+    unavailable_reason: Literal["missing_versioned_candle_sampling_semantics"] = (
+        "missing_versioned_candle_sampling_semantics"
+    )
+
+
+class LifeKlineUnavailableChange(ContractModel):
+    available: Literal[False] = False
+    direction_rule_id: None = None
+    delta_unit: None = None
+    unavailable_reason: Literal["missing_authoritative_close_values"] = (
+        "missing_authoritative_close_values"
+    )
+
+
+# Frozen v1 algorithm-gap lists — must stay exact with Runtime life-kline authority.
+LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS: tuple[str, ...] = (
+    "versioned_comparable_measure_definition",
+    "calibration_and_validation_corpus",
+)
+LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS: tuple[str, ...] = (
+    "measure_unit_and_range",
+    "measure_polarity",
+    "cross_period_comparability",
+    "open_and_close_sampling_points",
+    "high_and_low_intra_period_resolution",
+    "flat_direction_threshold",
+    "missing_observation_policy",
+)
+LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS: tuple[str, ...] = (
+    "measure.id",
+    "measure.version",
+    "measure.unit",
+    "measure.range",
+    "measure.polarity",
+    "sampling.rule_id",
+    "sampling.rule_version",
+    "comparability.key",
+    "series[].fact_refs",
+    "meta.profile_version_id",
+    "meta.reading_document_version",
+    "meta.runtime_release",
+    "meta.runtime_manifest_digest",
+    "meta.source_fact_digest",
+)
+LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE: tuple[str, ...] = (
+    "freeze_one_comparable_measure_and_its_evidence_authority",
+    "implement_the_measure_as_a_deterministic_versioned_pure_function",
+    "freeze_candle_sampling_semantics_or_remove_ohlc_from_the_product_contract",
+    "derive_direction_and_delta_only_from_authoritative_close_values",
+    "validate_boundaries_missingness_idempotency_and_calibration_before_ready",
+)
+
+
+class LifeKlineAlgorithmGap(ContractModel):
+    gap_id: Literal["life-kline.comparable-measure-and-candle-sampling.v1"] = (
+        "life-kline.comparable-measure-and-candle-sampling.v1"
+    )
+    user_input_can_resolve: Literal[False] = False
+    missing_inputs: tuple[str, ...]
+    missing_semantics: tuple[str, ...]
+    required_versioned_fields: tuple[str, ...]
+    minimum_implementation_slice: tuple[str, ...]
+
+
+class LifeKlineSeriesV1(ContractModel):
+    """Fail-closed product projection of Runtime life-kline authority facts."""
+
+    schema_version: Literal["life-kline-series/v1"] = "life-kline-series/v1"
+    subject_ref: str = Field(min_length=1)
+    status: Literal["unavailable_algorithm_gap"] = "unavailable_algorithm_gap"
+    source_runtime_schema_version: Literal["mingli-life-kline-facts-v1"] = (
+        "mingli-life-kline-facts-v1"
+    )
+    source_contract_version: Literal["life-kline-authority-v1"] = (
+        "life-kline-authority-v1"
+    )
+    identity: LifeKlineSeriesIdentity
+    candidate_time_axes: tuple[LifeKlineCandidateTimeAxis, ...]
+    value_axis: LifeKlineUnavailableValueAxis
+    candles: LifeKlineUnavailableCandles
+    change: LifeKlineUnavailableChange
+    series: tuple[()] = ()
+    algorithm_gap: LifeKlineAlgorithmGap
+    limitations: tuple[str, ...]
+
+
 class FortuneTargetPeriod(ContractModel):
     kind: str = Field(min_length=1)
     start: str = Field(min_length=1)
@@ -3012,6 +3164,7 @@ ViewModel = Annotated[
     | ChartSimilarityViewV1
     | TimeCheckViewV1
     | FiveElementsFactsViewV1
+    | LifeKlineSeriesV1
     | FortuneFactsViewV1
     | ZiweiChartV1
     | QizhengChartV1
@@ -3039,6 +3192,7 @@ VIEW_MODEL_TYPES: dict[str, type[ContractModel]] = {
     "chart-similarity-view/v1": ChartSimilarityViewV1,
     "time-check-view/v1": TimeCheckViewV1,
     "five-elements-facts-view/v1": FiveElementsFactsViewV1,
+    "life-kline-series/v1": LifeKlineSeriesV1,
     "fortune-facts-view/v1": FortuneFactsViewV1,
     "ziwei-chart/v1": ZiweiChartV1,
     "qizheng-chart/v1": QizhengChartV1,

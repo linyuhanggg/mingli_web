@@ -134,6 +134,7 @@ def test_product_policy_rejects_unexposed_runtime_capabilities(
         ("bazi_day_preview", "bazi", "natal", "day"),
         ("bazi_deep", "bazi", "natal", "life"),
         ("five_elements_facts_preview", "bazi", "natal", "life"),
+        ("life_kline_series_preview", "bazi", "life_kline", "life"),
         ("today", "fortune", "near_time_personal", "day"),
         ("near_seven", "fortune", "near_time_personal", "week"),
         ("liuyao_one_question", "liuyao", "concrete_event", "instant"),
@@ -191,6 +192,7 @@ def test_every_p10_provider_has_a_product_action_mapping() -> None:
             "bazi_day_preview",
             "bazi_deep",
             "five_elements_facts_preview",
+            "life_kline_series_preview",
             "chart_similarity_preview",
             "canwen_preview",
             "hecan_preview",
@@ -401,6 +403,33 @@ def test_five_elements_facts_compiler_has_a_narrow_state_dimension() -> None:
             query="不能把事业结论混入事实切片",
             profile=confirmed_profile(compiler),
             dimension_ids=("career",),
+        )
+
+
+def test_life_kline_series_compiler_uses_life_kline_object_and_overview() -> None:
+    compiler = importlib.import_module("app.readings.request_compiler")
+
+    command = compiler.compile_life_kline_series_prepare(
+        action="life_kline_series_preview",
+        query="只展示人生K线权威缺口",
+        profile=confirmed_profile(compiler),
+        dimension_ids=("overview",),
+    )
+
+    assert command.to_dict()["intent"] == {
+        "subject_refs": ["profile-version:test"],
+        "object_id": "life_kline",
+        "dimension_ids": ["overview"],
+        "horizon": {"kind_id": "life", "start": None, "end": None},
+        "capability_id": "bazi",
+        "comparisons": [],
+    }
+    with pytest.raises(compiler.RequestCompilationError, match="outside the product allowlist"):
+        compiler.compile_life_kline_series_prepare(
+            action="life_kline_series_preview",
+            query="不能用 state 维度绕过 life_kline overview",
+            profile=confirmed_profile(compiler),
+            dimension_ids=("state",),
         )
 
 

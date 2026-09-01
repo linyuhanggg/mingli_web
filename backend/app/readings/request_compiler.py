@@ -14,6 +14,7 @@ _BAZI_DIMENSION_IDS = frozenset({"overview", "career"})
 _BAZI_YEAR_MIN = 1800
 _BAZI_YEAR_MAX = 2199
 _FIVE_ELEMENTS_FACTS_DIMENSION_IDS = frozenset({"state"})
+_LIFE_KLINE_SERIES_DIMENSION_IDS = frozenset({"overview"})
 _CHART_SIMILARITY_DIMENSION_IDS = frozenset({"state"})
 _FORTUNE_DIMENSION_IDS = frozenset({"career"})
 _LIUYAO_DIMENSION_IDS = frozenset({"career", "outcome", "state", "timing"})
@@ -423,6 +424,52 @@ def compile_five_elements_facts_prepare(
 
     route = _route_for_compiler(action, expected_capability_id="bazi")
     _validate_dimensions(dimension_ids, allowed=_FIVE_ELEMENTS_FACTS_DIMENSION_IDS)
+    facts: dict[str, object] = {
+        "birth_datetime_or_four_pillars": profile.birth_datetime_or_four_pillars,
+        "timezone": profile.timezone,
+        "location": profile.location,
+        "gender": profile.gender,
+        "time_basis_policy": _runtime_time_basis_policy(profile.time_basis_policy),
+        "zi_hour_policy": _runtime_zi_hour_policy(profile.zi_hour_policy),
+        "longitude": profile.longitude,
+        "latitude": profile.latitude,
+        "coordinate_source": profile.coordinate_source,
+    }
+    return Prepare(
+        query=query,
+        intent=_intent(
+            subject_ref=profile.subject_ref,
+            route=route,
+            dimension_ids=dimension_ids,
+            start=None,
+            end=None,
+        ),
+        facts={profile.subject_ref: facts},
+    )
+
+
+def compile_life_kline_series_prepare(
+    *,
+    action: str,
+    query: str,
+    profile: ConfirmedProfileVersion,
+    dimension_ids: tuple[str, ...],
+) -> Prepare:
+    """Compile the fail-closed life K-line series product.
+
+    The request reuses Bazi natal inputs, but the Runtime object is
+    ``life_kline`` with the ``overview`` dimension only.  Wrong
+    dimension/horizon pairs stop as unsupported before any candle invention.
+    """
+
+    route = _route_for_compiler(action, expected_capability_id="bazi")
+    if route.object_id != "life_kline" or route.horizon_id != "life":
+        raise RequestCompilationError(
+            "life-kline-series requires object_id=life_kline and horizon=life"
+        )
+    _validate_dimensions(dimension_ids, allowed=_LIFE_KLINE_SERIES_DIMENSION_IDS)
+    if not dimension_ids:
+        raise RequestCompilationError("life-kline-series requires the overview dimension")
     facts: dict[str, object] = {
         "birth_datetime_or_four_pillars": profile.birth_datetime_or_four_pillars,
         "timezone": profile.timezone,

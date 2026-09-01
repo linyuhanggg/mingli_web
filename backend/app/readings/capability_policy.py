@@ -92,6 +92,7 @@ _PRODUCT_ROUTES = MappingProxyType(
         "bazi_day_preview": ProductRoute("bazi", "natal", "day"),
         "bazi_deep": ProductRoute("bazi", "natal", "life"),
         "five_elements_facts_preview": ProductRoute("bazi", "natal", "life"),
+        "life_kline_series_preview": ProductRoute("bazi", "life_kline", "life"),
         "chart_similarity_preview": ProductRoute("bazi", "natal", "life"),
         "today": ProductRoute("fortune", "near_time_personal", "day"),
         "near_seven": ProductRoute("fortune", "near_time_personal", "week"),
@@ -269,6 +270,7 @@ _PRODUCT_ALIASES: Final = {
     "qizheng-relationship": "qizheng",
     "ziwei-relationship": "ziwei",
     "bazi-relationship": "bazi",
+    "life-kline-series": "bazi",
     "liuren": "daliuren",
 }
 

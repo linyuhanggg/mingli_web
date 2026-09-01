@@ -1768,6 +1768,140 @@ async def test_same_idempotency_key_returns_the_same_reading_version(
     assert str(keys[0].reading_version_id) == first["reading_version_id"]
 
 
+async def test_life_kline_series_start_is_idempotent_and_rejects_foreign_profile(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    payload = {
+        "profile_version_id": confirmed["profile_version_id"],
+        "dimension_ids": ["overview"],
+    }
+
+    first = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-v1"},
+        json=payload,
+    )
+    second = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-v1"},
+        json=payload,
+    )
+    unsupported = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-bad-dim"},
+        json={**payload, "dimension_ids": ["state"]},
+    )
+
+    assert first.status_code == 201, first.text
+    assert second.status_code == 200, second.text
+    assert second.json()["reading_version_id"] == first.json()["reading_version_id"]
+    assert first.json()["product_id"] == "life-kline-series"
+    assert unsupported.status_code == 400
+
+    foreign = await create_guest(client)
+    denied = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**foreign, "Idempotency-Key": "life-kline-series-foreign"},
+        json=payload,
+    )
+    assert denied.status_code in {403, 404}
+
+
+def test_life_kline_series_product_alias_projects_bazi_capability(
+    tmp_path: Any,
+) -> None:
+    from app.readings.capability_policy import project_capability
+
+    rules = tmp_path / "references" / "index" / "evidence-rules.jsonl"
+    rules.parent.mkdir(parents=True, exist_ok=True)
+    rules.write_text(
+        (
+            '{"system":"bazi","runtime_active":true,'
+            '"evidence_role":"issue_specific_judgment_rule"}\n'
+        ),
+        encoding="utf-8",
+    )
+
+    aliased = project_capability(
+        capability_id="bazi",
+        product_id="life-kline-series",
+        release_root=tmp_path,
+    )
+    unknown = project_capability(
+        capability_id="bazi",
+        product_id="life-kline-series-unknown",
+        release_root=tmp_path,
+    )
+
+    assert aliased.capability_id == "bazi"
+    assert aliased.source_status == "available"
+    assert aliased.tier == "A"
+    assert unknown.capability_id == "life-kline-series-unknown"
+    assert unknown.source_status == "unavailable"
+    assert unknown.tier == "C"
+
+
+async def test_completed_life_kline_series_result_maps_bazi_capability(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    from test_life_kline_series_projector import (
+        _life_kline_brief,
+        _runtime_life_kline_fact,
+    )
+
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    started = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-result-cap"},
+        json={
+            "profile_version_id": confirmed["profile_version_id"],
+            "dimension_ids": ["overview"],
+        },
+    )
+    assert started.status_code == 201, started.text
+    version_id = started.json()["reading_version_id"]
+    subject_ref = f"profile-version:{confirmed['profile_version_id']}"
+    fact = _runtime_life_kline_fact(subject_ref=subject_ref)
+    brief = ReadingBrief.from_dict(
+        _life_kline_brief(fact_value=fact, subject_ref=subject_ref)
+    )
+    await replace_prepared_brief(
+        database,
+        test_settings,
+        version_id=version_id,
+        brief=brief,
+    )
+    await advance_to_accepted(
+        database,
+        test_settings,
+        version_id=version_id,
+        subject_ref=subject_ref,
+    )
+
+    result = await client.get(f"/api/v1/readings/{version_id}/result")
+
+    assert result.status_code == 200, result.text
+    body = result.json()
+    assert body["status"] == "accepted"
+    # Product alias must resolve to the Bazi capability that produced the reading,
+    # not a synthetic capability_id="life-kline-series" placeholder.
+    assert body["capability"]["capability_id"] == "bazi"
+    assert body["view_model"]["schema_version"] == "life-kline-series/v1"
+    assert body["view_model"]["status"] == "unavailable_algorithm_gap"
+    assert body["view_model"]["series"] == []
+    assert body["view_model"]["algorithm_gap"]["user_input_can_resolve"] is False
+    assert_private_headers(result)
+
+
 async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
     database: Any,
     test_settings: Any,
@@ -5852,6 +5986,14 @@ async def test_list_readings_is_isolated_per_owner_and_survives_user_claim(
             {"dimension_ids": ["state"]},
             "bazi",
             "five-elements-facts",
+            "life",
+            True,
+        ),
+        (
+            "/api/v1/readings/life-kline-series",
+            {"dimension_ids": ["overview"]},
+            "bazi",
+            "life-kline-series",
             "life",
             True,
         ),
