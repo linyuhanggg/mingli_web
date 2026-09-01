@@ -42,6 +42,7 @@ from .fact_index import build_fact_index, indexed_fact_payload
 from . import (
     calendar_core,
     fengshui,
+    life_kline,
     physiognomy,
     liuyao,
     luming,
@@ -1867,6 +1868,9 @@ class _AdapterSeam:
                 request.reference_datetime,
             ),
         )
+        finalize_extension = getattr(self, "finalize_fact_extension", None)
+        if callable(finalize_extension):
+            extended = finalize_extension(request, extended)
         if extended.result_hash != calculation.base().result_hash:
             raise ProviderActionError(
                 "extension_digest_changed",
@@ -3038,6 +3042,24 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
         )
 
     @staticmethod
+    def unsupported_request(request: ReadingRequest) -> str | None:
+        """Reject life-K-line selections outside their one exact gap scope."""
+
+        if not request.intent:
+            return None
+        frame = IntentFrame.from_dict(request.intent)
+        if frame.calculation_object != "life_kline":
+            return None
+        if (
+            frame.question_dimensions != ("overview",)
+            or frame.horizon.kind != "life"
+            or frame.horizon.start is not None
+            or frame.horizon.end is not None
+        ):
+            return "life_kline_scope_unsupported"
+        return None
+
+    @staticmethod
     def missing_required_inputs(
         request: ReadingRequest,
     ) -> tuple[str, ...]:
@@ -3400,6 +3422,55 @@ class BaziProvider(_AdapterSeam, _SourceRouteMixin):
             status="complete",
             facts=facts,
             rule_traces=traces,
+        )
+
+    def finalize_fact_extension(
+        self,
+        request: ReadingRequest,
+        calculation: CalculationResult,
+    ) -> CalculationResult:
+        """Bind the life-K-line gap to one profile and signed Runtime.
+
+        The Bazi calculation stays unchanged.  This finalizer only augments a
+        life-horizon overview extension selected through the dedicated
+        ``life_kline`` calculation object.  Existing natal turns are unchanged.
+        """
+
+        extension = calculation.fact_extension
+        if (
+            extension is None
+            or extension.status != "complete"
+            or extension.requested_dimensions != ("overview",)
+            or str(extension.horizon.get("kind") or "") != "life"
+            or extension.horizon.get("start") is not None
+            or extension.horizon.get("end") is not None
+        ):
+            return calculation
+        frame = IntentFrame.from_dict(request.intent)
+        if frame.calculation_object != "life_kline":
+            return calculation
+        subject_refs = tuple(frame.subject_refs) or ("current_user",)
+        if len(subject_refs) != 1:
+            raise ValueError("life K-line facts require exactly one subject")
+        subject_ref = str(subject_refs[0])
+        release_identity = life_kline.load_runtime_release_identity(
+            self.skill_dir
+        )
+        payload = life_kline.build_unavailable_life_kline_facts(
+            subject_ref=subject_ref,
+            profile_version_id=subject_ref,
+            source_fact_digest=str(calculation.facts.get("natal_fact_digest") or ""),
+            **release_identity,
+        )
+        life_kline.validate_life_kline_facts(payload)
+        return _attach_extension(
+            calculation.base(),
+            extension.requested_dimensions,
+            dict(extension.horizon),
+            status=extension.status,
+            facts={**copy.deepcopy(extension.facts), "life_kline": payload},
+            unsupported_dimensions=extension.unsupported_dimensions,
+            rule_traces=extension.rule_traces,
         )
 
 

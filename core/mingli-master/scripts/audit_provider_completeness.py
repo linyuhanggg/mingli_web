@@ -13,7 +13,7 @@ import re
 import sys
 import tempfile
 from collections import Counter
-from collections.abc import Mapping, Sequence
+from collections.abc import Iterator, Mapping, Sequence
 from datetime import date
 from pathlib import Path
 from typing import Any
@@ -61,7 +61,12 @@ from reading_engine.contracts import (
 from reading_engine.evidence_rules import load_evidence_rules, match_rule
 from reading_engine.fact_index import build_fact_index
 from reading_engine.factory import build_production_engine
-from reading_engine.provider_protocol import ProviderRequest
+from reading_engine.catalog import CatalogLoader
+from reading_engine.provider_protocol import (
+    ProviderContext,
+    ProviderPreparation,
+    ProviderRequest,
+)
 from reading_engine.providers import (
     BaziProvider,
     FengshuiProvider,
@@ -575,6 +580,153 @@ def _probe_horizon(system: str, kind: str) -> dict[str, Any]:
     return {"kind": kind, "start": value, "end": value}
 
 
+def _synthetic_release_closure_identity(manifest: Mapping[str, Any]) -> str:
+    """Return a history-independent identity for a completeness-only Runtime.
+
+    Production releases retain their real ``source_commit``.  The source-tree
+    completeness probe instead materializes an ephemeral manifest so it can use
+    the same signed adapter boundary.  Its output must depend on the selected
+    Runtime bytes and modes, not on whether an identical closure was reviewed as
+    several commits or as one squash commit.
+
+    The versioned payload deliberately excludes ``source_commit`` and keeps 160
+    bits of SHA-256 to satisfy the existing lowercase 40-hex manifest field.
+    """
+
+    files = manifest.get("files")
+    modes = manifest.get("modes")
+    if not isinstance(files, Mapping) or not files:
+        raise ValueError("release closure files must be a non-empty mapping")
+    if not isinstance(modes, Mapping) or set(modes) != set(files):
+        raise ValueError("release closure modes must match release files")
+    identity = canonical_digest(
+        {
+            "schema_version": "mingli-completeness-runtime-closure-identity-v1",
+            "release_manifest_schema": manifest.get("schema_version"),
+            "release": manifest.get("release"),
+            "files": dict(files),
+            "modes": dict(modes),
+        }
+    )[:40]
+    if re.fullmatch(r"[0-9a-f]{40}", identity) is None:
+        raise ValueError("synthetic release closure identity is invalid")
+    return identity
+
+
+@contextlib.contextmanager
+def _materialized_bazi_probe_root(root: Path) -> Iterator[Path]:
+    """Provide the signed Runtime identity required by the Bazi adapter.
+
+    Source-tree completeness runs do not carry a release manifest, while an
+    installed Runtime does.  Materializing the declared production closure
+    keeps this probe on the same signed adapter boundary used by hosts instead
+    of injecting a source commit or manifest digest into the life-K-line fact.
+    """
+
+    manifest_path = root / ".mingli-release-manifest.json"
+    if manifest_path.exists() or manifest_path.is_symlink():
+        yield root
+        return
+
+    # Local import avoids making release_deploy's lazy completeness-registry
+    # check a module-import cycle.
+    import release_deploy
+
+    selected = release_deploy.tracked_release_files(root)
+    head_commit = release_deploy.source_commit(root)
+    committed_modes = release_deploy.committed_release_modes(
+        root,
+        selected,
+        head_commit,
+    )
+    manifest = release_deploy.build_manifest(
+        root,
+        selected,
+        head_commit,
+        committed_modes=committed_modes,
+    )
+    manifest["source_commit"] = _synthetic_release_closure_identity(manifest)
+    with tempfile.TemporaryDirectory(
+        prefix="mingli-bazi-completeness-"
+    ) as temporary:
+        installed = Path(temporary) / "runtime"
+        release_deploy.sync_destination(
+            root,
+            installed,
+            manifest,
+            apply=True,
+        )
+        yield installed
+
+
+def _bazi_life_kline_probe_request() -> ProviderRequest:
+    subject_ref = "profile-version:task7n-bazi-life-kline"
+    return ProviderRequest(
+        query="Task 7N Bazi life-K-line declaration probe",
+        subject_refs=(subject_ref,),
+        object_id="life_kline",
+        dimension_ids=("overview",),
+        horizon={"kind": "life", "start": None, "end": None},
+        facts={
+            subject_ref: {
+                "birth_datetime_or_four_pillars": "2000-10-18T06:45:00+08:00",
+                "timezone": "Asia/Shanghai",
+                "location": "上海",
+                "gender": "male",
+                "time_basis_policy": "civil",
+            }
+        },
+    )
+
+
+@contextlib.contextmanager
+def _live_provider_probe(
+    system: str,
+    *,
+    root: Path,
+) -> Iterator[
+    tuple[
+        Any,
+        CalculationResult,
+        CalculationResult,
+        dict[str, tuple[CalculationResult, CalculationResult]],
+    ]
+]:
+    """Run two calculations, seeding adapter-only extension scopes when needed."""
+
+    provider_class = PROVIDER_CLASSES[system]
+    if system != "bazi":
+        provider = provider_class(root)
+        request = _representative_request(system, root=root)
+        yield (
+            provider,
+            provider.calculate(request),
+            provider.calculate(request),
+            {},
+        )
+        return
+
+    with _materialized_bazi_probe_root(root) as probe_root:
+        provider = provider_class(probe_root)
+        descriptor = CatalogLoader(
+            probe_root / "resources/runtime"
+        ).load().descriptor(system)
+        provider.bind_descriptor(descriptor)
+        request = _bazi_life_kline_probe_request()
+        first_prepared = provider.prepare(request, ProviderContext())
+        second_prepared = provider.prepare(request, ProviderContext())
+        if not isinstance(first_prepared, ProviderPreparation) or not isinstance(
+            second_prepared,
+            ProviderPreparation,
+        ):
+            raise RuntimeError(
+                "bazi life-K-line adapter probe did not return ProviderPreparation"
+            )
+        first = first_prepared.calculation
+        second = second_prepared.calculation
+        yield provider, first, second, {"life": (first, second)}
+
+
 def audit_live_provider_contract(
     system: str,
     *,
@@ -588,75 +740,83 @@ def audit_live_provider_contract(
     extension_digests: dict[str, str] = {}
     deterministic = False
     capability = PROVIDER_CAPABILITIES[system]
-    provider_class = PROVIDER_CLASSES[system]
     try:
-        provider = provider_class(root)
-        first = provider.calculate(_representative_request(system, root=root))
-        second = provider.calculate(_representative_request(system, root=root))
-        if first.system != system or second.system != system:
-            findings.append(f"{system}: provider returned the wrong system")
-        if first.provider_id != provider_class.provider_id:
-            findings.append(f"{system}: provider id drift")
-        deterministic = first.to_dict() == second.to_dict()
-        if not deterministic:
-            findings.append(f"{system}: repeated base calculation drift")
+        with _live_provider_probe(system, root=root) as (
+            provider,
+            first,
+            second,
+            adapter_extensions,
+        ):
+            provider_class = PROVIDER_CLASSES[system]
+            if first.system != system or second.system != system:
+                findings.append(f"{system}: provider returned the wrong system")
+            if first.provider_id != provider_class.provider_id:
+                findings.append(f"{system}: provider id drift")
+            deterministic = first.base().to_dict() == second.base().to_dict()
+            if not deterministic:
+                findings.append(f"{system}: repeated base calculation drift")
 
-        base_payload = first.to_dict()
-        for binding in capability.output_bindings:
-            try:
-                for pointer in binding.json_pointers:
-                    resolve_json_pointer(base_payload, pointer)
-            except (IndexError, KeyError, TypeError, ValueError) as exc:
-                findings.append(
-                    f"{system}: output binding {binding.name} failed at "
-                    f"{pointer}: {type(exc).__name__}"
-                )
-            else:
-                resolved_outputs.append(binding.name)
-
-        extensions: dict[str, Any] = {}
-        second_extensions: dict[str, Any] = {}
-        for kind in capability.horizons:
-            horizon = _probe_horizon(system, kind)
-            extensions[kind] = provider.extend(
-                first,
-                tuple(capability.dimensions),
-                horizon,
-            )
-            second_extensions[kind] = provider.extend(
-                second,
-                tuple(capability.dimensions),
-                horizon,
-            )
-            first_extension = extensions[kind].fact_extension
-            second_extension = second_extensions[kind].fact_extension
-            if first_extension is None or second_extension is None:
-                findings.append(f"{system}: {kind} extension missing")
-                continue
-            if first_extension.status != "complete":
-                findings.append(
-                    f"{system}: declared {kind} extension returned "
-                    f"{first_extension.status}"
-                )
-            if first_extension.to_dict() != second_extension.to_dict():
-                deterministic = False
-                findings.append(f"{system}: repeated {kind} extension drift")
-            extension_digests[kind] = first_extension.extension_digest
-
-        for binding in capability.extension_output_bindings:
-            applicable_horizons = binding.horizons or capability.horizons
-            try:
-                for kind in applicable_horizons:
-                    payload = extensions[kind].to_dict()
+            base_payload = first.base().to_dict()
+            for binding in capability.output_bindings:
+                try:
                     for pointer in binding.json_pointers:
-                        resolve_json_pointer(payload, pointer)
-            except (IndexError, KeyError, TypeError, ValueError) as exc:
-                findings.append(
-                    f"{system}: extension binding {binding.name} failed at "
-                    f"{kind}:{pointer}: {type(exc).__name__}"
-                )
-            else:
-                resolved_extensions.append(binding.name)
+                        resolve_json_pointer(base_payload, pointer)
+                except (IndexError, KeyError, TypeError, ValueError) as exc:
+                    findings.append(
+                        f"{system}: output binding {binding.name} failed at "
+                        f"{pointer}: {type(exc).__name__}"
+                    )
+                else:
+                    resolved_outputs.append(binding.name)
+
+            extensions: dict[str, Any] = {}
+            second_extensions: dict[str, Any] = {}
+            for kind in capability.horizons:
+                horizon = _probe_horizon(system, kind)
+                if kind in adapter_extensions:
+                    extensions[kind], second_extensions[kind] = (
+                        adapter_extensions[kind]
+                    )
+                else:
+                    extensions[kind] = provider.extend(
+                        first.base(),
+                        tuple(capability.dimensions),
+                        horizon,
+                    )
+                    second_extensions[kind] = provider.extend(
+                        second.base(),
+                        tuple(capability.dimensions),
+                        horizon,
+                    )
+                first_extension = extensions[kind].fact_extension
+                second_extension = second_extensions[kind].fact_extension
+                if first_extension is None or second_extension is None:
+                    findings.append(f"{system}: {kind} extension missing")
+                    continue
+                if first_extension.status != "complete":
+                    findings.append(
+                        f"{system}: declared {kind} extension returned "
+                        f"{first_extension.status}"
+                    )
+                if first_extension.to_dict() != second_extension.to_dict():
+                    deterministic = False
+                    findings.append(f"{system}: repeated {kind} extension drift")
+                extension_digests[kind] = first_extension.extension_digest
+
+            for binding in capability.extension_output_bindings:
+                applicable_horizons = binding.horizons or capability.horizons
+                try:
+                    for kind in applicable_horizons:
+                        payload = extensions[kind].to_dict()
+                        for pointer in binding.json_pointers:
+                            resolve_json_pointer(payload, pointer)
+                except (IndexError, KeyError, TypeError, ValueError) as exc:
+                    findings.append(
+                        f"{system}: extension binding {binding.name} failed at "
+                        f"{kind}:{pointer}: {type(exc).__name__}"
+                    )
+                else:
+                    resolved_extensions.append(binding.name)
     except Exception as exc:  # fail closed into a machine-auditable finding
         deterministic = False
         findings.append(f"{system}: live provider probe failed: {type(exc).__name__}: {exc}")
