@@ -1,4 +1,4 @@
-import { ArrowRight, ArrowUpRight, BookOpen, CalendarDays, Wrench } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Wrench, type LucideIcon } from "lucide-react";
 
 import { ButtonLink } from "@/components/button-link";
 import { Container } from "@/components/container";
@@ -52,12 +52,16 @@ const HOME_TASK_COPY: Partial<Record<ProductDefinition["id"], string>> = {
   daliuren: "课体与三传对照。",
 };
 
-const auxiliary = [
+const auxiliary: readonly {
+  href: string;
+  name: string;
+  description: string;
+  icon?: LucideIcon;
+}[] = [
   {
-    href: "/daily",
-    name: "每日",
-    description: "当天与近阶段的可用时间摘要。",
-    icon: CalendarDays,
+    href: "/life-kline",
+    name: "人生 K 线",
+    description: "查看可核对的档案时间层；事实不足时明确说明。",
   },
   {
     href: "/tools",
@@ -65,13 +69,7 @@ const auxiliary = [
     description: "历法、时间与资料辅助工具。",
     icon: Wrench,
   },
-  {
-    href: "/library",
-    name: "知识内容",
-    description: "术数方法、术语与适用边界。",
-    icon: BookOpen,
-  },
-] as const;
+];
 
 const quickStarts = [
   {
@@ -299,12 +297,16 @@ export default function HomePage() {
               <section aria-labelledby="home-aux" className={styles.section}>
                 <div className={styles.sectionHead}>
                   <h2 id="home-aux">辅助</h2>
-                  <p>日常查看、校对工具与方法资料。</p>
+                  <p>查看人生时间层，或使用校对与资料工具。</p>
                 </div>
                 <div className={styles.auxGrid}>
                   {auxiliary.map(({ href, name, description, icon: Icon }) => (
                     <a className={styles.auxEntry} href={href} key={href}>
-                      <Icon aria-hidden="true" className={styles.auxIcon} size={20} strokeWidth={1.7} />
+                      {Icon ? (
+                        <Icon aria-hidden="true" className={styles.auxIcon} size={20} strokeWidth={1.7} />
+                      ) : (
+                        <span aria-hidden="true" className={styles.auxIcon} />
+                      )}
                       <span className={styles.auxBody}>
                         <strong>{name}</strong>
                         <small>{description}</small>

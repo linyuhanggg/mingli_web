@@ -65,11 +65,12 @@ describe("public shell navigation", () => {
     const navigation = screen.getByRole("navigation", { name: "主导航" });
     expect(within(navigation).getByRole("button", { name: "工具" })).toBeVisible();
     expect(within(navigation).getByRole("button", { name: "合参" })).toBeVisible();
-    expect(within(navigation).getByRole("link", { name: "每日" })).toHaveAttribute("href", "/daily");
-    expect(within(navigation).getByRole("link", { name: "知识内容" })).toHaveAttribute(
+    expect(within(navigation).getByRole("link", { name: "人生 K 线" })).toHaveAttribute(
       "href",
-      "/library",
+      "/life-kline",
     );
+    expect(within(navigation).queryByRole("link", { name: "每日" })).not.toBeInTheDocument();
+    expect(within(navigation).queryByRole("link", { name: "知识内容" })).not.toBeInTheDocument();
     expect(within(navigation).queryByRole("link", { name: "工具" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "正在确认登录状态" })).toHaveAttribute(
       "href",
@@ -210,7 +211,7 @@ describe("public shell navigation", () => {
     for (const [name, href] of [
       ["主页", "/"],
       ["工具", "/tools"],
-      ["每日", "/daily"],
+      ["人生 K 线", "/life-kline"],
       ["我的", "/account"],
     ] as const) {
       expect(within(bottomBar).getByRole("link", { name, hidden: true })).toHaveAttribute(
@@ -223,6 +224,9 @@ describe("public shell navigation", () => {
       hidden: true,
     });
     expect(trigger).toHaveTextContent("术数");
+    expect(
+      within(bottomBar).getByRole("link", { name: "人生 K 线", hidden: true }).querySelector("svg"),
+    ).toBeNull();
 
     await user.click(trigger);
     expect(screen.getByRole("dialog", { name: "术数导航" })).toBeVisible();
@@ -416,8 +420,9 @@ describe("public shell responsive and cache contracts", () => {
   it("backs every shell destination with either a product surface or a public page", () => {
     const publicPageWrappers = {
       "/about": ["EditorialPage"],
-      "/daily": ["DailyPageView"],
-      "/library": ["LibraryIndexView"],
+      "/daily": ["RetiredPublicSurface"],
+      "/library": ["RetiredPublicSurface"],
+      "/life-kline": ["LifeKlinePage"],
       "/tools": ["ToolsPageFrame", "ToolsIndexView"],
     } as const;
 

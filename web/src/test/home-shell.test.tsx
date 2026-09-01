@@ -25,9 +25,8 @@ const PRODUCT_ENTRIES = [
   ["见相", "/jianxiang"],
   ["命盘合参", "/hecan"],
   ["问事合参", "/wenshi"],
-  ["每日", "/daily"],
+  ["人生 K 线", "/life-kline"],
   ["工具", "/tools"],
-  ["知识内容", "/library"],
 ] as const;
 
 function relativeLuminance(color: string) {
@@ -77,6 +76,9 @@ describe("public home shell", () => {
         `home link ${href} should expose ${name}`,
       ).toBe(true);
     }
+
+    expect(links.some((entry) => entry.getAttribute("href") === "/daily")).toBe(false);
+    expect(links.some((entry) => entry.getAttribute("href") === "/library")).toBe(false);
 
     expect(within(main).getByText("13")).toBeVisible();
     expect(within(main).getByText("个术数体系")).toBeVisible();

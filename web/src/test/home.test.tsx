@@ -43,7 +43,7 @@ describe("responsive public home", () => {
     // 首页不再创建第二套宣纸剧场或额外品牌氛围层。
     expect(within(main).queryByTestId("home-atmosphere")).not.toBeInTheDocument();
 
-    // 任务入口链接矩阵：七术 + 见相 + 合参两产品 + 辅助三入口；/canwen 已并入命盘合参
+    // 任务入口链接矩阵：七术 + 见相 + 合参两产品 + 两个辅助入口；/canwen 已并入命盘合参
     const expectedEntries = [
       ["八字", "/bazi"],
       ["紫微", "/ziwei"],
@@ -54,9 +54,8 @@ describe("responsive public home", () => {
       ["见相", "/jianxiang"],
       ["命盘合参", "/hecan"],
       ["问事合参", "/wenshi"],
-      ["每日", "/daily"],
+      ["人生 K 线", "/life-kline"],
       ["工具", "/tools"],
-      ["知识内容", "/library"],
     ] as const;
 
     const links = within(main).getAllByRole("link");
@@ -72,6 +71,8 @@ describe("responsive public home", () => {
       links.find((entry) => entry.getAttribute("href") === "/canwen"),
       "retired /canwen entry must not appear on home",
     ).toBeUndefined();
+    expect(links.some((entry) => entry.getAttribute("href") === "/daily")).toBe(false);
+    expect(links.some((entry) => entry.getAttribute("href") === "/library")).toBe(false);
     expect(within(main).queryByText("多盘问答")).not.toBeInTheDocument();
     expect(within(main).queryByText("三术合参")).not.toBeInTheDocument();
     expect(
