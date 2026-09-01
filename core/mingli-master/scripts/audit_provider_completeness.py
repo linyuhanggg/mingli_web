@@ -10,6 +10,7 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import hashlib
 import os
 import re
+import subprocess
 import sys
 import tempfile
 from collections import Counter
@@ -580,6 +581,35 @@ def _probe_horizon(system: str, kind: str) -> dict[str, Any]:
     return {"kind": kind, "start": value, "end": value}
 
 
+def _release_closure_source_commit(
+    root: Path,
+    selected: Sequence[str],
+) -> str:
+    """Return the newest commit that actually changed the release closure.
+
+    The canonical provider matrix is intentionally excluded from the Runtime
+    closure.  Binding a synthetic Runtime manifest to ``HEAD`` would therefore
+    let a matrix-only refresh change the advertised algorithm identity and make
+    the newly committed snapshot immediately stale.  The latest commit that
+    touched any selected release path is still a real Git commit, but remains
+    stable across commits that only publish the derived matrix.
+    """
+
+    paths = tuple(sorted(dict.fromkeys(str(item) for item in selected)))
+    if not paths:
+        raise ValueError("release closure cannot be empty")
+    completed = subprocess.run(
+        ["git", "-C", str(root), "log", "-1", "--format=%H", "--", *paths],
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    source_commit = completed.stdout.strip()
+    if re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
+        raise ValueError("release closure source commit is invalid")
+    return source_commit
+
+
 @contextlib.contextmanager
 def _materialized_bazi_probe_root(root: Path) -> Iterator[Path]:
     """Provide the signed Runtime identity required by the Bazi adapter.
@@ -600,7 +630,7 @@ def _materialized_bazi_probe_root(root: Path) -> Iterator[Path]:
     import release_deploy
 
     selected = release_deploy.tracked_release_files(root)
-    source_commit = release_deploy.source_commit(root)
+    source_commit = _release_closure_source_commit(root, selected)
     committed_modes = release_deploy.committed_release_modes(
         root,
         selected,

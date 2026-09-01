@@ -7,6 +7,7 @@ import hashlib
 import inspect
 import os
 import shutil
+import subprocess
 import tempfile
 import unittest
 from dataclasses import replace
@@ -1255,6 +1256,64 @@ class CanonicalMatrixSnapshotTests(unittest.TestCase):
 
 
 class ProviderCompletenessMatrixTests(unittest.TestCase):
+    def test_release_closure_source_commit_ignores_snapshot_only_commits(
+        self,
+    ) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            subprocess.run(["git", "init", "-q", str(root)], check=True)
+
+            def commit(message: str, *paths: str) -> str:
+                subprocess.run(
+                    ["git", "-C", str(root), "add", *paths],
+                    check=True,
+                )
+                subprocess.run(
+                    [
+                        "git",
+                        "-C",
+                        str(root),
+                        "-c",
+                        "user.name=Provider Audit",
+                        "-c",
+                        "user.email=provider-audit@example.invalid",
+                        "commit",
+                        "-q",
+                        "-m",
+                        message,
+                    ],
+                    check=True,
+                )
+                return subprocess.run(
+                    ["git", "-C", str(root), "rev-parse", "HEAD"],
+                    check=True,
+                    capture_output=True,
+                    text=True,
+                ).stdout.strip()
+
+            release_path = root / "release.py"
+            snapshot_path = root / "provider-completeness.yaml"
+            release_path.write_text("VALUE = 1\n", encoding="utf-8")
+            snapshot_path.write_text("version: 1\n", encoding="utf-8")
+            commit("initial", ".")
+
+            release_path.write_text("VALUE = 2\n", encoding="utf-8")
+            release_commit = commit("release change", "release.py")
+
+            snapshot_path.write_text("version: 2\n", encoding="utf-8")
+            snapshot_commit = commit(
+                "snapshot refresh",
+                "provider-completeness.yaml",
+            )
+            self.assertNotEqual(snapshot_commit, release_commit)
+            self.assertEqual(
+                completeness._release_closure_source_commit(
+                    root,
+                    ("release.py",),
+                ),
+                release_commit,
+            )
+
     def test_fixture_case_aliases_include_route_owned_audit_labels(self) -> None:
         self.assertEqual(
             completeness._fixture_case_id_aliases({"lx-01"}),
