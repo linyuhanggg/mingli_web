@@ -4401,6 +4401,7 @@ class LiveProviderDeclarationTests(unittest.TestCase):
                 "month_layers",
                 "day_layers",
                 "dimension_fact_scope",
+                "life_kline",
             },
             "fortune": {
                 "target_period",
