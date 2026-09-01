@@ -21,6 +21,7 @@ import audit_provider_completeness as completeness
 import build_evidence_index
 import reading_evidence_bundle
 import reading_source_plan
+import release_deploy
 from reading_engine.contracts import (
     CalculationResult,
     FactExtensionResult,
@@ -1256,23 +1257,26 @@ class CanonicalMatrixSnapshotTests(unittest.TestCase):
 
 
 class ProviderCompletenessMatrixTests(unittest.TestCase):
-    def test_release_closure_source_commit_ignores_snapshot_only_commits(
+    def test_synthetic_release_closure_identity_ignores_commit_history(
         self,
     ) -> None:
         with tempfile.TemporaryDirectory() as temporary:
             root = Path(temporary)
-            subprocess.run(["git", "init", "-q", str(root)], check=True)
+            linear = root / "linear"
+            squashed = root / "squashed"
+            subprocess.run(["git", "init", "-q", str(linear)], check=True)
+            subprocess.run(["git", "init", "-q", str(squashed)], check=True)
 
-            def commit(message: str, *paths: str) -> str:
+            def commit(repository: Path, message: str, *paths: str) -> str:
                 subprocess.run(
-                    ["git", "-C", str(root), "add", *paths],
+                    ["git", "-C", str(repository), "add", *paths],
                     check=True,
                 )
                 subprocess.run(
                     [
                         "git",
                         "-C",
-                        str(root),
+                        str(repository),
                         "-c",
                         "user.name=Provider Audit",
                         "-c",
@@ -1285,33 +1289,72 @@ class ProviderCompletenessMatrixTests(unittest.TestCase):
                     check=True,
                 )
                 return subprocess.run(
-                    ["git", "-C", str(root), "rev-parse", "HEAD"],
+                    ["git", "-C", str(repository), "rev-parse", "HEAD"],
                     check=True,
                     capture_output=True,
                     text=True,
                 ).stdout.strip()
 
-            release_path = root / "release.py"
-            snapshot_path = root / "provider-completeness.yaml"
-            release_path.write_text("VALUE = 1\n", encoding="utf-8")
-            snapshot_path.write_text("version: 1\n", encoding="utf-8")
-            commit("initial", ".")
-
-            release_path.write_text("VALUE = 2\n", encoding="utf-8")
-            release_commit = commit("release change", "release.py")
-
-            snapshot_path.write_text("version: 2\n", encoding="utf-8")
-            snapshot_commit = commit(
+            (linear / "release.py").write_text("VALUE = 1\n", encoding="utf-8")
+            (linear / "provider-completeness.yaml").write_text(
+                "version: 1\n",
+                encoding="utf-8",
+            )
+            commit(linear, "initial", ".")
+            (linear / "release.py").write_text("VALUE = 2\n", encoding="utf-8")
+            commit(linear, "release change", "release.py")
+            (linear / "provider-completeness.yaml").write_text(
+                "version: 2\n",
+                encoding="utf-8",
+            )
+            linear_head = commit(
+                linear,
                 "snapshot refresh",
                 "provider-completeness.yaml",
             )
-            self.assertNotEqual(snapshot_commit, release_commit)
+
+            (squashed / "release.py").write_text("VALUE = 2\n", encoding="utf-8")
+            (squashed / "provider-completeness.yaml").write_text(
+                "version: 2\n",
+                encoding="utf-8",
+            )
+            squashed_head = commit(squashed, "squashed change", ".")
+            self.assertNotEqual(linear_head, squashed_head)
+
+            def manifest(repository: Path, commit_id: str) -> dict[str, object]:
+                selected = ("release.py",)
+                modes = release_deploy.committed_release_modes(
+                    repository,
+                    selected,
+                    commit_id,
+                )
+                return release_deploy.build_manifest(
+                    repository,
+                    selected,
+                    commit_id,
+                    committed_modes=modes,
+                )
+
+            linear_manifest = manifest(linear, linear_head)
+            squashed_manifest = manifest(squashed, squashed_head)
+            self.assertNotEqual(
+                linear_manifest["source_commit"],
+                squashed_manifest["source_commit"],
+            )
             self.assertEqual(
-                completeness._release_closure_source_commit(
-                    root,
-                    ("release.py",),
+                completeness._synthetic_release_closure_identity(linear_manifest),
+                completeness._synthetic_release_closure_identity(
+                    squashed_manifest
                 ),
-                release_commit,
+            )
+
+            (squashed / "release.py").write_text("VALUE = 3\n", encoding="utf-8")
+            changed_manifest = manifest(squashed, squashed_head)
+            self.assertNotEqual(
+                completeness._synthetic_release_closure_identity(
+                    squashed_manifest
+                ),
+                completeness._synthetic_release_closure_identity(changed_manifest),
             )
 
     def test_fixture_case_aliases_include_route_owned_audit_labels(self) -> None:

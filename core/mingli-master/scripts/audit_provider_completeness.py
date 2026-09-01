@@ -10,7 +10,6 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 import hashlib
 import os
 import re
-import subprocess
 import sys
 import tempfile
 from collections import Counter
@@ -581,33 +580,37 @@ def _probe_horizon(system: str, kind: str) -> dict[str, Any]:
     return {"kind": kind, "start": value, "end": value}
 
 
-def _release_closure_source_commit(
-    root: Path,
-    selected: Sequence[str],
-) -> str:
-    """Return the newest commit that actually changed the release closure.
+def _synthetic_release_closure_identity(manifest: Mapping[str, Any]) -> str:
+    """Return a history-independent identity for a completeness-only Runtime.
 
-    The canonical provider matrix is intentionally excluded from the Runtime
-    closure.  Binding a synthetic Runtime manifest to ``HEAD`` would therefore
-    let a matrix-only refresh change the advertised algorithm identity and make
-    the newly committed snapshot immediately stale.  The latest commit that
-    touched any selected release path is still a real Git commit, but remains
-    stable across commits that only publish the derived matrix.
+    Production releases retain their real ``source_commit``.  The source-tree
+    completeness probe instead materializes an ephemeral manifest so it can use
+    the same signed adapter boundary.  Its output must depend on the selected
+    Runtime bytes and modes, not on whether an identical closure was reviewed as
+    several commits or as one squash commit.
+
+    The versioned payload deliberately excludes ``source_commit`` and keeps 160
+    bits of SHA-256 to satisfy the existing lowercase 40-hex manifest field.
     """
 
-    paths = tuple(sorted(dict.fromkeys(str(item) for item in selected)))
-    if not paths:
-        raise ValueError("release closure cannot be empty")
-    completed = subprocess.run(
-        ["git", "-C", str(root), "log", "-1", "--format=%H", "--", *paths],
-        check=True,
-        capture_output=True,
-        text=True,
-    )
-    source_commit = completed.stdout.strip()
-    if re.fullmatch(r"[0-9a-f]{40}", source_commit) is None:
-        raise ValueError("release closure source commit is invalid")
-    return source_commit
+    files = manifest.get("files")
+    modes = manifest.get("modes")
+    if not isinstance(files, Mapping) or not files:
+        raise ValueError("release closure files must be a non-empty mapping")
+    if not isinstance(modes, Mapping) or set(modes) != set(files):
+        raise ValueError("release closure modes must match release files")
+    identity = canonical_digest(
+        {
+            "schema_version": "mingli-completeness-runtime-closure-identity-v1",
+            "release_manifest_schema": manifest.get("schema_version"),
+            "release": manifest.get("release"),
+            "files": dict(files),
+            "modes": dict(modes),
+        }
+    )[:40]
+    if re.fullmatch(r"[0-9a-f]{40}", identity) is None:
+        raise ValueError("synthetic release closure identity is invalid")
+    return identity
 
 
 @contextlib.contextmanager
@@ -630,18 +633,19 @@ def _materialized_bazi_probe_root(root: Path) -> Iterator[Path]:
     import release_deploy
 
     selected = release_deploy.tracked_release_files(root)
-    source_commit = _release_closure_source_commit(root, selected)
+    head_commit = release_deploy.source_commit(root)
     committed_modes = release_deploy.committed_release_modes(
         root,
         selected,
-        source_commit,
+        head_commit,
     )
     manifest = release_deploy.build_manifest(
         root,
         selected,
-        source_commit,
+        head_commit,
         committed_modes=committed_modes,
     )
+    manifest["source_commit"] = _synthetic_release_closure_identity(manifest)
     with tempfile.TemporaryDirectory(
         prefix="mingli-bazi-completeness-"
     ) as temporary:
