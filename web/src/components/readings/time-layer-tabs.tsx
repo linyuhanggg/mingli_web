@@ -7,8 +7,13 @@ import {
   LockKeyhole,
   type LucideIcon,
 } from "lucide-react";
+import { motion } from "motion/react";
 import { useRef, type KeyboardEvent } from "react";
 
+import {
+  indicatorSpring,
+  useSafeReducedMotion,
+} from "@/components/motion-primitives";
 import type {
   WorkspaceLayer,
   WorkspaceLayerId,
@@ -34,6 +39,7 @@ export function TimeLayerTabs({
   onSelect: (layerId: WorkspaceLayerId) => void;
   idPrefix: string;
 }>) {
+  const reduceMotion = useSafeReducedMotion();
   const tabRefs = useRef<
     Partial<Record<WorkspaceLayerId, HTMLButtonElement | null>>
   >({});
@@ -106,6 +112,17 @@ export function TimeLayerTabs({
             onClick={unavailable ? undefined : () => onSelect(layer.id)}
             onKeyDown={(event) => handleKeyDown(event, layer.id)}
           >
+            {active ? (
+              <motion.span
+                aria-hidden="true"
+                className={styles.indicator}
+                data-time-layer-indicator=""
+                layoutId={
+                  reduceMotion ? undefined : `${idPrefix}-time-layer-indicator`
+                }
+                transition={reduceMotion ? { duration: 0 } : indicatorSpring}
+              />
+            ) : null}
             <span className={styles.tabLabel}>{layer.label}</span>
             <span className={styles.tabStatus}>
               <StatusIcon aria-hidden="true" size={13} strokeWidth={2} />

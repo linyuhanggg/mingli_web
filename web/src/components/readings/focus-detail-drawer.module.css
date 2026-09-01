@@ -7,10 +7,6 @@
   border-radius: var(--radius-panel);
   background: var(--color-surface);
   box-shadow: none;
-  transition:
-    border-color var(--duration-feedback) ease,
-    opacity var(--duration-overlay) ease,
-    transform var(--duration-overlay) var(--ease-out);
 }
 
 .drawer[data-open="false"] {
@@ -19,7 +15,6 @@
 
 .drawer[data-open="true"] {
   border-color: var(--color-border-strong);
-  transform: translateY(0);
 }
 
 .header {
@@ -51,10 +46,7 @@
   font-size: var(--font-size-aux);
   font-weight: 720;
   cursor: pointer;
-  transition:
-    border-color var(--duration-feedback) ease,
-    background-color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out);
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
 .closeButton:active {
@@ -69,7 +61,6 @@
 .body {
   display: grid;
   gap: 0.85rem;
-  transition: opacity var(--duration-feedback) ease;
 }
 
 .detailTitle {
@@ -171,12 +162,10 @@
 
 @media (prefers-reduced-motion: reduce) {
   .drawer,
-  .body,
   .closeButton {
     transition: none;
   }
 
-  .drawer[data-open="true"],
   .closeButton:active {
     transform: none;
   }

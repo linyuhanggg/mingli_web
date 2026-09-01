@@ -3,6 +3,7 @@
   inset: 0;
   z-index: var(--z-overlay);
   background: var(--color-overlay);
+  animation: dialog-overlay-enter var(--duration-overlay) var(--ds-ease-out) both;
 }
 
 .content {
@@ -21,6 +22,7 @@
   color: var(--color-text);
   box-shadow: var(--shadow-overlay);
   transform: translate(-50%, -50%);
+  animation: dialog-content-enter var(--duration-product-max) var(--ds-ease-out) both;
 }
 
 .content:focus-visible {
@@ -72,9 +74,22 @@
   margin-top: var(--space-md);
 }
 
+@keyframes dialog-overlay-enter {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes dialog-content-enter {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.98);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .overlay,
   .content {
-    transition: none;
+    animation: none;
   }
 }

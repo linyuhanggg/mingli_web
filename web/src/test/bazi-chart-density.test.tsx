@@ -381,7 +381,9 @@ describe("BaziChart fact-density workspace", () => {
       join(process.cwd(), "src/components/readings/bazi-chart.module.css"),
       "utf8",
     );
-    expect(shellCss).toMatch(/\.layerPanel[\s\S]*?transition:[\s\S]*?opacity 150ms ease,[\s\S]*?transform 150ms ease/);
+    expect(shellCss).toMatch(/\.layerPanel\[data-active="true"\][\s\S]*?animation:\s*layer-panel-forward var\(--duration-overlay\)/);
+    expect(shellCss).toMatch(/@keyframes layer-panel-forward[\s\S]*?translateX\(8px\)/);
+    expect(shellCss).toMatch(/@keyframes layer-panel-backward[\s\S]*?translateX\(-8px\)/);
     expect(shellCss).toMatch(/\.layerPanel[\s\S]*?opacity:\s*0/);
     expect(shellCss).toMatch(/\.layerPanel\[data-active="true"\][\s\S]*?opacity:\s*1/);
     expect(shellCss).not.toMatch(/skeleton|shimmer/i);

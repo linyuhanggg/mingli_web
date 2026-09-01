@@ -7,7 +7,7 @@
   border-radius: var(--radius-panel);
   background: var(--color-surface);
   box-shadow: none;
-  animation: workspace-enter var(--duration-page) var(--ease-out) both;
+  animation: workspace-enter var(--duration-product-max) var(--ease-out) both;
 }
 
 @keyframes workspace-enter {
@@ -78,19 +78,33 @@
   min-width: 0;
   opacity: 0;
   pointer-events: none;
-  transform: translateY(4px);
   visibility: hidden;
-  transition:
-    opacity 150ms ease,
-    transform 150ms ease;
 }
 
 .layerPanel[data-active="true"] {
   display: block;
   opacity: 1;
   pointer-events: auto;
-  transform: translateY(0);
   visibility: visible;
+  animation: layer-panel-forward var(--duration-overlay) var(--ease-out) both;
+}
+
+.layerPanel[data-active="true"][data-direction="backward"] {
+  animation-name: layer-panel-backward;
+}
+
+@keyframes layer-panel-forward {
+  from {
+    opacity: 0;
+    transform: translateX(8px);
+  }
+}
+
+@keyframes layer-panel-backward {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
 }
 
 .board {
@@ -197,8 +211,8 @@
     animation: none;
   }
 
-  .layerPanel {
-    transition: none;
+  .layerPanel[data-active="true"][data-direction] {
+    animation: none;
     transform: none;
   }
 }

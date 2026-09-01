@@ -136,6 +136,11 @@ describe("ChartWorkspaceShell", () => {
       "aria-selected",
       "true",
     );
+    expect(
+      screen.getByRole("tab", { name: /^本命/ }).querySelector(
+        "[data-time-layer-indicator]",
+      ),
+    ).not.toBeNull();
     expect(screen.getByRole("tab", { name: /^大运/ })).not.toHaveAttribute(
       "aria-selected",
       "true",
@@ -192,6 +197,10 @@ describe("ChartWorkspaceShell", () => {
     expect(decadal).toHaveAttribute("tabindex", "0");
     expect(natal).toHaveAttribute("tabindex", "-1");
     expect(screen.getByRole("tabpanel", { name: /^大运/ })).toBeVisible();
+    expect(screen.getByRole("tabpanel", { name: /^大运/ })).toHaveAttribute(
+      "data-direction",
+      "forward",
+    );
 
     await user.keyboard("{ArrowRight}");
     expect(yearly).toHaveFocus();
@@ -201,6 +210,10 @@ describe("ChartWorkspaceShell", () => {
     expect(decadal).toHaveFocus();
     expect(decadal).toHaveAttribute("aria-selected", "true");
     expect(yearly).not.toHaveFocus();
+    expect(screen.getByRole("tabpanel", { name: /^大运/ })).toHaveAttribute(
+      "data-direction",
+      "backward",
+    );
 
     await user.keyboard("{Home}");
     expect(natal).toHaveFocus();
@@ -373,6 +386,13 @@ describe("ChartWorkspaceShell", () => {
       "utf8",
     );
     expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)/);
+    const source = readFileSync(
+      join(process.cwd(), "src/components/readings/focus-detail-drawer.tsx"),
+      "utf8",
+    );
+    expect(source).toContain("useSafeReducedMotion");
+    expect(source).toContain("motionDurations.content");
+    expect(source).toMatch(/y:\s*8/);
 
     const view = buildBaziWorkspaceView({ pillars: FOUR_PILLARS });
     render(<WorkspaceFixture view={view} />);
@@ -382,5 +402,30 @@ describe("ChartWorkspaceShell", () => {
         "年柱 · 甲子",
       ),
     ).toBeVisible();
+  });
+
+  it("uses the frozen indicator spring and 8px directional panel entrances", () => {
+    const tabsSource = readFileSync(
+      join(process.cwd(), "src/components/readings/time-layer-tabs.tsx"),
+      "utf8",
+    );
+    const tabsCss = readFileSync(
+      join(process.cwd(), "src/components/readings/time-layer-tabs.module.css"),
+      "utf8",
+    );
+    const shellCss = readFileSync(
+      join(process.cwd(), "src/components/readings/chart-workspace-shell.module.css"),
+      "utf8",
+    );
+
+    expect(tabsSource).toContain("indicatorSpring");
+    expect(tabsSource).toContain("useSafeReducedMotion");
+    expect(tabsCss).toMatch(/\.indicator\s*\{[\s\S]*?height:\s*2px/);
+    expect(shellCss).toMatch(/layer-panel-forward[\s\S]*?translateX\(8px\)/);
+    expect(shellCss).toMatch(/layer-panel-backward[\s\S]*?translateX\(-8px\)/);
+    expect(shellCss).toMatch(/var\(--duration-overlay\)/);
+    expect(shellCss).toMatch(
+      /@media \(prefers-reduced-motion: reduce\)[\s\S]*?\.layerPanel\[data-active="true"\]\[data-direction\][\s\S]*?animation:\s*none/,
+    );
   });
 });
