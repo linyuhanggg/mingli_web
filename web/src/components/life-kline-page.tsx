@@ -63,7 +63,8 @@ export function LifeKlinePage({
   profileOptions,
 }: LifeKlinePageProps) {
   const [viewState, setViewState] = useState<LifeKlineViewState>(initialState);
-  const [selectedProfileId, setSelectedProfileId] = useState("");
+  const [pendingProfileId, setPendingProfileId] = useState("");
+  const [confirmedProfile, setConfirmedProfile] = useState<LifeKlineProfileOption | null>(null);
   const [loadedProfileOptions, setLoadedProfileOptions] = useState<
     readonly LifeKlineProfileOption[]
   >([]);
@@ -76,8 +77,6 @@ export function LifeKlinePage({
   const [timedOut, setTimedOut] = useState(false);
   const profileGroupId = useId();
   const availableProfiles = profileOptions ?? loadedProfileOptions;
-  const selectedProfile =
-    availableProfiles.find(({ id }) => id === selectedProfileId) ?? null;
 
   useEffect(() => {
     if (viewState !== "select-profile" || profileOptions !== undefined) return;
@@ -89,7 +88,7 @@ export function LifeKlinePage({
         if (!active) return;
         const nextProfiles = profiles.map(toProfileOption);
         setLoadedProfileOptions(nextProfiles);
-        setSelectedProfileId((currentId) =>
+        setPendingProfileId((currentId) =>
           nextProfiles.some(({ id }) => id === currentId) ? currentId : "",
         );
         setProfileLoadState("success");
@@ -97,7 +96,7 @@ export function LifeKlinePage({
       .catch((reason: unknown) => {
         if (!active) return;
         setLoadedProfileOptions([]);
-        setSelectedProfileId("");
+        setPendingProfileId("");
         setProfileLoadState(
           reason instanceof ApiError && reason.status === 401
             ? "unauthorized"
@@ -142,13 +141,16 @@ export function LifeKlinePage({
 
   function submitProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!selectedProfileId) return;
+    const pendingProfile =
+      availableProfiles.find(({ id }) => id === pendingProfileId) ?? null;
+    if (!pendingProfile) return;
+    setConfirmedProfile(pendingProfile);
     showUnsupported();
   }
 
   function cancelProfileSelection() {
-    setSelectedProfileId("");
-    setViewState("need-input");
+    setPendingProfileId(confirmedProfile?.id ?? "");
+    setViewState(confirmedProfile ? "unsupported" : "need-input");
   }
 
   function retryProfileLoad() {
@@ -157,19 +159,20 @@ export function LifeKlinePage({
   }
 
   function openProfilePicker() {
+    setPendingProfileId(confirmedProfile?.id ?? "");
     if (profileOptions === undefined) {
       setProfileLoadState("loading");
     }
     setViewState("select-profile");
   }
 
-  const identity = selectedProfile ? (
+  const identity = confirmedProfile ? (
     <div className={styles.identity} aria-label="当前档案">
       <span>
         <small>当前档案</small>
-        <strong>{selectedProfile.label}</strong>
+        <strong>{confirmedProfile.label}</strong>
       </span>
-      <span className={styles.version}>{selectedProfile.versionLabel}</span>
+      <span className={styles.version}>{confirmedProfile.versionLabel}</span>
       <button className={styles.textButton} type="button" onClick={openProfilePicker}>
         切换档案
       </button>
@@ -214,7 +217,7 @@ export function LifeKlinePage({
                 <button
                   data-variant="secondary"
                   type="button"
-                  onClick={() => setViewState("need-input")}
+                  onClick={cancelProfileSelection}
                 >
                   返回
                 </button>
@@ -233,7 +236,7 @@ export function LifeKlinePage({
                 <button
                   data-variant="secondary"
                   type="button"
-                  onClick={() => setViewState("need-input")}
+                  onClick={cancelProfileSelection}
                 >
                   返回
                 </button>
@@ -262,11 +265,11 @@ export function LifeKlinePage({
                 {availableProfiles.map((profile) => (
                   <label className={styles.profileOption} key={profile.id}>
                     <input
-                      checked={selectedProfileId === profile.id}
+                      checked={pendingProfileId === profile.id}
                       name={profileGroupId}
                       type="radio"
                       value={profile.id}
-                      onChange={() => setSelectedProfileId(profile.id)}
+                      onChange={() => setPendingProfileId(profile.id)}
                     />
                     <span>
                       <strong>{profile.label}</strong>
@@ -277,7 +280,7 @@ export function LifeKlinePage({
               </div>
             </fieldset>
             <div className={styles.formActions}>
-              <button className={styles.primaryButton} disabled={!selectedProfileId} type="submit">
+              <button className={styles.primaryButton} disabled={!pendingProfileId} type="submit">
                 读取人生 K 线状态
               </button>
               <button className={styles.secondaryButton} type="button" onClick={cancelProfileSelection}>
@@ -293,7 +296,7 @@ export function LifeKlinePage({
               <Link className={styles.primaryLink} href="/account/profiles">
                 管理受测人档案
               </Link>
-              <button className={styles.secondaryButton} type="button" onClick={() => setViewState("need-input")}>
+              <button className={styles.secondaryButton} type="button" onClick={cancelProfileSelection}>
                 返回
               </button>
             </div>

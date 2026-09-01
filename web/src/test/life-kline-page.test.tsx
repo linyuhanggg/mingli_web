@@ -155,6 +155,42 @@ describe("/life-kline honest non-ready states", () => {
     expect(screen.queryByLabelText("当前档案")).not.toBeInTheDocument();
   });
 
+  it.each([
+    ["without a temporary change", false],
+    ["after temporarily choosing another profile", true],
+  ])("restores a confirmed profile when switching is cancelled %s", (_label, chooseAnother) => {
+    render(
+      <LifeKlinePage
+        initialState="select-profile"
+        profileOptions={[
+          { id: "profile-version-a", label: "测试档案甲", versionLabel: "版本 A" },
+          { id: "profile-version-b", label: "测试档案乙", versionLabel: "版本 B" },
+        ]}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("radio", { name: /测试档案甲/ }));
+    fireEvent.click(screen.getByRole("button", { name: "读取人生 K 线状态" }));
+    fireEvent.click(screen.getAllByRole("button", { name: "切换档案" })[0]);
+
+    if (chooseAnother) {
+      fireEvent.click(screen.getByRole("radio", { name: /测试档案乙/ }));
+    }
+
+    expect(within(screen.getByLabelText("当前档案")).getByText("测试档案甲")).toBeVisible();
+    expect(within(screen.getByLabelText("当前档案")).queryByText("测试档案乙")).toBeNull();
+
+    fireEvent.click(screen.getByRole("button", { name: "取消" }));
+
+    expect(screen.getByRole("main")).toHaveAttribute("data-view-state", "unsupported");
+    expect(
+      screen.getByRole("heading", { level: 2, name: "数据不足，暂不支持绘制" }),
+    ).toBeVisible();
+    expect(within(screen.getByLabelText("当前档案")).getByText("测试档案甲")).toBeVisible();
+    expect(screen.queryByText("测试档案乙")).not.toBeInTheDocument();
+    expect(mockListProfiles).not.toHaveBeenCalled();
+  });
+
   it("keeps unsupported unavailable while omitting an inaccurate breadcrumb badge", () => {
     render(<LifeKlinePage initialState="unsupported" profileOptions={[]} />);
 
