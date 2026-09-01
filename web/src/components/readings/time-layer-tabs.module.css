@@ -23,24 +23,22 @@
   font-size: var(--font-size-label);
   font-weight: 700;
   cursor: pointer;
-  transition:
-    border-color var(--duration-feedback) ease,
-    background-color var(--duration-feedback) ease,
-    color var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out);
+  transition: transform var(--duration-feedback) var(--ease-out);
 }
 
-.tab::after {
+.indicator {
   position: absolute;
   inset: auto 0 0;
   height: 2px;
   background: var(--color-action);
-  content: "";
-  opacity: 0;
-  transform: scaleX(0.4);
-  transition:
-    opacity var(--duration-feedback) ease,
-    transform var(--duration-feedback) var(--ease-out);
+  pointer-events: none;
+  transform-origin: center;
+}
+
+.tab:focus-visible {
+  z-index: 1;
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
 }
 
 .tab:active {
@@ -54,11 +52,6 @@
 .tab[data-active="true"] {
   background: var(--color-surface);
   color: var(--color-action);
-}
-
-.tab[data-active="true"]::after {
-  opacity: 1;
-  transform: scaleX(1);
 }
 
 .tabLabel {
@@ -98,8 +91,7 @@
     transition: none;
   }
 
-  .tab:active,
-  .tab::after {
+  .tab:active {
     transform: none;
   }
 }

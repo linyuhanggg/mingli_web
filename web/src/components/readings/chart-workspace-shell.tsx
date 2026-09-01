@@ -42,6 +42,9 @@ export function ChartWorkspaceShell({
   const [activeLayerId, setActiveLayerId] = useState<WorkspaceLayerId>(
     view.activeLayerId,
   );
+  const [transitionDirection, setTransitionDirection] = useState<
+    "forward" | "backward"
+  >("forward");
 
   const activeLayer =
     view.layers.find((layer) => layer.id === activeLayerId) ?? view.layers[0];
@@ -91,6 +94,15 @@ export function ChartWorkspaceShell({
 
   function handleSelectLayer(layerId: WorkspaceLayerId) {
     if (layerId === activeLayerId) return;
+    const currentIndex = view.layers.findIndex(
+      (layer) => layer.id === activeLayerId,
+    );
+    const nextIndex = view.layers.findIndex((layer) => layer.id === layerId);
+    setTransitionDirection(
+      currentIndex >= 0 && nextIndex >= 0 && nextIndex < currentIndex
+        ? "backward"
+        : "forward",
+    );
     setActiveLayerId(layerId);
     onCloseDetail();
   }
@@ -130,6 +142,7 @@ export function ChartWorkspaceShell({
                 aria-labelledby={`${layerIdPrefix}-tab-${layer.id}`}
                 aria-hidden={!active}
                 data-active={active}
+                data-direction={transitionDirection}
                 className={styles.layerPanel}
                 tabIndex={active ? 0 : -1}
               >

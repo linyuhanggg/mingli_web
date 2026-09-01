@@ -427,6 +427,7 @@ describe("Tabs", () => {
 
     expect(first).toHaveAttribute("aria-selected", "true");
     expect(screen.getByRole("tabpanel")).toHaveTextContent("盘面内容");
+    expect(first.querySelector("[data-tab-indicator]")).not.toBeNull();
 
     first.focus();
     expect(first).toHaveFocus();
@@ -436,6 +437,12 @@ describe("Tabs", () => {
       expect(second).toHaveAttribute("aria-selected", "true");
       expect(second).toHaveFocus();
     });
+    expect(first.querySelector("[data-tab-indicator]")).toBeNull();
+    expect(second.querySelector("[data-tab-indicator]")).not.toBeNull();
+    expect(screen.getByRole("tabpanel")).toHaveAttribute(
+      "data-motion-direction",
+      "forward",
+    );
 
     await user.keyboard("{End}");
     await waitFor(() => {
@@ -448,6 +455,28 @@ describe("Tabs", () => {
       expect(first).toHaveAttribute("aria-selected", "true");
       expect(first).toHaveFocus();
     });
+    expect(screen.getByRole("tabpanel")).toHaveAttribute(
+      "data-motion-direction",
+      "backward",
+    );
+  });
+
+  it("uses the frozen shared-layout spring and an 8px content-only transition", () => {
+    const source = readFileSync(
+      resolve(process.cwd(), "src/components/ui/tabs.tsx"),
+      "utf8",
+    );
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/tabs.module.css"),
+      "utf8",
+    );
+
+    expect(source).toContain("indicatorSpring");
+    expect(source).toContain("useSafeReducedMotion");
+    expect(source).toMatch(/x:\s*direction \* 8/);
+    expect(source).toContain("motionDurations.content");
+    expect(css).toMatch(/\.indicator\s*\{[\s\S]*?height:\s*2px/);
+    expect(css).not.toMatch(/\.trigger\[data-state="active"\]::after/);
   });
 });
 
@@ -481,6 +510,19 @@ describe("Dialog", () => {
     expect(close).toHaveFocus();
     await user.tab({ shift: true });
     expect(confirm).toHaveFocus();
+  });
+
+  it("caps transform/opacity entrance at 280ms and removes it for reduced motion", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/dialog.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(/\.overlay\s*\{[\s\S]*?animation:\s*dialog-overlay-enter var\(--duration-overlay\)/);
+    expect(css).toMatch(/\.content\s*\{[\s\S]*?animation:\s*dialog-content-enter var\(--duration-product-max\)/);
+    expect(css).toMatch(/@keyframes dialog-content-enter[\s\S]*?opacity:\s*0[\s\S]*?transform:\s*translate\(-50%, -50%\) scale\(0\.98\)/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation:\s*none/);
+    expect(css).not.toContain("--ds-duration-slow");
   });
 });
 
@@ -516,6 +558,21 @@ describe("Drawer", () => {
     expect(close).toHaveFocus();
     await user.tab({ shift: true });
     expect(secondAction).toHaveFocus();
+  });
+
+  it("uses short right/bottom transform entrances capped at 280ms", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/drawer.module.css"),
+      "utf8",
+    );
+
+    expect(css).toMatch(/\.overlay\s*\{[\s\S]*?animation:\s*drawer-fade-in var\(--duration-overlay\)/);
+    expect(css).toMatch(/\.bottom\s*\{[\s\S]*?animation:\s*drawer-slide-up var\(--duration-product-max\)/);
+    expect(css).toMatch(/\.right\s*\{[\s\S]*?animation:\s*drawer-slide-left var\(--duration-product-max\)/);
+    expect(css).toMatch(/@keyframes drawer-slide-left[\s\S]*?translateX\(1rem\)/);
+    expect(css).toMatch(/@keyframes drawer-slide-up[\s\S]*?translateY\(1rem\)/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation:\s*none/);
+    expect(css).not.toContain("--ds-duration-slow");
   });
 });
 

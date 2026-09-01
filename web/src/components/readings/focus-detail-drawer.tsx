@@ -1,7 +1,13 @@
 "use client";
 
+import { motion } from "motion/react";
 import { useCallback, useEffect, useId, useRef } from "react";
 
+import {
+  easeOutExpo,
+  motionDurations,
+  useSafeReducedMotion,
+} from "@/components/motion-primitives";
 import type { WorkspaceFocusDetail } from "@/lib/chart-workspace";
 
 import styles from "./focus-detail-drawer.module.css";
@@ -20,6 +26,7 @@ export function FocusDetailDrawer({
   detail: WorkspaceFocusDetail | null;
   onClose: () => void;
 }>) {
+  const reduceMotion = useSafeReducedMotion();
   const headingId = useId();
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const detailTitleRef = useRef<HTMLParagraphElement | null>(null);
@@ -83,7 +90,16 @@ export function FocusDetailDrawer({
       </header>
 
       {detail ? (
-        <div className={styles.body}>
+        <motion.div
+          className={styles.body}
+          initial={reduceMotion ? false : { opacity: 0, y: 8 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={
+            reduceMotion
+              ? { duration: 0 }
+              : { duration: motionDurations.content, ease: easeOutExpo }
+          }
+        >
           <p
             ref={detailTitleRef}
             className={styles.detailTitle}
@@ -128,7 +144,7 @@ export function FocusDetailDrawer({
               </ul>
             </div>
           ) : null}
-        </div>
+        </motion.div>
       ) : (
         <p className={styles.empty}>
           选择一个柱位后，这里只显示服务端已公开的聚焦事实。

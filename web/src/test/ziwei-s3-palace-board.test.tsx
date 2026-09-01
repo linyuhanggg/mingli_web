@@ -4934,6 +4934,11 @@ describe("紫微 S3 M2 宫位详情抽屉", () => {
       /ziwei-source-pattern-drawer|runtime-chart|product-task-experience|GAP-ZW/,
     );
     expect(css).toMatch(/--color-text/);
+    expect(css).toMatch(/\.overlay\s*\{[\s\S]*?animation:\s*palace-overlay-enter var\(--duration-overlay\)/);
+    expect(css).toMatch(/\.drawer\s*\{[\s\S]*?animation:\s*palace-drawer-enter-right var\(--duration-product-max\)/);
+    expect(css).toMatch(/@media \(max-width: 47\.999rem\)[\s\S]*?bottom:\s*0[\s\S]*?palace-drawer-enter-bottom/);
+    expect(css).toMatch(/@media \(prefers-reduced-motion: reduce\)[\s\S]*?animation:\s*none/);
+    expect(css).not.toContain("--ds-duration-slow");
     expect(css).not.toMatch(
       /color-success|color-danger|surface-success|surface-danger/,
     );
