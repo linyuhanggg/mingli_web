@@ -337,9 +337,6 @@ export function LifeKlinePage({
         <Status
           actions={
             <>
-              <button type="button" onClick={showUnsupported}>
-                刷新状态
-              </button>
               <button data-variant="secondary" type="button" onClick={openProfilePicker}>
                 切换档案
               </button>
@@ -366,19 +363,14 @@ export function LifeKlinePage({
     stateContent = (
       <Status
         actions={
-          <>
-            <button type="button" onClick={showUnsupported}>
-              重试
-            </button>
-            <Link data-variant="secondary" href="/">
-              返回首页
-            </Link>
-          </>
+          <Link data-variant="secondary" href="/">
+            返回首页
+          </Link>
         }
         description={
           timedOut
-            ? "等待已停止。可以重试或返回；不会继续转圈，也不会保留未确认的半成品。"
-            : "这次没有读到可确认的时间层状态。可以重试或返回；页面不会展示猜测结果。"
+            ? "等待已停止。请返回；不会继续转圈，也不会保留未确认的半成品。"
+            : "这次没有读到可确认的时间层状态。请返回；页面不会展示猜测结果。"
         }
         state="error"
         title={timedOut ? "读取超时" : "读取失败"}

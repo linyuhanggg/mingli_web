@@ -132,9 +132,9 @@ describe("/life-kline honest non-ready states", () => {
       screen.queryByRole("heading", { level: 2, name: "正在读取时间层事实" }),
     ).not.toBeInTheDocument();
     expect(screen.queryByText(/出生|生辰|profile-version-a/)).not.toBeInTheDocument();
-
-    fireEvent.click(screen.getByRole("button", { name: "刷新状态" }));
-    expect(screen.getByRole("main")).toHaveAttribute("data-view-state", "unsupported");
+    expect(screen.queryByRole("button", { name: "刷新状态" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("button", { name: "切换档案" })).toHaveLength(2);
   });
 
   it("accepts a supplied opaque profile choice without starting a request that must time out", () => {
@@ -174,7 +174,9 @@ describe("/life-kline honest non-ready states", () => {
 
     act(() => vi.advanceTimersByTime(45_000));
     expect(screen.getByRole("heading", { level: 2, name: "读取超时" })).toBeVisible();
-    expect(screen.getByRole("button", { name: "重试" })).toBeVisible();
+    expect(screen.getByText(/等待已停止。请返回/)).toBeVisible();
+    expect(screen.queryByRole("button", { name: "重试" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "返回首页" })).toHaveAttribute("href", "/");
   });
 
   it("fails closed for unknown route states", async () => {

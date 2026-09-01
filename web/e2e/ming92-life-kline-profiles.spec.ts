@@ -101,6 +101,13 @@ for (const evidence of [
         page.getByRole("heading", { level: 2, name: "数据不足，暂不支持绘制" }),
       ).toBeVisible();
       await expect(page.locator("main")).toHaveAttribute("data-view-state", "unsupported");
+      await expect(page.getByRole("button", { name: "刷新状态" })).toHaveCount(0);
+      await expect(page.getByRole("button", { name: "重试" })).toHaveCount(0);
+      await expect(
+        page
+          .getByLabel("数据不足，暂不支持绘制")
+          .getByRole("button", { name: "切换档案" }),
+      ).toBeVisible();
     }
 
     const headingFont = await page.getByRole("heading", { level: 1, name: "人生 K 线" }).evaluate(
