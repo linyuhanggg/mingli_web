@@ -290,6 +290,31 @@ def test_rejects_cross_profile_identity_mismatch() -> None:
     )
 
 
+def test_rejects_forged_cache_identity() -> None:
+    forged = _runtime_life_kline_fact()
+    forged["identity"]["cache_identity"] = "0" * 64
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=forged),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_stale_cache_identity_after_identity_field_change() -> None:
+    stale = _runtime_life_kline_fact()
+    # Keep the previously bound digest while swapping a bound identity field.
+    stale["identity"]["source_fact_digest"] = "d" * 64
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=stale),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
 def test_rejects_user_resolvable_gap_flag() -> None:
     resolvable = _runtime_life_kline_fact()
     resolvable["algorithm_gap"]["user_input_can_resolve"] = True

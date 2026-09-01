@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import hashlib
+import json
 import math
 from collections.abc import Mapping
 from typing import Any, Final, Literal, Protocol, cast
@@ -1600,10 +1602,50 @@ def _life_kline_payload_keys(value: object) -> set[str]:
     return keys
 
 
+def _life_kline_cache_identity_digest(
+    *,
+    schema_version: str,
+    contract_version: str,
+    subject_ref: str,
+    profile_version_id: str,
+    runtime_release: str,
+    runtime_source_commit: str,
+    runtime_manifest_digest: str,
+    source_fact_digest: str,
+) -> str:
+    """Recompute Runtime's frozen cache_identity digest for host integrity checks.
+
+    Input is schema/contract versions plus the six identity fields excluding
+    ``cache_identity`` itself. Encoding matches Runtime
+    ``reading_engine.life_kline._canonical_digest``: UTF-8 JSON, sorted keys,
+    compact separators, ``ensure_ascii=False``, ``allow_nan=False``, SHA-256.
+    """
+
+    rendered = json.dumps(
+        {
+            "schema_version": schema_version,
+            "contract_version": contract_version,
+            "subject_ref": subject_ref,
+            "profile_version_id": profile_version_id,
+            "runtime_release": runtime_release,
+            "runtime_source_commit": runtime_source_commit,
+            "runtime_manifest_digest": runtime_manifest_digest,
+            "source_fact_digest": source_fact_digest,
+        },
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+        allow_nan=False,
+    )
+    return hashlib.sha256(rendered.encode("utf-8")).hexdigest()
+
+
 def _project_life_kline_identity(
     value: object,
     *,
     expected_subject_ref: str,
+    schema_version: str,
+    contract_version: str,
 ) -> LifeKlineSeriesIdentity | None:
     if not isinstance(value, Mapping):
         return None
@@ -1615,6 +1657,18 @@ def _project_life_kline_identity(
         return None
     if identity.profile_version_id != expected_subject_ref:
         # Runtime binds profile_version_id to the opaque subject_ref for this turn.
+        return None
+    expected_cache_identity = _life_kline_cache_identity_digest(
+        schema_version=schema_version,
+        contract_version=contract_version,
+        subject_ref=identity.subject_ref,
+        profile_version_id=identity.profile_version_id,
+        runtime_release=identity.runtime_release,
+        runtime_source_commit=identity.runtime_source_commit,
+        runtime_manifest_digest=identity.runtime_manifest_digest,
+        source_fact_digest=identity.source_fact_digest,
+    )
+    if identity.cache_identity != expected_cache_identity:
         return None
     return identity
 
@@ -1645,9 +1699,11 @@ def project_life_kline_series_view_model(
         return None
     if _life_kline_payload_keys(payload) & _LIFE_KLINE_FORBIDDEN_KEYS:
         return None
+    schema_version = payload.get("schema_version")
+    contract_version = payload.get("contract_version")
     if (
-        payload.get("schema_version") != _LIFE_KLINE_RUNTIME_SCHEMA
-        or payload.get("contract_version") != _LIFE_KLINE_CONTRACT_VERSION
+        schema_version != _LIFE_KLINE_RUNTIME_SCHEMA
+        or contract_version != _LIFE_KLINE_CONTRACT_VERSION
         or payload.get("status") != _LIFE_KLINE_STATUS
         or payload.get("series") != []
     ):
@@ -1655,6 +1711,8 @@ def project_life_kline_series_view_model(
     identity = _project_life_kline_identity(
         payload.get("identity"),
         expected_subject_ref=subject_ref,
+        schema_version=_LIFE_KLINE_RUNTIME_SCHEMA,
+        contract_version=_LIFE_KLINE_CONTRACT_VERSION,
     )
     if identity is None:
         return None
