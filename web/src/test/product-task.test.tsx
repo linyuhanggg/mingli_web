@@ -203,9 +203,17 @@ describe("ProductTaskExperience retained profile drafts", () => {
     { productId: "bazi", exit: "timeout", editedField: "birth-date" },
     { productId: "ziwei", exit: "return", editedField: "birth-time" },
     { productId: "ziwei", exit: "timeout", editedField: "location" },
+    { productId: "bazi", exit: "return", editedField: "subject" },
+    { productId: "ziwei", exit: "timeout", editedField: "subject" },
   ] as const;
 
   function editProfileField(field: typeof profileRetryCases[number]["editedField"]) {
+    if (field === "subject") {
+      fireEvent.change(screen.getByLabelText("受测对象"), {
+        target: { value: "  亲友  " },
+      });
+      return;
+    }
     if (field === "gender") {
       fireEvent.click(screen.getByRole("radio", { name: "女" }));
       return;
@@ -274,7 +282,12 @@ describe("ProductTaskExperience retained profile drafts", () => {
           : confirmedProfile.profile_version_id,
       });
       if (edited) {
-        expect(taskMocks.confirmProfileDraft.mock.calls[1]?.[1]).not.toEqual(firstConfirmBody);
+        if (editedField === "subject") {
+          expect(taskMocks.confirmProfileDraft.mock.calls[1]?.[1]).toEqual(firstConfirmBody);
+          expect(taskMocks.createProfileDraft).toHaveBeenNthCalledWith(2, "亲友");
+        } else {
+          expect(taskMocks.confirmProfileDraft.mock.calls[1]?.[1]).not.toEqual(firstConfirmBody);
+        }
         expect(startMock.mock.calls[1]?.[1]).not.toBe(firstKey);
       } else {
         expect(startMock.mock.calls[1]?.[1]).toBe(firstKey);
@@ -299,7 +312,9 @@ describe("ProductTaskExperience retained profile drafts", () => {
       expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
 
       vi.useFakeTimers();
-      fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+      const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+      submit.focus();
+      fireEvent.click(submit);
       await flushChartStart();
       act(() => vi.advanceTimersByTime(300));
 
@@ -325,6 +340,35 @@ describe("ProductTaskExperience retained profile drafts", () => {
       expect(screen.queryByLabelText(`正在同步${productName}盘面`, {
         selector: `[data-chart-skeleton='${productId}']`,
       })).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(chartFocusCases)(
+    "$productId preserves focus moved outside the submitted form before the delayed skeleton",
+    async ({ productId, productName }) => {
+      taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+      const startMock = productId === "bazi"
+        ? taskMocks.startPreviewReading
+        : taskMocks.startZiweiReading;
+      startMock.mockReturnValue(new Promise(() => undefined));
+
+      render(<ProductTaskPage productId={productId} />);
+      expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+      vi.useFakeTimers();
+      const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+      submit.focus();
+      fireEvent.click(submit);
+      await flushChartStart();
+
+      const persistentLink = screen.getByRole("link", { name: "返回" });
+      persistentLink.focus();
+      act(() => vi.advanceTimersByTime(300));
+
+      expect(screen.getByLabelText(`正在同步${productName}盘面`, {
+        selector: `[data-chart-skeleton='${productId}']`,
+      })).toBeVisible();
+      expect(persistentLink).toHaveFocus();
     },
   );
 
@@ -458,7 +502,9 @@ describe("ProductTaskExperience retained profile drafts", () => {
     expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
 
     vi.useFakeTimers();
-    fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+    submit.focus();
+    fireEvent.click(submit);
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();
@@ -501,7 +547,9 @@ describe("ProductTaskExperience retained profile drafts", () => {
     expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
 
     vi.useFakeTimers();
-    fireEvent.click(screen.getByRole("button", { name: /^立即排盘（免费）/ }));
+    const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+    submit.focus();
+    fireEvent.click(submit);
     await act(async () => {
       await Promise.resolve();
       await Promise.resolve();

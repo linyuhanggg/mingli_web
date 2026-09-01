@@ -129,10 +129,13 @@ function readPendingStartFormState(values: unknown): PendingStartFormState | nul
   };
 }
 
-function profileInputFingerprint(body: ProfileConfirmRequest): string {
+function profileInputFingerprint(body: ProfileConfirmRequest, subject: string): string {
   const { on_name_conflict: conflictAction, ...profileInput } = body;
   void conflictAction;
-  return JSON.stringify(profileInput);
+  return JSON.stringify({
+    profileInput,
+    subject: subject.trim(),
+  });
 }
 
 const BAZI_PREVIEW_RECOVERY_PREFIX = "mingli.bazi-preview-recovery:";
@@ -436,6 +439,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [busy, setBusy] = useState(false);
   const [chartWaitAttempt, setChartWaitAttempt] = useState<number | null>(null);
   const [showChartSkeleton, setShowChartSkeleton] = useState(false);
+  const [focusChartSkeletonOnMount, setFocusChartSkeletonOnMount] = useState(false);
   const [focusChartReadyReveal, setFocusChartReadyReveal] = useState(false);
   const [submitErrorFocusAttempt, setSubmitErrorFocusAttempt] = useState<number | null>(null);
   const [canReturnFromChartWait, setCanReturnFromChartWait] = useState(false);
@@ -498,14 +502,25 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     nextValues: TaskFormValues;
   } | null>(null);
   const chartWaitAttemptRef = useRef(0);
+  const chartAttemptStartedWithFormFocusRef = useRef(false);
 
   useEffect(() => {
     if (chartWaitAttempt === null) return;
 
-    const skeletonTimer = window.setTimeout(
-      () => setShowChartSkeleton(true),
-      CHART_SKELETON_DELAY_MS,
-    );
+    const skeletonTimer = window.setTimeout(() => {
+      const submittedForm = document
+        .getElementById(`${product.id}-submit`)
+        ?.closest("form");
+      const activeElement = document.activeElement;
+      setFocusChartSkeletonOnMount(
+        submittedForm?.contains(activeElement) === true
+        || (
+          activeElement === document.body
+          && chartAttemptStartedWithFormFocusRef.current
+        ),
+      );
+      setShowChartSkeleton(true);
+    }, CHART_SKELETON_DELAY_MS);
     const returnTimer = window.setTimeout(
       () => setCanReturnFromChartWait(true),
       CHART_RETURN_DELAY_MS,
@@ -527,7 +542,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       window.clearTimeout(returnTimer);
       window.clearTimeout(timeoutTimer);
     };
-  }, [chartWaitAttempt]);
+  }, [chartWaitAttempt, product.id]);
 
   async function startAndConsumeContinuation<T>(
     start: () => Promise<T>,
@@ -728,6 +743,11 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       : null;
     if (chartAttemptId !== null) {
       chartWaitAttemptRef.current = chartAttemptId;
+      chartAttemptStartedWithFormFocusRef.current = document
+        .getElementById(`${product.id}-submit`)
+        ?.closest("form")
+        ?.contains(document.activeElement) === true;
+      setFocusChartSkeletonOnMount(false);
       setShowChartSkeleton(false);
       setFocusChartReadyReveal(false);
       setSubmitErrorFocusAttempt(null);
@@ -846,7 +866,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
             coordinate_source: nextValues.coordinateSource.trim() || undefined,
             on_name_conflict: "reject",
           };
-          const profileInput = profileInputFingerprint(body);
+          const profileInput = profileInputFingerprint(body, nextValues.subject);
           if (
             profileVersionRef.current
             && confirmedProfileInputRef.current === profileInput
@@ -1365,7 +1385,10 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       setNameConflict(null);
       setCreatedProfile(profile);
       profileVersionRef.current = profile.profile_version_id;
-      confirmedProfileInputRef.current = profileInputFingerprint(pending.body);
+      confirmedProfileInputRef.current = profileInputFingerprint(
+        pending.body,
+        pending.nextValues.subject,
+      );
       setSelectedProfileVersionId(profile.profile_version_id);
       await startRuntimeReading(pending.nextValues);
     } catch (reason) {
@@ -1420,6 +1443,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
         {showChartSkeleton && (product.id === "bazi" || product.id === "ziwei") ? (
           <ChartStructureSkeleton
             canReturn={canReturnFromChartWait}
+            focusOnMount={focusChartSkeletonOnMount}
             key={`chart-wait-${chartWaitAttempt ?? "none"}`}
             onReturn={returnFromChartWait}
             variant={product.id}

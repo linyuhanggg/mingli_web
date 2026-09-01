@@ -28,4 +28,26 @@ describe("ChartStructureSkeleton", () => {
     expect(container.querySelector("[data-chart-skeleton='ziwei'] [class*='center']"))
       .toBeInTheDocument();
   });
+
+  it("only takes focus when the host confirms the submitted form still owns it", () => {
+    const { rerender } = render(
+      <>
+        <button type="button">持久控件</button>
+        <ChartStructureSkeleton variant="bazi" />
+      </>,
+    );
+    const persistentControl = screen.getByRole("button", { name: "持久控件" });
+    persistentControl.focus();
+    expect(persistentControl).toHaveFocus();
+
+    rerender(
+      <>
+        <button type="button">持久控件</button>
+        <ChartStructureSkeleton focusOnMount variant="bazi" />
+      </>,
+    );
+    expect(screen.getByLabelText("正在同步八字盘面", {
+      selector: "[data-chart-skeleton='bazi']",
+    })).toHaveFocus();
+  });
 });

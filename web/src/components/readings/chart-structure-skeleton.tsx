@@ -32,12 +32,14 @@ const copy: Record<ChartStructureVariant, { title: string; description: string }
 
 export type ChartStructureSkeletonProps = Readonly<{
   canReturn?: boolean;
+  focusOnMount?: boolean;
   onReturn?: () => void;
   variant: ChartStructureVariant;
 }>;
 
 export function ChartStructureSkeleton({
   canReturn = false,
+  focusOnMount = false,
   onReturn,
   variant,
 }: ChartStructureSkeletonProps) {
@@ -46,8 +48,10 @@ export function ChartStructureSkeleton({
   const waitingRegionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    waitingRegionRef.current?.focus({ preventScroll: true });
-  }, []);
+    if (focusOnMount) {
+      waitingRegionRef.current?.focus({ preventScroll: true });
+    }
+  }, [focusOnMount]);
 
   return (
     <motion.section
