@@ -7,10 +7,12 @@ import { Container } from "./container";
 import { PublicPageShell } from "./public-page-shell";
 import { Status, type CoreStatusState } from "./ui/status";
 import {
+  ApiError,
   formatProfileOption,
   listProfiles,
   type ProfileSummary,
 } from "@/lib/api";
+import { loginContinueHref } from "@/lib/login-continue";
 import styles from "./life-kline-page.module.css";
 
 export type LifeKlineViewState =
@@ -31,7 +33,12 @@ type LifeKlinePageProps = Readonly<{
   profileOptions?: readonly LifeKlineProfileOption[];
 }>;
 
-type ProfileLoadState = "idle" | "loading" | "error" | "success";
+type ProfileLoadState = "idle" | "loading" | "unauthorized" | "error" | "success";
+
+const profileLoginHref = loginContinueHref(
+  "/life-kline",
+  "?state=select-profile",
+);
 
 const breadcrumbState: Readonly<Record<LifeKlineViewState, CoreStatusState>> = {
   "need-input": "need-input",
@@ -85,11 +92,15 @@ export function LifeKlinePage({
         );
         setProfileLoadState("success");
       })
-      .catch(() => {
+      .catch((reason: unknown) => {
         if (!active) return;
         setLoadedProfileOptions([]);
         setSelectedProfileId("");
-        setProfileLoadState("error");
+        setProfileLoadState(
+          reason instanceof ApiError && reason.status === 401
+            ? "unauthorized"
+            : "error",
+        );
       });
 
     return () => {
@@ -114,11 +125,11 @@ export function LifeKlinePage({
     };
   }, [viewState]);
 
-  function beginLoading() {
+  function showUnsupported() {
     setTimedOut(false);
     setShowLoadingPlaceholder(false);
     setCanCancel(false);
-    setViewState("loading");
+    setViewState("unsupported");
   }
 
   function cancelLoading() {
@@ -130,7 +141,7 @@ export function LifeKlinePage({
   function submitProfile(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!selectedProfileId) return;
-    beginLoading();
+    showUnsupported();
   }
 
   function retryProfileLoad() {
@@ -205,6 +216,25 @@ export function LifeKlinePage({
             description="这次没有读到可确认的档案列表。页面不会把失败当成空列表，也不会选择默认档案。"
             state="error"
             title="档案读取失败"
+          />
+        ) : null}
+        {profileLoadState === "unauthorized" ? (
+          <Status
+            actions={
+              <>
+                <Link href={profileLoginHref}>登录后继续</Link>
+                <button
+                  data-variant="secondary"
+                  type="button"
+                  onClick={() => setViewState("need-input")}
+                >
+                  返回
+                </button>
+              </>
+            }
+            description="登录后才能读取已保存的档案；登录完成后会回到本页继续选择。"
+            state="unauthorized"
+            title="登录后选择档案"
           />
         ) : null}
         {profileLoadState === "success" ? (
@@ -307,7 +337,7 @@ export function LifeKlinePage({
         <Status
           actions={
             <>
-              <button type="button" onClick={beginLoading}>
+              <button type="button" onClick={showUnsupported}>
                 刷新状态
               </button>
               <button data-variant="secondary" type="button" onClick={openProfilePicker}>
@@ -337,7 +367,7 @@ export function LifeKlinePage({
       <Status
         actions={
           <>
-            <button type="button" onClick={beginLoading}>
+            <button type="button" onClick={showUnsupported}>
               重试
             </button>
             <Link data-variant="secondary" href="/">

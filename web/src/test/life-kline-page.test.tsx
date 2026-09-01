@@ -9,6 +9,7 @@ import {
   LifeKlinePage,
   type LifeKlineViewState,
 } from "@/components/life-kline-page";
+import { ApiError } from "@/lib/api";
 
 const mockListProfiles = vi.hoisted(() => vi.fn());
 
@@ -87,7 +88,21 @@ describe("/life-kline honest non-ready states", () => {
     expect(mockListProfiles).toHaveBeenCalledTimes(2);
   });
 
-  it("maps a real saved profile response into an opaque selectable option", async () => {
+  it("offers a login continuation instead of retrying an unauthorized profile load", async () => {
+    mockListProfiles.mockRejectedValueOnce(new ApiError("需要登录", 401));
+    render(<LifeKlinePage initialState="select-profile" />);
+
+    expect(
+      await screen.findByRole("heading", { level: 2, name: "登录后选择档案" }),
+    ).toBeVisible();
+    expect(screen.queryByRole("button", { name: "重新加载档案" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "登录后继续" })).toHaveAttribute(
+      "href",
+      "/auth/login?next=%2Flife-kline%3Fstate%3Dselect-profile",
+    );
+  });
+
+  it("maps a real saved profile response and resolves submission to honest unsupported", async () => {
     mockListProfiles.mockResolvedValueOnce({
       profiles: [
         {
@@ -109,11 +124,20 @@ describe("/life-kline honest non-ready states", () => {
     fireEvent.click(profile);
     fireEvent.click(screen.getByRole("button", { name: "读取人生 K 线状态" }));
 
-    expect(screen.getByRole("heading", { level: 2, name: "正在读取时间层事实" })).toBeVisible();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "数据不足，暂不支持绘制" }),
+    ).toBeVisible();
+    expect(screen.getByRole("main")).toHaveAttribute("data-view-state", "unsupported");
+    expect(
+      screen.queryByRole("heading", { level: 2, name: "正在读取时间层事实" }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByText(/出生|生辰|profile-version-a/)).not.toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole("button", { name: "刷新状态" }));
+    expect(screen.getByRole("main")).toHaveAttribute("data-view-state", "unsupported");
   });
 
-  it("accepts a supplied opaque profile choice and enters loading without exposing birth data", () => {
+  it("accepts a supplied opaque profile choice without starting a request that must time out", () => {
     render(
       <LifeKlinePage
         initialState="select-profile"
@@ -126,7 +150,9 @@ describe("/life-kline honest non-ready states", () => {
     fireEvent.click(screen.getByRole("radio", { name: /测试档案甲/ }));
     fireEvent.click(screen.getByRole("button", { name: "读取人生 K 线状态" }));
 
-    expect(screen.getByRole("heading", { level: 2, name: "正在读取时间层事实" })).toBeVisible();
+    expect(
+      screen.getByRole("heading", { level: 2, name: "数据不足，暂不支持绘制" }),
+    ).toBeVisible();
     expect(screen.queryByText(/出生|生辰/)).not.toBeInTheDocument();
   });
 
