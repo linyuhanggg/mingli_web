@@ -12,6 +12,7 @@ import {
 } from "@/lib/api";
 
 import { StatusPanel } from "../status-panel";
+import { LocalLoader } from "../ui";
 import { SecondaryStatus } from "./secondary-status";
 import styles from "./secondary-surfaces.module.css";
 import profileStyles from "../profile-archive.module.css";
@@ -77,11 +78,22 @@ function ProfileVersionHistory({ profileId }: AccountProfileDetailSurfaceProps) 
 
   if (loading) {
     return (
-      <StatusPanel
-        state="loading"
-        title="正在读取档案版本"
-        description="正在读取这份档案。"
-      />
+      <section
+        aria-busy="true"
+        aria-labelledby="profile-version-history-loading-title"
+        className={`${surface.paper} ${profileStyles.archivePanel}`}
+      >
+        <div className={surface.sectionHeader}>
+          <div>
+            <h2 id="profile-version-history-loading-title">档案版本历史</h2>
+            <p>正在读取这份档案的不可变版本记录。</p>
+          </div>
+        </div>
+        <div className={profileStyles.loadingRow}>
+          <LocalLoader label="正在读取档案版本…" />
+          <p className={profileStyles.loadingText}>正在读取档案版本…</p>
+        </div>
+      </section>
     );
   }
 
@@ -121,7 +133,10 @@ function ProfileVersionHistory({ profileId }: AccountProfileDetailSurfaceProps) 
   }
 
   return (
-    <section className={surface.paper} aria-labelledby="profile-version-history-title">
+    <section
+      className={`${surface.paper} ${profileStyles.archivePanel}`}
+      aria-labelledby="profile-version-history-title"
+    >
       <div className={surface.sectionHeader}>
         <div>
           <h2 id="profile-version-history-title">档案版本历史</h2>

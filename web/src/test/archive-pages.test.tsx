@@ -101,10 +101,13 @@ describe("ProfileArchive", () => {
 
     render(<ProfilesPage />);
 
-    expect(screen.getByRole("status", { name: "正在读取档案…" })).toBeInTheDocument();
+    const loader = screen.getByRole("status", { name: "正在读取档案…" });
+    expect(loader).toBeInTheDocument();
+    expect(loader).toHaveAttribute("data-loader-variant", "dots");
+    expect(loader.closest('[aria-busy="true"]')).not.toBeNull();
 
     await waitFor(() =>
-      expect(screen.getByRole("heading", { name: "已保存的档案版本" })).toBeInTheDocument(),
+      expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0),
     );
     expect(screen.getAllByText(/档案 1/).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/档案 2/).length).toBeGreaterThan(0);
@@ -145,36 +148,69 @@ describe("ProfileArchive", () => {
         "游客重命名档案",
       ),
     );
-    const savingStatus = screen.getByRole("status");
-    expect(savingStatus).toBeVisible();
-    expect(savingStatus).toHaveTextContent("正在保存名称…");
-    expect(savingStatus.closest('[aria-busy="true"]')).not.toBeNull();
+    const savingButton = screen.getByRole("button", { name: "正在保存名称…" });
+    expect(savingButton).toBeVisible();
+    expect(savingButton).toHaveAttribute("aria-busy", "true");
+    expect(savingButton.closest('form[aria-busy="true"]')).not.toBeNull();
     expect(screen.getByLabelText("档案名称")).toBeDisabled();
-    expect(saveButton).toBeDisabled();
+    expect(savingButton).toBeDisabled();
     expect(screen.getByRole("button", { name: "取消" })).toBeDisabled();
 
-    fireEvent.click(saveButton);
+    fireEvent.click(savingButton);
     expect(api.updateProfileDisplayName).toHaveBeenCalledTimes(1);
 
     resolveRename(profile({ display_name: "游客重命名档案" }));
 
-    expect(await screen.findByText("游客重命名档案")).toBeVisible();
-    expect(screen.queryByText("正在保存名称…")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "重命名" })).toBeEnabled();
+    expect(await screen.findByRole("button", { name: "名称已保存" })).toBeVisible();
+    await waitFor(() => {
+      expect(screen.getByText("游客重命名档案")).toBeVisible();
+      expect(screen.getByRole("button", { name: "重命名" })).toHaveFocus();
+    });
   });
 
-  it("names the career scope before starting the supported archive preview", async () => {
-    api.listProfiles.mockResolvedValue({ profiles: [profile()] });
-    api.startPreviewReading.mockResolvedValue({
-      reading_version_id: readingVersionId,
+  it("links rename failures to the input and returns the stateful button to idle", async () => {
+    api.listProfiles.mockResolvedValue({
+      profiles: [profile({ display_name: "旧名称" })],
     });
+    api.updateProfileDisplayName.mockRejectedValue(new Error("名称暂时无法保存"));
 
     render(<ProfilesPage />);
-    fireEvent.click(
-      await screen.findByRole("button", { name: "查看事业主题概览" }),
-    );
+    fireEvent.click(await screen.findByRole("button", { name: "重命名" }));
+    const input = screen.getByLabelText("档案名称");
+    fireEvent.change(input, { target: { value: "新名称" } });
+    fireEvent.click(screen.getByRole("button", { name: "保存名称" }));
 
-    await waitFor(() => expect(api.startPreviewReading).toHaveBeenCalledTimes(1));
+    expect(await screen.findByRole("alert")).toHaveTextContent("名称暂时无法保存");
+    expect(input).toHaveAttribute("aria-invalid", "true");
+    expect(input.getAttribute("aria-describedby")).toBeTruthy();
+    expect(input).toHaveFocus();
+    expect(screen.getByRole("button", { name: "保存失败" })).toBeEnabled();
+
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "保存名称" })).toBeEnabled(),
+    );
+  });
+
+  it("uses a width-stable stateful button before opening the supported archive preview", async () => {
+    api.listProfiles.mockResolvedValue({ profiles: [profile()] });
+    let resolveStart!: (next: { reading_version_id: string }) => void;
+    api.startPreviewReading.mockReturnValue(new Promise((resolve) => {
+      resolveStart = resolve;
+    }));
+
+    render(<ProfilesPage />);
+    const startButton = await screen.findByRole("button", {
+      name: "查看事业主题概览",
+    });
+    fireEvent.click(startButton);
+
+    const loadingButton = await screen.findByRole("button", {
+      name: "正在启动事业主题…",
+    });
+    expect(loadingButton).toBeDisabled();
+    expect(loadingButton).toHaveAttribute("aria-busy", "true");
+    fireEvent.click(loadingButton);
+    expect(api.startPreviewReading).toHaveBeenCalledTimes(1);
     expect(api.startPreviewReading).toHaveBeenCalledWith(
       expect.objectContaining({
         profile_version_id: profileVersionId,
@@ -182,6 +218,36 @@ describe("ProfileArchive", () => {
         dimension_ids: ["career"],
       }),
       expect.any(String),
+    );
+
+    resolveStart({ reading_version_id: readingVersionId });
+    expect(
+      await screen.findByRole("button", { name: "事业主题已启动" }),
+    ).toBeDisabled();
+    await waitFor(() =>
+      expect(navigation.routerPush).toHaveBeenCalledWith(
+        `/app/readings/${readingVersionId}`,
+      ),
+    );
+  });
+
+  it("shows a one-shot button error while preserving the retryable Status message", async () => {
+    api.listProfiles.mockResolvedValue({ profiles: [profile()] });
+    api.startPreviewReading.mockRejectedValue(new Error("事业主题暂时不可用"));
+
+    render(<ProfilesPage />);
+    fireEvent.click(
+      await screen.findByRole("button", { name: "查看事业主题概览" }),
+    );
+
+    expect(
+      await screen.findByRole("alert", { name: "无法启动事业主题概览" }),
+    ).toHaveTextContent("事业主题暂时不可用");
+    expect(screen.getByRole("button", { name: "启动失败" })).toBeEnabled();
+    await waitFor(() =>
+      expect(
+        screen.getByRole("button", { name: "查看事业主题概览" }),
+      ).toBeEnabled(),
     );
   });
 
