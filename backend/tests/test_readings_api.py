@@ -1768,6 +1768,50 @@ async def test_same_idempotency_key_returns_the_same_reading_version(
     assert str(keys[0].reading_version_id) == first["reading_version_id"]
 
 
+async def test_life_kline_series_start_is_idempotent_and_rejects_foreign_profile(
+    client: AsyncClient,
+    database: Any,
+    test_settings: Any,
+) -> None:
+    headers = await create_guest(client)
+    confirmed = await create_confirmed_profile(client, headers)
+    await seed_runtime_release(database, test_settings)
+    payload = {
+        "profile_version_id": confirmed["profile_version_id"],
+        "dimension_ids": ["overview"],
+    }
+
+    first = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-v1"},
+        json=payload,
+    )
+    second = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-v1"},
+        json=payload,
+    )
+    unsupported = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**headers, "Idempotency-Key": "life-kline-series-bad-dim"},
+        json={**payload, "dimension_ids": ["state"]},
+    )
+
+    assert first.status_code == 201, first.text
+    assert second.status_code == 200, second.text
+    assert second.json()["reading_version_id"] == first.json()["reading_version_id"]
+    assert first.json()["product_id"] == "life-kline-series"
+    assert unsupported.status_code == 400
+
+    foreign = await create_guest(client)
+    denied = await client.post(
+        "/api/v1/readings/life-kline-series",
+        headers={**foreign, "Idempotency-Key": "life-kline-series-foreign"},
+        json=payload,
+    )
+    assert denied.status_code in {403, 404}
+
+
 async def test_confirm_and_preview_is_atomic_across_terminal_failure_and_retry(
     database: Any,
     test_settings: Any,
@@ -5852,6 +5896,14 @@ async def test_list_readings_is_isolated_per_owner_and_survives_user_claim(
             {"dimension_ids": ["state"]},
             "bazi",
             "five-elements-facts",
+            "life",
+            True,
+        ),
+        (
+            "/api/v1/readings/life-kline-series",
+            {"dimension_ids": ["overview"]},
+            "bazi",
+            "life-kline-series",
             "life",
             True,
         ),

@@ -356,6 +356,20 @@ class FiveElementsFactsStartRequest(BaseModel):
     )
 
 
+class LifeKlineSeriesStartRequest(BaseModel):
+    """Start the profile-bound, fail-closed life K-line series product."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    profile_version_id: UUID
+    query: str | None = Field(default=None, min_length=1, max_length=300)
+    dimension_ids: list[Literal["overview"]] | None = Field(
+        default=None,
+        min_length=1,
+        max_length=1,
+    )
+
+
 TimeCheckEventDomain = Literal[
     "career",
     "education",

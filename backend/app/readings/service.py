@@ -98,6 +98,7 @@ from app.readings.request_compiler import (
     compile_five_elements_facts_prepare,
     compile_fortune_prepare,
     compile_hecan_prepare,
+    compile_life_kline_series_prepare,
     compile_liuren_prepare,
     compile_liuyao_prepare,
     compile_luming_nayin_prepare,
@@ -168,6 +169,7 @@ DEFAULT_QUERIES = {
     "bazi_month_preview": "请展示我指定月份的八字流月事实。",
     "bazi_day_preview": "请展示我指定日期的八字流日事实。",
     "five_elements_facts_preview": "请展示我的五行事实与调候依据。",
+    "life_kline_series_preview": "请展示我的人生K线序列权威状态。",
     "chart_similarity_preview": "请比较两份已确认命盘的八字四柱事实。",
     "ziwei_preview": "请预览我的紫微命盘。",
     "ziwei_year_preview": "请展示我指定年份的紫微流年事实。",
@@ -1625,6 +1627,45 @@ class ReadingService:
             prepare,
             capability_id="bazi",
             product_id="five-elements-facts",
+            profile_version_id=profile_version_id,
+            idempotency=idempotency,
+        )
+
+    async def start_life_kline_series(
+        self,
+        owner: OwnerProtocol,
+        *,
+        profile_version_id: UUID,
+        query: str | None,
+        dimension_ids: Sequence[str] | None,
+        idempotency_key: str | None,
+    ) -> tuple[ReadingStartResponse, bool]:
+        resolved_query = query or DEFAULT_QUERIES["life_kline_series_preview"]
+        resolved_dimensions = list(dimension_ids or ("overview",))
+        idempotency = self._idempotency_context(
+            idempotency_key,
+            action="life_kline_series_preview",
+            payload={
+                "profile_version_id": str(profile_version_id),
+                "query": resolved_query,
+                "dimension_ids": resolved_dimensions,
+            },
+        )
+        replayed = await self._replay_idempotency(owner, idempotency)
+        if replayed is not None:
+            return replayed, False
+        profile = await self._owned_confirmed_profile(owner, profile_version_id)
+        prepare = compile_life_kline_series_prepare(
+            action="life_kline_series_preview",
+            query=resolved_query,
+            profile=profile,
+            dimension_ids=tuple(resolved_dimensions),
+        )
+        return await self._persist_start(
+            owner,
+            prepare,
+            capability_id="bazi",
+            product_id="life-kline-series",
             profile_version_id=profile_version_id,
             idempotency=idempotency,
         )

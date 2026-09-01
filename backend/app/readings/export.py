@@ -29,6 +29,7 @@ _FONT_CANDIDATES = (
 _PRODUCT_LABELS = {
     "bazi-chart/v1": "八字命盘",
     "five-elements-facts-view/v1": "五行事实与调候依据",
+    "life-kline-series/v1": "人生K线序列",
     "ziwei-chart/v1": "紫微斗数",
     "qizheng-chart/v1": "七政四余",
     "liuyao-chart/v1": "六爻问事",

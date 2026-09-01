@@ -1242,6 +1242,43 @@ paths:
           $ref: "#/components/responses/TooManyRequests"
         "503":
           $ref: "#/components/responses/ServiceUnavailable"
+  /api/v1/readings/life-kline-series:
+    post:
+      operationId: startLifeKlineSeriesReading
+      tags: [Readings]
+      summary: Enqueue the fail-closed life K-line series Reading Version
+      parameters:
+        - $ref: "#/components/parameters/CsrfToken"
+        - $ref: "#/components/parameters/IdempotencyKey"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LifeKlineSeriesStartRequest"
+      responses:
+        "201":
+          description: Reading Version created and queued
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "200":
+          description: Replayed Reading Version for the same Idempotency-Key
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadingStartResponse"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "503":
+          $ref: "#/components/responses/ServiceUnavailable"
   /api/v1/readings/time-check:
     post:
       operationId: startTimeCheckReading
@@ -3758,6 +3795,29 @@ components:
           items:
             type: string
             enum: [state]
+    LifeKlineSeriesStartRequest:
+      type: object
+      additionalProperties: false
+      required: [profile_version_id]
+      description: >
+        Start the profile-bound life K-line series product. The current Runtime
+        only authorizes an unavailable_algorithm_gap projection with an empty
+        series; this endpoint does not unlock OHLC or paid gates.
+      properties:
+        profile_version_id:
+          type: string
+          format: uuid
+        query:
+          type: [string, "null"]
+          minLength: 1
+          maxLength: 300
+        dimension_ids:
+          type: [array, "null"]
+          minItems: 1
+          maxItems: 1
+          items:
+            type: string
+            enum: [overview]
     TimeCheckStartRequest:
       type: object
       additionalProperties: false

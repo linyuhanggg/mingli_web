@@ -73,6 +73,13 @@ from app.charts.contracts import (
     HecanViewV1,
     HexagramSummary,
     HousePosition,
+    LifeKlineAlgorithmGap,
+    LifeKlineCandidateTimeAxis,
+    LifeKlineSeriesIdentity,
+    LifeKlineSeriesV1,
+    LifeKlineUnavailableCandles,
+    LifeKlineUnavailableChange,
+    LifeKlineUnavailableValueAxis,
     LiuyaoChartV1,
     LiuyaoCoreFacts,
     LiuyaoLine,
@@ -1558,6 +1565,132 @@ def project_five_elements_facts_view_model(
             "调候标记只表示月令气候事实，不单独形成调候用神结论。",
             "强弱证据、结构候选与合冲信号只展示 Runtime 机械输出，不形成最终格局或吉凶结论。",
         ),
+    )
+
+
+_LIFE_KLINE_RUNTIME_SCHEMA = "mingli-life-kline-facts-v1"
+_LIFE_KLINE_CONTRACT_VERSION = "life-kline-authority-v1"
+_LIFE_KLINE_STATUS = "unavailable_algorithm_gap"
+_LIFE_KLINE_FORBIDDEN_KEYS = frozenset(
+    {"score", "open", "high", "low", "close", "direction", "delta"}
+)
+_LIFE_KLINE_AXIS_KINDS = (
+    "major_luck",
+    "gregorian_year",
+    "gregorian_month",
+    "civil_day",
+)
+_LIFE_KLINE_LIMITATIONS = (
+    "当前 Runtime 没有经版本化、校准的可比度量与蜡烛采样规则，人生 K 线只能诚实不可用。",
+    "Backend/ViewModel 不把既有非分数事实改写成 OHLC、direction 或 delta。",
+    "补全出生资料或登录不能解除算法权威缺口；ready 蜡烛须等待 measure/sampling 合同解锁。",
+)
+
+
+def _life_kline_payload_keys(value: object) -> set[str]:
+    keys: set[str] = set()
+    if isinstance(value, Mapping):
+        for key, child in value.items():
+            if isinstance(key, str):
+                keys.add(key)
+            keys.update(_life_kline_payload_keys(child))
+    elif isinstance(value, (list, tuple)):
+        for child in value:
+            keys.update(_life_kline_payload_keys(child))
+    return keys
+
+
+def _project_life_kline_identity(
+    value: object,
+    *,
+    expected_subject_ref: str,
+) -> LifeKlineSeriesIdentity | None:
+    if not isinstance(value, Mapping):
+        return None
+    try:
+        identity = LifeKlineSeriesIdentity.model_validate(value)
+    except Exception:
+        return None
+    if identity.subject_ref != expected_subject_ref:
+        return None
+    if identity.profile_version_id != expected_subject_ref:
+        # Runtime binds profile_version_id to the opaque subject_ref for this turn.
+        return None
+    return identity
+
+
+def project_life_kline_series_view_model(
+    brief: Mapping[str, object] | None,
+) -> LifeKlineSeriesV1 | None:
+    """Project only the exact fail-closed Runtime life-kline authority fact."""
+
+    if brief is None or not _capability_is(brief, "bazi"):
+        return None
+    request_view = brief.get("request_view")
+    if not isinstance(request_view, Mapping):
+        return None
+    if request_view.get("object_id") != "life_kline":
+        return None
+    facts = brief.get("facts")
+    subject_ref = _subject_ref(brief, facts)
+    if subject_ref is None:
+        return None
+    fact = _brief_fact_value(facts, "life_kline")
+    if fact is None:
+        return None
+    fact_subject, payload = fact
+    if fact_subject and fact_subject != subject_ref:
+        return None
+    if not isinstance(payload, Mapping):
+        return None
+    if _life_kline_payload_keys(payload) & _LIFE_KLINE_FORBIDDEN_KEYS:
+        return None
+    if (
+        payload.get("schema_version") != _LIFE_KLINE_RUNTIME_SCHEMA
+        or payload.get("contract_version") != _LIFE_KLINE_CONTRACT_VERSION
+        or payload.get("status") != _LIFE_KLINE_STATUS
+        or payload.get("series") != []
+    ):
+        return None
+    identity = _project_life_kline_identity(
+        payload.get("identity"),
+        expected_subject_ref=subject_ref,
+    )
+    if identity is None:
+        return None
+    axes_raw = payload.get("candidate_time_axes")
+    if not isinstance(axes_raw, list) or len(axes_raw) != 4:
+        return None
+    try:
+        axes = tuple(
+            LifeKlineCandidateTimeAxis.model_validate(item) for item in axes_raw
+        )
+        value_axis = LifeKlineUnavailableValueAxis.model_validate(
+            payload.get("value_axis")
+        )
+        candles = LifeKlineUnavailableCandles.model_validate(payload.get("candles"))
+        change = LifeKlineUnavailableChange.model_validate(payload.get("change"))
+        algorithm_gap = LifeKlineAlgorithmGap.model_validate(
+            payload.get("algorithm_gap")
+        )
+    except Exception:
+        return None
+    if tuple(axis.kind for axis in axes) != _LIFE_KLINE_AXIS_KINDS:
+        return None
+    if any(axis.series_ready for axis in axes):
+        return None
+    if algorithm_gap.user_input_can_resolve:
+        return None
+    return LifeKlineSeriesV1(
+        subject_ref=subject_ref,
+        identity=identity,
+        candidate_time_axes=axes,
+        value_axis=value_axis,
+        candles=candles,
+        change=change,
+        series=(),
+        algorithm_gap=algorithm_gap,
+        limitations=_LIFE_KLINE_LIMITATIONS,
     )
 
 
@@ -6589,6 +6722,8 @@ def project_runtime_view_model(
         return project_wenshi_view_model(brief)
     if product_id == "five-elements-facts":
         return project_five_elements_facts_view_model(brief)
+    if product_id == "life-kline-series":
+        return project_life_kline_series_view_model(brief)
     if product_id == "rhythm":
         return project_rhythm_facts_view_model(brief)
     if product_id == "chart-similarity":
