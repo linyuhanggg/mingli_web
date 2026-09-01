@@ -9,6 +9,7 @@ from app.charts.contracts import (
     LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS,
     LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS,
     LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS,
+    LIFE_KLINE_CANDIDATE_TIME_AXES,
     parse_view_model,
 )
 from app.charts.projectors import project_runtime_view_model
@@ -208,6 +209,7 @@ def test_projects_exact_unavailable_life_kline_series_without_ohlc() -> None:
         == LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE
     )
     assert view_model.identity.cache_identity == fact["identity"]["cache_identity"]
+    assert view_model.candidate_time_axes == LIFE_KLINE_CANDIDATE_TIME_AXES
     assert all(axis.series_ready is False for axis in view_model.candidate_time_axes)
     parsed = parse_view_model(view_model.model_dump(mode="json"))
     assert parsed.schema_version == "life-kline-series/v1"
@@ -388,6 +390,103 @@ def test_rejects_substituted_algorithm_gap_item() -> None:
         "versioned_comparable_measure_definition",
         "host_substituted_corpus",
     ]
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=substituted),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_mutated_time_axis_unit() -> None:
+    mutated = _runtime_life_kline_fact()
+    mutated["candidate_time_axes"][0]["unit"] = "tampered_unit"
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=mutated),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_mutated_time_axis_source_schema_version() -> None:
+    mutated = _runtime_life_kline_fact()
+    mutated["candidate_time_axes"][1]["source_schema_version"] = "tampered-schema-v9"
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=mutated),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_mutated_time_axis_source_path() -> None:
+    mutated = _runtime_life_kline_fact()
+    mutated["candidate_time_axes"][2]["source_path"] = "tampered.path[]"
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=mutated),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_removed_time_axis() -> None:
+    removed = _runtime_life_kline_fact()
+    removed["candidate_time_axes"] = removed["candidate_time_axes"][:-1]
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=removed),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_appended_time_axis() -> None:
+    appended = _runtime_life_kline_fact()
+    appended["candidate_time_axes"] = [
+        *appended["candidate_time_axes"],
+        {
+            "kind": "civil_day",
+            "unit": "civil_day",
+            "source_schema_version": "mingli-bazi-fact-v1",
+            "source_path": "fact_extension.facts.day_layers",
+            "role": "temporal_key_only",
+            "series_ready": False,
+        },
+    ]
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=appended),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_reordered_time_axes() -> None:
+    reordered = _runtime_life_kline_fact()
+    axes = list(reordered["candidate_time_axes"])
+    axes[0], axes[1] = axes[1], axes[0]
+    reordered["candidate_time_axes"] = axes
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=reordered),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_substituted_time_axis_kind() -> None:
+    substituted = _runtime_life_kline_fact()
+    # Keep other fields of the first axis but replace kind with another frozen kind.
+    substituted["candidate_time_axes"][0]["kind"] = "gregorian_year"
     assert (
         project_runtime_view_model(
             _life_kline_brief(fact_value=substituted),

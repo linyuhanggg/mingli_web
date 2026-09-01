@@ -270,6 +270,7 @@ _PRODUCT_ALIASES: Final = {
     "qizheng-relationship": "qizheng",
     "ziwei-relationship": "ziwei",
     "bazi-relationship": "bazi",
+    "life-kline-series": "bazi",
     "liuren": "daliuren",
 }
 

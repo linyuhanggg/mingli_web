@@ -14,6 +14,7 @@ from app.charts.contracts import (
     LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS,
     LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS,
     LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS,
+    LIFE_KLINE_CANDIDATE_TIME_AXES,
     VIEW_MODEL_TYPES,
     ArtSignal,
     BaziBoundaryTerm,
@@ -1580,12 +1581,6 @@ _LIFE_KLINE_STATUS = "unavailable_algorithm_gap"
 _LIFE_KLINE_FORBIDDEN_KEYS = frozenset(
     {"score", "open", "high", "low", "close", "direction", "delta"}
 )
-_LIFE_KLINE_AXIS_KINDS = (
-    "major_luck",
-    "gregorian_year",
-    "gregorian_month",
-    "civil_day",
-)
 _LIFE_KLINE_LIMITATIONS = (
     "当前 Runtime 没有经版本化、校准的可比度量与蜡烛采样规则，人生 K 线只能诚实不可用。",
     "Backend/ViewModel 不把既有非分数事实改写成 OHLC、direction 或 delta。",
@@ -1721,7 +1716,9 @@ def project_life_kline_series_view_model(
     if identity is None:
         return None
     axes_raw = payload.get("candidate_time_axes")
-    if not isinstance(axes_raw, list) or len(axes_raw) != 4:
+    if not isinstance(axes_raw, list) or len(axes_raw) != len(
+        LIFE_KLINE_CANDIDATE_TIME_AXES
+    ):
         return None
     try:
         axes = tuple(
@@ -1737,9 +1734,8 @@ def project_life_kline_series_view_model(
         )
     except Exception:
         return None
-    if tuple(axis.kind for axis in axes) != _LIFE_KLINE_AXIS_KINDS:
-        return None
-    if any(axis.series_ready for axis in axes):
+    # Exact object/field/order match against the frozen Runtime axes.
+    if axes != LIFE_KLINE_CANDIDATE_TIME_AXES:
         return None
     if algorithm_gap.user_input_can_resolve:
         return None

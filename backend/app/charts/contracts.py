@@ -555,6 +555,35 @@ class LifeKlineCandidateTimeAxis(ContractModel):
     series_ready: Literal[False] = False
 
 
+# Frozen v1 candidate time axes — must stay exact with Runtime life-kline authority.
+LIFE_KLINE_CANDIDATE_TIME_AXES: tuple[LifeKlineCandidateTimeAxis, ...] = (
+    LifeKlineCandidateTimeAxis(
+        kind="major_luck",
+        unit="age_years",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="output.luck_cycles.cycles[]",
+    ),
+    LifeKlineCandidateTimeAxis(
+        kind="gregorian_year",
+        unit="calendar_year",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="fact_extension.facts.year_layers",
+    ),
+    LifeKlineCandidateTimeAxis(
+        kind="gregorian_month",
+        unit="calendar_month",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="fact_extension.facts.month_layers",
+    ),
+    LifeKlineCandidateTimeAxis(
+        kind="civil_day",
+        unit="civil_day",
+        source_schema_version="mingli-bazi-fact-v1",
+        source_path="fact_extension.facts.day_layers",
+    ),
+)
+
+
 class LifeKlineUnavailableValueAxis(ContractModel):
     available: Literal[False] = False
     measure_id: None = None
