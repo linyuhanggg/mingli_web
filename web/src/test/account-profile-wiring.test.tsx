@@ -98,8 +98,8 @@ describe("account profile route wiring", () => {
 
     render(<AccountProfilesPage />);
 
-    expect(await screen.findByRole("heading", { name: "已保存的档案版本" })).toBeVisible();
-    expect(screen.getByText(/档案 3/)).toBeVisible();
+    expect(await screen.findByText(/档案 3/)).toBeVisible();
+    expect(screen.getByRole("heading", { name: "已保存的档案版本" })).toBeVisible();
     expect(screen.getByRole("link", { name: "新建档案版本" })).toHaveAttribute(
       "href",
       "/account/profiles/new",
@@ -125,11 +125,36 @@ describe("account profile route wiring", () => {
     });
     render(page);
 
-    expect(await screen.findByRole("heading", { name: "档案版本历史" })).toBeVisible();
-    expect(screen.getByText("档案 v3")).toBeVisible();
+    expect(await screen.findByText("档案 v3")).toBeVisible();
+    expect(screen.getByRole("heading", { name: "档案版本历史" })).toBeVisible();
     expect(screen.queryByText(/出生时间|出生地点|密文|nonce/)).not.toBeInTheDocument();
     expect(api.listProfileVersions).toHaveBeenCalledWith(
       "11111111-1111-4111-8111-111111111111",
     );
+  });
+
+  it("keeps profile-version loading local to the detail panel", async () => {
+    api.getAccount.mockResolvedValue(account);
+    let resolveVersions!: (value: { versions: Array<never> }) => void;
+    api.listProfileVersions.mockReturnValue(new Promise((resolve) => {
+      resolveVersions = resolve;
+    }));
+
+    const page = await AccountProfileDetailPage({
+      params: Promise.resolve({ profileId: "11111111-1111-4111-8111-111111111111" }),
+    });
+    render(page);
+
+    const loader = await screen.findByRole("status", {
+      name: "正在读取档案版本…",
+    });
+    expect(loader).toHaveAttribute("data-loader-variant", "dots");
+    expect(loader.closest('section[aria-busy="true"]')).not.toBeNull();
+    expect(screen.getByRole("heading", { name: "档案版本历史" })).toBeVisible();
+
+    resolveVersions({ versions: [] });
+    expect(
+      await screen.findByRole("status", { name: "还没有可显示的版本" }),
+    ).toBeVisible();
   });
 });

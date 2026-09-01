@@ -4,6 +4,27 @@
   gap: 0.75rem;
 }
 
+.archivePanel {
+  animation-duration: var(--duration-product-max);
+}
+
+.loadingRow {
+  display: flex;
+  min-height: 4rem;
+  align-items: center;
+  gap: var(--ds-space-3);
+  padding: var(--ds-space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--ds-radius-2);
+  background: var(--color-surface-subtle);
+}
+
+.loadingText {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-label);
+}
+
 .profileList {
   margin: 0;
   padding: 0;
@@ -16,7 +37,7 @@
   gap: 0.85rem;
   padding-block: 1.15rem;
   border-bottom: 1px solid var(--color-border);
-  animation: archive-item-enter var(--duration-page) var(--ease-out) both;
+  animation: archive-item-enter var(--duration-product-max) var(--ease-out) both;
   transition: transform var(--duration-feedback) var(--ease-out);
 }
 
@@ -62,10 +83,12 @@
 .profileActions {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   gap: 0.55rem;
 }
 
 .profileActions :is(a, button) {
+  max-width: 100%;
   min-height: 2.75rem;
 }
 

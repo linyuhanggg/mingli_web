@@ -16,6 +16,7 @@ import { stableKeyForIntent, type IntentKey } from "@/lib/idempotency";
 import surface from "./app-surface.module.css";
 import { ProfileRenameControl } from "./profile-rename-control";
 import { StatusPanel } from "./status-panel";
+import { Button, LocalLoader, type ButtonState } from "./ui";
 
 import styles from "./profile-archive.module.css";
 
@@ -24,6 +25,13 @@ const dateTimeFormatter = new Intl.DateTimeFormat("zh-CN", {
   dateStyle: "medium",
   timeStyle: "short",
 });
+
+const ACTION_FEEDBACK_MS = 220;
+
+type StartAction = Readonly<{
+  profileVersionId: string;
+  state: ButtonState;
+}>;
 
 function formatProfileTime(value: string): string {
   const date = new Date(value);
@@ -46,9 +54,11 @@ export function ProfileArchive() {
   const [error, setError] = useState<string | null>(null);
   const [sessionExpired, setSessionExpired] = useState(false);
   const [attempt, setAttempt] = useState(0);
-  const [startingId, setStartingId] = useState<string | null>(null);
+  const [startAction, setStartAction] = useState<StartAction | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const intentKeyRef = useRef<IntentKey | null>(null);
+  const actionTimerRef = useRef<number | null>(null);
+  const mountedRef = useRef(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -78,6 +88,16 @@ export function ProfileArchive() {
     };
   }, [attempt]);
 
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      if (actionTimerRef.current !== null) {
+        window.clearTimeout(actionTimerRef.current);
+      }
+    };
+  }, []);
+
   function handleRetry() {
     setLoading(true);
     setError(null);
@@ -88,8 +108,12 @@ export function ProfileArchive() {
   }
 
   async function handleStartBazi(profileVersionId: string) {
-    if (startingId) return;
-    setStartingId(profileVersionId);
+    if (startAction?.state === "loading" || startAction?.state === "success") return;
+    if (actionTimerRef.current !== null) {
+      window.clearTimeout(actionTimerRef.current);
+      actionTimerRef.current = null;
+    }
+    setStartAction({ profileVersionId, state: "loading" });
     setActionError(null);
     const payload = {
       profile_version_id: profileVersionId,
@@ -100,20 +124,50 @@ export function ProfileArchive() {
     intentKeyRef.current = intent;
     try {
       const response = await startPreviewReading(payload, intent.key);
-      router.push(`/app/readings/${response.reading_version_id}`);
+      if (!mountedRef.current) return;
+      setStartAction({ profileVersionId, state: "success" });
+      actionTimerRef.current = window.setTimeout(() => {
+        router.push(`/app/readings/${response.reading_version_id}`);
+        setStartAction((current) =>
+          current?.profileVersionId === profileVersionId && current.state === "success"
+            ? null
+            : current,
+        );
+        actionTimerRef.current = null;
+      }, ACTION_FEEDBACK_MS);
     } catch (err) {
+      if (!mountedRef.current) return;
       setActionError(errorMessage(err));
-      setStartingId(null);
+      setStartAction({ profileVersionId, state: "error" });
+      actionTimerRef.current = window.setTimeout(() => {
+        setStartAction((current) =>
+          current?.profileVersionId === profileVersionId && current.state === "error"
+            ? null
+            : current,
+        );
+        actionTimerRef.current = null;
+      }, ACTION_FEEDBACK_MS);
     }
   }
 
   if (loading) {
     return (
-      <StatusPanel
-        state="loading"
-        title="正在读取档案…"
-        description="不可变档案版本正在抵达，请稍候。"
-      />
+      <section
+        aria-busy="true"
+        aria-labelledby="profile-archive-loading-title"
+        className={`${surface.paper} ${styles.archivePanel}`}
+      >
+        <div className={surface.sectionHeader}>
+          <div>
+            <h2 id="profile-archive-loading-title">已保存的档案版本</h2>
+            <p>正在读取服务端保存的不可变档案版本。</p>
+          </div>
+        </div>
+        <div className={styles.loadingRow}>
+          <LocalLoader label="正在读取档案…" />
+          <p className={styles.loadingText}>正在读取档案…</p>
+        </div>
+      </section>
     );
   }
 
@@ -191,7 +245,10 @@ export function ProfileArchive() {
         />
       ) : null}
 
-      <section className={surface.paper} aria-labelledby="profile-archive-title">
+      <section
+        className={`${surface.paper} ${styles.archivePanel}`}
+        aria-labelledby="profile-archive-title"
+      >
         <div className={surface.sectionHeader}>
           <div>
             <h2 id="profile-archive-title">已保存的档案版本</h2>
@@ -222,17 +279,24 @@ export function ProfileArchive() {
                     );
                   }}
                 />
-                <button
-                  type="button"
-                  className={surface.secondaryButton}
-                  disabled={startingId === entry.profile_version_id}
-                  aria-busy={startingId === entry.profile_version_id}
+                <Button
+                  disabled={
+                    startAction?.state === "loading" || startAction?.state === "success"
+                  }
+                  errorLabel="启动失败"
+                  loadingLabel="正在启动事业主题…"
                   onClick={() => handleStartBazi(entry.profile_version_id)}
+                  state={
+                    startAction?.profileVersionId === entry.profile_version_id
+                      ? startAction.state
+                      : "idle"
+                  }
+                  successLabel="事业主题已启动"
+                  type="button"
+                  variant="secondary"
                 >
-                  {startingId === entry.profile_version_id
-                    ? "正在启动事业主题…"
-                    : "查看事业主题概览"}
-                </button>
+                  查看事业主题概览
+                </Button>
                 <Link
                   className={surface.secondaryButton}
                   href={`/app/fortune/today?profile=${encodeURIComponent(entry.profile_version_id)}`}
