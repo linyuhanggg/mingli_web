@@ -10,6 +10,10 @@ from pydantic import ValidationError
 
 from app.charts.contracts import (
     DALIUREN_LESSON_UPPERS,
+    LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE,
+    LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS,
+    LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS,
+    LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS,
     VIEW_MODEL_TYPES,
     ArtSignal,
     BaziBoundaryTerm,
@@ -1738,6 +1742,16 @@ def project_life_kline_series_view_model(
     if any(axis.series_ready for axis in axes):
         return None
     if algorithm_gap.user_input_can_resolve:
+        return None
+    if (
+        algorithm_gap.missing_inputs != LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS
+        or algorithm_gap.missing_semantics
+        != LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS
+        or algorithm_gap.required_versioned_fields
+        != LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS
+        or algorithm_gap.minimum_implementation_slice
+        != LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE
+    ):
         return None
     return LifeKlineSeriesV1(
         subject_ref=subject_ref,

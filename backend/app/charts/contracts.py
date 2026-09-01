@@ -585,6 +585,45 @@ class LifeKlineUnavailableChange(ContractModel):
     )
 
 
+# Frozen v1 algorithm-gap lists — must stay exact with Runtime life-kline authority.
+LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS: tuple[str, ...] = (
+    "versioned_comparable_measure_definition",
+    "calibration_and_validation_corpus",
+)
+LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS: tuple[str, ...] = (
+    "measure_unit_and_range",
+    "measure_polarity",
+    "cross_period_comparability",
+    "open_and_close_sampling_points",
+    "high_and_low_intra_period_resolution",
+    "flat_direction_threshold",
+    "missing_observation_policy",
+)
+LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS: tuple[str, ...] = (
+    "measure.id",
+    "measure.version",
+    "measure.unit",
+    "measure.range",
+    "measure.polarity",
+    "sampling.rule_id",
+    "sampling.rule_version",
+    "comparability.key",
+    "series[].fact_refs",
+    "meta.profile_version_id",
+    "meta.reading_document_version",
+    "meta.runtime_release",
+    "meta.runtime_manifest_digest",
+    "meta.source_fact_digest",
+)
+LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE: tuple[str, ...] = (
+    "freeze_one_comparable_measure_and_its_evidence_authority",
+    "implement_the_measure_as_a_deterministic_versioned_pure_function",
+    "freeze_candle_sampling_semantics_or_remove_ohlc_from_the_product_contract",
+    "derive_direction_and_delta_only_from_authoritative_close_values",
+    "validate_boundaries_missingness_idempotency_and_calibration_before_ready",
+)
+
+
 class LifeKlineAlgorithmGap(ContractModel):
     gap_id: Literal["life-kline.comparable-measure-and-candle-sampling.v1"] = (
         "life-kline.comparable-measure-and-candle-sampling.v1"

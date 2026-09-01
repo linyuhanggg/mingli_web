@@ -4,7 +4,13 @@ import copy
 import hashlib
 import json
 
-from app.charts.contracts import parse_view_model
+from app.charts.contracts import (
+    LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE,
+    LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS,
+    LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS,
+    LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS,
+    parse_view_model,
+)
 from app.charts.projectors import project_runtime_view_model
 
 
@@ -114,42 +120,14 @@ def _runtime_life_kline_fact(
         "algorithm_gap": {
             "gap_id": "life-kline.comparable-measure-and-candle-sampling.v1",
             "user_input_can_resolve": False,
-            "missing_inputs": [
-                "versioned_comparable_measure_definition",
-                "calibration_and_validation_corpus",
-            ],
-            "missing_semantics": [
-                "measure_unit_and_range",
-                "measure_polarity",
-                "cross_period_comparability",
-                "open_and_close_sampling_points",
-                "high_and_low_intra_period_resolution",
-                "flat_direction_threshold",
-                "missing_observation_policy",
-            ],
-            "required_versioned_fields": [
-                "measure.id",
-                "measure.version",
-                "measure.unit",
-                "measure.range",
-                "measure.polarity",
-                "sampling.rule_id",
-                "sampling.rule_version",
-                "comparability.key",
-                "series[].fact_refs",
-                "meta.profile_version_id",
-                "meta.reading_document_version",
-                "meta.runtime_release",
-                "meta.runtime_manifest_digest",
-                "meta.source_fact_digest",
-            ],
-            "minimum_implementation_slice": [
-                "freeze_one_comparable_measure_and_its_evidence_authority",
-                "implement_the_measure_as_a_deterministic_versioned_pure_function",
-                "freeze_candle_sampling_semantics_or_remove_ohlc_from_the_product_contract",
-                "derive_direction_and_delta_only_from_authoritative_close_values",
-                "validate_boundaries_missingness_idempotency_and_calibration_before_ready",
-            ],
+            "missing_inputs": list(LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS),
+            "missing_semantics": list(LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS),
+            "required_versioned_fields": list(
+                LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS
+            ),
+            "minimum_implementation_slice": list(
+                LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE
+            ),
         },
     }
 
@@ -213,6 +191,22 @@ def test_projects_exact_unavailable_life_kline_series_without_ohlc() -> None:
     assert view_model.candles.available is False
     assert view_model.change.available is False
     assert view_model.algorithm_gap.user_input_can_resolve is False
+    assert (
+        view_model.algorithm_gap.missing_inputs
+        == LIFE_KLINE_ALGORITHM_GAP_MISSING_INPUTS
+    )
+    assert (
+        view_model.algorithm_gap.missing_semantics
+        == LIFE_KLINE_ALGORITHM_GAP_MISSING_SEMANTICS
+    )
+    assert (
+        view_model.algorithm_gap.required_versioned_fields
+        == LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS
+    )
+    assert (
+        view_model.algorithm_gap.minimum_implementation_slice
+        == LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE
+    )
     assert view_model.identity.cache_identity == fact["identity"]["cache_identity"]
     assert all(axis.series_ready is False for axis in view_model.candidate_time_axes)
     parsed = parse_view_model(view_model.model_dump(mode="json"))
@@ -321,6 +315,82 @@ def test_rejects_user_resolvable_gap_flag() -> None:
     assert (
         project_runtime_view_model(
             _life_kline_brief(fact_value=resolvable),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_empty_algorithm_gap_lists() -> None:
+    emptied = _runtime_life_kline_fact()
+    emptied["algorithm_gap"]["missing_inputs"] = []
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=emptied),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_empty_string_in_algorithm_gap_lists() -> None:
+    blank = _runtime_life_kline_fact()
+    blank["algorithm_gap"]["missing_semantics"] = [
+        "measure_unit_and_range",
+        "",
+        "cross_period_comparability",
+        "open_and_close_sampling_points",
+        "high_and_low_intra_period_resolution",
+        "flat_direction_threshold",
+        "missing_observation_policy",
+    ]
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=blank),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_removed_algorithm_gap_item() -> None:
+    removed = _runtime_life_kline_fact()
+    removed["algorithm_gap"]["required_versioned_fields"] = list(
+        LIFE_KLINE_ALGORITHM_GAP_REQUIRED_VERSIONED_FIELDS[:-1]
+    )
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=removed),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_appended_algorithm_gap_item() -> None:
+    appended = _runtime_life_kline_fact()
+    appended["algorithm_gap"]["minimum_implementation_slice"] = [
+        *LIFE_KLINE_ALGORITHM_GAP_MINIMUM_IMPLEMENTATION_SLICE,
+        "extra_host_invented_step",
+    ]
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=appended),
+            product_id="life-kline-series",
+        )
+        is None
+    )
+
+
+def test_rejects_substituted_algorithm_gap_item() -> None:
+    substituted = _runtime_life_kline_fact()
+    substituted["algorithm_gap"]["missing_inputs"] = [
+        "versioned_comparable_measure_definition",
+        "host_substituted_corpus",
+    ]
+    assert (
+        project_runtime_view_model(
+            _life_kline_brief(fact_value=substituted),
             product_id="life-kline-series",
         )
         is None
