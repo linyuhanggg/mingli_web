@@ -8,6 +8,7 @@ import { useForm, useWatch, type FieldErrors, type UseFormRegister } from "react
 import { z } from "zod";
 
 import { Status } from "@/components/ui/status";
+import { Button } from "@/components/ui/button";
 import { IanaTimeZoneOptions } from "@/components/iana-timezone-options";
 import { formatProfileOption, type ProfileSummary } from "@/lib/api";
 import {
@@ -908,6 +909,7 @@ export function ProductInputForm({
   onRetryProfiles,
   busy = false,
   submitError = null,
+  submitErrorFocusAttempt = null,
   submitErrorState = "unavailable",
   submitErrorAction = null,
   loginHref = "/auth/login",
@@ -927,6 +929,7 @@ export function ProductInputForm({
   onRetryProfiles?: () => void;
   busy?: boolean;
   submitError?: string | null;
+  submitErrorFocusAttempt?: number | null;
   submitErrorState?: "unavailable" | "error" | "unauthorized";
   submitErrorAction?: "login" | "retry" | null;
   loginHref?: string;
@@ -964,6 +967,8 @@ export function ProductInputForm({
   const observationRegion = useWatch({ control, name: "observationRegion" });
   const observationOptions = OBSERVATION_OPTIONS[observationMode] ?? FACE_DESCRIPTOR_OPTIONS;
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const submitErrorRegionRef = useRef<HTMLElement>(null);
+  const submitErrorLoginRef = useRef<HTMLAnchorElement>(null);
   const [captureState, setCaptureState] = useState<JianxiangCaptureState>("empty");
   const [photoName, setPhotoName] = useState("");
   const selectedProfile = profiles.find(
@@ -984,6 +989,15 @@ export function ProductInputForm({
       "coordinateSource",
     ]);
   }, [clearErrors, selectedProfileVersionId]);
+  useEffect(() => {
+    if (submitErrorFocusAttempt === null || !submitError || submitErrorAction === "retry") {
+      return;
+    }
+    const focusTarget = submitErrorAction === "login"
+      ? submitErrorLoginRef.current
+      : submitErrorRegionRef.current;
+    focusTarget?.focus({ preventScroll: true });
+  }, [submitError, submitErrorAction, submitErrorFocusAttempt]);
   const validationErrors = Object.keys(errors)
     .map((fieldName) => taskErrorField(product.id, fieldName, errors))
     .filter((field): field is { id: string; label: string } => Boolean(field));
@@ -1655,38 +1669,48 @@ export function ProductInputForm({
       ) : null}
 
       {submitError ? (
-        submitErrorAction ? (
-          <Status
-            actions={
-              submitErrorAction === "login" ? (
-                <Link href={loginHref}>登录后继续</Link>
-              ) : (
-                <button type="button" onClick={() => onRetry?.()}>
-                  重试
-                </button>
-              )
-            }
-            state={submitErrorState}
-            title={submitError}
-          />
-        ) : submitErrorState === "error" ? (
-          <p className={styles.error} role="alert">{submitError}</p>
-        ) : (
-          <Status
-            state={submitErrorState === "unauthorized" ? "unauthorized" : "unavailable"}
-            title={submitError}
-          />
-        )
+        <section
+          aria-label={`${product.name}排盘错误：${submitError}`}
+          data-submit-error-focus="true"
+          ref={submitErrorRegionRef}
+          tabIndex={-1}
+        >
+          {submitErrorAction ? (
+            <Status
+              actions={
+                submitErrorAction === "login" ? (
+                  <Link href={loginHref} ref={submitErrorLoginRef}>登录后继续</Link>
+                ) : (
+                  <button autoFocus type="button" onClick={() => onRetry?.()}>
+                    重试
+                  </button>
+                )
+              }
+              state={submitErrorState}
+              title={submitError}
+            />
+          ) : submitErrorState === "error" ? (
+            <p className={styles.error} role="alert">{submitError}</p>
+          ) : (
+            <Status
+              state={submitErrorState === "unauthorized" ? "unauthorized" : "unavailable"}
+              title={submitError}
+            />
+          )}
+        </section>
       ) : null}
 
-      <button
-        aria-busy={busy}
+      <Button
         className={styles.primaryButton}
-        disabled={busy}
+        errorLabel="生成失败 · 可重试"
+        id={`${product.id}-submit`}
+        loadingLabel="正在生成盘面…"
+        state={busy ? "loading" : submitErrorState === "error" && submitError ? "error" : "idle"}
+        successLabel="盘面已生成"
         type="submit"
       >
-        {busy ? "正在生成盘面…" : submitLabel(product)}
-      </button>
+        {submitLabel(product)}
+      </Button>
       <details className={styles.submitBoundary}>
         <summary>提交后会发生什么</summary>
         <p>

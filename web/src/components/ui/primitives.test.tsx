@@ -12,6 +12,7 @@ import {
   Dialog,
   Drawer,
   Field,
+  LocalLoader,
   Segmented,
   Status,
   Table,
@@ -152,7 +153,7 @@ describe("Button", () => {
     expect(() => Button(blankLabel)).toThrow(/aria-label/);
   });
 
-  it("shows a spinner, exposes aria-busy, and blocks native activation while loading", async () => {
+  it("shows dots, exposes aria-busy, and blocks native activation while loading", async () => {
     const onClick = vi.fn();
     const user = userEvent.setup();
     const { container } = render(
@@ -164,7 +165,7 @@ describe("Button", () => {
     expect(button).toBeDisabled();
     expect(button).toHaveAttribute("aria-busy", "true");
     expect(button).toHaveAttribute("data-loading", "true");
-    expect(container.querySelector("[class*='spinner']")).toBeInTheDocument();
+    expect(container.querySelector("[data-loader-variant='dots']")).toBeInTheDocument();
     await user.click(button);
     expect(onClick).not.toHaveBeenCalled();
   });
@@ -185,7 +186,7 @@ describe("Button", () => {
     expect(onNavigate).not.toHaveBeenCalled();
   });
 
-  it("renders the spinner inside an asChild loading target", () => {
+  it("renders dots inside an asChild loading target", () => {
     const { container } = render(
       <Button asChild loading>
         <a href="/next">保存</a>
@@ -194,7 +195,75 @@ describe("Button", () => {
     const link = screen.getByRole("link", { name: "保存" });
     expect(link).toHaveAttribute("aria-disabled", "true");
     expect(link).toHaveAttribute("aria-busy", "true");
-    expect(container.querySelector("[class*='spinner']")).toBeInTheDocument();
+    expect(container.querySelector("[data-loader-variant='dots']")).toBeInTheDocument();
+  });
+
+  it("keeps controlled state labels width-stable and exposes non-color feedback", () => {
+    const { rerender } = render(
+      <Button
+        errorLabel="保存失败"
+        loadingLabel="正在保存"
+        state="idle"
+        successLabel="保存成功"
+      >
+        保存
+      </Button>,
+    );
+
+    const button = screen.getByRole("button", { name: "保存" });
+    expect(button).toHaveAttribute("data-state", "idle");
+    expect(within(button).getByText("正在保存")).toHaveAttribute("aria-hidden", "true");
+    expect(within(button).getByText("保存成功")).toHaveAttribute("aria-hidden", "true");
+    expect(within(button).getByText("保存失败")).toHaveAttribute("aria-hidden", "true");
+
+    rerender(
+      <Button
+        errorLabel="保存失败"
+        loadingLabel="正在保存"
+        state="loading"
+        successLabel="保存成功"
+      >
+        保存
+      </Button>,
+    );
+    expect(screen.getByRole("button", { name: "正在保存" })).toBeDisabled();
+
+    rerender(
+      <Button
+        errorLabel="保存失败"
+        loadingLabel="正在保存"
+        state="success"
+        successLabel="保存成功"
+      >
+        保存
+      </Button>,
+    );
+    expect(screen.getByRole("button", { name: "保存成功" })).toBeEnabled();
+
+    rerender(
+      <Button
+        errorLabel="保存失败"
+        loadingLabel="正在保存"
+        state="error"
+        successLabel="保存成功"
+      >
+        保存
+      </Button>,
+    );
+    const failed = screen.getByRole("button", { name: "保存失败" });
+    expect(failed).toBeEnabled();
+    expect(failed.querySelector("svg")).toHaveAttribute("aria-hidden", "true");
+  });
+
+  it("uses feedback-only transforms and removes motion when requested", () => {
+    const css = readFileSync(
+      resolve(process.cwd(), "src/components/ui/button.module.css"),
+      "utf8",
+    );
+
+    expect(css).not.toContain("button-spin");
+    expect(css).toMatch(/button-state-error[\s\S]*translateX\(-4px\)[\s\S]*translateX\(4px\)/);
+    expect(css).toMatch(/prefers-reduced-motion:[\s\S]*button\[data-state="error"\][\s\S]*animation:\s*none/);
   });
 
   it("normalizes a single-element children array for an asChild target", () => {
@@ -205,6 +274,21 @@ describe("Button", () => {
     );
 
     expect(screen.getByRole("link", { name: "继续" })).toHaveAttribute("href", "/next");
+  });
+});
+
+describe("LocalLoader", () => {
+  it("names standalone dots and keeps decorative button dots out of the accessibility tree", () => {
+    const { rerender } = render(<LocalLoader label="正在保存档案" />);
+    expect(screen.getByRole("status", { name: "正在保存档案" })).toHaveAttribute(
+      "data-loader-variant",
+      "dots",
+    );
+
+    rerender(<LocalLoader variant="dot-matrix" />);
+    const matrix = document.querySelector("[data-loader-variant='dot-matrix']");
+    expect(matrix).toHaveAttribute("aria-hidden", "true");
+    expect(matrix?.children).toHaveLength(4);
   });
 });
 
