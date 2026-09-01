@@ -437,6 +437,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
   const [chartWaitAttempt, setChartWaitAttempt] = useState<number | null>(null);
   const [showChartSkeleton, setShowChartSkeleton] = useState(false);
   const [focusChartReadyReveal, setFocusChartReadyReveal] = useState(false);
+  const [submitErrorFocusAttempt, setSubmitErrorFocusAttempt] = useState<number | null>(null);
   const [canReturnFromChartWait, setCanReturnFromChartWait] = useState(false);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [baziPreviewReadingId, setBaziPreviewReadingId] = useState<string | null>(
@@ -729,6 +730,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       chartWaitAttemptRef.current = chartAttemptId;
       setShowChartSkeleton(false);
       setFocusChartReadyReveal(false);
+      setSubmitErrorFocusAttempt(null);
       setCanReturnFromChartWait(false);
       setChartWaitAttempt(chartAttemptId);
     }
@@ -902,8 +904,13 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
           const waitingRegion = document.querySelector(
             `[data-chart-skeleton='${product.id}']`,
           );
+          const inputRegion = document.querySelector(
+            "[data-input-region='first-screen']",
+          );
+          const activeElement = document.activeElement;
           setFocusChartReadyReveal(
-            waitingRegion?.contains(document.activeElement) === true,
+            waitingRegion?.contains(activeElement) === true
+              || inputRegion?.contains(activeElement) === true,
           );
         }
         if (product.id === "bazi") {
@@ -1227,6 +1234,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       if (!chartAttemptIsActive()) return;
       const mapped = mapStartReadingFailure(reason);
       const action = startReadingFailureAction(reason);
+      const waitingRegionHadFocus = chartAttemptId !== null
+        && document.querySelector(`[data-chart-skeleton='${product.id}']`)
+          ?.contains(document.activeElement) === true;
       setSubmitErrorState(mapped.state);
       setSubmitError(mapped.title);
       const intent = intentKeyRef.current;
@@ -1254,6 +1264,9 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
       }
       setSubmitErrorAction(action);
       setLoginIntentKey(intent?.key);
+      if (waitingRegionHadFocus && action !== "retry") {
+        setSubmitErrorFocusAttempt(chartAttemptId);
+      }
     } finally {
       if (chartAttemptId === null || chartAttemptIsActive()) {
         setBusy(false);
@@ -1272,6 +1285,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
     setShowChartSkeleton(false);
     setCanReturnFromChartWait(false);
     setChartWaitAttempt(null);
+    setSubmitErrorFocusAttempt(null);
     setBusy(false);
     setSubmitError(null);
     setSubmitErrorAction(null);
@@ -1465,6 +1479,7 @@ export function ProductTaskExperience({ product }: { product: ProductDefinition 
                 setSavedProfilesAttempt((value) => value + 1);
               }}
               submitError={submitError}
+              submitErrorFocusAttempt={submitErrorFocusAttempt}
               submitErrorState={submitErrorState}
               submitErrorAction={submitErrorAction}
               loginHref={loginHref}

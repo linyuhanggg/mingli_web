@@ -329,7 +329,7 @@ describe("ProductTaskExperience retained profile drafts", () => {
   );
 
   it.each(chartFocusCases)(
-    "$productId does not focus the ready region after a sub-300ms success",
+    "$productId transfers keyboard focus from the submitted form after a sub-300ms success",
     async ({ productId, productName }) => {
       taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
       const startMock = productId === "bazi"
@@ -349,7 +349,99 @@ describe("ProductTaskExperience retained profile drafts", () => {
       const readyRegion = screen.getByRole("region", {
         name: `${productName}盘面已就绪`,
       });
-      expect(readyRegion).not.toHaveFocus();
+      expect(readyRegion).toHaveFocus();
+      expect(document.activeElement).not.toBe(document.body);
+      expect(screen.queryByLabelText(`正在同步${productName}盘面`, {
+        selector: `[data-chart-skeleton='${productId}']`,
+      })).not.toBeInTheDocument();
+    },
+  );
+
+  it.each(chartFocusCases)(
+    "$productId preserves focus that moved outside the submitted form before a fast success",
+    async ({ productId, productName }) => {
+      taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+      const startMock = productId === "bazi"
+        ? taskMocks.startPreviewReading
+        : taskMocks.startZiweiReading;
+      let releaseStart!: (value: { reading_version_id: string }) => void;
+      startMock.mockReturnValue(new Promise((resolve) => {
+        releaseStart = resolve;
+      }));
+
+      render(<ProductTaskPage productId={productId} />);
+      expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+      vi.useFakeTimers();
+      const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+      submit.focus();
+      fireEvent.click(submit);
+      await flushChartStart();
+
+      const persistentLink = screen.getByRole("link", { name: "返回" });
+      persistentLink.focus();
+      await act(async () => {
+        releaseStart({ reading_version_id: `fast-moved-${productId}` });
+        for (let index = 0; index < 8; index += 1) {
+          await Promise.resolve();
+        }
+      });
+
+      expect(persistentLink).toHaveFocus();
+      expect(screen.getByRole("region", {
+        name: `${productName}盘面已就绪`,
+      })).not.toHaveFocus();
+    },
+  );
+
+  it.each(chartFocusCases.flatMap((testCase) => [
+    { ...testCase, failureKind: "login" as const },
+    { ...testCase, failureKind: "unavailable" as const },
+  ]))(
+    "$productId focuses the $failureKind destination after a delayed non-retry failure",
+    async ({ productId, productName, failureKind }) => {
+      taskMocks.listProfiles.mockResolvedValue({ profiles: [confirmedProfile] });
+      const startMock = productId === "bazi"
+        ? taskMocks.startPreviewReading
+        : taskMocks.startZiweiReading;
+      let rejectStart!: (reason: unknown) => void;
+      startMock.mockReturnValue(new Promise((_resolve, reject) => {
+        rejectStart = reject;
+      }));
+
+      render(<ProductTaskPage productId={productId} />);
+      expect(await screen.findByText(/本次将直接使用已保存的不可变档案版本/)).toBeVisible();
+
+      vi.useFakeTimers();
+      const submit = screen.getByRole("button", { name: /^立即排盘（免费）/ });
+      submit.focus();
+      fireEvent.click(submit);
+      await flushChartStart();
+      act(() => vi.advanceTimersByTime(300));
+
+      const waitingRegion = screen.getByLabelText(`正在同步${productName}盘面`, {
+        selector: `[data-chart-skeleton='${productId}']`,
+      });
+      expect(waitingRegion).toHaveFocus();
+
+      await act(async () => {
+        rejectStart(
+          failureKind === "login"
+            ? new ApiError("Daily cap", 429, undefined, "guest_daily_reading_limit")
+            : new ApiError("Service unavailable", 503, undefined, "service_unavailable"),
+        );
+        for (let index = 0; index < 8; index += 1) {
+          await Promise.resolve();
+        }
+      });
+
+      const focusTarget = failureKind === "login"
+        ? screen.getByRole("link", { name: "登录后继续" })
+        : screen.getByRole("region", {
+            name: `${productName}排盘错误：服务暂时不可用，请稍后重试。`,
+          });
+      expect(focusTarget).toHaveFocus();
+      expect(document.activeElement).not.toBe(document.body);
       expect(screen.queryByLabelText(`正在同步${productName}盘面`, {
         selector: `[data-chart-skeleton='${productId}']`,
       })).not.toBeInTheDocument();
